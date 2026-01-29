@@ -52,7 +52,9 @@ fun App() {
                     onAnnouncementClick = { announcementId ->
                         navController.navigate(AnnouncementDetailRoute(id = announcementId, token = route.token))
                     },
-                    onViewAllClick = { /* TODO: navController.navigate(AnnouncementListRoute(route.token)) */ }
+                    onViewAllClick = {
+                        navController.navigate(AnnouncementListRoute(token = route.token))
+                    }
                 )
             }
 

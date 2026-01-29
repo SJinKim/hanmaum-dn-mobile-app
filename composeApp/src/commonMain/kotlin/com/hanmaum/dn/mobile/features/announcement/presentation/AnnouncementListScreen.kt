@@ -34,7 +34,7 @@ fun AnnouncementListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("전체 소식") }, // "Alle Nachrichten"
+                title = { Text("전체 소식") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
