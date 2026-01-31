@@ -14,7 +14,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hanmaum.dn.mobile.features.login.presentation.LoginViewModel
 
 @Composable
-fun LoginScreen(onLoginSuccess: (String) -> Unit) {
+fun LoginScreen(
+    onLoginSuccess: (String) -> Unit,
+    onRegisterClick: () -> Unit
+) {
     // ViewModel Instanz holen (Überlebt Configuration Changes!)
     val viewModel: LoginViewModel = viewModel { LoginViewModel() }
 
@@ -72,6 +75,10 @@ fun LoginScreen(onLoginSuccess: (String) -> Unit) {
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        TextButton(onClick = onRegisterClick) {
+            Text("등록하기")
+        }
 
         Text(
             text = state.statusMessage,

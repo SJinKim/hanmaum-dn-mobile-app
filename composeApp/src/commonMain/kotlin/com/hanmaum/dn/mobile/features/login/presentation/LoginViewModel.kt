@@ -32,20 +32,18 @@ class LoginViewModel(
                 val tokenResponse = repository.login(user, pass)
                 val token = tokenResponse.accessToken
 
-                val backendStatus = repository.testBackendConnection(token)
-
                 // State Update: Erfolg
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     token = token,
-                    statusMessage = "Erfolg! Backend: $backendStatus"
+                    statusMessage = "인증 완료!"
                 )
             } catch (e: Exception) {
                 // State Update: Fehler
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     error = e.message,
-                    statusMessage = "Fehler: ${e.message}"
+                    statusMessage = "로그인 실패!"
                 )
                 e.printStackTrace()
             }

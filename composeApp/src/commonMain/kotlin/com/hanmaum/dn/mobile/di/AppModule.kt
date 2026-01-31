@@ -5,6 +5,9 @@ import com.hanmaum.dn.mobile.features.announcement.domain.repository.Announcemen
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementDetailViewModel
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementListViewModel
 import com.hanmaum.dn.mobile.features.announcement.presentation.HomeViewModel
+import com.hanmaum.dn.mobile.features.login.data.repository.AuthRepositoryImpl
+import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
+import com.hanmaum.dn.mobile.features.login.presentation.RegisterViewModel
 import org.koin.dsl.module
 import org.koin.core.module.dsl.viewModel
 
@@ -12,6 +15,10 @@ val appModule = module {
     single<AnnouncementRepository> {
         AnnouncementRepositoryImpl()
     }
+    single<AuthRepository> {
+        AuthRepositoryImpl()
+    }
+
 
     // Home VM
     viewModel { (token: String) ->
@@ -37,4 +44,7 @@ val appModule = module {
             repository = get()
         )
     }
+
+    // Register VM
+    viewModel { RegisterViewModel(authRepository = get()) }
 }

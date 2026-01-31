@@ -15,3 +15,6 @@ data class AnnouncementDetailRoute(val id: String, val token: String)
 
 @Serializable
 data class AnnouncementListRoute(val token: String)
+
+@Serializable
+object RegisterRoute

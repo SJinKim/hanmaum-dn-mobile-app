@@ -14,7 +14,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.hanmaum.dn.mobile.core.navigation.AnnouncementListRoute
+import com.hanmaum.dn.mobile.core.navigation.RegisterRoute
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementListScreen
+import com.hanmaum.dn.mobile.features.login.presentation.RegisterScreen
 
 @Composable
 @Preview
@@ -34,6 +36,22 @@ fun App() {
                         navController.navigate(HomeRoute(token)) {
                             popUpTo(LoginRoute) { inclusive = true }
                         }
+                    },
+                    onRegisterClick = {
+                        navController.navigate(RegisterRoute)
+                    }
+                )
+            }
+
+            // Register screen
+            composable<RegisterRoute> {
+                RegisterScreen(
+                    onBackClick = {
+                        navController.popBackStack()
+                    },
+                    onRegistrationSuccess = {
+                        navController.popBackStack()
+                        // Optional: Hier könnte man noch eine Snackbar zeigen "Erfolg!"
                     }
                 )
             }

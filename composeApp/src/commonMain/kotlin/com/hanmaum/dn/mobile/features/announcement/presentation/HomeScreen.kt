@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hanmaum.dn.mobile.core.presentation.components.ChurchBottomBar
 import com.hanmaum.dn.mobile.core.presentation.components.ChurchTopBar
 import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
@@ -45,7 +44,7 @@ fun HomeScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
-        topBar = { ChurchTopBar() },
+        topBar = { ChurchTopBar(title = "D+N App", onBackClick = null) },
         bottomBar = { ChurchBottomBar() }
     ) { paddingValues ->
 

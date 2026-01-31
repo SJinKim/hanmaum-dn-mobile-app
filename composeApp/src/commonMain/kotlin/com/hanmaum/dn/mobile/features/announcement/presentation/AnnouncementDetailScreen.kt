@@ -34,7 +34,7 @@ fun AnnouncementDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Details") }, // Oder leer lassen
+                title = { Text("") }, // Oder leer lassen
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Zurück")
