@@ -79,10 +79,5 @@ fun LoginScreen(
         TextButton(onClick = onRegisterClick) {
             Text("등록하기")
         }
-
-        Text(
-            text = state.statusMessage,
-            color = if (state.error != null) Color.Red else if (state.token != null) Color.Green else Color.Black
-        )
     }
 }

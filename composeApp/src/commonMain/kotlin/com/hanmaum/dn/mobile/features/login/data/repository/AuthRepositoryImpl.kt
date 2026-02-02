@@ -43,7 +43,8 @@ class AuthRepositoryImpl : AuthRepository {
         // Android Emulator: http://10.0.2.2:8080/api/members
         // iOS Simulator / Echtes Gerät: Deine lokale IP (z.B. http://192.168.1.50:8080/api/members)
         return try {
-            val registerUrl = "${AppConfig.getBackendUrl()}/members"
+            val registerUrl = "${AppConfig.getBackendUrl()}/members/register"
+
 
             val response = client.post(registerUrl) {
                 contentType(ContentType.Application.Json)
@@ -53,21 +54,37 @@ class AuthRepositoryImpl : AuthRepository {
                 expectSuccess = false
             }
 
-            // Wir erwarten einen Body vom Typ ApiResponse<Unit> (Unit, weil data null ist)
-            val apiResponse = response.body<ApiResponse<Unit>>()
-
             if (response.status == HttpStatusCode.Created || response.status == HttpStatusCode.OK) {
-                // Erfolg!
-                Result.success(Unit)
+                // Nur wenn ALLES gut ging, versuchen wir JSON zu parsen
+                // Da wir Result<Unit> zurückgeben, ignorieren wir den Body eigentlich,
+                // aber zur Sicherheit lesen wir ihn, falls die API Validierungsfehler als 200 OK sendet (selten).
+
+                // Optional: Falls du sicher bist, dass bei 200 OK alles passt, kannst du das .body() weglassen
+                // und direkt Result.success(Unit) zurückgeben.
+                // Aber falls dein Backend bei Erfolg JSON sendet:
+                try {
+                    val apiResponse = response.body<ApiResponse<Unit>>()
+                    if (apiResponse.success) {
+                        Result.success(Unit)
+                    } else {
+                        Result.failure(Exception(apiResponse.message ?: "Unbekannter Fehler"))
+                    }
+                } catch(e: Exception) {
+                    // Fallback, falls Response OK war aber kein ApiResponse Body
+                    Result.success(Unit)
+                }
+
             } else {
-                // Fehler (z.B. 409 Conflict)
-                // Wir nehmen die Message vom Backend ("Email existiert schon")
-                val errorMsg = apiResponse.message ?: "Unbekannter Fehler bei der Registrierung"
-                Result.failure(Exception(errorMsg))
+                // BEI FEHLER (400, 401, 500):
+                // KEIN .body<ApiResponse>() aufrufen! Das verursacht den Crash.
+                // Wir lesen den rohen Text.
+                val errorText = response.bodyAsText()
+                Result.failure(Exception("Fehler (${response.status.value}): $errorText"))
             }
+
         } catch (e: Exception) {
             e.printStackTrace()
-            // Netzwerkfehler, Server down etc.
+            // Netzwerkfehler (Kein Internet, Server down)
             Result.failure(e)
         }
     }

@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.presentation.components.ChurchTopBar
@@ -76,6 +77,17 @@ fun RegisterScreen(
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     singleLine = true
+                )
+
+                OutlinedTextField(
+                    value = state.password,
+                    onValueChange = viewModel::onPasswordChange,
+                    label = { Text("비밀번호 / Password *") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    // Versteckt die Zeichen (Punkte statt Text)
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
                 )
 
                 OutlinedTextField(
