@@ -25,7 +25,6 @@ import com.hanmaum.dn.mobile.features.announcement.presentation.components.HeroB
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.LatestNewsSection
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.QuickMenuSection
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.parameter.parametersOf
 
 data class BannerItem(val title: String, val color: Color)
 data class NewsItem(val type: String, val title: String)
@@ -33,14 +32,15 @@ data class NewsItem(val type: String, val title: String)
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
-    token: String,
     onLogout: () -> Unit,
+    // ACHTUNG: Prüf kurz ob deine ID Long oder String ist.
+    // In der DB ist es Long, im App.kt hattest du es als Long genutzt.
+    // Falls deine Models String nutzen, lass String. Falls Long, ändere es hier auf Long.
     onAnnouncementClick: (String) -> Unit,
     onViewAllClick: () -> Unit
 ) {
-    val viewModel: HomeViewModel = koinViewModel(
-        parameters = { parametersOf(token) }
-    )
+    val viewModel: HomeViewModel = koinViewModel()
+
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -63,7 +63,6 @@ fun HomeScreen(
     }
 }
 
-// Private Sub-Composable für den reinen Inhalt (übersichtlicher)
 @Composable
 private fun HomeContent(
     banners: List<Announcement>,

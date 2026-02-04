@@ -11,11 +11,13 @@ import androidx.compose.ui.unit.dp
 // Wichtig: Lifecycle Imports für StateFlow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.features.login.presentation.LoginViewModel
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: (String) -> Unit,
+    onNavigateToHome: () -> Unit,
+    onNavigateToPending: () -> Unit,
     onRegisterClick: () -> Unit
 ) {
     // ViewModel Instanz holen (Überlebt Configuration Changes!)
@@ -28,9 +30,13 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
 
     // In der UI: Wenn Token da ist, rufe den Callback
-    LaunchedEffect(state.token) {
-        if (state.token != null) {
-            onLoginSuccess(state.token!!)
+    LaunchedEffect(state.navigateTo) {
+        state.navigateTo?.let{ route ->
+            when(route) {
+                NavRoute.Home -> onNavigateToHome()
+                NavRoute.PendingApproval -> onNavigateToPending()
+            }
+            viewModel.onNavigationHandled()
         }
     }
 

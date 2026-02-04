@@ -16,19 +16,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementDetailViewModel
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnnouncementDetailScreen(
-    token: String,
     announcementId: String,
     onBackClick: () -> Unit
 ) {
     // Koin Injection mit Parametern
-    val viewModel: AnnouncementDetailViewModel = koinViewModel(
-        parameters = { parametersOf(token, announcementId) }
-    )
+
+    val viewModel: AnnouncementDetailViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(

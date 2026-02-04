@@ -36,7 +36,7 @@ fun ChurchBottomBar() {
             selected = false,
             onClick = { /* TODO */ },
             icon = { Icon(Icons.Default.Mic, contentDescription = "Sermon") },
-            label = { Text("설교") },
+            label = { Text("순소식") },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = Color(0xFF2E7D32),
                 indicatorColor = Color(0xFFE8F5E9),
@@ -49,7 +49,7 @@ fun ChurchBottomBar() {
             selected = false,
             onClick = { /* TODO */ },
             icon = { Icon(Icons.Default.Description, contentDescription = "Bulletin") },
-            label = { Text("주보/소식") },
+            label = { Text("QT") },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = Color(0xFF2E7D32),
                 indicatorColor = Color(0xFFE8F5E9),
