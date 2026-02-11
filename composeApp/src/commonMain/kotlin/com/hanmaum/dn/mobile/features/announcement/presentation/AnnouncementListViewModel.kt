@@ -16,7 +16,6 @@ data class ListUiState(
 )
 
 class AnnouncementListViewModel(
-    private val token: String,
     private val repository: AnnouncementRepository
 ) : ViewModel() {
 
@@ -31,7 +30,7 @@ class AnnouncementListViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
-                val result = repository.getAnnouncements(token)
+                val result = repository.getAnnouncements()
                 // Optional: Nach Datum sortieren
                 val sorted = result.sortedByDescending { it.id }
                 _uiState.update { it.copy(isLoading = false, list = sorted) }

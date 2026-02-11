@@ -14,3 +14,10 @@ class DnChurchApp : Application() {
         }
     }
 }
+
+//        startKoin {
+//            androidLogger()
+//            androidContext(this@MainApplication)
+//            // Hier lädst du deine Module (Shared + Android spezifisch)
+//            modules(appModule)
+//        }

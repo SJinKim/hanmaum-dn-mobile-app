@@ -11,11 +11,19 @@ import com.hanmaum.dn.mobile.features.login.screen.LoginScreen
 fun NavGraphBuilder.loginScreen(navController: NavController) {
     composable<LoginRoute> {
         LoginScreen(
-            onLoginSuccess = { token ->
-                navController.navigate(HomeRoute(token)) {
+            // ACTIVE -> Home
+            onNavigateToHome = {
+                navController.navigate(HomeRoute) {
                     popUpTo(LoginRoute) { inclusive = true }
                 }
             },
+            // PENDING -> Warteraum
+            onNavigateToPending = {
+                navController.navigate(RegisterRoute) {
+                    popUpTo(LoginRoute) { inclusive = true }
+                }
+            },
+            // Noch kein Account
             onRegisterClick = {
                 navController.navigate(RegisterRoute)
             }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.filled.Article
 import androidx.compose.material.icons.filled.CarRental
 import androidx.compose.material.icons.filled.CardTravel
@@ -37,7 +38,7 @@ fun QuickMenuSection() {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             QuickMenuItem(Icons.Default.OndemandVideo, "설교영상")
-            QuickMenuItem(Icons.Default.Article, "주보보기")
+            QuickMenuItem(Icons.AutoMirrored.Filled.Article, "주보보기")
             QuickMenuItem(Icons.Default.Work, "청년사역")
             QuickMenuItem(Icons.Default.PhotoLibrary, "교회앨범")
         }

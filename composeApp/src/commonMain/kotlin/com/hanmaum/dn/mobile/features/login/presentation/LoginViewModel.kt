@@ -2,12 +2,10 @@ package com.hanmaum.dn.mobile.features.login.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
-import com.hanmaum.dn.mobile.core.network.NetworkClient
-import com.hanmaum.dn.mobile.features.login.data.repository.AuthRepositoryImpl
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
-import com.hanmaum.dn.mobile.features.member.data.repository.MemberRepositoryImpl
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,9 +14,9 @@ import kotlinx.coroutines.launch
 
 // Wir instanziieren das Repo hier direkt (später nutzen wir DI wie Koin)
 class LoginViewModel(
-    private val authRepository: AuthRepository = AuthRepositoryImpl(),
-    private val memberRepository: MemberRepository = MemberRepositoryImpl(NetworkClient.client),
-    private val tokenStorage: TokenStorage = NetworkClient.tokenStorage
+    private val authRepository: AuthRepository,
+    private val memberRepository: MemberRepository,
+    private val tokenStorage: TokenStorage
 ) : ViewModel() {
 
     // 1. UI State: Single Source of Truth
@@ -27,13 +25,14 @@ class LoginViewModel(
 
     // 2. Events verarbeiten
     fun onLoginClicked(user: String, pass: String) {
+        if (user.isBlank() || pass.isBlank()) {
+            _uiState.update { it.copy( error = "아이디와 비밀번호를 입력해주세요.") }
+        }
+
         viewModelScope.launch {
             // State Update: Ladebalken an
-            _uiState.value = _uiState.value.copy(
-                isLoading = true,
-                error = null,
-                statusMessage = "인증하는중입니다..."
-            )
+            _uiState.update { it.copy(isLoading = true, error = null, statusMessage = "인증하는 중입니다. 잠시만 기다려주세요.") }
+
 
             try {
                 // UseCase ausführen
@@ -43,14 +42,14 @@ class LoginViewModel(
                 tokenStorage.saveAccessToken(tokenResponse.accessToken)
                 tokenStorage.saveRefreshToken(tokenResponse.refreshToken)
 
-                _uiState.update { it.copy(statusMessage = "로딩중입니다") }
+                _uiState.update { it.copy(statusMessage = "사용자 정보를 확인 중입니다. 잠시만 기다려주세요.") }
 
                 // PROFIL & STATUS CHECK (/me)
                 val profileResult = memberRepository.getMyProfile()
 
                 profileResult.onSuccess { member ->
                     // DECIDE
-                    if (member.status == "ACTIVE") {
+                    if (member.status == MemberStatus.ACTIVE) {
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
@@ -72,8 +71,8 @@ class LoginViewModel(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            error = "Profil-Fehler: ${e.message}",
-                            statusMessage = "로그인 실패!"
+                            error = "사용자 정보를 가져오지 못했습니다. 로그인을 다시 시도해주세요.",
+                            statusMessage = "로그인 실패하였습니다."
                         )
                     }
                 }
@@ -84,7 +83,7 @@ class LoginViewModel(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = "Login fehlgeschlagen. Bitte Daten prüfen.",
+                        error = "로그인에 실패했습니다. 아이디나 비밀번호를 확인해주세요.",
                         statusMessage = ""
                     )
                 }

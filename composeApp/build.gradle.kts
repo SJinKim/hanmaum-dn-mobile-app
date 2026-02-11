@@ -1,5 +1,7 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
+
 
 
 
@@ -9,6 +11,26 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinxSerialization)
+    alias(libs.plugins.buildkonfig)
+}
+
+buildkonfig {
+    packageName = "com.hanmaum.dn.mobile"
+
+    defaultConfigs {
+        buildConfigField(STRING, "BACKEND_URL", "http://10.0.2.2:8080")
+        buildConfigField(STRING, "KEYCLOAK_URL", "http://10.0.2.2:8091")
+    }
+
+    targetConfigs {
+        create("android") {
+            // nutzt defaults
+        }
+        create("ios") {
+            buildConfigField(STRING, "BACKEND_URL", "http://localhost:8080")
+            buildConfigField(STRING, "KEYCLOAK_URL", "http://localhost:8091")
+        }
+    }
 }
 
 kotlin {
@@ -54,6 +76,7 @@ kotlin {
             implementation(libs.ktor.serialization.json)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.ktor.client.auth)
+            implementation(libs.ktor.client.logging)
 
             // Pager + announcement
             implementation(libs.foundation)
@@ -102,4 +125,3 @@ android {
 dependencies {
     debugImplementation(libs.ui.tooling)
 }
-

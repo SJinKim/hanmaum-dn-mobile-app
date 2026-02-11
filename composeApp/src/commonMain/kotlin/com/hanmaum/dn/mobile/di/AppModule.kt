@@ -1,5 +1,8 @@
 package com.hanmaum.dn.mobile.di
 
+import com.hanmaum.dn.mobile.core.data.repository.TokenStorageImpl
+import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
+import com.hanmaum.dn.mobile.core.network.createHttpClient
 import com.hanmaum.dn.mobile.features.announcement.data.repository.AnnouncementRepositoryImpl
 import com.hanmaum.dn.mobile.features.announcement.domain.repository.AnnouncementRepository
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementDetailViewModel
@@ -7,44 +10,45 @@ import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementList
 import com.hanmaum.dn.mobile.features.announcement.presentation.HomeViewModel
 import com.hanmaum.dn.mobile.features.login.data.repository.AuthRepositoryImpl
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
+import com.hanmaum.dn.mobile.features.login.presentation.LoginViewModel
 import com.hanmaum.dn.mobile.features.login.presentation.RegisterViewModel
+import com.hanmaum.dn.mobile.features.member.data.repository.MemberRepositoryImpl
+import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
+import com.hanmaum.dn.mobile.features.pending.presentation.SplashViewModel
 import org.koin.dsl.module
 import org.koin.core.module.dsl.viewModel
 
 val appModule = module {
-    single<AnnouncementRepository> {
-        AnnouncementRepositoryImpl()
-    }
-    single<AuthRepository> {
-        AuthRepositoryImpl()
-    }
+    // Repositories
+    single<AnnouncementRepository> { AnnouncementRepositoryImpl(get()) }
+    single<AuthRepository> { AuthRepositoryImpl(get()) }
+    single<MemberRepository> { MemberRepositoryImpl(get()) }
+
+    single { createHttpClient(get()) } // Client
+    single<TokenStorage> { TokenStorageImpl() } // Storage
+
+    //Splash VM
+    viewModel { SplashViewModel(get(), get()) }
+
 
 
     // Home VM
-    viewModel { (token: String) ->
-        HomeViewModel(
-            token = token,
-            repository = get()
-        )
-    }
+    viewModel { HomeViewModel(repository = get()) }
 
     // Detail VM
-    viewModel { (token: String, announcementId: String) ->
+    viewModel { (announcementId: String) ->
         AnnouncementDetailViewModel(
-            token = token,
             announcementId = announcementId,
             repository = get()
         )
     }
 
     // List VM
-    viewModel { (token: String) ->
-        AnnouncementListViewModel(
-            token = token,
-            repository = get()
-        )
-    }
+    viewModel { AnnouncementListViewModel(get()) }
 
     // Register VM
-    viewModel { RegisterViewModel(authRepository = get()) }
+    viewModel { RegisterViewModel(get(), get()) }
+
+    // Login VM
+    viewModel { LoginViewModel(get(), get(), get()) }
 }

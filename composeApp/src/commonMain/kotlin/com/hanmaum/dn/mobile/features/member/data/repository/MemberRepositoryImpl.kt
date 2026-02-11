@@ -1,7 +1,6 @@
 package com.hanmaum.dn.mobile.features.member.data.repository
 
-import com.hanmaum.dn.mobile.core.domain.model.Member
-import com.hanmaum.dn.mobile.core.util.AppConfig
+import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -14,20 +13,16 @@ class MemberRepositoryImpl(
     private val client: HttpClient
 ) : MemberRepository {
 
-    override suspend fun getMyProfile(): Result<Member> {
+    override suspend fun getMyProfile(): Result<MemberResponse> {
         return try {
-            val url = "${AppConfig.getBackendUrl()}/members/me"
+            val myProfileUrl = "members/me"
 
-            val response = client.get(url) {
+            val response = client.get(myProfileUrl) {
                 contentType(ContentType.Application.Json)
-                // WICHTIG: Der Token wird normalerweise über dein AuthPlugin im HttpClient
-                // automatisch gesetzt, wenn er in den Preferences gespeichert ist.
-                // Falls du KEIN AuthPlugin nutzt, musst du hier den Header manuell setzen:
-                // header("Authorization", "Bearer $gespeicherterToken")
             }
 
             if (response.status == HttpStatusCode.OK) {
-                val member = response.body<Member>()
+                val member = response.body<MemberResponse>()
                 Result.success(member)
             } else {
                 Result.failure(Exception($$"Profil konnte nicht geladen werden (${response.status})"))

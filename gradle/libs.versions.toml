@@ -23,6 +23,7 @@ runtime = "1.10.0"
 serialization = "1.9.0"
 uiToolingPreview = "1.10.0"
 koin = "4.0.0"
+buildkonfig = "0.17.1"
 
 [libraries]
 androidx-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
@@ -46,6 +47,8 @@ koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", ver
 # Koin für Android (optional, aber gut für den Context)
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+
 
 # --- NETWORKING (KTOR) ---
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
@@ -68,6 +71,7 @@ composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMul
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+buildkonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildkonfig" }
 
 [bundles]
 koin-common = ["koin-core", "koin-compose", "koin-compose-viewmodel"]

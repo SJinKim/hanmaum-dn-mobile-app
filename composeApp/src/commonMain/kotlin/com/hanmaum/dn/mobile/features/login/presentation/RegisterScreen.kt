@@ -19,14 +19,15 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun RegisterScreen(
     onBackClick: () -> Unit,
-    onRegistrationSuccess: () -> Unit
+    onNavigateToPending: () -> Unit
 ) {
     val viewModel: RegisterViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(state.isSuccess) {
-        if (state.isSuccess) {
-            onRegistrationSuccess()
+    LaunchedEffect(state.navigateTo) {
+        state.navigateTo?.let { route ->
+            onNavigateToPending()
+            viewModel.onNavigationHandled()
         }
     }
 
@@ -91,6 +92,15 @@ fun RegisterScreen(
                 )
 
                 OutlinedTextField(
+                    value = state.zipCode,
+                    onValueChange = viewModel::onZipChange,
+                    label = { Text("우편번호 / Zip Code *") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true
+                )
+
+                OutlinedTextField(
                     value = state.city,
                     onValueChange = viewModel::onCityChange,
                     label = { Text("도시 / City *") },
@@ -150,15 +160,6 @@ fun RegisterScreen(
                     onValueChange = viewModel::onStreetChange,
                     label = { Text("주소 / Street") },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                OutlinedTextField(
-                    value = state.zipCode,
-                    onValueChange = viewModel::onZipChange,
-                    label = { Text("우편번호 / Zip Code") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true
                 )
 

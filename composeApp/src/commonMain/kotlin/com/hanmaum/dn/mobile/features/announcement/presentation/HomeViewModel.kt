@@ -17,7 +17,6 @@ data class HomeUiState(
     val error: String? = null
 )
 class HomeViewModel(
-    private val token: String,
     private val repository: AnnouncementRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState(isLoading = true))
@@ -32,7 +31,7 @@ class HomeViewModel(
             try {
                 _uiState.update { it.copy(isLoading = true, error = null) }
 
-                val fetchedList = repository.getAnnouncements(token)
+                val fetchedList = repository.getAnnouncements()
 
                 val sortedList = fetchedList.sortedByDescending { it.id }
                 val (banners, announcements) = sortedList.partition { it.isPinned }

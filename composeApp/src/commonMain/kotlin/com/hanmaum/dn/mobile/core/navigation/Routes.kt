@@ -3,6 +3,9 @@ package com.hanmaum.dn.mobile.core.navigation
 import kotlinx.serialization.Serializable
 
 @Serializable
+object SplashRoute
+
+@Serializable
 object LoginRoute
 
 @Serializable

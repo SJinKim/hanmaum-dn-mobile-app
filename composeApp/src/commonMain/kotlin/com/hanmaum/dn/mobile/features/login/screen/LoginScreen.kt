@@ -13,6 +13,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.features.login.presentation.LoginViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun LoginScreen(
@@ -21,7 +22,7 @@ fun LoginScreen(
     onRegisterClick: () -> Unit
 ) {
     // ViewModel Instanz holen (Überlebt Configuration Changes!)
-    val viewModel: LoginViewModel = viewModel { LoginViewModel() }
+    val viewModel: LoginViewModel = koinViewModel()
 
     // UI State beobachten (Lifecycle Aware!)
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -35,6 +36,7 @@ fun LoginScreen(
             when(route) {
                 NavRoute.Home -> onNavigateToHome()
                 NavRoute.PendingApproval -> onNavigateToPending()
+                else -> { println("Navigation zu $route auf LoginScreen ignoriert.") }
             }
             viewModel.onNavigationHandled()
         }
@@ -78,6 +80,12 @@ fun LoginScreen(
             } else {
                 Text("Login")
             }
+        }
+
+        // Fehlermeldung
+        state.error?.let { errorMsg ->
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(errorMsg, color = MaterialTheme.colorScheme.error)
         }
 
         Spacer(modifier = Modifier.height(16.dp))

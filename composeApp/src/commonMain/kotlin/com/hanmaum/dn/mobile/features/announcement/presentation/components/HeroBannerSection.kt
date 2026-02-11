@@ -57,7 +57,7 @@ fun HeroBannerSection(
             BannerCard(
                 item = item,
                 pageOffset = pageOffset,
-                onClick = { onBannerClick(item.id.toString()) }
+                onClick = { onBannerClick(item.id) }
             )
         }
 

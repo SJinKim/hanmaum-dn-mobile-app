@@ -98,7 +98,7 @@ fun HeroBannerSection2(
                         // Transparenz berechnen (optional)
                         alpha = lerp(1f, minAlpha, pageOffset.coerceIn(0f, 1f))
                     }
-                    .clickable { onBannerClick(item.id.toString()) }
+                    .clickable { onBannerClick(item.id) }
             ) {
                 Box(
                     modifier = Modifier

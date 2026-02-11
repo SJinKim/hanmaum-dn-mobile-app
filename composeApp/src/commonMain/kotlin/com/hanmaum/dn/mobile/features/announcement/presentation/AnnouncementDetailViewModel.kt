@@ -16,7 +16,6 @@ data class DetailUiState(
 )
 
 class AnnouncementDetailViewModel(
-    private val token: String,
     private val announcementId: String,
     private val repository: AnnouncementRepository
 ) : ViewModel() {
@@ -32,7 +31,7 @@ class AnnouncementDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
-                val result = repository.getAnnouncementById(token, announcementId)
+                val result = repository.getAnnouncementById(announcementId)
                 if (result != null) {
                     _uiState.update { it.copy(isLoading = false, announcement = result) }
                 } else {

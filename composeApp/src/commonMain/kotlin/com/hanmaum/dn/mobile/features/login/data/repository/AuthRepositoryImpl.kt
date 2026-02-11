@@ -1,11 +1,11 @@
 package com.hanmaum.dn.mobile.features.login.data.repository
 
+import com.hanmaum.dn.mobile.BuildKonfig
 import com.hanmaum.dn.mobile.core.domain.model.ApiResponse
-import com.hanmaum.dn.mobile.core.network.NetworkClient
-import com.hanmaum.dn.mobile.core.util.AppConfig
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterRequest
 import com.hanmaum.dn.mobile.features.login.domain.model.TokenResponse
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
+import io.ktor.client.HttpClient
 import io.ktor.client.call.*
 import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.forms.*
@@ -13,12 +13,12 @@ import io.ktor.client.statement.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 
-class AuthRepositoryImpl : AuthRepository {
-    private val client = NetworkClient.client
+class AuthRepositoryImpl(
+    private val client: HttpClient
+) : AuthRepository {
 
     override suspend fun login(user: String, pass: String): TokenResponse {
-        val keycloakBase = AppConfig.getKeycloakUrl()
-        val keycloakUrl = "$keycloakBase/realms/hanmaum/protocol/openid-connect/token"
+        val keycloakUrl = "${BuildKonfig.KEYCLOAK_URL}/realms/hanmaum/protocol/openid-connect/token"
 
         val response: HttpResponse = client.submitForm(
             url = keycloakUrl,
@@ -39,14 +39,12 @@ class AuthRepositoryImpl : AuthRepository {
     }
 
     override suspend fun register(request: RegisterRequest): Result<Unit> {
+        println("JIN: REGISTER STARTED!!")
         // Passe die URL an deine Umgebung an!
         // Android Emulator: http://10.0.2.2:8080/api/members
         // iOS Simulator / Echtes Gerät: Deine lokale IP (z.B. http://192.168.1.50:8080/api/members)
         return try {
-            val registerUrl = "${AppConfig.getBackendUrl()}/members/register"
-
-
-            val response = client.post(registerUrl) {
+            val response = client.post("members/register") {
                 contentType(ContentType.Application.Json)
                 setBody(request)
                 // WICHTIG: Verhindert, dass Ktor bei 4xx automatisch eine Exception wirft.
