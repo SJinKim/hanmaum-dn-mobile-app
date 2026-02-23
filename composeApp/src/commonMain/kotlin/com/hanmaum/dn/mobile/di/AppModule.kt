@@ -14,6 +14,7 @@ import com.hanmaum.dn.mobile.features.login.presentation.LoginViewModel
 import com.hanmaum.dn.mobile.features.login.presentation.RegisterViewModel
 import com.hanmaum.dn.mobile.features.member.data.repository.MemberRepositoryImpl
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
+import com.hanmaum.dn.mobile.features.pending.presentation.PendingViewModel
 import com.hanmaum.dn.mobile.features.pending.presentation.SplashViewModel
 import org.koin.dsl.module
 import org.koin.core.module.dsl.viewModel
@@ -23,13 +24,11 @@ val appModule = module {
     single<AnnouncementRepository> { AnnouncementRepositoryImpl(get()) }
     single<AuthRepository> { AuthRepositoryImpl(get()) }
     single<MemberRepository> { MemberRepositoryImpl(get()) }
-
     single { createHttpClient(get()) } // Client
     single<TokenStorage> { TokenStorageImpl() } // Storage
 
     //Splash VM
     viewModel { SplashViewModel(get(), get()) }
-
 
 
     // Home VM
@@ -42,6 +41,9 @@ val appModule = module {
             repository = get()
         )
     }
+
+    // Pending VM
+    viewModel { PendingViewModel(get(), get()) }
 
     // List VM
     viewModel { AnnouncementListViewModel(get()) }

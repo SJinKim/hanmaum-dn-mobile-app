@@ -1,3 +1,5 @@
+package com.hanmaum.dn.mobile.features.announcement.presentation
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -14,8 +16,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
-import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementDetailViewModel
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,7 +27,9 @@ fun AnnouncementDetailScreen(
 ) {
     // Koin Injection mit Parametern
 
-    val viewModel: AnnouncementDetailViewModel = koinViewModel()
+    val viewModel: AnnouncementDetailViewModel = koinViewModel(
+        parameters = { parametersOf(announcementId) }
+    )
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(

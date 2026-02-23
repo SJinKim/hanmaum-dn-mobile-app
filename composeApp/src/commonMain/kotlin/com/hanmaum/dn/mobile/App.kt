@@ -1,6 +1,6 @@
 package com.hanmaum.dn.mobile
 
-import AnnouncementDetailScreen
+import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementDetailScreen
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.navigation.compose.NavHost
