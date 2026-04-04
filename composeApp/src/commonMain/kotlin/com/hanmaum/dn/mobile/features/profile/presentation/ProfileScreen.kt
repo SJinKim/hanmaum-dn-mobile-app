@@ -12,6 +12,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
 import org.koin.compose.viewmodel.koinViewModel
@@ -78,7 +80,7 @@ private fun ProfileViewContent(
     ) {
         Icon(
             imageVector = Icons.Default.AccountCircle,
-            contentDescription = null,
+            contentDescription = "프로필 아이콘",
             modifier = Modifier.size(96.dp),
             tint = MaterialTheme.colorScheme.primary,
         )
@@ -101,7 +103,7 @@ private fun ProfileViewContent(
             onClick = onEditClick,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Icon(Icons.Default.Edit, contentDescription = null)
+            Icon(Icons.Default.Edit, contentDescription = "프로필 수정")
             Spacer(Modifier.width(8.dp))
             Text("수정하기")
         }
@@ -163,7 +165,7 @@ private fun ProfileEditContent(
                 modifier = Modifier.weight(1f),
                 enabled = !state.isSaving,
             ) {
-                if (state.isSaving) CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                if (state.isSaving) CircularProgressIndicator(modifier = Modifier.size(18.dp).semantics { contentDescription = "저장 중" }, strokeWidth = 2.dp)
                 else Text("저장")
             }
         }
