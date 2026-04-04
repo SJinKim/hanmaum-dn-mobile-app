@@ -3,19 +3,33 @@ package com.hanmaum.dn.mobile.core.network
 import com.hanmaum.dn.mobile.BuildKonfig
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import io.ktor.client.*
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.serialization.kotlinx.json.json
-import kotlinx.serialization.json.Json
+import io.ktor.client.call.body
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
-import io.ktor.http.encodedPath
-import io.ktor.http.path
-import io.ktor.http.takeFrom
 import io.ktor.client.plugins.logging.*
+import io.ktor.client.request.forms.submitForm
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
+@Serializable
+private data class RefreshTokenResponse(
+    @SerialName("access_token") val accessToken: String,
+    @SerialName("refresh_token") val refreshToken: String? = null,
+)
 
 fun createHttpClient(tokenStorage: TokenStorage): HttpClient {
+    // Separate plain client for token refresh — no auth interceptor (avoids circular calls)
+    val refreshClient = HttpClient {
+        install(ContentNegotiation) {
+            json(Json { ignoreUnknownKeys = true; isLenient = true })
+        }
+    }
+
     return HttpClient {
         install(ContentNegotiation) {
             json(Json {
@@ -31,17 +45,9 @@ fun createHttpClient(tokenStorage: TokenStorage): HttpClient {
 
         defaultRequest {
             if (url.host.isBlank()) {
-                // 1. Sichere den relativen Pfad, den das Repo gesendet hat (z.B. "members/register")
                 val originalPath = url.encodedPath.removePrefix("/")
-
-                // 2. Setze die Basis-URL (http://10.0.2.2:8080)
                 url.takeFrom(BuildKonfig.BACKEND_URL)
-
-                // 3. Baue den Pfad manuell als String zusammen. Das ist in KMP am sichersten!
-                // Ergebnis: /api/v1/members/register
                 url.encodedPath = "/api/v1/" + originalPath
-
-                println("JIN: Finaler Request URL: ${url.buildString()}")
             }
         }
 
@@ -50,21 +56,40 @@ fun createHttpClient(tokenStorage: TokenStorage): HttpClient {
                 loadTokens {
                     val access = tokenStorage.getAccessToken()
                     val refresh = tokenStorage.getRefreshToken()
-                    if(access != null && refresh != null) {
-                        BearerTokens(access, refresh)
-                    } else null
-                    // TODO: refreshToken Logik
+                    if (access != null && refresh != null) BearerTokens(access, refresh)
+                    else null
                 }
+
+                refreshTokens {
+                    val refreshToken = tokenStorage.getRefreshToken()
+                        ?: return@refreshTokens null
+                    try {
+                        val response = refreshClient.submitForm(
+                            url = "${BuildKonfig.KEYCLOAK_URL}/realms/hanmaum/protocol/openid-connect/token",
+                            formParameters = parameters {
+                                append("client_id", "hanmaum-mobile")
+                                append("grant_type", "refresh_token")
+                                append("refresh_token", refreshToken)
+                            }
+                        )
+                        if (response.status == HttpStatusCode.OK) {
+                            val tokens = response.body<RefreshTokenResponse>()
+                            tokenStorage.saveAccessToken(tokens.accessToken)
+                            tokens.refreshToken?.let { tokenStorage.saveRefreshToken(it) }
+                            BearerTokens(tokens.accessToken, tokens.refreshToken ?: refreshToken)
+                        } else {
+                            tokenStorage.clear()
+                            null
+                        }
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+
                 sendWithoutRequest { request ->
                     val path = request.url.encodedPath
-
-                    // Wir prüfen einfach, ob das Wort "register" oder "openid-connect" im Pfad vorkommt.
-                    // Das ist viel robuster als ein exakter Vergleich!
                     val shouldSkipAuth = path.contains("register") || path.contains("openid-connect")
-
-                    println("JIN: Auth-Check für $path -> Skip Auth: $shouldSkipAuth")
                     shouldSkipAuth
-
                 }
             }
         }
