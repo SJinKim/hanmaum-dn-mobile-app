@@ -16,6 +16,8 @@ import com.hanmaum.dn.mobile.features.login.presentation.RegisterScreen
 import com.hanmaum.dn.mobile.features.pending.screen.PendingScreen
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementListScreen
 import com.hanmaum.dn.mobile.features.pending.screen.SplashScreen
+import com.hanmaum.dn.mobile.core.navigation.ProfileRoute
+import com.hanmaum.dn.mobile.features.profile.presentation.ProfileScreen
 import org.koin.compose.KoinContext
 
 @Composable
@@ -110,7 +112,10 @@ fun App() {
                         },
                         onViewAllClick = {
                             navController.navigate(AnnouncementListRoute)
-                        }
+                        },
+                        onProfileClick = {
+                            navController.navigate(ProfileRoute)
+                        },
                     )
                 }
 
@@ -132,6 +137,11 @@ fun App() {
                             navController.navigate(AnnouncementDetailRoute(id = announcementId))
                         }
                     )
+                }
+
+                // 7. PROFILE SCREEN
+                composable<ProfileRoute> {
+                    ProfileScreen()
                 }
             }
         }

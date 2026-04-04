@@ -16,6 +16,7 @@ import com.hanmaum.dn.mobile.features.member.data.repository.MemberRepositoryImp
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import com.hanmaum.dn.mobile.features.pending.presentation.PendingViewModel
 import com.hanmaum.dn.mobile.features.pending.presentation.SplashViewModel
+import com.hanmaum.dn.mobile.features.profile.presentation.ProfileViewModel
 import org.koin.dsl.module
 import org.koin.core.module.dsl.viewModel
 
@@ -53,4 +54,7 @@ val appModule = module {
 
     // Login VM
     viewModel { LoginViewModel(get(), get(), get()) }
+
+    // Profile VM
+    viewModel { ProfileViewModel(get()) }
 }

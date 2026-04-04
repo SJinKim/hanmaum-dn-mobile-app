@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hanmaum.dn.mobile.core.presentation.components.BottomTab
 import com.hanmaum.dn.mobile.core.presentation.components.ChurchBottomBar
 import com.hanmaum.dn.mobile.core.presentation.components.ChurchTopBar
 import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
@@ -37,7 +38,8 @@ fun HomeScreen(
     // In der DB ist es Long, im App.kt hattest du es als Long genutzt.
     // Falls deine Models String nutzen, lass String. Falls Long, ändere es hier auf Long.
     onAnnouncementClick: (String) -> Unit,
-    onViewAllClick: () -> Unit
+    onViewAllClick: () -> Unit,
+    onProfileClick: () -> Unit,
 ) {
     val viewModel: HomeViewModel = koinViewModel()
 
@@ -45,7 +47,17 @@ fun HomeScreen(
 
     Scaffold(
         topBar = { ChurchTopBar(title = "D+N App", onBackClick = null) },
-        bottomBar = { ChurchBottomBar() }
+        bottomBar = {
+            ChurchBottomBar(
+                selectedTab = BottomTab.HOME,
+                onTabSelected = { tab ->
+                    when (tab) {
+                        BottomTab.PROFILE -> onProfileClick()
+                        else -> { /* other tabs not implemented yet */ }
+                    }
+                },
+            )
+        }
     ) { paddingValues ->
 
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {

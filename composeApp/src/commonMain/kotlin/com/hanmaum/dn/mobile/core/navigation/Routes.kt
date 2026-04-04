@@ -22,3 +22,6 @@ object AnnouncementListRoute
 
 @Serializable
 data class AnnouncementDetailRoute(val id: String)
+
+@Serializable
+object ProfileRoute
