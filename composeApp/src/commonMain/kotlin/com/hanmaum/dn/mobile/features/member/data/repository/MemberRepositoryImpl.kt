@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.member.data.repository
 
+import com.hanmaum.dn.mobile.core.domain.model.ApiResponse
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import io.ktor.client.HttpClient
@@ -15,17 +16,16 @@ class MemberRepositoryImpl(
 
     override suspend fun getMyProfile(): Result<MemberResponse> {
         return try {
-            val myProfileUrl = "members/me"
-
-            val response = client.get(myProfileUrl) {
+            val response = client.get("members/me") {
                 contentType(ContentType.Application.Json)
             }
-
             if (response.status == HttpStatusCode.OK) {
-                val member = response.body<MemberResponse>()
+                val apiResponse = response.body<ApiResponse<MemberResponse>>()
+                val member = apiResponse.data
+                    ?: return Result.failure(Exception("Profile data is null"))
                 Result.success(member)
             } else {
-                Result.failure(Exception($$"Profil konnte nicht geladen werden (${response.status})"))
+                Result.failure(Exception("Profile load failed (${response.status})"))
             }
         } catch (e: Exception) {
             e.printStackTrace()

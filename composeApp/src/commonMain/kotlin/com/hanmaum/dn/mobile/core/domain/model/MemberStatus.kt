@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 enum class MemberStatus {
     ACTIVE,
+    INACTIVE,
     PENDING,
-    REJECTED,
-    DELETED
+    DELETED,
 }
