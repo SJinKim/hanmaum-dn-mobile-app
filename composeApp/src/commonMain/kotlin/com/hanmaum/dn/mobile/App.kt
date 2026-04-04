@@ -141,7 +141,9 @@ fun App() {
 
                 // 7. PROFILE SCREEN
                 composable<ProfileRoute> {
-                    ProfileScreen()
+                    ProfileScreen(
+                        onBackClick = { navController.popBackStack() }
+                    )
                 }
             }
         }
