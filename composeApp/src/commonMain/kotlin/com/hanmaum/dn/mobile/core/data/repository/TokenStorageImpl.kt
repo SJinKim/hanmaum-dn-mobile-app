@@ -1,27 +1,31 @@
 package com.hanmaum.dn.mobile.core.data.repository
 
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
-import io.ktor.client.HttpClient
+import com.russhwolf.settings.Settings
 
-// TODO: Simpelste Version (Hält nur solange App offen ist) - Später durch echte Datenbank/Preferences ersetzen!
-class TokenStorageImpl: TokenStorage {
-    private var accessToken: String? = null
-    private var refreshToken: String? = null
+class TokenStorageImpl : TokenStorage {
+    private val settings = Settings()
 
     override fun saveAccessToken(token: String) {
-        accessToken = token
+        settings.putString(KEY_ACCESS, token)
     }
 
-    override fun getAccessToken(): String? = accessToken
+    override fun getAccessToken(): String? = settings.getStringOrNull(KEY_ACCESS)
 
     override fun saveRefreshToken(token: String?) {
-        refreshToken = token
+        if (token != null) settings.putString(KEY_REFRESH, token)
+        else settings.remove(KEY_REFRESH)
     }
 
-    override fun getRefreshToken(): String? = refreshToken
+    override fun getRefreshToken(): String? = settings.getStringOrNull(KEY_REFRESH)
 
     override fun clear() {
-        accessToken = null
-        refreshToken = null
+        settings.remove(KEY_ACCESS)
+        settings.remove(KEY_REFRESH)
+    }
+
+    companion object {
+        private const val KEY_ACCESS = "access_token"
+        private const val KEY_REFRESH = "refresh_token"
     }
 }

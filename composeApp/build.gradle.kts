@@ -83,6 +83,7 @@ kotlin {
             implementation(libs.material.icons.extended) // Für Glocke, User, etc.
 
             implementation(libs.bundles.koin.common)
+            implementation(libs.multiplatform.settings)
 
         }
         iosMain.dependencies {
