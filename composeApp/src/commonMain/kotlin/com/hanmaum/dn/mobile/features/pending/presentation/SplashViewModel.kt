@@ -43,6 +43,7 @@ class SplashViewModel(
                     }
                 .onFailure { error ->
                     println("Auto-Login fehlgeschlagen: ${error.message}")
+                    handleAuthError()
                 }
         }
     }

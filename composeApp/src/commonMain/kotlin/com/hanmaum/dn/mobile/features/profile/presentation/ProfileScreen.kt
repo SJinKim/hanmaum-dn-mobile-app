@@ -7,8 +7,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -23,9 +25,15 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun ProfileScreen(
     onBackClick: () -> Unit,
+    onLogout: () -> Unit,
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val loggedOut by viewModel.loggedOut.collectAsState()
+
+    LaunchedEffect(loggedOut) {
+        if (loggedOut) onLogout()
+    }
 
     Scaffold(
         topBar = {
@@ -67,6 +75,7 @@ fun ProfileScreen(
                         ProfileViewContent(
                             profile = state.profile,
                             onEditClick = { viewModel.startEditing() },
+                            onLogoutClick = { viewModel.logout() },
                         )
                     }
                 }
@@ -79,6 +88,7 @@ fun ProfileScreen(
 private fun ProfileViewContent(
     profile: MemberResponse,
     onEditClick: () -> Unit,
+    onLogoutClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -115,6 +125,18 @@ private fun ProfileViewContent(
             Icon(Icons.Default.Edit, contentDescription = "프로필 수정")
             Spacer(Modifier.width(8.dp))
             Text("수정하기")
+        }
+        Spacer(Modifier.height(8.dp))
+        OutlinedButton(
+            onClick = onLogoutClick,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = MaterialTheme.colorScheme.error,
+            ),
+        ) {
+            Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "로그아웃")
+            Spacer(Modifier.width(8.dp))
+            Text("로그아웃")
         }
     }
 }

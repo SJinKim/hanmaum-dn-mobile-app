@@ -56,5 +56,5 @@ val appModule = module {
     viewModel { LoginViewModel(get(), get(), get()) }
 
     // Profile VM
-    viewModel { ProfileViewModel(get()) }
+    viewModel { ProfileViewModel(get(), get()) }
 }

@@ -2,6 +2,7 @@ package com.hanmaum.dn.mobile.features.profile.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -10,7 +11,11 @@ import kotlinx.coroutines.launch
 
 class ProfileViewModel(
     private val memberRepository: MemberRepository,
+    private val tokenStorage: TokenStorage,
 ) : ViewModel() {
+
+    private val _loggedOut = MutableStateFlow(false)
+    val loggedOut: StateFlow<Boolean> = _loggedOut.asStateFlow()
 
     private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
@@ -52,6 +57,13 @@ class ProfileViewModel(
     fun updateImageUrl(value: String) {
         val current = _uiState.value as? ProfileUiState.Success ?: return
         _uiState.value = current.copy(editImageUrl = value)
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            tokenStorage.clear()
+            _loggedOut.value = true
+        }
     }
 
     fun saveProfile() {

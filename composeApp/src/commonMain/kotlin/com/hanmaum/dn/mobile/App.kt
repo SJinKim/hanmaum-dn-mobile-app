@@ -142,7 +142,12 @@ fun App() {
                 // 7. PROFILE SCREEN
                 composable<ProfileRoute> {
                     ProfileScreen(
-                        onBackClick = { navController.popBackStack() }
+                        onBackClick = { navController.popBackStack() },
+                        onLogout = {
+                            navController.navigate(LoginRoute) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        },
                     )
                 }
             }
