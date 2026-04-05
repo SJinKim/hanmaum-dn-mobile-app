@@ -57,7 +57,7 @@ fun MinistryListScreen(
                             contentPadding = PaddingValues(16.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
-                            items(s.ministries) { ministry ->
+                            items(s.ministries, key = { it.publicId }) { ministry ->
                                 MinistryCard(ministry = ministry, onClick = { onMinistryClick(ministry.publicId) })
                             }
                         }

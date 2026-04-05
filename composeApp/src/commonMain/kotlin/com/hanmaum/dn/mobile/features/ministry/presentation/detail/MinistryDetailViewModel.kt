@@ -7,6 +7,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class MinistryDetailViewModel(
@@ -68,17 +69,21 @@ class MinistryDetailViewModel(
                 note = current.noteInput.ifBlank { null },
             ).fold(
                 onSuccess = { reg ->
-                    _uiState.value = current.copy(
-                        registration = reg,
-                        showSheet = false,
-                        isRegistering = false,
-                    )
+                    _uiState.update { s ->
+                        (s as? MinistryDetailUiState.Success)?.copy(
+                            registration = reg,
+                            showSheet = false,
+                            isRegistering = false,
+                        ) ?: s
+                    }
                 },
                 onFailure = { err ->
-                    _uiState.value = current.copy(
-                        isRegistering = false,
-                        registerError = err.message ?: "신청 실패",
-                    )
+                    _uiState.update { s ->
+                        (s as? MinistryDetailUiState.Success)?.copy(
+                            isRegistering = false,
+                            registerError = err.message ?: "신청 실패",
+                        ) ?: s
+                    }
                 },
             )
         }
