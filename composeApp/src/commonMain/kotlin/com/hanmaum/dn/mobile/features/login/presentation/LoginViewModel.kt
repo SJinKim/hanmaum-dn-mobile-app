@@ -68,6 +68,7 @@ class LoginViewModel(
                         }
                     }
                 }.onFailure { e ->
+                    tokenStorage.clear()
                     _uiState.update {
                         it.copy(
                             isLoading = false,
