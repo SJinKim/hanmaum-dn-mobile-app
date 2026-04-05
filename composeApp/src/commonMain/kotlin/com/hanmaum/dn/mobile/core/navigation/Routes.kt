@@ -25,3 +25,9 @@ data class AnnouncementDetailRoute(val id: String)
 
 @Serializable
 object ProfileRoute
+
+@Serializable
+object MinistryListRoute
+
+@Serializable
+data class MinistryDetailRoute(val publicId: String)

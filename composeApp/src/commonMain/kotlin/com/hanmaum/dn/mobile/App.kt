@@ -18,6 +18,10 @@ import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementList
 import com.hanmaum.dn.mobile.features.pending.screen.SplashScreen
 import com.hanmaum.dn.mobile.core.navigation.ProfileRoute
 import com.hanmaum.dn.mobile.features.profile.presentation.ProfileScreen
+import com.hanmaum.dn.mobile.core.navigation.MinistryDetailRoute
+import com.hanmaum.dn.mobile.core.navigation.MinistryListRoute
+import com.hanmaum.dn.mobile.features.ministry.presentation.detail.MinistryDetailScreen
+import com.hanmaum.dn.mobile.features.ministry.presentation.list.MinistryListScreen
 import org.koin.compose.KoinContext
 
 @Composable
@@ -116,6 +120,9 @@ fun App() {
                         onProfileClick = {
                             navController.navigate(ProfileRoute)
                         },
+                        onMinistryClick = {
+                            navController.navigate(MinistryListRoute)
+                        },
                     )
                 }
 
@@ -148,6 +155,25 @@ fun App() {
                                 popUpTo(0) { inclusive = true }
                             }
                         },
+                    )
+                }
+
+                // 8. MINISTRY LIST
+                composable<MinistryListRoute> {
+                    MinistryListScreen(
+                        onBackClick = { navController.popBackStack() },
+                        onMinistryClick = { publicId ->
+                            navController.navigate(MinistryDetailRoute(publicId = publicId))
+                        },
+                    )
+                }
+
+                // 9. MINISTRY DETAIL
+                composable<MinistryDetailRoute> { backStackEntry ->
+                    val route: MinistryDetailRoute = backStackEntry.toRoute()
+                    MinistryDetailScreen(
+                        publicId = route.publicId,
+                        onBackClick = { navController.popBackStack() },
                     )
                 }
             }
