@@ -84,6 +84,7 @@ kotlin {
 
             implementation(libs.bundles.koin.common)
             implementation(libs.multiplatform.settings)
+            implementation(libs.kotlinx.datetime)
 
         }
         iosMain.dependencies {
