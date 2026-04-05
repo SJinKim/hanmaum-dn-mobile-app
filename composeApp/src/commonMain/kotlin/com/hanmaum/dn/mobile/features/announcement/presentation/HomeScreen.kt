@@ -40,6 +40,7 @@ fun HomeScreen(
     onAnnouncementClick: (String) -> Unit,
     onViewAllClick: () -> Unit,
     onProfileClick: () -> Unit,
+    onMinistryClick: () -> Unit,
 ) {
     val viewModel: HomeViewModel = koinViewModel()
 
@@ -68,7 +69,8 @@ fun HomeScreen(
                     banners = state.banners,
                     news = state.announcements,
                     onAnnouncementClick = onAnnouncementClick,
-                    onViewAllClick = onViewAllClick
+                    onViewAllClick = onViewAllClick,
+                    onMinistryClick = onMinistryClick,
                 )
             }
         }
@@ -80,7 +82,8 @@ private fun HomeContent(
     banners: List<Announcement>,
     news: List<Announcement>,
     onAnnouncementClick: (String) -> Unit,
-    onViewAllClick: () -> Unit
+    onViewAllClick: () -> Unit,
+    onMinistryClick: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Spacer(modifier = Modifier.height(16.dp))
@@ -88,7 +91,7 @@ private fun HomeContent(
         HeroBannerSection(banners = banners, onBannerClick = onAnnouncementClick)
 
         Spacer(modifier = Modifier.height(24.dp))
-        QuickMenuSection()
+        QuickMenuSection(onMinistryClick = onMinistryClick)
         Spacer(modifier = Modifier.height(24.dp))
 
         LatestNewsSection(
