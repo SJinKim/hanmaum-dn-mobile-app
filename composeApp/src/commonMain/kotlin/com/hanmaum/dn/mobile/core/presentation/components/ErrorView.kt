@@ -34,7 +34,7 @@ fun ErrorView(
 
         // Fehlermeldung
         Text(
-            text = "Ein Fehler ist aufgetreten",
+            text = "오류가 발생했습니다",
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
@@ -59,7 +59,7 @@ fun ErrorView(
                 containerColor = MaterialTheme.colorScheme.error,
             ),
         ) {
-            Text("Erneut versuchen", style = MaterialTheme.typography.labelLarge)
+            Text("다시 시도", style = MaterialTheme.typography.labelLarge)
         }
     }
 }
