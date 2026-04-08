@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -89,7 +88,7 @@ private fun MinistryDetailContent(
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
-        HorizontalDivider()
+        Spacer(modifier = Modifier.height(4.dp))
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = state.detail.longDescription ?: state.detail.shortDescription,
@@ -110,30 +109,40 @@ private fun RegistrationButton(
 ) {
     when (status) {
         RegistrationStatus.NONE -> {
-            Button(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
-                Text("신청하기")
+            Button(
+                onClick  = onClick,
+                modifier = Modifier.fillMaxWidth().height(54.dp),
+                shape    = MaterialTheme.shapes.extraSmall,
+                colors   = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor   = MaterialTheme.colorScheme.onPrimary,
+                ),
+            ) {
+                Text("신청하기", style = MaterialTheme.typography.labelLarge)
             }
         }
         RegistrationStatus.PENDING -> {
             Button(
-                onClick = {},
-                enabled = false,
-                modifier = Modifier.fillMaxWidth(),
+                onClick  = {},
+                enabled  = false,
+                modifier = Modifier.fillMaxWidth().height(54.dp),
+                shape    = MaterialTheme.shapes.extraSmall,
             ) {
-                Text("신청되었습니다")
+                Text("신청되었습니다", style = MaterialTheme.typography.labelLarge)
             }
         }
         RegistrationStatus.APPROVED -> {
             Button(
-                onClick = {},
-                enabled = false,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    disabledContainerColor = Color(0xFF4CAF50),
-                    disabledContentColor = Color.White,
+                onClick  = {},
+                enabled  = false,
+                modifier = Modifier.fillMaxWidth().height(54.dp),
+                shape    = MaterialTheme.shapes.extraSmall,
+                colors   = ButtonDefaults.buttonColors(
+                    disabledContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    disabledContentColor   = MaterialTheme.colorScheme.onTertiaryContainer,
                 ),
             ) {
-                Text("멤버입니다 ✓")
+                Text("멤버입니다 ✓", style = MaterialTheme.typography.labelLarge)
             }
         }
     }
@@ -174,9 +183,10 @@ private fun RegistrationBottomSheet(
             }
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = onConfirm,
+                onClick  = onConfirm,
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isLoading,
+                enabled  = !isLoading,
+                shape    = MaterialTheme.shapes.extraSmall,
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
