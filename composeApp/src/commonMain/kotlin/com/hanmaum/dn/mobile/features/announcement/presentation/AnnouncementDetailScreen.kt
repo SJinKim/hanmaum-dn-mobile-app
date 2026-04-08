@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -63,15 +62,14 @@ fun AnnouncementDetailScreen(
                     ) {
                         // Kategorie Tag
                         Surface(
-                            color = Color(item.getAnnouncementCategoryColor()).copy(alpha = 0.1f),
-                            shape = MaterialTheme.shapes.small
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f),
+                            shape = MaterialTheme.shapes.extraSmall,
                         ) {
                             Text(
-                                text = item.getAnnouncementCategoryName(),
-                                color = Color(item.getAnnouncementCategoryColor()),
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 12.sp
+                                text     = item.getAnnouncementCategoryName(),
+                                color    = MaterialTheme.colorScheme.primary,
+                                style    = MaterialTheme.typography.labelMedium,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                             )
                         }
 
@@ -87,12 +85,12 @@ fun AnnouncementDetailScreen(
 
                         // Datum
                         Text(
-                            text = item.startAt, // Ggf. formatieren
-                            color = Color.Gray,
-                            style = MaterialTheme.typography.bodySmall
+                            text  = item.startAt,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodySmall,
                         )
 
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
 
                         // Body (Inhalt)
                         Text(
