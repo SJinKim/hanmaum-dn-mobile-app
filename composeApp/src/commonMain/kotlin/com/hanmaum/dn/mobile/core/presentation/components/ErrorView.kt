@@ -54,11 +54,12 @@ fun ErrorView(
         // Retry Button
         Button(
             onClick = onRetry,
+            shape  = MaterialTheme.shapes.extraSmall,
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.error
-            )
+                containerColor = MaterialTheme.colorScheme.error,
+            ),
         ) {
-            Text("Erneut versuchen")
+            Text("Erneut versuchen", style = MaterialTheme.typography.labelLarge)
         }
     }
 }
