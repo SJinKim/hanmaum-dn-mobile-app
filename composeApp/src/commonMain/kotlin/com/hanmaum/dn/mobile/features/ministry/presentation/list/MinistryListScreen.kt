@@ -1,6 +1,5 @@
 package com.hanmaum.dn.mobile.features.ministry.presentation.list
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -30,6 +28,7 @@ fun MinistryListScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = { Text("부서") },
@@ -74,38 +73,53 @@ private fun MinistryCard(
     onClick: () -> Unit,
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        onClick   = onClick,
+        modifier  = Modifier.fillMaxWidth(),
+        shape     = MaterialTheme.shapes.medium,
+        colors    = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier              = Modifier.padding(20.dp),
+            verticalAlignment     = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Icon(
-                imageVector = Icons.Default.Group,
-                contentDescription = null,
-                modifier = Modifier.size(40.dp),
-                tint = MaterialTheme.colorScheme.primary,
-            )
-            Column(modifier = Modifier.weight(1f)) {
+            Surface(
+                shape    = MaterialTheme.shapes.small,
+                color    = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f),
+                modifier = Modifier.size(48.dp),
+            ) {
+                Icon(
+                    imageVector        = Icons.Default.Group,
+                    contentDescription = null,
+                    modifier           = Modifier.padding(10.dp),
+                    tint               = MaterialTheme.colorScheme.primary,
+                )
+            }
+            Column(
+                modifier              = Modifier.weight(1f),
+                verticalArrangement   = Arrangement.spacedBy(4.dp),
+            ) {
                 Text(
-                    text = ministry.name,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    text     = ministry.name,
+                    style    = MaterialTheme.typography.titleMedium,
+                    color    = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 ministry.leaderName?.let {
                     Text(
-                        text = "리더: $it",
+                        text  = "리더: $it",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.outline,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = ministry.shortDescription,
-                    style = MaterialTheme.typography.bodyMedium,
+                    text     = ministry.shortDescription,
+                    style    = MaterialTheme.typography.bodyMedium,
+                    color    = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
