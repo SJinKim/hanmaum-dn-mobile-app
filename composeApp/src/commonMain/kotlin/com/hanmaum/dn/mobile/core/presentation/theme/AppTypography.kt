@@ -2,6 +2,7 @@ package com.hanmaum.dn.mobile.core.presentation.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -28,7 +29,7 @@ fun rememberPlusJakartaSans(): FontFamily = FontFamily(
 @Composable
 fun rememberAppTypography(): Typography {
     val ff = rememberPlusJakartaSans()
-    return Typography(
+    return remember(ff) { Typography(
         // Display: "Inspirational Statements" — tight letter-spacing (-0.02em)
         displayLarge = TextStyle(
             fontFamily = ff, fontWeight = FontWeight.ExtraBold,
@@ -94,5 +95,5 @@ fun rememberAppTypography(): Typography {
             fontFamily = ff, fontWeight = FontWeight.Medium,
             fontSize = 11.sp, lineHeight = 16.sp, letterSpacing = 0.5.sp,
         ),
-    )
+    ) }
 }
