@@ -1,8 +1,8 @@
 package com.hanmaum.dn.mobile
 
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementDetailScreen
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import com.hanmaum.dn.mobile.core.presentation.theme.AppTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -27,7 +27,7 @@ import org.koin.compose.KoinContext
 @Composable
 fun App() {
     KoinContext {
-        MaterialTheme {
+        AppTheme {
             val navController = rememberNavController()
 
             NavHost(
