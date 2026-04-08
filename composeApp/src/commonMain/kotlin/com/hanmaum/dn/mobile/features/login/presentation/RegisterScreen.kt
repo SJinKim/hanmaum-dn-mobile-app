@@ -5,9 +5,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -52,7 +52,7 @@ fun RegisterScreen(
                     )
                 }
 
-                Text("Pflichtfelder sind mit * markiert", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                Text("Pflichtfelder sind mit * markiert", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
                 // --- PFLICHTFELDER ---
                 OutlinedTextField(
@@ -60,7 +60,14 @@ fun RegisterScreen(
                     onValueChange = viewModel::onLastNameChange,
                     label = { Text("성 / LastName *") },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    shape  = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor      = MaterialTheme.colorScheme.secondary,
+                        unfocusedBorderColor    = MaterialTheme.colorScheme.outlineVariant,
+                        focusedContainerColor   = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    ),
                 )
 
                 OutlinedTextField(
@@ -68,7 +75,14 @@ fun RegisterScreen(
                     onValueChange = viewModel::onFirstNameChange,
                     label = { Text("이름 / FirstName *") },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    shape  = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor      = MaterialTheme.colorScheme.secondary,
+                        unfocusedBorderColor    = MaterialTheme.colorScheme.outlineVariant,
+                        focusedContainerColor   = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    ),
                 )
 
                 OutlinedTextField(
@@ -77,7 +91,14 @@ fun RegisterScreen(
                     label = { Text("이메일 / Email *") },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    singleLine = true
+                    singleLine = true,
+                    shape  = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor      = MaterialTheme.colorScheme.secondary,
+                        unfocusedBorderColor    = MaterialTheme.colorScheme.outlineVariant,
+                        focusedContainerColor   = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    ),
                 )
 
                 OutlinedTextField(
@@ -88,7 +109,14 @@ fun RegisterScreen(
                     singleLine = true,
                     // Versteckt die Zeichen (Punkte statt Text)
                     visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    shape  = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor      = MaterialTheme.colorScheme.secondary,
+                        unfocusedBorderColor    = MaterialTheme.colorScheme.outlineVariant,
+                        focusedContainerColor   = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    ),
                 )
 
                 OutlinedTextField(
@@ -97,7 +125,14 @@ fun RegisterScreen(
                     label = { Text("우편번호 / Zip Code *") },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true
+                    singleLine = true,
+                    shape  = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor      = MaterialTheme.colorScheme.secondary,
+                        unfocusedBorderColor    = MaterialTheme.colorScheme.outlineVariant,
+                        focusedContainerColor   = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    ),
                 )
 
                 OutlinedTextField(
@@ -105,11 +140,19 @@ fun RegisterScreen(
                     onValueChange = viewModel::onCityChange,
                     label = { Text("도시 / City *") },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    shape  = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor      = MaterialTheme.colorScheme.secondary,
+                        unfocusedBorderColor    = MaterialTheme.colorScheme.outlineVariant,
+                        focusedContainerColor   = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    ),
                 )
 
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                Text("Zusätzliche Infos (Optional)", style = MaterialTheme.typography.titleSmall)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Zusätzliche Infos (Optional)", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(modifier = Modifier.height(4.dp))
 
                 // --- OPTIONALE FELDER ---
 
@@ -143,7 +186,14 @@ fun RegisterScreen(
                     label = { Text("생일 / Birthdate (YYYY-MM-DD)") },
                     placeholder = { Text("2000-01-01") },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    shape  = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor      = MaterialTheme.colorScheme.secondary,
+                        unfocusedBorderColor    = MaterialTheme.colorScheme.outlineVariant,
+                        focusedContainerColor   = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    ),
                 )
 
                 OutlinedTextField(
@@ -152,7 +202,14 @@ fun RegisterScreen(
                     label = { Text("전화번호 / Phone Number") },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                    singleLine = true
+                    singleLine = true,
+                    shape  = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor      = MaterialTheme.colorScheme.secondary,
+                        unfocusedBorderColor    = MaterialTheme.colorScheme.outlineVariant,
+                        focusedContainerColor   = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    ),
                 )
 
                 OutlinedTextField(
@@ -160,20 +217,36 @@ fun RegisterScreen(
                     onValueChange = viewModel::onStreetChange,
                     label = { Text("주소 / Street") },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    shape  = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor      = MaterialTheme.colorScheme.secondary,
+                        unfocusedBorderColor    = MaterialTheme.colorScheme.outlineVariant,
+                        focusedContainerColor   = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    ),
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = { viewModel.register() },
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
-                    enabled = !state.isLoading
+                    onClick  = { viewModel.register() },
+                    modifier = Modifier.fillMaxWidth().height(54.dp),
+                    enabled  = !state.isLoading,
+                    shape    = MaterialTheme.shapes.extraSmall,
+                    colors   = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor   = MaterialTheme.colorScheme.onPrimary,
+                    ),
                 ) {
                     if (state.isLoading) {
-                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                        CircularProgressIndicator(
+                            color       = MaterialTheme.colorScheme.onPrimary,
+                            modifier    = Modifier.size(22.dp),
+                            strokeWidth = 2.dp,
+                        )
                     } else {
-                        Text("등록하기")
+                        Text("등록하기", style = MaterialTheme.typography.labelLarge)
                     }
                 }
                 Spacer(modifier = Modifier.height(32.dp))
@@ -199,13 +272,19 @@ fun GenericDropdown(
         modifier = Modifier.fillMaxWidth()
     ) {
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth().menuAnchor(),
-            readOnly = true,
-            value = options[selectedKey] ?: "", // Zeigt leeren String wenn nichts gewählt
+            modifier      = Modifier.fillMaxWidth().menuAnchor(),
+            readOnly      = true,
+            value         = options[selectedKey] ?: "",
             onValueChange = {},
-            label = { Text(label) },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+            label         = { Text(label) },
+            trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            shape         = MaterialTheme.shapes.small,
+            colors        = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
+                focusedBorderColor      = MaterialTheme.colorScheme.secondary,
+                unfocusedBorderColor    = MaterialTheme.colorScheme.outlineVariant,
+                focusedContainerColor   = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            ),
         )
         ExposedDropdownMenu(
             expanded = expanded,
