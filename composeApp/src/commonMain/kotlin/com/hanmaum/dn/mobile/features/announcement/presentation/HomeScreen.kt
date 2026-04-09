@@ -47,6 +47,7 @@ fun HomeScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = { ChurchTopBar(title = "D+N App", onBackClick = null) },
         bottomBar = {
             ChurchBottomBar(
