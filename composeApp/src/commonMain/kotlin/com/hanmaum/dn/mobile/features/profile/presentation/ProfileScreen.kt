@@ -119,8 +119,13 @@ private fun ProfileViewContent(
         ProfileField("상태", profile.status.name)
         Spacer(Modifier.height(24.dp))
         Button(
-            onClick = onEditClick,
-            modifier = Modifier.fillMaxWidth(),
+            onClick  = onEditClick,
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            shape    = MaterialTheme.shapes.extraSmall,
+            colors   = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor   = MaterialTheme.colorScheme.onPrimary,
+            ),
         ) {
             Icon(Icons.Default.Edit, contentDescription = "프로필 수정")
             Spacer(Modifier.width(8.dp))
@@ -128,9 +133,10 @@ private fun ProfileViewContent(
         }
         Spacer(Modifier.height(8.dp))
         OutlinedButton(
-            onClick = onLogoutClick,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.outlinedButtonColors(
+            onClick  = onLogoutClick,
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            shape    = MaterialTheme.shapes.extraSmall,
+            colors   = ButtonDefaults.outlinedButtonColors(
                 contentColor = MaterialTheme.colorScheme.error,
             ),
         ) {
@@ -144,13 +150,22 @@ private fun ProfileViewContent(
 @Composable
 private fun ProfileField(label: String, value: String) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text(label, color = MaterialTheme.colorScheme.outline, style = MaterialTheme.typography.bodyMedium)
-        Text(value, style = MaterialTheme.typography.bodyMedium)
+        Text(
+            text  = label,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Text(
+            text  = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
     }
-    HorizontalDivider()
 }
 
 @Composable
@@ -190,11 +205,20 @@ private fun ProfileEditContent(
         }
         Spacer(Modifier.height(24.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedButton(onClick = onCancel, modifier = Modifier.weight(1f)) { Text("취소") }
+            OutlinedButton(
+                onClick  = onCancel,
+                modifier = Modifier.weight(1f).height(50.dp),
+                shape    = MaterialTheme.shapes.extraSmall,
+            ) { Text("취소", style = MaterialTheme.typography.labelLarge) }
             Button(
-                onClick = onSave,
-                modifier = Modifier.weight(1f),
-                enabled = !state.isSaving,
+                onClick  = onSave,
+                modifier = Modifier.weight(1f).height(50.dp),
+                shape    = MaterialTheme.shapes.extraSmall,
+                enabled  = !state.isSaving,
+                colors   = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor   = MaterialTheme.colorScheme.onPrimary,
+                ),
             ) {
                 if (state.isSaving) CircularProgressIndicator(modifier = Modifier.size(18.dp).semantics { contentDescription = "저장 중" }, strokeWidth = 2.dp)
                 else Text("저장")
