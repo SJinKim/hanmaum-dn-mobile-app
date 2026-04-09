@@ -67,7 +67,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(64.dp))
 
         Text(
-            text  = "The Sanctuary",
+            text  = "DN App",
             style = MaterialTheme.typography.displaySmall,
             color = MaterialTheme.colorScheme.primary,
         )
@@ -77,12 +77,6 @@ fun LoginScreen(
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onSurface,
         )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text  = "커뮤니티와 연결하려면 로그인하세요.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
 
         Spacer(modifier = Modifier.height(40.dp))
 
@@ -90,7 +84,7 @@ fun LoginScreen(
             value         = username,
             onValueChange = { username = it },
             label         = { Text("이메일") },
-            placeholder   = { Text("hello@community.com") },
+            placeholder   = { Text("name@example.com") },
             modifier      = Modifier.fillMaxWidth(),
             singleLine    = true,
             shape         = MaterialTheme.shapes.small,
@@ -161,7 +155,7 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
-                text  = "커뮤니티에 처음이신가요? 등록하기",
+                text  = "한마음 교회에 처음이신가요?",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.secondary,
             )
