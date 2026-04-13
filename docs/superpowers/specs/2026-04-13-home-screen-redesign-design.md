@@ -25,23 +25,28 @@ Replace the current `ChurchTopBar` usage in `HomeScreen.kt` with a custom `Row`:
 
 ## 3. Hero Banner (`HeroBannerSection.kt`, full redesign)
 
-Full-width card replacing the current pager-based implementation.
+Horizontal auto-scrolling pager showing the 5 most recent announcements, each as a styled gradient card.
 
-**Layout:**
+**Pager:**
+- `HorizontalPager` with `count = min(banners.size, 5)`
+- Auto-advances every 4 seconds (keep existing `LaunchedEffect` timer logic)
+- Page indicator: centered dot row below the card — active dot `CoralDark`, inactive dot `MutedGray` at 40% alpha, `8.dp` dot size, `4.dp` spacing
+
+**Each page card:**
 - Horizontal padding: `16.dp` from screen edges
 - Height: `240.dp` fixed
 - Corner radius: `24.dp`
 - Background: vertical `Brush.verticalGradient(listOf(CoralDark, Color(0xFF1A0A0A)))`
 
-**Content (top to bottom):**
-1. Eyebrow label: `"DN App"` — `labelSmall`, `OnCoral` at 70% alpha
-2. Sermon title: first banner announcement title — `headlineLarge`, `Color.White`, `letterSpacing = (-0.02).sp`
-3. Service info pill: `"주일 예배  •  {date}"` — `surface` at 20% alpha background, `Color.White` text, `cornerRadius = 50.dp` (pill)
+**Content per page (top to bottom):**
+1. Eyebrow label: `"DN App"` — `labelSmall`, `Color.White` at 70% alpha
+2. Announcement title — `headlineLarge`, `Color.White`, `letterSpacing = (-0.02).sp`, max 2 lines with ellipsis
+3. Service info pill: `"주일 예배  •  {date}"` — `Color.White` at 20% alpha background, `Color.White` text, `cornerRadius = 50.dp` (pill)
 4. CTA button: `"예배 공지 읽기"` — pill-shaped, `CardWhite` background, `CoralDark` text, taps `onBannerClick(announcement.publicId)`
 
-**Empty/loading state:** `Box` at same dimensions with gradient background + `CircularProgressIndicator` centered.
+**Empty/loading state:** `Box` at same dimensions with gradient background + `CircularProgressIndicator` centered (no pager rendered).
 
-**Data source:** First item of `state.banners` (already loaded by `HomeViewModel`). Date formatted from `announcement.createdAt`.
+**Data source:** First 5 items of `state.banners` (already loaded by `HomeViewModel`). Date formatted from `announcement.createdAt`.
 
 ---
 
