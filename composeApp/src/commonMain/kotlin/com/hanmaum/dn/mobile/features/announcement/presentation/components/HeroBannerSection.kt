@@ -32,11 +32,14 @@ import kotlinx.coroutines.delay
 fun HeroBannerSection(
     banners: List<Announcement>,
     onBannerClick: (String) -> Unit,
+    isLoading: Boolean = false,
 ) {
-    if (banners.isEmpty()) {
+    if (isLoading) {
         HeroBannerLoading()
         return
     }
+
+    if (banners.isEmpty()) return
 
     val items = banners.take(5)
     val initialPage = (Int.MAX_VALUE / 2 / items.size) * items.size
