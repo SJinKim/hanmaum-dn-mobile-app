@@ -1,10 +1,11 @@
 package com.hanmaum.dn.mobile.core.presentation.components
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -13,7 +14,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 
-enum class BottomTab { HOME, SERMON, QT, PROFILE }
+enum class BottomTab { HOME, COMMUNITY, MINISTRIES, NEWS, PROFILE }
 
 @Composable
 fun ChurchBottomBar(
@@ -39,17 +40,24 @@ fun ChurchBottomBar(
             colors   = itemColors,
         )
         NavigationBarItem(
-            selected = selectedTab == BottomTab.SERMON,
-            onClick  = { onTabSelected(BottomTab.SERMON) },
-            icon     = { Icon(Icons.Default.Mic, contentDescription = "순소식") },
-            label    = { Text("순소식", style = MaterialTheme.typography.labelSmall) },
+            selected = selectedTab == BottomTab.COMMUNITY,
+            onClick  = { onTabSelected(BottomTab.COMMUNITY) },
+            icon     = { Icon(Icons.Default.Group, contentDescription = "커뮤니티") },
+            label    = { Text("커뮤니티", style = MaterialTheme.typography.labelSmall) },
             colors   = itemColors,
         )
         NavigationBarItem(
-            selected = selectedTab == BottomTab.QT,
-            onClick  = { onTabSelected(BottomTab.QT) },
-            icon     = { Icon(Icons.Default.Description, contentDescription = "QT") },
-            label    = { Text("QT", style = MaterialTheme.typography.labelSmall) },
+            selected = selectedTab == BottomTab.MINISTRIES,
+            onClick  = { onTabSelected(BottomTab.MINISTRIES) },
+            icon     = { Icon(Icons.Default.Star, contentDescription = "사역") },
+            label    = { Text("사역", style = MaterialTheme.typography.labelSmall) },
+            colors   = itemColors,
+        )
+        NavigationBarItem(
+            selected = selectedTab == BottomTab.NEWS,
+            onClick  = { onTabSelected(BottomTab.NEWS) },
+            icon     = { Icon(Icons.Default.Newspaper, contentDescription = "소식") },
+            label    = { Text("소식", style = MaterialTheme.typography.labelSmall) },
             colors   = itemColors,
         )
         NavigationBarItem(
