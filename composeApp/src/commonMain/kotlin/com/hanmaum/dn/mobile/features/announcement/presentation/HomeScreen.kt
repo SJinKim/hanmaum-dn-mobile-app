@@ -1,77 +1,68 @@
 package com.hanmaum.dn.mobile.features.announcement.presentation
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.presentation.components.BottomTab
 import com.hanmaum.dn.mobile.core.presentation.components.ChurchBottomBar
-import com.hanmaum.dn.mobile.core.presentation.components.ChurchTopBar
 import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
-import com.hanmaum.dn.mobile.features.announcement.domain.model.Announcement
+import com.hanmaum.dn.mobile.features.announcement.presentation.components.BibleVerseSection
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.HeroBannerSection
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.LatestNewsSection
-import com.hanmaum.dn.mobile.features.announcement.presentation.components.QuickMenuSection
+import com.hanmaum.dn.mobile.features.announcement.presentation.components.WeeklyVerseSection
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import org.koin.compose.viewmodel.koinViewModel
 
-data class BannerItem(val title: String, val color: Color)
-data class NewsItem(val type: String, val title: String)
-
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     onLogout: () -> Unit,
-    // ACHTUNG: Prüf kurz ob deine ID Long oder String ist.
-    // In der DB ist es Long, im App.kt hattest du es als Long genutzt.
-    // Falls deine Models String nutzen, lass String. Falls Long, ändere es hier auf Long.
     onAnnouncementClick: (String) -> Unit,
     onViewAllClick: () -> Unit,
     onProfileClick: () -> Unit,
     onMinistryClick: () -> Unit,
+    onCommunityClick: () -> Unit,
+    onNewsClick: () -> Unit,
 ) {
     val viewModel: HomeViewModel = koinViewModel()
-
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = { ChurchTopBar(title = "D+N App", onBackClick = null) },
+        topBar = { HomeTopBar() },
         bottomBar = {
             ChurchBottomBar(
                 selectedTab = BottomTab.HOME,
                 onTabSelected = { tab ->
                     when (tab) {
-                        BottomTab.PROFILE -> onProfileClick()
-                        else -> { /* other tabs not implemented yet */ }
+                        BottomTab.PROFILE    -> onProfileClick()
+                        BottomTab.MINISTRIES -> onMinistryClick()
+                        BottomTab.COMMUNITY  -> onCommunityClick()
+                        BottomTab.NEWS       -> onNewsClick()
+                        else                 -> {}
                     }
                 },
             )
-        }
+        },
     ) { paddingValues ->
-
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             when {
-                state.isLoading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                state.error != null -> ErrorView(msg = state.error, onRetry = { viewModel.loadAnnouncements() })
+                state.error != null -> ErrorView(
+                    msg = state.error,
+                    onRetry = { viewModel.loadAnnouncements() },
+                )
                 else -> HomeContent(
-                    banners = state.banners,
-                    news = state.announcements,
+                    state = state,
                     onAnnouncementClick = onAnnouncementClick,
                     onViewAllClick = onViewAllClick,
-                    onMinistryClick = onMinistryClick,
                 )
             }
         }
@@ -79,26 +70,60 @@ fun HomeScreen(
 }
 
 @Composable
+private fun HomeTopBar() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = "DN App",
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.primary,
+        )
+        IconButton(onClick = { /* 알림 기능 추가 예정 */ }) {
+            Icon(
+                imageVector = Icons.Default.Notifications,
+                contentDescription = "알림",
+                tint = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+    }
+}
+
+@Composable
 private fun HomeContent(
-    banners: List<Announcement>,
-    news: List<Announcement>,
+    state: HomeUiState,
     onAnnouncementClick: (String) -> Unit,
     onViewAllClick: () -> Unit,
-    onMinistryClick: () -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        Spacer(modifier = Modifier.height(16.dp))
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+    ) {
+        HeroBannerSection(
+            banners = state.banners,
+            onBannerClick = onAnnouncementClick,
+            isLoading = state.isLoading,
+        )
 
-        HeroBannerSection(banners = banners, onBannerClick = onAnnouncementClick)
+        Spacer(modifier = Modifier.height(8.dp))
+
+        BibleVerseSection(onViewAllClick = onViewAllClick)
 
         Spacer(modifier = Modifier.height(24.dp))
-        QuickMenuSection(onMinistryClick = onMinistryClick)
+
+        WeeklyVerseSection()
+
         Spacer(modifier = Modifier.height(24.dp))
 
         LatestNewsSection(
-            newsList = news,
+            newsList = state.announcements,
             onItemClick = onAnnouncementClick,
-            onViewAllClick = onViewAllClick
+            onViewAllClick = onViewAllClick,
         )
 
         Spacer(modifier = Modifier.height(32.dp))
