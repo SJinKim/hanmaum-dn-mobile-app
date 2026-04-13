@@ -80,7 +80,7 @@ Full-width dark card below the Bible verse block.
 3. Reference: `"시편 23:1"` — `labelMedium`, `MutedGray`
 4. Bottom link: `"외우기 시작 →"` — `TextButton`, `GoldLight` color, no-op for now
 
-Content is hardcoded for now.
+Content is hardcoded for now. A later session will add a `/api/v1/verses/weekly` endpoint (backend) and wire it through a `VerseRepository` → `HomeViewModel` flow (mobile), replacing the hardcoded strings.
 
 ---
 
