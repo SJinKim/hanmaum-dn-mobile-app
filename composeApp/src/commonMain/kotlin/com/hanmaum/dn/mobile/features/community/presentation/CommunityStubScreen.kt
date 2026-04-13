@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.hanmaum.dn.mobile.core.presentation.components.ChurchTopBar
 
+// TODO: Replace with full Community feature implementation
 @Composable
 fun CommunityStubScreen(onBackClick: () -> Unit) {
     Scaffold(
