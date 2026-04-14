@@ -49,7 +49,8 @@ fun WeeklyVerseSection() {
         )
 
         TextButton(
-            onClick = { /* TODO: 암송 기능 추가 예정 */ },
+            onClick = { },
+            enabled = false,
             contentPadding = PaddingValues(0.dp),
         ) {
             Text(

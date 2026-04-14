@@ -13,6 +13,7 @@ import com.hanmaum.dn.mobile.core.presentation.theme.MutedGray
 import com.hanmaum.dn.mobile.core.presentation.theme.SoftPeach
 import com.hanmaum.dn.mobile.core.presentation.theme.WarmCharcoal
 
+// TODO(api): Replace hardcoded verse with data from /api/v1/verses/daily
 @Composable
 fun BibleVerseSection(onViewAllClick: () -> Unit) {
     Column(
