@@ -3,6 +3,8 @@ package com.hanmaum.dn.mobile.features.login.screen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,22 +13,40 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
@@ -44,6 +64,7 @@ fun LoginScreen(
 
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.navigateTo) {
         state.navigateTo?.let { route ->
@@ -62,85 +83,217 @@ fun LoginScreen(
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 28.dp),
-        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(modifier = Modifier.height(64.dp))
+        Spacer(Modifier.height(64.dp))
 
         Text(
             text  = "DN App",
             style = MaterialTheme.typography.displaySmall,
             color = MaterialTheme.colorScheme.primary,
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(Modifier.height(6.dp))
         Text(
             text  = "Welcome Back",
             style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text      = "Sign in to stay connected with your community.",
+            style     = MaterialTheme.typography.bodyMedium,
+            color     = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
         )
 
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(Modifier.height(32.dp))
 
-        OutlinedTextField(
-            value         = username,
-            onValueChange = { username = it },
-            label         = { Text("이메일") },
-            placeholder   = { Text("name@example.com") },
-            modifier      = Modifier.fillMaxWidth(),
-            singleLine    = true,
-            shape         = MaterialTheme.shapes.small,
-            colors        = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor      = MaterialTheme.colorScheme.secondary,
-                unfocusedBorderColor    = MaterialTheme.colorScheme.outlineVariant,
-                focusedContainerColor   = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-            ),
-        )
+        // Social login stubs (non-functional — app uses Keycloak)
+        Row(
+            modifier            = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            OutlinedButton(
+                onClick  = { /* stub */ },
+                modifier = Modifier.weight(1f).height(48.dp),
+                shape    = MaterialTheme.shapes.extraSmall,
+                colors   = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                ),
+            ) {
+                Text("G  Google", style = MaterialTheme.typography.labelMedium)
+            }
+            OutlinedButton(
+                onClick  = { /* stub */ },
+                modifier = Modifier.weight(1f).height(48.dp),
+                shape    = MaterialTheme.shapes.extraSmall,
+                colors   = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                ),
+            ) {
+                Text("iOS  Apple", style = MaterialTheme.typography.labelMedium)
+            }
+        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(Modifier.height(24.dp))
 
-        OutlinedTextField(
-            value                = password,
-            onValueChange        = { password = it },
-            label                = { Text("비밀번호") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier             = Modifier.fillMaxWidth(),
-            singleLine           = true,
-            shape                = MaterialTheme.shapes.small,
-            colors               = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor      = MaterialTheme.colorScheme.secondary,
-                unfocusedBorderColor    = MaterialTheme.colorScheme.outlineVariant,
-                focusedContainerColor   = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-            ),
-        )
+        // OR EMAIL divider
+        Row(
+            modifier            = Modifier.fillMaxWidth(),
+            verticalAlignment   = Alignment.CenterVertically,
+        ) {
+            HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
+            Text(
+                text  = "  OR EMAIL  ",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.outline,
+            )
+            HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
+        }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(Modifier.height(24.dp))
 
+        // Email field
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text     = "EMAIL ADDRESS",
+                style    = MaterialTheme.typography.labelSmall,
+                color    = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 6.dp),
+            )
+            TextField(
+                value         = username,
+                onValueChange = { username = it },
+                placeholder   = { Text("hello@community.com") },
+                leadingIcon   = {
+                    Icon(
+                        imageVector     = Icons.Default.Email,
+                        contentDescription = null,
+                        tint            = MaterialTheme.colorScheme.outline,
+                    )
+                },
+                modifier   = Modifier.fillMaxWidth(),
+                singleLine = true,
+                shape      = MaterialTheme.shapes.small,
+                colors     = TextFieldDefaults.colors(
+                    focusedContainerColor   = MaterialTheme.colorScheme.surfaceVariant,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    focusedIndicatorColor   = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedLeadingIconColor = MaterialTheme.colorScheme.primary,
+                ),
+            )
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        // Password field
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier              = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment     = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text  = "PASSWORD",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                TextButton(
+                    onClick         = { /* stub */ },
+                    contentPadding  = PaddingValues(0.dp),
+                ) {
+                    Text(
+                        text  = "Forgot?",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+            TextField(
+                value                = password,
+                onValueChange        = { password = it },
+                placeholder          = { Text("••••••••") },
+                leadingIcon          = {
+                    Icon(
+                        imageVector        = Icons.Default.Lock,
+                        contentDescription = null,
+                        tint               = MaterialTheme.colorScheme.outline,
+                    )
+                },
+                trailingIcon = {
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            imageVector        = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                            contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                            tint               = MaterialTheme.colorScheme.outline,
+                        )
+                    }
+                },
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                modifier             = Modifier.fillMaxWidth(),
+                singleLine           = true,
+                shape                = MaterialTheme.shapes.small,
+                colors               = TextFieldDefaults.colors(
+                    focusedContainerColor   = MaterialTheme.colorScheme.surfaceVariant,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    focusedIndicatorColor   = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedLeadingIconColor = MaterialTheme.colorScheme.primary,
+                ),
+            )
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        // Keep me signed in (stub)
+        Row(
+            modifier          = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Checkbox(
+                checked         = false,
+                onCheckedChange = { /* stub */ },
+                colors          = CheckboxDefaults.colors(
+                    uncheckedColor = MaterialTheme.colorScheme.outline,
+                ),
+            )
+            Text(
+                text  = "Keep me signed in",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        // Login CTA
         Button(
             onClick  = { viewModel.onLoginClicked(username, password) },
             enabled  = !state.isLoading,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(54.dp),
-            shape  = MaterialTheme.shapes.extraSmall,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor   = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            shape    = MaterialTheme.shapes.extraSmall,
+            colors   = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor   = MaterialTheme.colorScheme.onPrimaryContainer,
             ),
         ) {
             if (state.isLoading) {
                 CircularProgressIndicator(
                     modifier    = Modifier.size(22.dp),
-                    color       = MaterialTheme.colorScheme.onPrimary,
+                    color       = MaterialTheme.colorScheme.onPrimaryContainer,
                     strokeWidth = 2.dp,
                 )
             } else {
-                Text("로그인 →", style = MaterialTheme.typography.labelLarge)
+                Text(
+                    "Login to DN App  →",
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                )
             }
         }
 
         state.error?.let { errorMsg ->
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(Modifier.height(12.dp))
             Text(
                 text  = errorMsg,
                 color = MaterialTheme.colorScheme.error,
@@ -148,19 +301,71 @@ fun LoginScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(Modifier.height(24.dp))
 
-        TextButton(
-            onClick  = onRegisterClick,
-            modifier = Modifier.fillMaxWidth(),
+        // Register link
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment     = Alignment.CenterVertically,
         ) {
             Text(
-                text  = "한마음 교회에 처음이신가요?",
+                text  = "New to the collective?  ",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.secondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            TextButton(
+                onClick        = onRegisterClick,
+                contentPadding = PaddingValues(0.dp),
+            ) {
+                Text(
+                    text  = "Join the Community",
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.height(64.dp))
+        Spacer(Modifier.height(24.dp))
+
+        // Support footer
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape    = MaterialTheme.shapes.large,
+            colors   = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        ) {
+            Row(
+                modifier              = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment     = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column {
+                    Text(
+                        text  = "SUPPORT",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
+                    Text(
+                        text  = "Need help logging in?",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+                Button(
+                    onClick = { /* stub */ },
+                    shape   = MaterialTheme.shapes.extraSmall,
+                    colors  = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        contentColor   = MaterialTheme.colorScheme.onSecondary,
+                    ),
+                ) {
+                    Text("Contact", style = MaterialTheme.typography.labelMedium)
+                }
+            }
+        }
+
+        Spacer(Modifier.height(40.dp))
     }
 }
