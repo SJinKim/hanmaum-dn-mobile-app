@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.Color
 val CoralDark        = Color(0xFFAE2F34)
 val CoralLight       = Color(0xFFFF6B6B)
 val OnCoral          = Color(0xFFFFFFFF)
-val OnCoralContainer = Color(0xFF410002)
+val OnCoralContainer = Color(0xFF2D3436)  // DeepCharcoal — readable on coral salmon
 
 // Secondary: Faith Blue — grounding, navigation
 val BlueDark         = Color(0xFF005DB8)
