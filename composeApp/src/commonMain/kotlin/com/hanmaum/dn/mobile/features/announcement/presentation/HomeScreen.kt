@@ -1,6 +1,8 @@
 package com.hanmaum.dn.mobile.features.announcement.presentation
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
@@ -11,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.koin.compose.viewmodel.koinViewModel
 import com.hanmaum.dn.mobile.core.presentation.components.BottomTab
 import com.hanmaum.dn.mobile.core.presentation.components.ChurchBottomBar
 import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
@@ -21,9 +24,6 @@ import com.hanmaum.dn.mobile.features.announcement.presentation.components.Morni
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.WeeklyVerseSection
 import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceUiState
 import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceViewModel
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun HomeScreen(
@@ -70,7 +70,7 @@ fun HomeScreen(
                     attendanceState = attendanceState,
                     onAnnouncementClick = onAnnouncementClick,
                     onViewAllClick      = onViewAllClick,
-                    onCheckIn           = { attendanceViewModel.checkIn() },
+                    onCheckIn           = attendanceViewModel::checkIn,
                 )
             }
         }
