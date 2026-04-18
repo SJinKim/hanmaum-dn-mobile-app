@@ -17,7 +17,10 @@ import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.BibleVerseSection
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.HeroBannerSection
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.LatestNewsSection
+import com.hanmaum.dn.mobile.features.announcement.presentation.components.MorningServiceCard
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.WeeklyVerseSection
+import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceUiState
+import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceViewModel
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import org.koin.compose.viewmodel.koinViewModel
@@ -34,6 +37,9 @@ fun HomeScreen(
 ) {
     val viewModel: HomeViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val attendanceViewModel: AttendanceViewModel = koinViewModel()
+    val attendanceState by attendanceViewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -60,9 +66,11 @@ fun HomeScreen(
                     onRetry = { viewModel.loadAnnouncements() },
                 )
                 else -> HomeContent(
-                    state = state,
+                    state           = state,
+                    attendanceState = attendanceState,
                     onAnnouncementClick = onAnnouncementClick,
-                    onViewAllClick = onViewAllClick,
+                    onViewAllClick      = onViewAllClick,
+                    onCheckIn           = { attendanceViewModel.checkIn() },
                 )
             }
         }
@@ -96,8 +104,10 @@ private fun HomeTopBar() {
 @Composable
 private fun HomeContent(
     state: HomeUiState,
+    attendanceState: AttendanceUiState,
     onAnnouncementClick: (String) -> Unit,
     onViewAllClick: () -> Unit,
+    onCheckIn: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -105,12 +115,21 @@ private fun HomeContent(
             .verticalScroll(rememberScrollState()),
     ) {
         HeroBannerSection(
-            banners = state.banners,
+            banners     = state.banners,
             onBannerClick = onAnnouncementClick,
-            isLoading = state.isLoading,
+            isLoading   = state.isLoading,
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        // MorningServiceCard hides itself when definition == null (no service today).
+        // Wrap spacers in the same condition to avoid phantom gaps.
+        if (attendanceState.definition != null) {
+            Spacer(modifier = Modifier.height(16.dp))
+            MorningServiceCard(
+                state     = attendanceState,
+                onCheckIn = onCheckIn,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
 
         BibleVerseSection(onViewAllClick = onViewAllClick)
 
@@ -121,7 +140,7 @@ private fun HomeContent(
         Spacer(modifier = Modifier.height(24.dp))
 
         LatestNewsSection(
-            newsList = state.announcements,
+            newsList    = state.announcements,
             onItemClick = onAnnouncementClick,
             onViewAllClick = onViewAllClick,
         )
