@@ -59,7 +59,7 @@ fun MorningServiceCard(
             ) {
                 Icon(
                     imageVector        = Icons.Default.HowToReg,
-                    contentDescription = null,
+                    contentDescription = "출석 체크 아이콘",
                     modifier           = Modifier.padding(14.dp),
                     tint               = MaterialTheme.colorScheme.primary,
                 )
@@ -94,8 +94,8 @@ fun MorningServiceCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape    = CircleShape,
                 colors   = ButtonDefaults.buttonColors(
-                    containerColor         = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor           = MaterialTheme.colorScheme.onPrimaryContainer,
+                    containerColor         = MaterialTheme.colorScheme.primary,
+                    contentColor           = MaterialTheme.colorScheme.onPrimary,
                     disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                     disabledContentColor   = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
@@ -104,11 +104,11 @@ fun MorningServiceCard(
                     CircularProgressIndicator(
                         modifier    = Modifier.size(20.dp),
                         strokeWidth = 2.dp,
-                        color       = MaterialTheme.colorScheme.onPrimaryContainer,
+                        color       = MaterialTheme.colorScheme.onPrimary,
                     )
                 } else {
                     Text(
-                        text  = if (state.isCheckedIn) "출석 완료 ✓" else "Mark Attendance",
+                        text  = if (state.isCheckedIn) "출석 완료 ✓" else "출석하기",
                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                     )
                 }
@@ -121,10 +121,7 @@ fun MorningServiceCard(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                 )
-            }
-
-            // Outside window hint
-            if (!state.isInWindow && !state.isCheckedIn) {
+            } else if (!state.isInWindow && !state.isCheckedIn) {
                 Text(
                     text  = "출석 시간이 아닙니다",
                     style = MaterialTheme.typography.bodySmall,
