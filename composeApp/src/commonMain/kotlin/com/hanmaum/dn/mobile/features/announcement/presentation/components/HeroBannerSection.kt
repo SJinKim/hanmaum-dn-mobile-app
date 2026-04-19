@@ -7,163 +7,198 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.lerp
-import androidx.compose.ui.util.lerp
+import androidx.compose.ui.unit.sp
+import com.hanmaum.dn.mobile.core.presentation.theme.CardWhite
+import com.hanmaum.dn.mobile.core.presentation.theme.CoralDark
+import com.hanmaum.dn.mobile.core.presentation.theme.MutedGray
 import com.hanmaum.dn.mobile.features.announcement.domain.model.Announcement
-import kotlin.math.absoluteValue
-import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.delay
-
-// Private Hilfsklasse
-private data class BannerItem(val title: String, val color: Color)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HeroBannerSection(
     banners: List<Announcement>,
-    onBannerClick: (String) -> Unit
+    onBannerClick: (String) -> Unit,
+    isLoading: Boolean = false,
 ) {
+    if (isLoading) {
+        HeroBannerLoading()
+        return
+    }
+
     if (banners.isEmpty()) return
 
-    // Setup für unendliches Scrollen
-    val initialPage = (Int.MAX_VALUE / 2 / banners.size) * banners.size
+    val items = banners.take(5)
+    val initialPage = (Int.MAX_VALUE / 2 / items.size) * items.size
     val pagerState = rememberPagerState(initialPage = initialPage) { Int.MAX_VALUE }
 
-    // Auto-Scroll Effekt
-    AutoScrollEffect(pagerState, banners.size)
+    AutoScrollEffect(pagerState = pagerState, itemCount = items.size)
 
     Column(modifier = Modifier.fillMaxWidth()) {
         HorizontalPager(
             state = pagerState,
-            contentPadding = PaddingValues(horizontal = 48.dp),
-            pageSpacing = 0.dp,
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            pageSpacing = 12.dp,
         ) { pageIndex ->
-            val item = banners[pageIndex % banners.size]
-
-            // Berechnung der Animation
-            val pageOffset = ((pagerState.currentPage - pageIndex) + pagerState.currentPageOffsetFraction).absoluteValue
-
-            BannerCard(
-                item = item,
-                pageOffset = pageOffset,
-                onClick = { onBannerClick(item.id) }
+            val item = items[pageIndex % items.size]
+            HeroBannerCard(
+                announcement = item,
+                onClick = { onBannerClick(item.id) },
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // Ausgelagerte Indikatoren
-        if (banners.size > 1) {
-            BannerIndicators(
-                totalCount = banners.size,
-                currentIndex = pagerState.currentPage % banners.size,
-                getColorForIndex = { idx -> Color(banners[idx].getAnnouncementCategoryColor()) }
-            )
-        }
+        HeroBannerIndicators(
+            totalCount = items.size,
+            currentIndex = pagerState.currentPage % items.size,
+        )
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun AutoScrollEffect(pagerState: PagerState, itemCount: Int) {
-    // Nur scrollen, wenn wir mehr als 1 Banner haben
-    if (itemCount > 1) {
-        LaunchedEffect(pagerState, itemCount) {
-            while (true) {
-                delay(3000) // 3 Sekunden warten
-                try {
-                    // Zur nächsten Seite animieren
-                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                } catch (e: Exception) {
-                    // Fehler abfangen (z.B. wenn der User gerade selbst wischt)
-                }
-            }
-        }
-    }
-}
-
-// 2. SUB-KOMPONENTE: Die eigentliche Karte (UI pur)
-@Composable
-private fun BannerCard(
-    item: Announcement,
-    pageOffset: Float,
-    onClick: () -> Unit
+private fun HeroBannerCard(
+    announcement: Announcement,
+    onClick: () -> Unit,
 ) {
-    val minScale = 0.85f
-    val minAlpha = 0.5f
-
-    Card(
-        shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = lerp(2.dp, 10.dp, 1f - pageOffset.coerceIn(0f, 1f))
-        ),
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(220.dp)
-            .graphicsLayer {
-                val scale = lerp(1f, minScale, pageOffset.coerceIn(0f, 1f))
-                scaleX = scale
-                scaleY = scale
-                alpha = lerp(1f, minAlpha, pageOffset.coerceIn(0f, 1f))
-            }
+            .height(240.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(CoralDark, Color(0xFF1A0A0A))
+                )
+            )
             .clickable(onClick = onClick)
+            .padding(24.dp),
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(item.getAnnouncementCategoryColor()))
-                .padding(24.dp)
+        // Eyebrow
+        Text(
+            text = "DN App",
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.White.copy(alpha = 0.7f),
+            modifier = Modifier.align(Alignment.TopStart),
+        )
+
+        Column(
+            modifier = Modifier.align(Alignment.BottomStart),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Column(modifier = Modifier.align(Alignment.BottomStart)) {
-                ContainerTag(label = item.getAnnouncementCategoryName())
-                Spacer(modifier = Modifier.height(12.dp))
+            // Sermon title
+            Text(
+                text = announcement.title,
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = (-0.02).sp,
+                ),
+                color = Color.White,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+
+            // Service pill
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(50.dp))
+                    .background(Color.White.copy(alpha = 0.2f))
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
+            ) {
                 Text(
-                    text = item.title,
+                    text = "주일 예배  •  ${announcement.startAt.take(10)}",
+                    style = MaterialTheme.typography.labelMedium,
                     color = Color.White,
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            // CTA button
+            Button(
+                onClick = onClick,
+                shape = RoundedCornerShape(50.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = CardWhite,
+                    contentColor   = CoralDark,
+                ),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+            ) {
+                Text(
+                    text = "예배 공지 읽기",
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                 )
             }
         }
     }
 }
 
-// 3. SUB-KOMPONENTE: Die Punkte unten drunter
 @Composable
-private fun BannerIndicators(
+private fun HeroBannerIndicators(
     totalCount: Int,
     currentIndex: Int,
-    getColorForIndex: (Int) -> Color
 ) {
     Row(
-        Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
     ) {
-        repeat(totalCount) { iteration ->
-            val isSelected = currentIndex == iteration
-            val width = if (isSelected) 24.dp else 8.dp
-            val color = if (isSelected) getColorForIndex(iteration) else Color.LightGray.copy(alpha = 0.5f)
-
+        repeat(totalCount) { i ->
+            val isSelected = i == currentIndex
             Box(
                 modifier = Modifier
-                    .padding(4.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(color)
-                    .height(8.dp)
-                    .width(width)
+                    .padding(horizontal = 4.dp)
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isSelected) CoralDark
+                        else MutedGray.copy(alpha = 0.4f)
+                    )
             )
+        }
+    }
+}
+
+@Composable
+private fun HeroBannerLoading() {
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth()
+            .height(240.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(CoralDark, Color(0xFF1A0A0A))
+                )
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        CircularProgressIndicator(color = Color.White)
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun AutoScrollEffect(pagerState: PagerState, itemCount: Int) {
+    if (itemCount > 1) {
+        LaunchedEffect(pagerState, itemCount) {
+            while (true) {
+                delay(4000)
+                try {
+                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                } catch (_: Exception) {}
+            }
         }
     }
 }

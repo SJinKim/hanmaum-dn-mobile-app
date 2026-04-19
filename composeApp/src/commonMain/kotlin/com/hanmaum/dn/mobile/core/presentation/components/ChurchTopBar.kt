@@ -1,69 +1,76 @@
 package com.hanmaum.dn.mobile.core.presentation.components
 
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChurchTopBar(
     title: String,
     onBackClick: (() -> Unit)? = null,
-    onMenuClick: () -> Unit = {}
+    onMenuClick: () -> Unit = {},
 ) {
     TopAppBar(
         title = {
             Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                color = Color.Black
+                text  = title,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
             )
         },
         navigationIcon = {
             if (onBackClick != null) {
-                // --- MODUS: ZURÜCK (Detail/Register) ---
                 IconButton(onClick = onBackClick) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        imageVector        = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "뒤로",
-                        tint = Color.Black
+                        tint               = MaterialTheme.colorScheme.onSurface,
                     )
                 }
             } else {
-                // --- MODUS: HAUPTMENÜ (Home) ---
                 IconButton(onClick = onMenuClick) {
                     Icon(
-                        imageVector = Icons.Default.Menu,
+                        imageVector        = Icons.Default.Menu,
                         contentDescription = "메뉴",
-                        tint = Color.Black
+                        tint               = MaterialTheme.colorScheme.onSurface,
                     )
                 }
             }
         },
         actions = {
-            // Zeige Profil/Alarm NUR auf der Hauptseite (wenn kein Back-Button da ist)
-            // Auf der Registrierungsseite lenkt das nur ab.
             if (onBackClick == null) {
-                IconButton(onClick = { /* TODO: Benachrichtigungen */ }) {
-                    Icon(Icons.Outlined.Notifications, contentDescription = "Alarm", tint = Color.Black)
+                IconButton(onClick = {}) {
+                    Icon(
+                        imageVector        = Icons.Outlined.Notifications,
+                        contentDescription = "알림",
+                        tint               = MaterialTheme.colorScheme.onSurface,
+                    )
                 }
-                IconButton(onClick = { /* TODO: Profil */ }) {
-                    Icon(Icons.Outlined.Person, contentDescription = "Profile", tint = Color.Black)
+                IconButton(onClick = {}) {
+                    Icon(
+                        imageVector        = Icons.Outlined.Person,
+                        contentDescription = "프로필",
+                        tint               = MaterialTheme.colorScheme.onSurface,
+                    )
                 }
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.White,
-            titleContentColor = Color.Black,
-            actionIconContentColor = Color.Black,
-            navigationIconContentColor = Color.Black
-        )
+            containerColor             = MaterialTheme.colorScheme.surface,
+            titleContentColor          = MaterialTheme.colorScheme.onSurface,
+            actionIconContentColor     = MaterialTheme.colorScheme.onSurface,
+            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+        ),
     )
 }
