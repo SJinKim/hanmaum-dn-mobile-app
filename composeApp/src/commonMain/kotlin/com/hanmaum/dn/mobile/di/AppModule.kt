@@ -8,6 +8,9 @@ import com.hanmaum.dn.mobile.features.announcement.domain.repository.Announcemen
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementDetailViewModel
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementListViewModel
 import com.hanmaum.dn.mobile.features.announcement.presentation.HomeViewModel
+import com.hanmaum.dn.mobile.features.attendance.data.repository.AttendanceRepositoryImpl
+import com.hanmaum.dn.mobile.features.attendance.domain.repository.AttendanceRepository
+import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceViewModel
 import com.hanmaum.dn.mobile.features.login.data.repository.AuthRepositoryImpl
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
 import com.hanmaum.dn.mobile.features.login.presentation.LoginViewModel
@@ -66,4 +69,8 @@ val appModule = module {
     single<MinistryRepository> { MinistryRepositoryImpl(get()) }
     viewModel { MinistryListViewModel(get()) }
     viewModel { (publicId: String) -> MinistryDetailViewModel(publicId, get()) }
+
+    // Attendance
+    single<AttendanceRepository> { AttendanceRepositoryImpl(get()) }
+    viewModel { AttendanceViewModel(get()) }
 }

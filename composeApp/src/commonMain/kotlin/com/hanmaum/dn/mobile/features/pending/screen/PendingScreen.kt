@@ -92,17 +92,22 @@ fun PendingScreen(
             } else {
                 // STATUS PRÜFEN BUTTON
                 Button(
-                    onClick = { viewModel.onCheckStatusClicked() },
-                    modifier = Modifier.fillMaxWidth().height(50.dp)
+                    onClick  = { viewModel.onCheckStatusClicked() },
+                    modifier = Modifier.fillMaxWidth().height(54.dp),
+                    shape    = MaterialTheme.shapes.extraSmall,
+                    colors   = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor   = MaterialTheme.colorScheme.onPrimary,
+                    ),
                 ) {
-                    Text("승인 상태 확인 (Status check)")
+                    Text("승인 상태 확인", style = MaterialTheme.typography.labelLarge)
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // LOGOUT BUTTON
                 TextButton(onClick = { viewModel.onLogoutClicked() }) {
-                    Text("로그아웃 (Logout)")
+                    Text("로그아웃", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }

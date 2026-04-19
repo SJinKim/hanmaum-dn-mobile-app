@@ -1,16 +1,20 @@
 package com.hanmaum.dn.mobile.core.presentation.components
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 
-enum class BottomTab { HOME, SERMON, QT, PROFILE }
+enum class BottomTab { HOME, COMMUNITY, MINISTRIES, NEWS, PROFILE }
 
 @Composable
 fun ChurchBottomBar(
@@ -18,58 +22,50 @@ fun ChurchBottomBar(
     onTabSelected: (BottomTab) -> Unit = {},
 ) {
     NavigationBar(
-        containerColor = Color.White,
-        tonalElevation = 8.dp,
+        containerColor = MaterialTheme.colorScheme.surface,
     ) {
+        val itemColors = NavigationBarItemDefaults.colors(
+            selectedIconColor   = MaterialTheme.colorScheme.primary,
+            selectedTextColor   = MaterialTheme.colorScheme.primary,
+            indicatorColor      = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.24f),
+            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
         NavigationBarItem(
             selected = selectedTab == BottomTab.HOME,
-            onClick = { onTabSelected(BottomTab.HOME) },
-            icon = { Icon(Icons.Default.Home, contentDescription = "홈") },
-            label = { Text("홈") },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Color(0xFF2E7D32),
-                selectedTextColor = Color(0xFF2E7D32),
-                indicatorColor = Color(0xFFE8F5E9),
-                unselectedIconColor = Color.Gray,
-                unselectedTextColor = Color.Gray,
-            ),
+            onClick  = { onTabSelected(BottomTab.HOME) },
+            icon     = { Icon(Icons.Default.Home, contentDescription = "홈") },
+            label    = { Text("홈", style = MaterialTheme.typography.labelSmall) },
+            colors   = itemColors,
         )
         NavigationBarItem(
-            selected = selectedTab == BottomTab.SERMON,
-            onClick = { onTabSelected(BottomTab.SERMON) },
-            icon = { Icon(Icons.Default.Mic, contentDescription = "순소식") },
-            label = { Text("순소식") },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Color(0xFF2E7D32),
-                indicatorColor = Color(0xFFE8F5E9),
-                unselectedIconColor = Color.Gray,
-                unselectedTextColor = Color.Gray,
-            ),
+            selected = selectedTab == BottomTab.COMMUNITY,
+            onClick  = { onTabSelected(BottomTab.COMMUNITY) },
+            icon     = { Icon(Icons.Default.Group, contentDescription = "커뮤니티") },
+            label    = { Text("커뮤니티", style = MaterialTheme.typography.labelSmall) },
+            colors   = itemColors,
         )
         NavigationBarItem(
-            selected = selectedTab == BottomTab.QT,
-            onClick = { onTabSelected(BottomTab.QT) },
-            icon = { Icon(Icons.Default.Description, contentDescription = "QT") },
-            label = { Text("QT") },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Color(0xFF2E7D32),
-                indicatorColor = Color(0xFFE8F5E9),
-                unselectedIconColor = Color.Gray,
-                unselectedTextColor = Color.Gray,
-            ),
+            selected = selectedTab == BottomTab.MINISTRIES,
+            onClick  = { onTabSelected(BottomTab.MINISTRIES) },
+            icon     = { Icon(Icons.Default.Star, contentDescription = "사역") },
+            label    = { Text("사역", style = MaterialTheme.typography.labelSmall) },
+            colors   = itemColors,
+        )
+        NavigationBarItem(
+            selected = selectedTab == BottomTab.NEWS,
+            onClick  = { onTabSelected(BottomTab.NEWS) },
+            icon     = { Icon(Icons.Default.Newspaper, contentDescription = "소식") },
+            label    = { Text("소식", style = MaterialTheme.typography.labelSmall) },
+            colors   = itemColors,
         )
         NavigationBarItem(
             selected = selectedTab == BottomTab.PROFILE,
-            onClick = { onTabSelected(BottomTab.PROFILE) },
-            icon = { Icon(Icons.Default.Person, contentDescription = "프로필") },
-            label = { Text("프로필") },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Color(0xFF2E7D32),
-                selectedTextColor = Color(0xFF2E7D32),
-                indicatorColor = Color(0xFFE8F5E9),
-                unselectedIconColor = Color.Gray,
-                unselectedTextColor = Color.Gray,
-            ),
+            onClick  = { onTabSelected(BottomTab.PROFILE) },
+            icon     = { Icon(Icons.Default.Person, contentDescription = "프로필") },
+            label    = { Text("프로필", style = MaterialTheme.typography.labelSmall) },
+            colors   = itemColors,
         )
     }
 }

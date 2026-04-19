@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -15,20 +16,17 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.features.pending.presentation.SplashViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
-
 @Composable
 fun SplashScreen(
     viewModel: SplashViewModel = koinViewModel(),
-    onNavigate: (NavRoute) -> Unit
+    onNavigate: (NavRoute) -> Unit,
 ) {
-   val destination by viewModel.navigateTo.collectAsState()
+    val destination by viewModel.navigateTo.collectAsState()
 
     LaunchedEffect(destination) {
         destination?.let { route ->
@@ -36,22 +34,25 @@ fun SplashScreen(
             viewModel.onNavigationHandled()
         }
     }
-    // UI: Zentriertes Logo & Ladekreis
+
     Box(
-        modifier = Modifier.fillMaxSize().background(Color.White), // Oder Theme Color
-        contentAlignment = Alignment.Center
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "Hanmaum - DN App",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
+                text  = "한마음 D+N",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Spacer(modifier = Modifier.height(32.dp))
-            CircularProgressIndicator()
-            Spacer(modifier = Modifier.height(16.dp))
-            Text("Lade Benutzerdaten...", style = MaterialTheme.typography.displayLarge)
+            Spacer(modifier = Modifier.height(48.dp))
+            CircularProgressIndicator(
+                modifier    = Modifier.size(32.dp),
+                color       = MaterialTheme.colorScheme.primary,
+                strokeWidth = 2.dp,
+            )
         }
     }
-
 }

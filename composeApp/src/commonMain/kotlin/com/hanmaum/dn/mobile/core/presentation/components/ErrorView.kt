@@ -34,7 +34,7 @@ fun ErrorView(
 
         // Fehlermeldung
         Text(
-            text = "Ein Fehler ist aufgetreten",
+            text = "오류가 발생했습니다",
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
@@ -54,11 +54,12 @@ fun ErrorView(
         // Retry Button
         Button(
             onClick = onRetry,
+            shape  = MaterialTheme.shapes.extraSmall,
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.error
-            )
+                containerColor = MaterialTheme.colorScheme.error,
+            ),
         ) {
-            Text("Erneut versuchen")
+            Text("다시 시도", style = MaterialTheme.typography.labelLarge)
         }
     }
 }
