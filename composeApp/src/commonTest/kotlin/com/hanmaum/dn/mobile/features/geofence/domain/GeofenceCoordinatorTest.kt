@@ -140,9 +140,13 @@ class GeofenceCoordinatorTest {
     fun notifyEntry_doesNotFireNotificationOutsideWindow() = runTest {
         val fakeNotification = FakeNotificationService()
         val fakeGeofence = FakeGeofenceManager()
-        // Window: 00:00:00 – 00:00:01 (in the past, effectively never matches)
+        // Compute a window guaranteed to be in the past: end at 2 hours ago, start 1 second before that
+        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        val pastHour = if (now.hour >= 2) now.hour - 2 else 0
+        val windowStart = pastHour.toString().padStart(2, '0') + ":00:00"
+        val windowEnd   = pastHour.toString().padStart(2, '0') + ":00:01"
         val definitions = listOf(
-            AttendanceDefinition("1", "Morning Service", todayName(), "00:00:00", "00:00:01")
+            AttendanceDefinition("1", "Morning Service", todayName(), windowStart, windowEnd)
         )
         val coordinator = GeofenceCoordinator(
             FakeChurchLocationRepository(), FakeAttendanceRepository(definitions),
