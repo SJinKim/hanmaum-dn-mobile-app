@@ -11,6 +11,12 @@ import androidx.compose.runtime.LaunchedEffect
 actual fun GeofencePermissionRequest(onResult: (Boolean) -> Unit) {
     val permissions = buildList {
         add(Manifest.permission.ACCESS_FINE_LOCATION)
+        // API 29+: request background location. On API 30+ the system may deny this silently
+        // (user must manually set "Allow all the time" in Settings), but including it here
+        // gives API 29 devices a dialog and surfaces the intent on all versions.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            add(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             add(Manifest.permission.POST_NOTIFICATIONS)
         }

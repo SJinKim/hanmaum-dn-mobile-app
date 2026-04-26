@@ -16,9 +16,10 @@ class AndroidGeofenceManager(private val context: Context) : GeofenceManager {
     private val client = LocationServices.getGeofencingClient(context)
 
     override fun isLocationPermissionGranted(): Boolean {
-        // TODO: On API 29+, ACCESS_BACKGROUND_LOCATION must also be granted for reliable
-        //  background geofencing. Runtime request for background location is handled in
-        //  the permission rationale UI (Task 8). This method only gates initial registration.
+        // Gates initial geofence registration. Fine location is sufficient for foreground.
+        // Background location (ACCESS_BACKGROUND_LOCATION) is requested via
+        // GeofencePermissionRequest on API 29+; on API 30+ the user must also set
+        // "Allow all the time" in Settings for background wake-up to function.
         return ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED
     }
