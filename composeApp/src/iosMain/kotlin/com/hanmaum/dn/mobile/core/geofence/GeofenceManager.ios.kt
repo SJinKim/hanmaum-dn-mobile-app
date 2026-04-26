@@ -1,7 +1,6 @@
 package com.hanmaum.dn.mobile.core.geofence
 
 import com.hanmaum.dn.mobile.features.geofence.domain.model.ChurchLocation
-import kotlinx.cinterop.ExperimentalForeignApi
 import platform.CoreLocation.CLCircularRegion
 import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.CoreLocation.CLLocationManager
@@ -14,12 +13,11 @@ import platform.darwin.NSObject
 
 private const val REGION_ID = "church_geofence"
 
-@OptIn(ExperimentalForeignApi::class)
 class IosGeofenceManager : GeofenceManager {
 
     private val manager = CLLocationManager()
 
-    // Kotlin/Native new memory model: shared mutable state is safe; @Volatile is JVM-only
+    @Volatile
     private var onEnterCallback: (() -> Unit)? = null
 
     private val delegate = object : NSObject(), CLLocationManagerDelegateProtocol {
