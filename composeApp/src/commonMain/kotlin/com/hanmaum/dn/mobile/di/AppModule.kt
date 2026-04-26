@@ -39,7 +39,7 @@ val appModule = module {
     single<TokenStorage> { TokenStorageImpl() } // Storage
 
     //Splash VM
-    viewModel { SplashViewModel(get(), get()) }
+    viewModel { SplashViewModel(get(), get(), get()) }
 
 
     // Home VM
