@@ -1,6 +1,8 @@
 package com.hanmaum.dn.mobile.features.announcement.presentation
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
@@ -11,16 +13,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.koin.compose.viewmodel.koinViewModel
 import com.hanmaum.dn.mobile.core.presentation.components.BottomTab
 import com.hanmaum.dn.mobile.core.presentation.components.ChurchBottomBar
 import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.BibleVerseSection
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.HeroBannerSection
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.LatestNewsSection
+import com.hanmaum.dn.mobile.features.announcement.presentation.components.MorningServiceCard
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.WeeklyVerseSection
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import org.koin.compose.viewmodel.koinViewModel
+import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceUiState
+import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceViewModel
 
 @Composable
 fun HomeScreen(
@@ -34,6 +37,9 @@ fun HomeScreen(
 ) {
     val viewModel: HomeViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val attendanceViewModel: AttendanceViewModel = koinViewModel()
+    val attendanceState by attendanceViewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -60,9 +66,11 @@ fun HomeScreen(
                     onRetry = { viewModel.loadAnnouncements() },
                 )
                 else -> HomeContent(
-                    state = state,
+                    state           = state,
+                    attendanceState = attendanceState,
                     onAnnouncementClick = onAnnouncementClick,
-                    onViewAllClick = onViewAllClick,
+                    onViewAllClick      = onViewAllClick,
+                    onCheckIn           = attendanceViewModel::checkIn,
                 )
             }
         }
@@ -96,8 +104,10 @@ private fun HomeTopBar() {
 @Composable
 private fun HomeContent(
     state: HomeUiState,
+    attendanceState: AttendanceUiState,
     onAnnouncementClick: (String) -> Unit,
     onViewAllClick: () -> Unit,
+    onCheckIn: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -105,12 +115,21 @@ private fun HomeContent(
             .verticalScroll(rememberScrollState()),
     ) {
         HeroBannerSection(
-            banners = state.banners,
+            banners     = state.banners,
             onBannerClick = onAnnouncementClick,
-            isLoading = state.isLoading,
+            isLoading   = state.isLoading,
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        // MorningServiceCard hides itself when definition == null (no service today).
+        // Wrap spacers in the same condition to avoid phantom gaps.
+        if (attendanceState.definition != null) {
+            Spacer(modifier = Modifier.height(16.dp))
+            MorningServiceCard(
+                state     = attendanceState,
+                onCheckIn = onCheckIn,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
 
         BibleVerseSection(onViewAllClick = onViewAllClick)
 
@@ -121,7 +140,7 @@ private fun HomeContent(
         Spacer(modifier = Modifier.height(24.dp))
 
         LatestNewsSection(
-            newsList = state.announcements,
+            newsList    = state.announcements,
             onItemClick = onAnnouncementClick,
             onViewAllClick = onViewAllClick,
         )
