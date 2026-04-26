@@ -14,15 +14,19 @@ import com.hanmaum.dn.mobile.features.geofence.domain.model.ChurchLocation
 class AndroidGeofenceManager(private val context: Context) : GeofenceManager {
 
     private val client = LocationServices.getGeofencingClient(context)
-    private var onEnterCallback: (() -> Unit)? = null
 
-    override fun isLocationPermissionGranted(): Boolean =
-        ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
+    override fun isLocationPermissionGranted(): Boolean {
+        // TODO: On API 29+, ACCESS_BACKGROUND_LOCATION must also be granted for reliable
+        //  background geofencing. Runtime request for background location is handled in
+        //  the permission rationale UI (Task 8). This method only gates initial registration.
+        return ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED
+    }
 
     override fun startMonitoring(location: ChurchLocation, onEnter: () -> Unit) {
         if (!isLocationPermissionGranted()) return
-        onEnterCallback = onEnter
+        // onEnter is not used on Android — geofence events are delivered via
+        // GeofenceBroadcastReceiver which calls GeofenceCoordinator.notifyEntry() directly.
 
         val geofence = Geofence.Builder()
             .setRequestId("church_geofence")
@@ -41,12 +45,6 @@ class AndroidGeofenceManager(private val context: Context) : GeofenceManager {
 
     override fun stopMonitoring() {
         client.removeGeofences(buildPendingIntent())
-        onEnterCallback = null
-    }
-
-    /** Called by [GeofenceBroadcastReceiver] when the OS fires the entry event. */
-    fun triggerEntry() {
-        onEnterCallback?.invoke()
     }
 
     private fun buildPendingIntent(): PendingIntent = PendingIntent.getBroadcast(
