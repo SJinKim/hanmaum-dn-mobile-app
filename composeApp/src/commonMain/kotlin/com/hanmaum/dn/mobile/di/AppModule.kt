@@ -11,6 +11,9 @@ import com.hanmaum.dn.mobile.features.announcement.presentation.HomeViewModel
 import com.hanmaum.dn.mobile.features.attendance.data.repository.AttendanceRepositoryImpl
 import com.hanmaum.dn.mobile.features.attendance.domain.repository.AttendanceRepository
 import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceViewModel
+import com.hanmaum.dn.mobile.features.geofence.data.repository.ChurchLocationRepositoryImpl
+import com.hanmaum.dn.mobile.features.geofence.domain.GeofenceCoordinator
+import com.hanmaum.dn.mobile.features.geofence.domain.repository.ChurchLocationRepository
 import com.hanmaum.dn.mobile.features.login.data.repository.AuthRepositoryImpl
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
 import com.hanmaum.dn.mobile.features.login.presentation.LoginViewModel
@@ -36,7 +39,7 @@ val appModule = module {
     single<TokenStorage> { TokenStorageImpl() } // Storage
 
     //Splash VM
-    viewModel { SplashViewModel(get(), get()) }
+    viewModel { SplashViewModel(get(), get(), get()) }
 
 
     // Home VM
@@ -60,7 +63,7 @@ val appModule = module {
     viewModel { RegisterViewModel(get(), get()) }
 
     // Login VM
-    viewModel { LoginViewModel(get(), get(), get()) }
+    viewModel { LoginViewModel(get(), get(), get(), get()) }
 
     // Profile VM
     viewModel { ProfileViewModel(get(), get()) }
@@ -73,4 +76,8 @@ val appModule = module {
     // Attendance
     single<AttendanceRepository> { AttendanceRepositoryImpl(get()) }
     viewModel { AttendanceViewModel(get()) }
+
+    // Geofence
+    single<ChurchLocationRepository> { ChurchLocationRepositoryImpl(get()) }
+    single { GeofenceCoordinator(get(), get(), get(), get()) }
 }
