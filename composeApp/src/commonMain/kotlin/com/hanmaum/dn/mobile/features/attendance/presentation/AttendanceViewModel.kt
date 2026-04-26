@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
@@ -29,7 +28,7 @@ class AttendanceViewModel(
         viewModelScope.launch {
             repository.getActiveDefinitions().fold(
                 onSuccess = { definitions ->
-                    val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                    val now = kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
                     val todayName = now.dayOfWeek.name // "MONDAY" … "SUNDAY"
                     val todayDef = definitions.firstOrNull { it.dayOfWeek == todayName }
                     _uiState.update { it.copy(

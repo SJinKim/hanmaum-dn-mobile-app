@@ -33,6 +33,10 @@ buildkonfig {
     }
 }
 
+compose.resources {
+    packageOfResClass = "hanmaumdnapp.composeapp.generated.resources"
+}
+
 kotlin {
     androidTarget {
         compilerOptions {
@@ -57,6 +61,7 @@ kotlin {
             // --- NEU: Android Engine ---
             implementation(libs.ktor.client.okhttp)
             implementation(libs.koin.android)
+            implementation(libs.play.services.location)
         }
         commonMain.dependencies {
             implementation(libs.runtime)
