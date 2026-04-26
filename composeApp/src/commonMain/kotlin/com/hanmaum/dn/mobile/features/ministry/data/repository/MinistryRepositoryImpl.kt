@@ -18,7 +18,6 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
@@ -46,7 +45,7 @@ class MinistryRepositoryImpl(
     }
 
     override suspend fun register(ministryPublicId: String, note: String?): Result<MyRegistration> = runCatching {
-        val period = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year.toString()
+        val period = kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year.toString()
         val response = client.post("ministries/$ministryPublicId/registrations") {
             contentType(ContentType.Application.Json)
             setBody(CreateRegistrationRequest(period = period, note = note))
