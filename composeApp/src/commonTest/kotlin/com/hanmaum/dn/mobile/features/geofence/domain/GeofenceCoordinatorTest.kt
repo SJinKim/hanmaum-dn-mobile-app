@@ -8,7 +8,6 @@ import com.hanmaum.dn.mobile.features.geofence.domain.model.ChurchLocation
 import com.hanmaum.dn.mobile.features.geofence.domain.repository.ChurchLocationRepository
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.test.Test
@@ -53,7 +52,7 @@ private class FakeAttendanceRepository(
 }
 
 private fun todayName(): String =
-    Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).dayOfWeek.name
+    kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).dayOfWeek.name
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
@@ -141,7 +140,7 @@ class GeofenceCoordinatorTest {
         val fakeNotification = FakeNotificationService()
         val fakeGeofence = FakeGeofenceManager()
         // Compute a window guaranteed to be in the past: end at 2 hours ago, start 1 second before that
-        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        val now = kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
         val pastHour = if (now.hour >= 2) now.hour - 2 else 0
         val windowStart = pastHour.toString().padStart(2, '0') + ":00:00"
         val windowEnd   = pastHour.toString().padStart(2, '0') + ":00:01"

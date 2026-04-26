@@ -9,7 +9,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
@@ -50,7 +49,7 @@ class GeofenceCoordinator(
 
     private suspend fun onGeofenceEntered() {
         val definitions = attendanceRepository.getActiveDefinitions().getOrElse { return }
-        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        val now = kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
         val todayName = now.dayOfWeek.name
         val todayDef = definitions.firstOrNull { it.dayOfWeek == todayName } ?: return
         if (isCurrentlyInWindow(todayDef, now.hour, now.minute, now.second)) {
