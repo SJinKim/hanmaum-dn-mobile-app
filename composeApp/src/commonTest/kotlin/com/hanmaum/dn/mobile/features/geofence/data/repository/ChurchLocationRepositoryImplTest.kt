@@ -1,16 +1,13 @@
 package com.hanmaum.dn.mobile.features.geofence.data.repository
 
 import com.hanmaum.dn.mobile.features.geofence.domain.model.ChurchLocation
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.mock.MockEngine
-import io.ktor.client.engine.mock.respond
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.*
+import io.ktor.client.engine.mock.*
+import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.HttpRequestData
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.headersOf
-import io.ktor.serialization.kotlinx.json.json
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
@@ -28,11 +25,17 @@ private fun mockClient(
     respond(
         content = responseJson,
         status = status,
-        headers = headersOf("Content-Type", ContentType.Application.Json.toString())
+        headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
     )
 }) {
     install(ContentNegotiation) { json(testJson) }
-    defaultRequest { url("http://localhost") }
+    defaultRequest {
+        if (url.host.isBlank()) {
+            val path = url.encodedPath.removePrefix("/")
+            url.takeFrom("http://localhost")
+            url.encodedPath = "/$path"
+        }
+    }
 }
 
 class ChurchLocationRepositoryImplTest {
