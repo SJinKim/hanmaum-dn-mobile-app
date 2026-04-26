@@ -10,6 +10,9 @@ import org.koin.core.context.GlobalContext
 
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        // GeofencingEvent.fromIntent(Intent) was deprecated in play-services-location 21.0.0.
+        // The two-arg overload (Intent, Executor) is the replacement but is not yet available
+        // in the 21.x series; migration should be revisited when a compatible API lands.
         @Suppress("DEPRECATION")
         val event = GeofencingEvent.fromIntent(intent) ?: return
         if (event.hasError()) return

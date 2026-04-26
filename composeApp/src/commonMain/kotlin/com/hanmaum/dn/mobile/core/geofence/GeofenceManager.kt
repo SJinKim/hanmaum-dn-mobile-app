@@ -8,7 +8,9 @@ interface GeofenceManager {
 
     /**
      * Registers the geofence with the OS.
-     * [onEnter] is invoked (on any thread) when the user enters the radius.
+     * [onEnter] is invoked (on any thread) when the user enters the radius on iOS.
+     * On Android, entry events are delivered via [GeofenceBroadcastReceiver] instead,
+     * so [onEnter] is ignored on that platform.
      * Safe to call multiple times — re-registers if already active.
      */
     fun startMonitoring(location: ChurchLocation, onEnter: () -> Unit)
