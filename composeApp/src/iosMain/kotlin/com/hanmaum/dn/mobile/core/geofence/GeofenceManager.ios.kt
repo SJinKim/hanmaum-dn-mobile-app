@@ -16,6 +16,8 @@ private const val REGION_ID = "church_geofence"
 class IosGeofenceManager : GeofenceManager {
 
     private val manager = CLLocationManager()
+
+    @Volatile
     private var onEnterCallback: (() -> Unit)? = null
 
     private val delegate = object : NSObject(), CLLocationManagerDelegateProtocol {
@@ -32,7 +34,7 @@ class IosGeofenceManager : GeofenceManager {
     }
 
     override fun isLocationPermissionGranted(): Boolean {
-        val status = CLLocationManager.authorizationStatus()
+        val status = manager.authorizationStatus
         return status == kCLAuthorizationStatusAuthorizedAlways ||
                status == kCLAuthorizationStatusAuthorizedWhenInUse
     }
