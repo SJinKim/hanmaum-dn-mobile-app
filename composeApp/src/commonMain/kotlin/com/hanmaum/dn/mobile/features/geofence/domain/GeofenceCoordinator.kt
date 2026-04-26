@@ -9,6 +9,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
@@ -19,6 +21,7 @@ class GeofenceCoordinator(
     private val notificationService: NotificationService,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob()),
 ) {
+    private val initMutex = Mutex()
     private var isRegistered = false
 
     /**
@@ -27,16 +30,19 @@ class GeofenceCoordinator(
      * Call this after login is confirmed (e.g. from SplashViewModel when status == ACTIVE).
      */
     suspend fun initialize() {
-        if (isRegistered) return
-        if (!geofenceManager.isLocationPermissionGranted()) return
+        if (isRegistered) return // fast path — avoids lock on steady state
+        initMutex.withLock {
+            if (isRegistered) return@withLock // double-check inside lock
+            if (!geofenceManager.isLocationPermissionGranted()) return@withLock
 
-        val location = churchLocationRepository.getChurchLocation().getOrElse { error ->
-            println("[GeofenceCoordinator] Failed to fetch church location: ${error.message}")
-            return
+            val location = churchLocationRepository.getChurchLocation().getOrElse { error ->
+                println("[GeofenceCoordinator] Failed to fetch church location: ${error.message}")
+                return@withLock
+            }
+
+            geofenceManager.startMonitoring(location) { notifyEntry() }
+            isRegistered = true
         }
-
-        geofenceManager.startMonitoring(location) { notifyEntry() }
-        isRegistered = true
     }
 
     /**

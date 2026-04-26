@@ -139,9 +139,11 @@ class GeofenceCoordinatorTest {
     fun notifyEntry_doesNotFireNotificationOutsideWindow() = runTest {
         val fakeNotification = FakeNotificationService()
         val fakeGeofence = FakeGeofenceManager()
-        // Compute a window guaranteed to be in the past: end at 2 hours ago, start 1 second before that
+        // Compute a window 3 hours behind current time (mod 24) — always in the past regardless
+        // of what time the test runs, including at midnight. The isCurrentlyInWindow check does
+        // not wrap around midnight, so a window at hour H with current time at H+3 is never current.
         val now = kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-        val pastHour = if (now.hour >= 2) now.hour - 2 else 0
+        val pastHour = (now.hour - 3 + 24) % 24
         val windowStart = pastHour.toString().padStart(2, '0') + ":00:00"
         val windowEnd   = pastHour.toString().padStart(2, '0') + ":00:01"
         val definitions = listOf(
