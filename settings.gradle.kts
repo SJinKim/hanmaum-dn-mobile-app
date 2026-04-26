@@ -1,4 +1,4 @@
-rootProject.name = "HanmaumDnApp"
+rootProject.name = "hanmaum-dn-mobile-app"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

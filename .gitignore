@@ -19,3 +19,9 @@ captures
 node_modules/
 
 .env
+
+# --- Claude Code (per-machine, never commit) ---
+.claude/settings.local.json
+CLAUDE.local.md
+dev-log.md
+dev-log-*.md

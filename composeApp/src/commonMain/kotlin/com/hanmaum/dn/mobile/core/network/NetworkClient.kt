@@ -16,11 +16,25 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
+
 @Serializable
 private data class RefreshTokenResponse(
     @SerialName("access_token") val accessToken: String,
     @SerialName("refresh_token") val refreshToken: String? = null,
 )
+
+/**
+ * Forces Ktor's BearerAuthProvider to drop its cached BearerTokens so the next
+ * outbound request re-invokes `loadTokens` and picks up whatever is currently
+ * in TokenStorage. Call this right after writing fresh tokens (e.g. after a
+ * successful login) to avoid the provider replaying stale tokens that were
+ * cached at app startup.
+ */
+fun HttpClient.invalidateBearerCache() {
+    authProviders
+        .filterIsInstance<BearerAuthProvider>()
+        .forEach { provider -> provider.clearToken() }
+}
 
 fun createHttpClient(tokenStorage: TokenStorage): HttpClient {
     // Separate plain client for token refresh — no auth interceptor (avoids circular calls)
@@ -78,7 +92,10 @@ fun createHttpClient(tokenStorage: TokenStorage): HttpClient {
                             tokens.refreshToken?.let { tokenStorage.saveRefreshToken(it) }
                             BearerTokens(tokens.accessToken, tokens.refreshToken ?: refreshToken)
                         } else {
-                            tokenStorage.clear()
+                            // Don't clear storage here — a transient refresh failure
+                            // must not destroy tokens that were just saved by a
+                            // concurrent login. Returning null lets the 401 surface
+                            // to the caller, which decides whether to re-auth.
                             null
                         }
                     } catch (e: Exception) {
@@ -89,7 +106,7 @@ fun createHttpClient(tokenStorage: TokenStorage): HttpClient {
                 sendWithoutRequest { request ->
                     val path = request.url.encodedPath
                     val shouldSkipAuth = path.contains("register") || path.contains("openid-connect")
-                    shouldSkipAuth
+                    !shouldSkipAuth
                 }
             }
         }
