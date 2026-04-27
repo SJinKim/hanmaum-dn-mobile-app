@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DN App - Home</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary": "#ae2f34",
+                    "secondary-fixed-dim": "#a9c7ff",
+                    "surface-bright": "#f9f9f9",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed-variant": "#8c1520",
+                    "on-tertiary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "surface-container-low": "#f3f3f3",
+                    "on-primary-fixed": "#410006",
+                    "on-tertiary-fixed-variant": "#554500",
+                    "error-container": "#ffdad6",
+                    "on-error-container": "#93000a",
+                    "surface-container-highest": "#e2e2e2",
+                    "on-tertiary-fixed": "#221b00",
+                    "outline": "#8c706f",
+                    "primary-fixed-dim": "#ffb3b0",
+                    "surface-dim": "#dadada",
+                    "outline-variant": "#e0bfbd",
+                    "tertiary-fixed": "#ffe173",
+                    "surface-container": "#eeeeee",
+                    "secondary": "#005db8",
+                    "on-primary-container": "#6d0010",
+                    "inverse-primary": "#ffb3b0",
+                    "tertiary-fixed-dim": "#e8c426",
+                    "on-background": "#1a1c1c",
+                    "surface": "#f9f9f9",
+                    "on-error": "#ffffff",
+                    "inverse-surface": "#2f3131",
+                    "tertiary": "#705d00",
+                    "on-tertiary-container": "#4c3e00",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed": "#d6e3ff",
+                    "on-surface-variant": "#584140",
+                    "surface-variant": "#e2e2e2",
+                    "on-secondary-fixed": "#001b3e",
+                    "surface-container-high": "#e8e8e8",
+                    "primary-container": "#ff6b6b",
+                    "on-secondary-fixed-variant": "#00468c",
+                    "tertiary-container": "#caa800",
+                    "inverse-on-surface": "#f0f1f1",
+                    "on-surface": "#1a1c1c",
+                    "on-secondary-container": "#002e60",
+                    "background": "#f9f9f9",
+                    "surface-tint": "#ae2f34",
+                    "on-primary": "#ffffff",
+                    "primary-fixed": "#ffdad8",
+                    "secondary-container": "#4c96fe",
+                    "soft-peach": "#FFF5E1"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Plus Jakarta Sans"],
+                    "label": ["Plus Jakarta Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        body { min-height: max(884px, 100dvh); }
+    </style>
+</head>
+<body class="bg-surface text-on-surface-variant selection:bg-primary-fixed antialiased">
+<!-- TopAppBar -->
+<header class="w-full sticky top-0 z-50 bg-gradient-to-b from-[#f9f9f9] to-transparent">
+<div class="flex justify-between items-center px-6 py-4 w-full">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container scale-105 transition-transform duration-200">
+<img alt="user profile avatar" class="w-full h-full object-cover" data-alt="professional headshot of a smiling young man in a soft-lit creative studio environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCe8P1W3xk_omq9XA2YWsQGtkmN0jwT9Bt7N1uvTO6NkXfaHJNcbBdlPvOUdRtVvlluLkg0S47FHmM9psoD1z3wiIAB3pWT9847HQquzCfSPKHwCbGMDLLpHPlKFVSIi6h5uNC1TN8xguuvq6N2G1AiZ8iV7ntSZ52k3dzYpVFFgJYYcE-VByL4mi3RSXun7yL31E7ekGOuv68uSy5czU6E-AIaYKuZeHMGd9mu8GeY-OIF8ga-KXBupw0q9nXwq83DWri82NJWig"/>
+</div>
+<span class="text-xl font-bold tracking-tighter text-[#ae2f34] dark:text-[#ff6b6b]">DN App</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-[#584140] hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</div>
+</div>
+</header>
+<main class="pb-32">
+<!-- News Slider/Carousel -->
+<section class="mt-4 px-6">
+<div class="relative overflow-hidden rounded-xl h-80 group">
+<div class="absolute inset-0 bg-gradient-to-t from-on-background/80 via-transparent to-transparent z-10"></div>
+<img alt="Community News" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="vibrant community gathering in a modern open-plan church hall with warm hanging lights and diverse people smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIAM9hcbOosdw1IdS_kHKt9jNrwIvrHGDzW6JIwucNjWM4mWvjdek8-cdIOLIKO38Gxhgm5g8xknRfBnv9gT2QRZzvMuD_s908Vw6tU-SylMe8NU7CLEhBT9dv4HnkHTCINRwSIz75euTJRLLP2HuiI5jKD1Ub7E-HBQi-kT88Fqbc-iAnaIyPSUvoHSBCCwxNWFktDIohSdwOW8fbjJlnAyeXTAONBg44rpftF_GpnZCVxHHmN7cyEo1XhbIIrtcUJtUW1FzIYg"/>
+<div class="absolute bottom-0 left-0 p-8 z-20">
+<span class="inline-block px-3 py-1 bg-primary-container text-on-primary-container text-[10px] font-bold uppercase tracking-widest rounded-full mb-3">Community News</span>
+<h2 class="text-3xl font-extrabold text-white tracking-tight leading-tight max-w-xs">Revival Night: A New Season Begins</h2>
+<p class="text-white/80 mt-2 text-sm max-w-sm">Join us this Friday for an immersive night of worship and connection.</p>
+</div>
+</div>
+<!-- Carousel Indicators -->
+<div class="flex justify-center gap-2 mt-4">
+<div class="w-8 h-1 bg-primary rounded-full"></div>
+<div class="w-2 h-1 bg-surface-container-highest rounded-full"></div>
+<div class="w-2 h-1 bg-surface-container-highest rounded-full"></div>
+</div>
+</section>
+<!-- Attendance Check-in Card -->
+<section class="px-6 mt-12">
+<div class="bg-surface-container-lowest rounded-xl p-8 shadow-[0px_20px_40px_rgba(45,52,54,0.06)] relative overflow-hidden">
+<div class="relative z-10 flex flex-col items-center text-center">
+<div class="w-20 h-20 bg-primary-fixed-dim/30 rounded-full flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: 'FILL' 1;">how_to_reg</span>
+</div>
+<h3 class="text-2xl font-bold text-on-surface mb-2">Morning Service</h3>
+<p class="text-on-surface-variant mb-8 text-sm uppercase tracking-[0.1em] font-semibold">Sunday, Oct 22 • 10:30 AM</p>
+<button class="w-full py-5 px-8 bg-primary-container text-on-primary-container rounded-full font-bold text-lg hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary-container/20">
+                        Mark Attendance
+                    </button>
+</div>
+<!-- Decorative image partial bleed -->
+<img alt="Community gathering" class="absolute -bottom-12 -right-12 w-32 h-32 rounded-full opacity-20 rotate-12" data-alt="Blurred group of diverse young people laughing together in a warm, sunlit interior space with soft bokeh" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqLhXdgNfQ2cRHgL8oJzHKYV40ZQWMzI0UQFiGjR3kjFNeGyvR4s5QuWcRthM7lrDJeKhmBlyrZIQpStsEkBJdSMYgrGcIJjlhNYKkP3SMhiE1fKzWT59_MxrGkAw7bXtjNQHPX8vFXyxbDv6U5gZBzGCBVc6hbVNGWoUwN6_oDEus60HgcNvz5W4FRGsRndFA5zJxw-7qooigW2wWHNWFQc2mnjMmh26OGh5SL6tWPU9lgwU7YRvulxjIHjoIwZS6UdF-mym70A"/>
+</div>
+</section>
+<!-- Today's Bible Verse - Inspiration Blade -->
+<section class="mt-12">
+<div class="bg-soft-peach px-8 py-16 relative overflow-hidden">
+<!-- Asymmetric Decorative Element -->
+<div class="absolute -top-12 -right-12 w-48 h-48 bg-tertiary-fixed/30 rounded-full blur-3xl"></div>
+<div class="relative z-10 max-w-xl mx-auto text-center">
+<div class="flex flex-col items-center gap-4">
+<span class="text-tertiary font-bold tracking-[0.2em] uppercase text-xs">Today's Insight</span>
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-4xl" data-icon="auto_awesome" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<blockquote class="text-2xl md:text-3xl font-extrabold tracking-tight text-on-surface-variant leading-snug italic">
+                            "The light shines in the darkness, and the darkness has not overcome it."
+                        </blockquote>
+<cite class="not-italic font-bold text-primary mt-4 tracking-wider">— John 1:5</cite>
+</div>
+</div>
+</div>
+</section>
+<!-- Weekly Memory Verse -->
+<section class="px-6 mt-12">
+<div class="flex justify-between items-end mb-6">
+<div class="space-y-1">
+<span class="text-[10px] font-bold uppercase tracking-[0.15em] text-primary/70">Reflection</span>
+<h3 class="text-2xl font-bold tracking-tight">Weekly Memory Verse</h3>
+</div>
+<button class="text-sm font-bold text-secondary flex items-center gap-1 hover:opacity-70 transition-opacity">
+<span>Practise</span>
+<span class="material-symbols-outlined text-lg" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-[0px_20px_40px_rgba(45,52,54,0.06)] border border-outline-variant/15 flex flex-col md:flex-row gap-8 items-center">
+<div class="w-full md:w-1/3 aspect-square rounded-lg overflow-hidden shrink-0">
+<img alt="Memory Verse Background" class="w-full h-full object-cover" data-alt="tranquil sunrise over a calm lake with golden rays piercing through a light morning mist" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDN70EJ6JrSTtNR9uBY0Y3xT3L8zlweUmGNuHLUQEMDeVQ8ikn5xkAqQ9Z8mzalAIHcQlsBDSGr7DkcVUkhqx32fcT_TvTU436RhZ_ZZkISWMK6pwmTzQUdH7BQiGazJJeUeTjreW5RLDj7CNclxgs3xwGFvWhkKvcFLZWDmOWJjcmnpjPgutqr0bH8JE7AfhLrVsm-yy0v0ok6pcxzBQriWZlrlI11eHj0d9vT7fLF1CWSpelGvfcSkpVor7KvtHdgmPUP4SzoHw"/>
+</div>
+<div class="flex-1 space-y-4">
+<p class="text-lg font-medium leading-relaxed">
+                        "Commit your way to the LORD; trust in him and he will do this: He will make your righteous reward shine like the dawn."
+                    </p>
+<div class="flex items-center justify-between pt-4">
+<span class="text-on-surface-variant/60 font-bold tracking-tighter">Psalm 37:5-6</span>
+<button class="w-12 h-12 bg-surface-container-low rounded-full flex items-center justify-center hover:scale-110 transition-transform text-primary">
+<span class="material-symbols-outlined" data-icon="bookmark">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Quick Links Bento Grid -->
+<section class="px-6 mt-12">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<div class="bg-primary-fixed p-6 rounded-lg aspect-square flex flex-col justify-between group hover:scale-105 transition-transform duration-300">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="volunteer_activism">volunteer_activism</span>
+<div>
+<p class="font-bold text-on-primary-fixed-variant leading-none">Give</p>
+<p class="text-[10px] text-on-primary-fixed-variant/60 mt-1 uppercase tracking-widest">Support Ministry</p>
+</div>
+</div>
+<div class="bg-secondary-fixed p-6 rounded-lg aspect-square flex flex-col justify-between group hover:scale-105 transition-transform duration-300">
+<span class="material-symbols-outlined text-secondary text-3xl" data-icon="auto_stories">auto_stories</span>
+<div>
+<p class="font-bold text-on-secondary-fixed leading-none">Read</p>
+<p class="text-[10px] text-on-secondary-fixed/60 mt-1 uppercase tracking-widest">Reading Plan</p>
+</div>
+</div>
+<div class="bg-tertiary-fixed p-6 rounded-lg aspect-square flex flex-col justify-between group hover:scale-105 transition-transform duration-300">
+<span class="material-symbols-outlined text-tertiary text-3xl" data-icon="event_note">event_note</span>
+<div>
+<p class="font-bold text-on-tertiary-fixed leading-none">Events</p>
+<p class="text-[10px] text-on-tertiary-fixed/60 mt-1 uppercase tracking-widest">Upcoming</p>
+</div>
+</div>
+<div class="bg-surface-container-highest p-6 rounded-lg aspect-square flex flex-col justify-between group hover:scale-105 transition-transform duration-300">
+<span class="material-symbols-outlined text-on-surface-variant text-3xl" data-icon="podcasts">podcasts</span>
+<div>
+<p class="font-bold text-on-surface-variant leading-none">Listen</p>
+<p class="text-[10px] text-on-surface-variant/60 mt-1 uppercase tracking-widest">Sermon Audio</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pt-3 pb-8 bg-[#ffffff]/80 dark:bg-stone-900/80 backdrop-blur-xl rounded-t-[3rem] z-50 shadow-[0px_-10px_40px_rgba(45,52,54,0.06)]">
+<!-- Home (Active) -->
+<a class="flex flex-col items-center justify-center bg-[#ff6b6b]/10 dark:bg-[#ae2f34]/20 text-[#ae2f34] dark:text-[#ff6b6b] rounded-full px-4 py-2 scale-95 active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-medium uppercase tracking-wider mt-1">Home</span>
+</a>
+<!-- Ministry -->
+<a class="flex flex-col items-center justify-center text-[#584140] dark:text-stone-400 px-4 py-2 hover:scale-110 transition-transform scale-95 active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="church">church</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-medium uppercase tracking-wider mt-1">Ministry</span>
+</a>
+<!-- Attendance -->
+<a class="flex flex-col items-center justify-center text-[#584140] dark:text-stone-400 px-4 py-2 hover:scale-110 transition-transform scale-95 active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="newspaper">newspaper</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-medium uppercase tracking-wider mt-1">News</span>
+</a>
+<!-- Group -->
+<a class="flex flex-col items-center justify-center text-[#584140] dark:text-stone-400 px-4 py-2 hover:scale-110 transition-transform scale-95 active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-medium uppercase tracking-wider mt-1">Group</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-[#584140] dark:text-stone-400 px-4 py-2 hover:scale-110 transition-transform scale-95 active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-medium uppercase tracking-wider mt-1">Profile</span>
+</a>
+</nav>
+</body></html>

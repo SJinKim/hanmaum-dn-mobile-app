@@ -28,3 +28,9 @@ node_modules/
 CLAUDE.local.md
 dev-log.md
 dev-log-*.md
+
+# --- Local AI tool data ---
+.superpowers/
+
+# --- Font download artifacts ---
+composeApp/src/commonMain/Plus_Jakarta_Sans/README.txt

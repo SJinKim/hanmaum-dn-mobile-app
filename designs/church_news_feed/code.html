@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>News Feed - DN App</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed-variant": "#8c1520",
+                    "primary-fixed-dim": "#ffb3b0",
+                    "primary-container": "#ff6b6b",
+                    "surface-dim": "#dadada",
+                    "tertiary-fixed-dim": "#e8c426",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#554500",
+                    "secondary-container": "#4c96fe",
+                    "inverse-surface": "#2f3131",
+                    "surface-bright": "#f9f9f9",
+                    "background": "#f9f9f9",
+                    "outline": "#8c706f",
+                    "on-primary-container": "#6d0010",
+                    "error": "#ba1a1a",
+                    "surface-container-high": "#e8e8e8",
+                    "tertiary-container": "#caa800",
+                    "error-container": "#ffdad6",
+                    "on-error-container": "#93000a",
+                    "primary-fixed": "#ffdad8",
+                    "tertiary": "#705d00",
+                    "surface-tint": "#ae2f34",
+                    "outline-variant": "#e0bfbd",
+                    "on-surface": "#1a1c1c",
+                    "surface-container-highest": "#e2e2e2",
+                    "on-error": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed": "#410006",
+                    "tertiary-fixed": "#ffe173",
+                    "surface": "#f9f9f9",
+                    "secondary-fixed": "#d6e3ff",
+                    "inverse-on-surface": "#f0f1f1",
+                    "on-tertiary-fixed": "#221b00",
+                    "surface-container": "#eeeeee",
+                    "secondary": "#005db8",
+                    "on-secondary-container": "#002e60",
+                    "surface-container-low": "#f3f3f3",
+                    "secondary-fixed-dim": "#a9c7ff",
+                    "surface-variant": "#e2e2e2",
+                    "on-secondary-fixed": "#001b3e",
+                    "on-background": "#1a1c1c",
+                    "inverse-primary": "#ffb3b0",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "primary": "#ae2f34",
+                    "on-surface-variant": "#584140",
+                    "on-secondary-fixed-variant": "#00468c",
+                    "on-tertiary-container": "#4c3e00"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Plus Jakarta Sans"],
+                    "label": ["Plus Jakarta Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .tonal-shift {
+            background: linear-gradient(180deg, rgba(243, 243, 243, 0.8) 0%, rgba(249, 249, 249, 0.5) 100%);
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f9f9f9;
+        }
+        .asymmetric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 2rem;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-surface">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-stone-50/80 backdrop-blur-xl flex justify-between items-center px-6 h-16 w-full">
+<div class="flex items-center gap-4">
+<button class="text-red-700 hover:scale-105 transition-transform duration-200 active:opacity-80">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="text-xl font-bold tracking-tighter text-red-700 font-['Plus_Jakarta_Sans']">DN App</h1>
+</div>
+<div class="flex items-center gap-3">
+<button class="text-red-700 hover:scale-105 transition-all p-2 bg-red-50 rounded-full">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</div>
+</header>
+<main class="pt-24 pb-32 px-6 max-w-5xl mx-auto">
+<!-- Inspiration Blade / Header Section -->
+<section class="mb-12">
+<span class="text-primary font-bold tracking-[0.2em] text-xs uppercase mb-2 block">Latest Updates</span>
+<h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface max-w-2xl leading-[1.1]">
+                Community <span class="text-primary italic">Pulse</span> &amp; News
+            </h2>
+<div class="mt-8 flex flex-wrap gap-3">
+<!-- Filters UI -->
+<button class="px-6 py-2 rounded-full bg-secondary text-white text-sm font-semibold hover:scale-105 transition-all shadow-lg shadow-secondary/20">Newest</button>
+<button class="px-6 py-2 rounded-full bg-surface-container-high text-on-surface-variant text-sm font-semibold hover:scale-105 transition-all">This Month</button>
+<button class="px-6 py-2 rounded-full bg-surface-container-high text-on-surface-variant text-sm font-semibold hover:scale-105 transition-all">Announcements</button>
+<button class="px-6 py-2 rounded-full bg-surface-container-high text-on-surface-variant text-sm font-semibold hover:scale-105 transition-all">Missions</button>
+</div>
+</section>
+<!-- News Bento-Style Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Featured Large Card -->
+<article class="md:col-span-2 bg-surface-container-lowest rounded-xl overflow-hidden shadow-[0px_20px_40px_rgba(45,52,54,0.06)] group">
+<div class="flex flex-col md:flex-row">
+<div class="md:w-1/2 relative h-64 md:h-auto overflow-hidden">
+<img alt="Featured News" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="diverse group of young adults laughing together in a sun-drenched modern community space with warm golden hour lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZ7kJ80R1T0HrOizR2ivAdEOCsqshPRA7ludOEbjpNmtbXSxYE6PG8pHYBOEzzwTjIkAao6n2eAGcbJOBDflVsNSrMLMqTN5lr7ISQONhbn2P6VcXTwCXt4f9CUJ6eJXvnzFsWSY45wkhshrFR_z8C0TAHA11YfbVO3TV_poQvAVF4rXFJpqqapCr3KSHNuBUX6hQrXgAYVxHrVwhR9I9HZHnlUiBqWPvG860dMyMQJge0dA1XM3XDsUQZJSwpML_Rv8mtH5mkQw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+<div class="absolute top-6 left-6 bg-tertiary-fixed text-on-tertiary-fixed px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest">Featured</div>
+</div>
+<div class="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+<div class="flex items-center gap-3 mb-6">
+<img class="w-10 h-10 rounded-full object-cover border-2 border-primary-fixed" data-alt="close up headshot of a friendly man with a kind smile outdoors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBy_XyUcjD5pVsu7WwhKnOyCsQ-vMwuufvRRSNm2HRNX9W3kbOP8RGl6TP3C_0dS3hK1BBiYuBzFP-3ovqopvoki2g6Mus0RRtasUojDAlxqqhBaXm9352qXuAgTYvTOd-wZY_LjVSEbQ-f-6eH8skHFVzjO68OlQDFldi9AKAaX-jYDw7wvW2ih2Z-pQr7wpGFBQ9viZkbSNIUmT0zwqMC820VexDNyfI2abJfzJeqwWGxemP0KAqM4zeL_Nw7hezrYJCsRps6-g"/>
+<div>
+<p class="text-sm font-bold text-on-surface">Pastor Marcus Eli</p>
+<p class="text-xs text-on-surface-variant">Lead Ministry • Oct 24, 2023</p>
+</div>
+</div>
+<h3 class="text-3xl font-bold tracking-tight text-on-surface mb-4 leading-tight">The Vision for 2024: Expanding Our Reach</h3>
+<p class="text-on-surface-variant leading-relaxed mb-8">Join us as we discuss the blueprint for the upcoming year, focusing on youth outreach and global digital missions. We are venturing into new territories of faith and community building...</p>
+<button class="self-start flex items-center gap-2 text-primary font-bold hover:gap-3 transition-all uppercase tracking-widest text-xs">
+                            Read Full Story <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Card 2 -->
+<article class="bg-surface-container-lowest rounded-xl p-8 shadow-[0px_20px_40px_rgba(45,52,54,0.06)] hover:scale-[1.01] transition-transform">
+<div class="flex items-center gap-3 mb-6">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="smiling young woman with braided hair and gentle expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBap-B6pvnU2ycAqk8F6O7qMOa8x28yol0SV3kOoO5Z7jf3hAn4voK6C1MsnRpvh5XDEQJeuh7q7iIdAHsh6lHgAhgVr0gkPc0SH12W1j5LwmyZoZJycS6SzHFg2NaQKZnFLRtgG4pvcsxAFaIxogkUDSj_HrOFMBJZnHEobN0vtzqnlB2j9sqVTxKn8-H2vyN1MJexufiLqmULBY1lj0kAS3pdPyOJnLJtFdsYiEyKNPGVUO6mJ-e2egaGo9grPjCDVC1vxpaYJA"/>
+<div>
+<p class="text-sm font-bold text-on-surface">Sarah Jenkins</p>
+<p class="text-xs text-on-surface-variant">Youth Leader • Oct 22, 2023</p>
+</div>
+</div>
+<h3 class="text-xl font-bold tracking-tight text-on-surface mb-3">Youth Camp Highlights</h3>
+<p class="text-sm text-on-surface-variant leading-relaxed mb-6">Recapping the incredible weekend at Cedar Ridge. Over 200 students gathered for worship, growth, and the annual bonfire competition...</p>
+<div class="w-full h-40 rounded-lg overflow-hidden mb-6">
+<img class="w-full h-full object-cover" data-alt="wide shot of a bright campfire at night with blurry silhouettes of people sitting around it in a circle" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCajgvqvvIUq2XA8E1VkkpsDbT4xH4bJbgNcEP_xMbC8Sp4gVWhMgfGlP1MQIwji5ZbSo1J3_YMu9qogu2U4SWbpPojUNh7mPFRSj3RPSP9XbJSHhCNPE7C8QhSJv-YNDztKnHgBafQH92FYr-AXgzeRD-RcsezsQcWa9jnNaezyDG-zUkB-QMksJRt__ZAcKeLbv59icY8hOQtE4HS_7inhLr5X1EvoPDnFPcVdmuworO9uZ2SqW8ykPhOV75eS2W3nJmXIeIypQ"/>
+</div>
+<button class="text-primary text-sm font-bold uppercase tracking-widest">Details</button>
+</article>
+<!-- Card 3 -->
+<article class="bg-surface-container-lowest rounded-xl p-8 shadow-[0px_20px_40px_rgba(45,52,54,0.06)] hover:scale-[1.01] transition-transform">
+<div class="flex items-center gap-3 mb-6">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="professional looking man in a light blue shirt smiling calmly" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjTxIby-D-mGfU0_lAQvjsvMcSujWQ6DTYjLw5yPMvlsscKY7oKGH2b-XFBqjk09Bnc8fgVUvxPAirksTmLzqSpLXDN9WkMZ1eqqqzgEQeJMk1x5o-OgV_1gpah6LBlQOKb8JJ7Z2SLTW_jvi0FwDoxEE1TD_BWI66gLDCwdndYCvC2TK2d2ZtLvYlGfdaTbh2qZZxkNQjG8P9C69f9R5bGNbgTtViRa5IZQDS3YxwYTXn6u3SqOXfm2Xe1K2bwX-YLX1M1HAN9A"/>
+<div>
+<p class="text-sm font-bold text-on-surface">David Chen</p>
+<p class="text-xs text-on-surface-variant">Finance • Oct 18, 2023</p>
+</div>
+</div>
+<h3 class="text-xl font-bold tracking-tight text-on-surface mb-3">Renovation Update: Phase 2</h3>
+<p class="text-sm text-on-surface-variant leading-relaxed mb-6">Construction in the East Wing is progressing ahead of schedule. We expect the new community hall to be ready for the Thanksgiving banquet...</p>
+<div class="w-full h-40 rounded-lg bg-surface-container overflow-hidden mb-6 flex items-center justify-center">
+<span class="material-symbols-outlined text-stone-300 text-5xl" data-icon="construction">construction</span>
+</div>
+<button class="text-primary text-sm font-bold uppercase tracking-widest">Project Log</button>
+</article>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-[3rem] bg-stone-50/90 backdrop-blur-2xl shadow-[0px_-10px_40px_rgba(0,0,0,0.04)] border-t border-stone-200/20">
+<div class="flex justify-around items-center w-full px-4 pb-6 pt-3">
+<!-- Home -->
+<a class="flex flex-col items-center justify-center text-stone-500 hover:text-red-600 transition-colors py-2" href="#">
+<span class="material-symbols-outlined scale-110 transition-transform duration-300 ease-out" data-icon="home">home</span>
+<span class="text-[10px] uppercase tracking-widest font-bold font-['Plus_Jakarta_Sans'] mt-1">Home</span>
+</a>
+<!-- Ministry -->
+<a class="flex flex-col items-center justify-center text-stone-500 hover:text-red-600 transition-colors py-2" href="#">
+<span class="material-symbols-outlined scale-110 transition-transform duration-300 ease-out" data-icon="church">church</span>
+<span class="text-[10px] uppercase tracking-widest font-bold font-['Plus_Jakarta_Sans'] mt-1">Ministry</span>
+</a>
+<!-- News (Active) -->
+<a class="flex flex-col items-center justify-center bg-red-50 text-red-700 rounded-full px-5 py-2 scale-110 transition-transform duration-300 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="newspaper" style="font-variation-settings: 'FILL' 1;">newspaper</span>
+<span class="text-[10px] uppercase tracking-widest font-bold font-['Plus_Jakarta_Sans'] mt-1">News</span>
+</a>
+<!-- Group -->
+<a class="flex flex-col items-center justify-center text-stone-500 hover:text-red-600 transition-colors py-2" href="#">
+<span class="material-symbols-outlined scale-110 transition-transform duration-300 ease-out" data-icon="groups">groups</span>
+<span class="text-[10px] uppercase tracking-widest font-bold font-['Plus_Jakarta_Sans'] mt-1">Group</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-stone-500 hover:text-red-600 transition-colors py-2" href="#">
+<span class="material-symbols-outlined scale-110 transition-transform duration-300 ease-out" data-icon="person">person</span>
+<span class="text-[10px] uppercase tracking-widest font-bold font-['Plus_Jakarta_Sans'] mt-1">Profile</span>
+</a>
+</div>
+</nav>
+</body></html>
