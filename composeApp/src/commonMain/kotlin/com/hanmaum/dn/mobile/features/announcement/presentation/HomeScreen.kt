@@ -35,13 +35,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
-    onLogout: () -> Unit,
     onAnnouncementClick: (String) -> Unit,
     onViewAllClick: () -> Unit,
-    onProfileClick: () -> Unit,
-    onMinistryClick: () -> Unit,
-    onCommunityClick: () -> Unit,
-    onNewsClick: () -> Unit,
 ) {
     val viewModel: HomeViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()

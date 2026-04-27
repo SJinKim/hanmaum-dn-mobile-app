@@ -122,19 +122,10 @@ fun App() {
 
                     composable<HomeRoute> {
                         HomeScreen(
-                            onLogout = {
-                                navController.navigate(LoginRoute) {
-                                    popUpTo(0) { inclusive = true }
-                                }
-                            },
                             onAnnouncementClick = { id ->
                                 navController.navigate(AnnouncementDetailRoute(id = id))
                             },
-                            onViewAllClick   = { navController.navigate(AnnouncementListRoute) },
-                            onProfileClick   = { navController.navigate(ProfileRoute) },
-                            onMinistryClick  = { navController.navigate(MinistryListRoute) },
-                            onCommunityClick = { navController.navigate(CommunityRoute) },
-                            onNewsClick      = { navController.navigate(AnnouncementListRoute) },
+                            onViewAllClick = { navController.navigate(AnnouncementListRoute) },
                         )
                     }
 
@@ -184,9 +175,7 @@ fun App() {
                     }
 
                     composable<CommunityRoute> {
-                        CommunityStubScreen(
-                            onBackClick = { navController.popBackStack() },
-                        )
+                        CommunityStubScreen()
                     }
                 }
             }
