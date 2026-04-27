@@ -12,9 +12,9 @@ import com.hanmaum.dn.mobile.core.presentation.components.ChurchTopBar
 
 // TODO: Replace with full Community feature implementation
 @Composable
-fun CommunityStubScreen(onBackClick: () -> Unit) {
+fun CommunityStubScreen() {
     Scaffold(
-        topBar = { ChurchTopBar(title = "커뮤니티", onBackClick = onBackClick) }
+        topBar = { ChurchTopBar(title = "커뮤니티") }
     ) { padding ->
         Box(
             modifier = Modifier

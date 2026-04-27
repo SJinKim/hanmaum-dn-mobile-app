@@ -22,8 +22,6 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import com.hanmaum.dn.mobile.core.geofence.GeofenceManager
 import com.hanmaum.dn.mobile.core.geofence.GeofencePermissionRequest
-import com.hanmaum.dn.mobile.core.presentation.components.BottomTab
-import com.hanmaum.dn.mobile.core.presentation.components.ChurchBottomBar
 import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.BibleVerseSection
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.HeroBannerSection
@@ -37,13 +35,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
-    onLogout: () -> Unit,
     onAnnouncementClick: (String) -> Unit,
     onViewAllClick: () -> Unit,
-    onProfileClick: () -> Unit,
-    onMinistryClick: () -> Unit,
-    onCommunityClick: () -> Unit,
-    onNewsClick: () -> Unit,
 ) {
     val viewModel: HomeViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -79,20 +72,6 @@ fun HomeScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = { HomeTopBar() },
-        bottomBar = {
-            ChurchBottomBar(
-                selectedTab = BottomTab.HOME,
-                onTabSelected = { tab ->
-                    when (tab) {
-                        BottomTab.PROFILE    -> onProfileClick()
-                        BottomTab.MINISTRIES -> onMinistryClick()
-                        BottomTab.COMMUNITY  -> onCommunityClick()
-                        BottomTab.NEWS       -> onNewsClick()
-                        else                 -> {}
-                    }
-                },
-            )
-        },
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             when {
