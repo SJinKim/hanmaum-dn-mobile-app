@@ -24,17 +24,13 @@ private val DAY_KOREAN = mapOf(
     "SUNDAY"    to "일요일",
 )
 
-/**
- * Renders nothing (early return) when [AttendanceUiState.definition] is null,
- * i.e. no service is scheduled for today.
- */
 @Composable
 fun MorningServiceCard(
     state: AttendanceUiState,
     onCheckIn: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val def = state.definition ?: return  // hide card when no service today
+    val def = state.definition
 
     Card(
         modifier  = modifier
@@ -69,20 +65,22 @@ fun MorningServiceCard(
 
             // Title
             Text(
-                text  = def.title,
+                text  = def?.title ?: "예배 출석",
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface,
             )
 
-            // Subtitle: "일요일  ·  10:30"
-            Text(
-                text  = formatSubtitle(def),
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontWeight    = FontWeight.SemiBold,
-                    letterSpacing = 0.1.em,
-                ),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            // Subtitle: "일요일  ·  10:30" — hidden when no service is defined for today
+            if (def != null) {
+                Text(
+                    text  = formatSubtitle(def),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight    = FontWeight.SemiBold,
+                        letterSpacing = 0.1.em,
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
 
             Spacer(Modifier.height(8.dp))
 
