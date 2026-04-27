@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary": "#ae2f34",
+                    "secondary-fixed-dim": "#a9c7ff",
+                    "surface-bright": "#f9f9f9",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed-variant": "#8c1520",
+                    "on-tertiary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "surface-container-low": "#f3f3f3",
+                    "on-primary-fixed": "#410006",
+                    "on-tertiary-fixed-variant": "#554500",
+                    "error-container": "#ffdad6",
+                    "on-error-container": "#93000a",
+                    "surface-container-highest": "#e2e2e2",
+                    "on-tertiary-fixed": "#221b00",
+                    "outline": "#8c706f",
+                    "primary-fixed-dim": "#ffb3b0",
+                    "surface-dim": "#dadada",
+                    "outline-variant": "#e0bfbd",
+                    "tertiary-fixed": "#ffe173",
+                    "surface-container": "#eeeeee",
+                    "secondary": "#005db8",
+                    "on-primary-container": "#6d0010",
+                    "inverse-primary": "#ffb3b0",
+                    "tertiary-fixed-dim": "#e8c426",
+                    "on-background": "#1a1c1c",
+                    "surface": "#f9f9f9",
+                    "on-error": "#ffffff",
+                    "inverse-surface": "#2f3131",
+                    "tertiary": "#705d00",
+                    "on-tertiary-container": "#4c3e00",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed": "#d6e3ff",
+                    "on-surface-variant": "#584140",
+                    "surface-variant": "#e2e2e2",
+                    "on-secondary-fixed": "#001b3e",
+                    "surface-container-high": "#e8e8e8",
+                    "primary-container": "#ff6b6b",
+                    "on-secondary-fixed-variant": "#00468c",
+                    "tertiary-container": "#caa800",
+                    "inverse-on-surface": "#f0f1f1",
+                    "on-surface": "#1a1c1c",
+                    "on-secondary-container": "#002e60",
+                    "background": "#f9f9f9",
+                    "surface-tint": "#ae2f34",
+                    "on-primary": "#ffffff",
+                    "primary-fixed": "#ffdad8",
+                    "secondary-container": "#4c96fe"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Plus Jakarta Sans"],
+                    "label": ["Plus Jakarta Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="w-full sticky top-0 z-50 bg-[#f9f9f9] dark:bg-stone-950 bg-gradient-to-b from-[#f9f9f9] to-transparent">
+<div class="flex justify-between items-center px-6 py-4 w-full">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-high scale-105 transition-transform duration-200 cursor-pointer">
+<img alt="user profile avatar" data-alt="close-up portrait of a smiling young man in soft natural lighting with a blurred professional background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAM97_1tG7riFO_ftGizjpzVmTLUY96WCfGtAlL-mjr7IBghnECHqX-cbCcksw8eN-napf43W_leBFtZUBZCKjLvoSzuXwqqV6VErpYwIk82xsf5VVu4E5C1C-5qt-GD1Cx7kEpGB3xGUgKD6j52HMOgK94INgL3JG0OnP_Ln3lrr5PFuVaCycH1Pv4JjYtOgt9o0vC6ZPmccCDva6s8_CHF132vR6mw-L_tmVW3cBDa3b2yF2gTiG4hNurB7ngpAPrWrGkQmU05A"/>
+</div>
+<h1 class="font-['Plus_Jakarta_Sans'] tracking-tight font-bold text-lg text-xl font-bold tracking-tighter text-[#ae2f34] dark:text-[#ff6b6b]">DN App</h1>
+<button class="material-symbols-outlined text-[#584140] dark:text-stone-400 hover:opacity-80 transition-opacity">
+                notifications
+            </button>
+</div>
+</header>
+<main class="px-6 pt-4 max-w-4xl mx-auto">
+<!-- Inspiration Blade -->
+<section class="mb-12 relative overflow-hidden rounded-xl bg-surface-container-lowest p-8 shadow-[0px_20px_40px_rgba(45,52,54,0.06)]">
+<div class="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-primary-container/20 to-tertiary-fixed/20 blur-3xl rounded-full"></div>
+<p class="label-md text-primary font-bold uppercase tracking-[0.1em] mb-4">Community Collective</p>
+<h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface leading-tight mb-4">Find your place in our <span class="text-primary italic">spiritual story</span>.</h2>
+<p class="text-on-surface-variant text-lg max-w-xl leading-relaxed">Ministry is more than service; it's where our unique gifts meet the world's deep hunger. Explore our active groups below.</p>
+</section>
+<!-- Ministry List Container -->
+<div class="space-y-6">
+<div class="flex items-center justify-between">
+<h3 class="text-xl font-bold text-on-surface">Active Ministries</h3>
+<span class="text-sm font-medium text-on-surface-variant bg-surface-container-low px-4 py-1 rounded-full">7 Total</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Community Card 1 -->
+<div class="group bg-surface-container-lowest border border-[#EFEFEF] rounded-[20px] p-6 shadow-[0px_20px_40px_rgba(45,52,54,0.06)] hover:scale-[1.02] transition-all duration-300 cursor-pointer">
+<div class="flex items-start justify-between mb-4">
+<div class="w-14 h-14 bg-primary-container/10 rounded-2xl flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">music_note</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">arrow_forward_ios</span>
+</div>
+<h4 class="text-xl font-bold text-on-surface mb-2">Youth Choir</h4>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-4">Uniting voices to create ethereal harmonies that uplift the spirit and modern worship experience.</p>
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-white" data-alt="portrait of a young woman with a warm smile outdoors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxvpjppHnZE7vBj08624Gf8G58SymmytR-M_0h4PlfBOrqDTWZsTa1zV27ag55LuhwLC-D_N0p3XyGfrpxwxhg5aJaGPcitwKKlXJ3cHUBHJg1F0XZOxg7aFIk8rTjGs59zTeKEfr8NeVfZy5xipFrkzpZmwKK_JtNkE6BrpBOa51bf0BjInjxOZJRblewd7AjMnI6kz3WjgfrGRIrW1f0aEAooHpMymV5VAtcMpup0KfXSEI3-Eom-YQCGdCrlIpF24rceLCJbA"/>
+<img class="w-8 h-8 rounded-full border-2 border-white" data-alt="headshot of a young man with a friendly expression in daylight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsRGqEpKm-NBnspfoqFBUB2lqHWlIk-UTod2trpks0QHKnh8OO4h7dfaZ_uiWby7cFjCN3nyl-fHJb7t79SNPIS36a7WC814QWvCjKDS2Eu1uf3jEazdbkIZ3-ctBSd9jp3mWgbA8X1b_Hg3G_hYxD1o794pKE9tnEYboTRS0RmRt5pfkrqibKG6R8LnKEh_frGRuf4Em4ghmuQvF-4VnIlU8cJvoq7kHiRq__eJT12t2FgGDlBmfHCVi-lsdk1yMHN4lfCDMsAA"/>
+<div class="w-8 h-8 rounded-full bg-surface-container-low border-2 border-white flex items-center justify-center text-[10px] font-bold text-on-surface-variant">+12</div>
+</div>
+</div>
+<!-- Community Card 2 -->
+<div class="group bg-surface-container-lowest border border-[#EFEFEF] rounded-[20px] p-6 shadow-[0px_20px_40px_rgba(45,52,54,0.06)] hover:scale-[1.02] transition-all duration-300 cursor-pointer">
+<div class="flex items-start justify-between mb-4">
+<div class="w-14 h-14 bg-secondary-container/10 rounded-2xl flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-3xl">public</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">arrow_forward_ios</span>
+</div>
+<h4 class="text-xl font-bold text-on-surface mb-2">Mission Trip</h4>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-4">Annual global outreach programs focused on sustainable development and local community support.</p>
+<div class="bg-secondary-container/10 text-secondary text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full w-fit">Summer 2024</div>
+</div>
+<!-- Community Card 3 -->
+<div class="group bg-surface-container-lowest border border-[#EFEFEF] rounded-[20px] p-6 shadow-[0px_20px_40px_rgba(45,52,54,0.06)] hover:scale-[1.02] transition-all duration-300 cursor-pointer">
+<div class="flex items-start justify-between mb-4">
+<div class="w-14 h-14 bg-tertiary/10 rounded-2xl flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-3xl">auto_stories</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">arrow_forward_ios</span>
+</div>
+<h4 class="text-xl font-bold text-on-surface mb-2">Bible Study</h4>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-4">Deep diving into sacred texts through collaborative discussion and modern theological context.</p>
+<div class="flex items-center text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm mr-1">schedule</span> Every Tuesday, 7PM
+                    </div>
+</div>
+<!-- Community Card 4 -->
+<div class="group bg-surface-container-lowest border border-[#EFEFEF] rounded-[20px] p-6 shadow-[0px_20px_40px_rgba(45,52,54,0.06)] hover:scale-[1.02] transition-all duration-300 cursor-pointer">
+<div class="flex items-start justify-between mb-4">
+<div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">volunteer_activism</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">arrow_forward_ios</span>
+</div>
+<h4 class="text-xl font-bold text-on-surface mb-2">Local Soup Kitchen</h4>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-4">Hands-on service providing nutritional support and dignified connection for our urban neighbors.</p>
+<div class="flex items-center text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm mr-1">location_on</span> Downtown Center
+                    </div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pt-3 pb-8 bg-[#ffffff]/80 dark:bg-stone-900/80 backdrop-blur-xl shadow-[0px_-10px_40px_rgba(45,52,54,0.06)] rounded-t-[3rem] z-50">
+<a class="flex flex-col items-center justify-center text-[#584140] dark:text-stone-400 px-4 py-2 hover:scale-110 transition-transform scale-95 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-medium uppercase tracking-wider">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#ff6b6b]/10 dark:bg-[#ae2f34]/20 text-[#ae2f34] dark:text-[#ff6b6b] rounded-full px-4 py-2 hover:scale-110 transition-transform scale-95 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">church</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-medium uppercase tracking-wider">Ministry</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#584140] dark:text-stone-400 px-4 py-2 hover:scale-110 transition-transform scale-95 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">newspaper</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-medium uppercase tracking-wider">News</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#584140] dark:text-stone-400 px-4 py-2 hover:scale-110 transition-transform scale-95 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">forum</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-medium uppercase tracking-wider">Group</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#584140] dark:text-stone-400 px-4 py-2 hover:scale-110 transition-transform scale-95 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[11px] font-medium uppercase tracking-wider">Profile</span>
+</a>
+</nav>
+</body></html>

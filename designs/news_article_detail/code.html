@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed-variant": "#8c1520",
+                    "primary-fixed-dim": "#ffb3b0",
+                    "primary-container": "#ff6b6b",
+                    "surface-dim": "#dadada",
+                    "tertiary-fixed-dim": "#e8c426",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#554500",
+                    "secondary-container": "#4c96fe",
+                    "inverse-surface": "#2f3131",
+                    "surface-bright": "#f9f9f9",
+                    "background": "#f9f9f9",
+                    "outline": "#8c706f",
+                    "on-primary-container": "#6d0010",
+                    "error": "#ba1a1a",
+                    "surface-container-high": "#e8e8e8",
+                    "tertiary-container": "#caa800",
+                    "error-container": "#ffdad6",
+                    "on-error-container": "#93000a",
+                    "primary-fixed": "#ffdad8",
+                    "tertiary": "#705d00",
+                    "surface-tint": "#ae2f34",
+                    "outline-variant": "#e0bfbd",
+                    "on-surface": "#1a1c1c",
+                    "surface-container-highest": "#e2e2e2",
+                    "on-error": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed": "#410006",
+                    "tertiary-fixed": "#ffe173",
+                    "surface": "#f9f9f9",
+                    "secondary-fixed": "#d6e3ff",
+                    "inverse-on-surface": "#f0f1f1",
+                    "on-tertiary-fixed": "#221b00",
+                    "surface-container": "#eeeeee",
+                    "secondary": "#005db8",
+                    "on-secondary-container": "#002e60",
+                    "surface-container-low": "#f3f3f3",
+                    "secondary-fixed-dim": "#a9c7ff",
+                    "surface-variant": "#e2e2e2",
+                    "on-secondary-fixed": "#001b3e",
+                    "on-background": "#1a1c1c",
+                    "inverse-primary": "#ffb3b0",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "primary": "#ae2f34",
+                    "on-surface-variant": "#584140",
+                    "on-secondary-fixed-variant": "#00468c",
+                    "on-tertiary-container": "#4c3e00"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Plus Jakarta Sans"],
+                    "label": ["Plus Jakarta Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .article-text {
+            line-height: 1.8;
+            letter-spacing: -0.01em;
+        }
+        .asymmetric-mask {
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0% 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body text-on-surface antialiased">
+<!-- Header Navigation Shell -->
+<header class="fixed top-0 w-full z-50 bg-stone-50/80 backdrop-blur-xl transition-all">
+<div class="flex justify-between items-center px-6 h-16 w-full">
+<button class="flex items-center gap-2 text-primary font-semibold hover:scale-105 transition-transform duration-200 active:opacity-80">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+<span class="text-sm tracking-tight font-headline">Back to News</span>
+</button>
+<div class="text-xl font-bold tracking-tighter text-red-700 font-headline">DN App</div>
+<div class="flex items-center gap-4">
+<button class="text-stone-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="share">share</span>
+</button>
+<button class="text-stone-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="bookmark">bookmark</span>
+</button>
+</div>
+</div>
+</header>
+<main class="pt-16 pb-32">
+<!-- Hero Section -->
+<div class="relative w-full h-[442px] md:h-[574px] overflow-hidden asymmetric-mask">
+<img alt="Community gathering" class="w-full h-full object-cover" data-alt="diverse group of joyful young adults laughing together in a warm, sunlit modern community space with soft lens flare" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnaUm30PvuaynsdChSeDj6l4shKmTZzv4SzPd2BFuG03zSib8hb1TV_xP-YrCvWRbbM_oKmKHH1gxk3KpcO7QkBaQy60eeb8ltD19A1Ttp4UCixD7t4G_PIWCngMeb7G7Gt9jIfO1OURCSSzK4Y71uVA28oDyyHVfKivKsbnOARHttRHCmo50W-oWBYu9TmOjodw7SIlPpXL_B4Y0GzCuN1iRywgUEKy7JAiY8dtJ1pCS88idzXG-OTQELkBXML0A2DAFGRLKscg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="absolute bottom-16 left-0 right-0 px-8 md:px-16 lg:px-24">
+<div class="flex flex-wrap items-center gap-3 mb-4">
+<span class="bg-tertiary text-on-tertiary px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">Community Spotlight</span>
+<span class="text-white/80 text-sm font-medium">5 min read</span>
+</div>
+<h1 class="text-white text-4xl md:text-6xl font-extrabold font-headline tracking-tighter max-w-4xl leading-[1.1]">
+                    Restoring Faith in the Modern Collective
+                </h1>
+</div>
+</div>
+<!-- Article Layout -->
+<div class="max-w-7xl mx-auto px-6 md:px-12 mt-12 grid grid-cols-1 lg:grid-cols-12 gap-12">
+<!-- Left: Metadata & Social (Desktop) -->
+<aside class="hidden lg:block lg:col-span-3">
+<div class="sticky top-28 space-y-8">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-primary-container">
+<img alt="Author" data-alt="professional headshot of a smiling woman with a warm expression, soft natural lighting in a contemporary office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcaDACQss3GQR_nAjyFXt7x8dOsTqM6hW2tBrg9yQsbOMc2h266Zax8xiYmOlL3FF9u_yFid_z2hR4VaCR41QR2K6_8avSGr-tFW78-M4HrAWJhuSVe2MeGN9EHnOR4cuoOPtK1ded4h96EL-sil8p1gd69qV-OsnhY_yhIx2U-oqt8q2DGtnYYxYWEFwERtxqX8vdGJvXhLbjnPOkjPgNiHNJE_yPBFI29U949EKwHMItnCr9sXChcUP0KeaWpuZWy-fk-MIKDA"/>
+</div>
+<div>
+<p class="text-xs uppercase tracking-widest font-bold text-primary">Written by</p>
+<p class="font-bold text-on-surface">Elena Rodriguez</p>
+</div>
+</div>
+<div class="pt-8 border-t border-outline-variant/20">
+<p class="text-xs uppercase tracking-widest font-bold text-stone-400 mb-2">Published</p>
+<p class="font-medium text-on-surface-variant">October 24, 2023</p>
+</div>
+<div class="pt-8 flex flex-col gap-4">
+<p class="text-xs uppercase tracking-widest font-bold text-stone-400">Share</p>
+<div class="flex gap-2">
+<button class="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container-low hover:bg-secondary-container hover:text-white transition-all group">
+<span class="material-symbols-outlined text-sm" data-icon="facebook">social_leaderboard</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container-low hover:bg-secondary-container hover:text-white transition-all group">
+<span class="material-symbols-outlined text-sm" data-icon="post_add">post_add</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container-low hover:bg-secondary-container hover:text-white transition-all group">
+<span class="material-symbols-outlined text-sm" data-icon="link">link</span>
+</button>
+</div>
+</div>
+</div>
+</aside>
+<!-- Center: Main Article Content -->
+<article class="lg:col-span-7 space-y-8">
+<!-- Mobile Metadata -->
+<div class="lg:hidden flex items-center justify-between py-6 border-b border-outline-variant/15 mb-8">
+<div class="flex items-center gap-3">
+<img alt="Author" class="w-10 h-10 rounded-full object-cover" data-alt="portrait of female author in soft light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJgoDP-OyG4_CmOrFdJWdI7jS2w6RfcETYi-GG5kLK07Z7nb0jr5JwltEycgFD8gExcqNOS6BkX8xYMKj3N7ccCZo8UekZUmBm0wMDPMBj9kLoRUy-IL1X90rmOUaKK0OkAOobAvUkYQrKDuVUaUla4-LZgr2Rzf2hyYkTkstvoHRAUEmRuYy6Pdg0e9RLKOT68Udu6_C-mirea0UepptIWXrMCtKYHsmZscJwejBF4JKBmreVZ0N8EhZ56SayrVo_WsXAXoj3zg"/>
+<span class="font-bold text-sm">Elena Rodriguez</span>
+</div>
+<span class="text-sm text-on-surface-variant">Oct 24, 2023</span>
+</div>
+<div class="article-text text-lg md:text-xl text-on-surface-variant space-y-8 font-normal">
+<p class="first-letter:text-5xl first-letter:font-bold first-letter:text-primary first-letter:mr-3 first-letter:float-left">
+                        In an era defined by digital disconnect, the craving for authentic sanctuary has never been more profound. As we navigate the complexities of modern ministry, we find ourselves at a crossroads of tradition and transformation.
+                    </p>
+<p>
+                        The essence of DN App has always been about more than just scheduling; it's about the sacred spaces between the events. We believe that community isn't something you attend—it's something you inhabit. This month, we've observed a beautiful shift in how our local groups are gathering, prioritizing presence over performance.
+                    </p>
+<!-- Inspiration Blade (Callout) -->
+<div class="bg-surface-container-lowest p-10 md:p-16 rounded-xl relative overflow-hidden my-12">
+<div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary-container/20 to-transparent blur-2xl"></div>
+<div class="relative z-10">
+<span class="material-symbols-outlined text-tertiary-container mb-6 scale-150" data-icon="format_quote" style="font-variation-settings: 'FILL' 1;">format_quote</span>
+<h2 class="text-2xl md:text-4xl font-extrabold font-headline tracking-tight text-on-surface leading-tight">
+                                "The sanctuary isn't a building; it is the collective warmth of souls seeking the same light."
+                            </h2>
+<p class="mt-6 text-sm uppercase tracking-widest font-bold text-secondary">Apostle J. Davies</p>
+</div>
+</div>
+<h3 class="text-2xl font-bold font-headline text-on-surface pt-4">Building Bridges of Grace</h3>
+<p>
+                        Our data shows that youth engagement increases by nearly 40% when digital interactions are coupled with high-touch physical gatherings. This "Phygital" approach creates a safety net of grace that transcends the screen. Whether it's a simple coffee meeting or a global worship event, the intent remains the same: radical inclusion.
+                    </p>
+<p>
+                        As we move into the winter season, we invite you to explore the "Ministry" tab. We've introduced new meditative guides and collaborative prayer journals designed to be shared in small, intimate circles.
+                    </p>
+<!-- Image Gallery Asymmetric -->
+<div class="grid grid-cols-2 gap-4 my-12">
+<div class="rounded-lg overflow-hidden h-64 md:h-80">
+<img alt="Team collaboration" class="w-full h-full object-cover" data-alt="close-up of hands joining together over a rustic wooden table with soft warm lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVnYIzmLazxcopguak4n0mD1yqOVnGwS0eaIIViHkTKKj9wOQ26XVaCnMuRj9z69DxB9p8Hs8kXQOce8THsTRVeVvMICnlBhZKzB4a1yl_QLcamegy5HbMObAyex9HBOPXx-dhFYJLe6-uLm58w3MrgyPet4zBd5p5NX9pbRREz58WJzn9eYnbgRnjJtAeSyrPWzP7rssoX6gXhJcn-6ynQKTLIA_UySg7jOJbDCy1eSuvyl0dD1tfSkCDz0i7q4-HMO9mHlAp5w"/>
+</div>
+<div class="rounded-lg overflow-hidden h-64 md:h-80 mt-8">
+<img alt="Quiet reflection" class="w-full h-full object-cover" data-alt="a single lit candle on a stone surface in a dimly lit room, creating a peaceful and spiritual atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDiXR1qFifOV7PDEytn9QRqvPDCUSqwNbnQ7iiIhj6_vw2ipc2wp6JeRRcMUo4PLgncqyZThka3RlhP-Pj5VCbO7hDLfi3A02hv3nb3vcblAS9pGtrRZ_xb2_QqWE5YRtOMexaKm4_UBBc4dCZUjpDHX9RozboE3ClVFeP1yAi926uT19wmzJRQH4fMfLji9pd_dYDJg93pIhsp4d9wJDkknjVAnx9oj0Q7wF1PBN0N-PC6tQ_b4NLHmRS7c3kXfrTqgXpxxrOVg"/>
+</div>
+</div>
+<p>
+                        Thank you for being part of this luminous journey. Your feedback continues to shape the DN App sanctuary. Together, we are building something that doesn't just store information, but radiates hope.
+                    </p>
+</div>
+<!-- Tags and Feedback -->
+<div class="pt-12 border-t border-outline-variant/20 flex flex-wrap gap-2">
+<span class="px-4 py-2 bg-surface-container-low rounded-full text-xs font-bold text-on-surface-variant hover:bg-secondary-fixed transition-colors cursor-pointer">#COMMUNITY</span>
+<span class="px-4 py-2 bg-surface-container-low rounded-full text-xs font-bold text-on-surface-variant hover:bg-secondary-fixed transition-colors cursor-pointer">#FAITH</span>
+<span class="px-4 py-2 bg-surface-container-low rounded-full text-xs font-bold text-on-surface-variant hover:bg-secondary-fixed transition-colors cursor-pointer">#MODERNYOUTH</span>
+</div>
+</article>
+<!-- Right: Related/Sidebar (Desktop) -->
+<aside class="hidden lg:block lg:col-span-2">
+<div class="space-y-8">
+<h4 class="text-xs uppercase tracking-widest font-bold text-primary">Related Stories</h4>
+<div class="space-y-6">
+<a class="block group" href="#">
+<p class="text-sm font-bold leading-tight group-hover:text-primary transition-colors">Digital Fasting: A Guide for the Weary</p>
+<p class="text-[10px] text-stone-400 mt-2">2 DAYS AGO</p>
+</a>
+<a class="block group" href="#">
+<p class="text-sm font-bold leading-tight group-hover:text-primary transition-colors">Upcoming Worship: The Radiant Night</p>
+<p class="text-[10px] text-stone-400 mt-2">1 WEEK AGO</p>
+</a>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<!-- Bottom Navigation Shell -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-[3rem] bg-stone-50/90 backdrop-blur-2xl shadow-[0px_-10px_40px_rgba(0,0,0,0.04)] border-t border-stone-200/20">
+<div class="flex justify-around items-center w-full px-4 pb-6 pt-3">
+<div class="flex flex-col items-center justify-center text-stone-500 hover:text-red-600 transition-colors py-2">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="text-[10px] uppercase tracking-widest font-bold font-headline mt-1">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-stone-500 hover:text-red-600 transition-colors py-2">
+<span class="material-symbols-outlined" data-icon="church">church</span>
+<span class="text-[10px] uppercase tracking-widest font-bold font-headline mt-1">Ministry</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-red-50 text-red-700 rounded-full px-5 py-2 scale-110 transition-transform duration-300 ease-out">
+<span class="material-symbols-outlined" data-icon="newspaper">newspaper</span>
+<span class="text-[10px] uppercase tracking-widest font-bold font-headline mt-1">News</span>
+</div>
+<div class="flex flex-col items-center justify-center text-stone-500 hover:text-red-600 transition-colors py-2">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="text-[10px] uppercase tracking-widest font-bold font-headline mt-1">Group</span>
+</div>
+<div class="flex flex-col items-center justify-center text-stone-500 hover:text-red-600 transition-colors py-2">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="text-[10px] uppercase tracking-widest font-bold font-headline mt-1">Profile</span>
+</div>
+</div>
+</nav>
+</body></html>
