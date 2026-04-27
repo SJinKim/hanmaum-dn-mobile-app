@@ -1,6 +1,8 @@
 package com.hanmaum.dn.mobile
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -40,6 +42,7 @@ fun App() {
             }
 
             Scaffold(
+                contentWindowInsets = WindowInsets(0, 0, 0, 0),
                 bottomBar = {
                     if (showBottomBar) {
                         BottomNavBar(
@@ -60,7 +63,7 @@ fun App() {
                 NavHost(
                     navController = navController,
                     startDestination = SplashRoute,
-                    modifier = Modifier.padding(innerPadding),
+                    modifier = Modifier.padding(innerPadding).statusBarsPadding(),
                 ) {
                     composable<SplashRoute> {
                         SplashScreen(
