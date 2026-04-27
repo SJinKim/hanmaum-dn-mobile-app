@@ -161,16 +161,12 @@ private fun HomeContent(
             isLoading   = state.isLoading,
         )
 
-        // MorningServiceCard hides itself when definition == null (no service today).
-        // Wrap spacers in the same condition to avoid phantom gaps.
-        if (attendanceState.definition != null) {
-            Spacer(modifier = Modifier.height(16.dp))
-            MorningServiceCard(
-                state     = attendanceState,
-                onCheckIn = onCheckIn,
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-        }
+        Spacer(modifier = Modifier.height(16.dp))
+        MorningServiceCard(
+            state     = attendanceState,
+            onCheckIn = onCheckIn,
+        )
+        Spacer(modifier = Modifier.height(8.dp))
 
         BibleVerseSection(onViewAllClick = onViewAllClick)
 
