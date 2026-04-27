@@ -20,6 +20,9 @@ node_modules/
 
 .env
 
+# --- Git worktrees ---
+.worktrees/
+
 # --- Claude Code (per-machine, never commit) ---
 .claude/settings.local.json
 CLAUDE.local.md
