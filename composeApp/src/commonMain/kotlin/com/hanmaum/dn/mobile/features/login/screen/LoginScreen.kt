@@ -25,11 +25,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -107,51 +105,6 @@ fun LoginScreen(
         )
 
         Spacer(Modifier.height(32.dp))
-
-        // Social login stubs (non-functional — app uses Keycloak)
-        Row(
-            modifier            = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            OutlinedButton(
-                onClick  = { /* stub */ },
-                modifier = Modifier.weight(1f).height(48.dp),
-                shape    = MaterialTheme.shapes.extraSmall,
-                colors   = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.onSurface,
-                ),
-            ) {
-                Text("G  Google", style = MaterialTheme.typography.labelMedium)
-            }
-            OutlinedButton(
-                onClick  = { /* stub */ },
-                modifier = Modifier.weight(1f).height(48.dp),
-                shape    = MaterialTheme.shapes.extraSmall,
-                colors   = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.onSurface,
-                ),
-            ) {
-                Text("iOS  Apple", style = MaterialTheme.typography.labelMedium)
-            }
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        // OR EMAIL divider
-        Row(
-            modifier            = Modifier.fillMaxWidth(),
-            verticalAlignment   = Alignment.CenterVertically,
-        ) {
-            HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
-            Text(
-                text  = "  OR EMAIL  ",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outline,
-            )
-            HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
-        }
-
-        Spacer(Modifier.height(24.dp))
 
         // Email field
         Column(modifier = Modifier.fillMaxWidth()) {
