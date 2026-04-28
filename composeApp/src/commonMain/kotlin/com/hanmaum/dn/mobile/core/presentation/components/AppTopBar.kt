@@ -2,9 +2,7 @@ package com.hanmaum.dn.mobile.core.presentation.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -16,17 +14,15 @@ import androidx.compose.runtime.Composable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChurchTopBar(
-    title: String,
+fun AppTopBar(
     onBackClick: (() -> Unit)? = null,
-    onMenuClick: () -> Unit = {},
 ) {
     TopAppBar(
         title = {
             Text(
-                text  = title,
+                text  = "DN App",
                 style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = MaterialTheme.colorScheme.primary,
             )
         },
         navigationIcon = {
@@ -38,37 +34,20 @@ fun ChurchTopBar(
                         tint               = MaterialTheme.colorScheme.onSurface,
                     )
                 }
-            } else {
-                IconButton(onClick = onMenuClick) {
-                    Icon(
-                        imageVector        = Icons.Default.Menu,
-                        contentDescription = "메뉴",
-                        tint               = MaterialTheme.colorScheme.onSurface,
-                    )
-                }
             }
         },
         actions = {
-            if (onBackClick == null) {
-                IconButton(onClick = {}) {
-                    Icon(
-                        imageVector        = Icons.Outlined.Notifications,
-                        contentDescription = "알림",
-                        tint               = MaterialTheme.colorScheme.onSurface,
-                    )
-                }
-                IconButton(onClick = {}) {
-                    Icon(
-                        imageVector        = Icons.Outlined.Person,
-                        contentDescription = "프로필",
-                        tint               = MaterialTheme.colorScheme.onSurface,
-                    )
-                }
+            IconButton(onClick = {}) {
+                Icon(
+                    imageVector        = Icons.Outlined.Notifications,
+                    contentDescription = "알림",
+                    tint               = MaterialTheme.colorScheme.onSurface,
+                )
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor             = MaterialTheme.colorScheme.surface,
-            titleContentColor          = MaterialTheme.colorScheme.onSurface,
+            containerColor             = MaterialTheme.colorScheme.background,
+            titleContentColor          = MaterialTheme.colorScheme.primary,
             actionIconContentColor     = MaterialTheme.colorScheme.onSurface,
             navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
         ),
