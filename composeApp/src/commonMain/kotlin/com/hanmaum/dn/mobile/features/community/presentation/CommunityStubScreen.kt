@@ -8,13 +8,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.hanmaum.dn.mobile.core.presentation.components.ChurchTopBar
+import com.hanmaum.dn.mobile.core.presentation.components.AppTopBar
 
 // TODO: Replace with full Community feature implementation
 @Composable
 fun CommunityStubScreen() {
     Scaffold(
-        topBar = { ChurchTopBar(title = "커뮤니티") }
+        topBar = { AppTopBar() }
     ) { padding ->
         Box(
             modifier = Modifier
