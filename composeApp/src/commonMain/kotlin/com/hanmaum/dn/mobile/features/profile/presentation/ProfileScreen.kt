@@ -18,9 +18,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -28,15 +29,12 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TextField
-import com.hanmaum.dn.mobile.core.presentation.components.AppTopBar
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -50,13 +48,13 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.hanmaum.dn.mobile.core.presentation.components.AppTopBar
 import com.hanmaum.dn.mobile.core.presentation.theme.SoftPeach
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ProfileScreen(
-    onBackClick: () -> Unit,
     onLogout: () -> Unit,
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
@@ -89,11 +87,14 @@ fun ProfileScreen(
                 is ProfileUiState.Success -> {
                     if (state.isEditing) {
                         ProfileEditContent(
-                            state          = state,
-                            onPhoneChange  = { viewModel.updatePhone(it) },
+                            state            = state,
+                            onPhoneChange    = { viewModel.updatePhone(it) },
                             onImageUrlChange = { viewModel.updateImageUrl(it) },
-                            onSave         = { viewModel.saveProfile() },
-                            onCancel       = { viewModel.cancelEditing() },
+                            onStreetChange   = { viewModel.updateStreet(it) },
+                            onZipCodeChange  = { viewModel.updateZipCode(it) },
+                            onCityChange     = { viewModel.updateCity(it) },
+                            onSave           = { viewModel.saveProfile() },
+                            onCancel         = { viewModel.cancelEditing() },
                         )
                     } else {
                         ProfileViewContent(
@@ -167,6 +168,18 @@ private fun ProfileViewContent(
         }
         profile.phoneNumber?.let {
             InfoCard(icon = Icons.Default.Phone, label = "PHONE NUMBER", value = it)
+            Spacer(Modifier.height(12.dp))
+        }
+        profile.street?.let {
+            InfoCard(icon = Icons.Default.Home, label = "STREET", value = it)
+            Spacer(Modifier.height(12.dp))
+        }
+        profile.zipCode?.let {
+            InfoCard(icon = Icons.Default.Home, label = "ZIP CODE", value = it)
+            Spacer(Modifier.height(12.dp))
+        }
+        profile.city?.let {
+            InfoCard(icon = Icons.Default.Home, label = "CITY", value = it)
             Spacer(Modifier.height(12.dp))
         }
         profile.groupName?.let {
@@ -288,6 +301,9 @@ private fun ProfileEditContent(
     state: ProfileUiState.Success,
     onPhoneChange: (String) -> Unit,
     onImageUrlChange: (String) -> Unit,
+    onStreetChange: (String) -> Unit,
+    onZipCodeChange: (String) -> Unit,
+    onCityChange: (String) -> Unit,
     onSave: () -> Unit,
     onCancel: () -> Unit,
 ) {
@@ -309,15 +325,17 @@ private fun ProfileEditContent(
         TextField(
             value         = state.editPhone,
             onValueChange = onPhoneChange,
-            placeholder   = { Text("+1 (555) 000-0000") },
+            placeholder   = { Text("+49-0000-0000-000") },
             modifier      = Modifier.fillMaxWidth(),
             singleLine    = true,
             shape         = MaterialTheme.shapes.small,
             colors        = TextFieldDefaults.colors(
-                focusedContainerColor   = MaterialTheme.colorScheme.surfaceVariant,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                focusedIndicatorColor   = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
+                focusedContainerColor      = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedContainerColor    = MaterialTheme.colorScheme.surfaceVariant,
+                focusedIndicatorColor      = Color.Transparent,
+                unfocusedIndicatorColor    = Color.Transparent,
+                focusedPlaceholderColor    = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+                unfocusedPlaceholderColor  = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
             ),
         )
 
@@ -336,10 +354,84 @@ private fun ProfileEditContent(
             singleLine    = true,
             shape         = MaterialTheme.shapes.small,
             colors        = TextFieldDefaults.colors(
-                focusedContainerColor   = MaterialTheme.colorScheme.surfaceVariant,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                focusedIndicatorColor   = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
+                focusedContainerColor      = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedContainerColor    = MaterialTheme.colorScheme.surfaceVariant,
+                focusedIndicatorColor      = Color.Transparent,
+                unfocusedIndicatorColor    = Color.Transparent,
+                focusedPlaceholderColor    = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+                unfocusedPlaceholderColor  = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+            ),
+        )
+
+        Spacer(Modifier.height(16.dp))
+        Text(
+            text     = "STREET",
+            style    = MaterialTheme.typography.labelSmall,
+            color    = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 6.dp),
+        )
+        TextField(
+            value         = state.editStreet,
+            onValueChange = onStreetChange,
+            placeholder   = { Text("123 Main St") },
+            modifier      = Modifier.fillMaxWidth(),
+            singleLine    = true,
+            shape         = MaterialTheme.shapes.small,
+            colors        = TextFieldDefaults.colors(
+                focusedContainerColor      = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedContainerColor    = MaterialTheme.colorScheme.surfaceVariant,
+                focusedIndicatorColor      = Color.Transparent,
+                unfocusedIndicatorColor    = Color.Transparent,
+                focusedPlaceholderColor    = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+                unfocusedPlaceholderColor  = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+            ),
+        )
+
+        Spacer(Modifier.height(16.dp))
+        Text(
+            text     = "ZIP CODE",
+            style    = MaterialTheme.typography.labelSmall,
+            color    = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 6.dp),
+        )
+        TextField(
+            value         = state.editZipCode,
+            onValueChange = onZipCodeChange,
+            placeholder   = { Text("12345") },
+            modifier      = Modifier.fillMaxWidth(),
+            singleLine    = true,
+            shape         = MaterialTheme.shapes.small,
+            colors        = TextFieldDefaults.colors(
+                focusedContainerColor      = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedContainerColor    = MaterialTheme.colorScheme.surfaceVariant,
+                focusedIndicatorColor      = Color.Transparent,
+                unfocusedIndicatorColor    = Color.Transparent,
+                focusedPlaceholderColor    = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+                unfocusedPlaceholderColor  = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+            ),
+        )
+
+        Spacer(Modifier.height(16.dp))
+        Text(
+            text     = "CITY",
+            style    = MaterialTheme.typography.labelSmall,
+            color    = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 6.dp),
+        )
+        TextField(
+            value         = state.editCity,
+            onValueChange = onCityChange,
+            placeholder   = { Text("New York") },
+            modifier      = Modifier.fillMaxWidth(),
+            singleLine    = true,
+            shape         = MaterialTheme.shapes.small,
+            colors        = TextFieldDefaults.colors(
+                focusedContainerColor      = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedContainerColor    = MaterialTheme.colorScheme.surfaceVariant,
+                focusedIndicatorColor      = Color.Transparent,
+                unfocusedIndicatorColor    = Color.Transparent,
+                focusedPlaceholderColor    = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+                unfocusedPlaceholderColor  = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
             ),
         )
 

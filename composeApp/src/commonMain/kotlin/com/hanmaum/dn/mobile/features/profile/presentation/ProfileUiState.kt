@@ -9,6 +9,9 @@ sealed class ProfileUiState {
         val isEditing: Boolean = false,
         val editPhone: String = profile.phoneNumber ?: "",
         val editImageUrl: String = profile.profileImageUrl ?: "",
+        val editStreet: String = profile.street ?: "",
+        val editZipCode: String = profile.zipCode ?: "",
+        val editCity: String = profile.city ?: "",
         val isSaving: Boolean = false,
         val saveError: String? = null,
     ) : ProfileUiState()
