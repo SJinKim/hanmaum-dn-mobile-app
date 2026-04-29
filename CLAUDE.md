@@ -64,6 +64,36 @@ URLs are injected at compile time via the `buildkonfig` plugin:
 
 To change URLs, edit the `buildkonfig {}` block in `composeApp/build.gradle.kts`.
 
+## Workflow Orchestration
+
+### Plan Mode
+- Enter plan mode for ANY task with 3+ steps or architectural decisions.
+- If something goes sideways: STOP immediately, re-plan. Don't push through a broken approach.
+- Use plan mode for verification steps too, not just building.
+
+### Subagent Strategy
+- Offload research, exploration, and parallel analysis to subagents.
+- Keep main context window clean — one task per subagent.
+
+### Self-Improvement Loop
+- After ANY user correction: append the pattern to `tasks/lessons.md`.
+- Write a rule that prevents the same mistake from recurring.
+- Review `tasks/lessons.md` at session start.
+
+### Verification Gate
+- Never mark a task complete without proving it works.
+- Ask: "Would a staff engineer approve this PR?"
+- Run `./gradlew :composeApp:allTests` and demonstrate correctness before marking Done.
+
+### Bug Fixing
+- When given a bug report: just fix it — no hand-holding requests.
+- Point at logs, errors, failing tests and resolve autonomously.
+
+### Core Principles
+- Simplicity First: minimal code impact per change.
+- No Laziness: find root causes, no temporary fixes.
+- Minimal Impact: only touch what's necessary.
+
 ### Key Tech Stack
 - **UI**: Compose Multiplatform 1.10.0, Material3
 - **Navigation**: `org.jetbrains.androidx.navigation:navigation-compose` (type-safe routes)
