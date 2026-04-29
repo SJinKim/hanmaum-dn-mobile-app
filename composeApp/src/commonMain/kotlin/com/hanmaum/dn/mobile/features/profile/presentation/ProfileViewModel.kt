@@ -45,6 +45,9 @@ class ProfileViewModel(
             isEditing = false,
             editPhone = current.profile.phoneNumber ?: "",
             editImageUrl = current.profile.profileImageUrl ?: "",
+            editStreet = current.profile.street ?: "",
+            editZipCode = current.profile.zipCode ?: "",
+            editCity = current.profile.city ?: "",
             saveError = null,
         )
     }
@@ -57,6 +60,21 @@ class ProfileViewModel(
     fun updateImageUrl(value: String) {
         val current = _uiState.value as? ProfileUiState.Success ?: return
         _uiState.value = current.copy(editImageUrl = value)
+    }
+
+    fun updateStreet(value: String) {
+        val current = _uiState.value as? ProfileUiState.Success ?: return
+        _uiState.value = current.copy(editStreet = value)
+    }
+
+    fun updateZipCode(value: String) {
+        val current = _uiState.value as? ProfileUiState.Success ?: return
+        _uiState.value = current.copy(editZipCode = value)
+    }
+
+    fun updateCity(value: String) {
+        val current = _uiState.value as? ProfileUiState.Success ?: return
+        _uiState.value = current.copy(editCity = value)
     }
 
     fun logout() {
@@ -73,6 +91,9 @@ class ProfileViewModel(
             memberRepository.updateMyProfile(
                 phoneNumber = current.editPhone.ifBlank { null },
                 profileImageUrl = current.editImageUrl.ifBlank { null },
+                street = current.editStreet.ifBlank { null },
+                zipCode = current.editZipCode.ifBlank { null },
+                city = current.editCity.ifBlank { null },
             ).fold(
                 onSuccess = { updated -> _uiState.value = ProfileUiState.Success(updated) },
                 onFailure = { err ->

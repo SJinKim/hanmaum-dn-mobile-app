@@ -39,11 +39,20 @@ class MemberRepositoryImpl(
     override suspend fun updateMyProfile(
         phoneNumber: String?,
         profileImageUrl: String?,
+        street: String?,
+        zipCode: String?,
+        city: String?,
     ): Result<MemberResponse> {
         return try {
             val response = client.patch("members/me") {
                 contentType(ContentType.Application.Json)
-                setBody(UpdateMyProfileRequest(phoneNumber = phoneNumber, profileImageUrl = profileImageUrl))
+                setBody(UpdateMyProfileRequest(
+                    phoneNumber = phoneNumber,
+                    profileImageUrl = profileImageUrl,
+                    street = street,
+                    zipCode = zipCode,
+                    city = city,
+                ))
             }
             if (response.status == HttpStatusCode.OK) {
                 val apiResponse = response.body<ApiResponse<MemberResponse>>()
