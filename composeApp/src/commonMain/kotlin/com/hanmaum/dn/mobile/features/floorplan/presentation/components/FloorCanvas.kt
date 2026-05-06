@@ -1,7 +1,6 @@
 package com.hanmaum.dn.mobile.features.floorplan.presentation.components
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -35,7 +34,6 @@ fun FloorCanvas(
 
     Canvas(
         modifier = modifier
-            .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .pointerInput(rooms, selectedRoom) {
                 detectTapGestures { tapOffset ->
                     val normalizedTap = Point(
@@ -47,6 +45,7 @@ fun FloorCanvas(
                 }
             },
     ) {
+        drawRect(surfaceContainerLow)
         rooms.forEach { room ->
             val scaled = room.points.map { Offset(it.x * size.width, it.y * size.height) }
             if (scaled.isEmpty()) return@forEach

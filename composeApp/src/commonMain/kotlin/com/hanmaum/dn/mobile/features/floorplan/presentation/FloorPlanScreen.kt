@@ -87,7 +87,7 @@ fun FloorPlanScreen(
                             selectedRoom = state.selectedRoom,
                             onRoomTap = viewModel::selectRoom,
                             onEmptyTap = viewModel::clearSelectedRoom,
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier.weight(1f),
                         )
                     }
                     state.selectedRoom?.let { room ->
