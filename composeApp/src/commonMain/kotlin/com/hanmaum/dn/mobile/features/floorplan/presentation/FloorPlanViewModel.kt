@@ -48,8 +48,10 @@ class FloorPlanViewModel(
         viewModelScope.launch {
             try {
                 val rooms = repository.getRooms(floor.id)
-                _uiState.value = (_uiState.value as? FloorPlanUiState.Success)
-                    ?.copy(rooms = rooms) ?: _uiState.value
+                val latest = _uiState.value as? FloorPlanUiState.Success ?: return@launch
+                if (latest.selectedFloor.id == floor.id) {
+                    _uiState.value = latest.copy(rooms = rooms)
+                }
             } catch (e: Exception) {
                 _uiState.value = FloorPlanUiState.Error(e.message ?: "알 수 없는 오류가 발생했습니다.")
             }
