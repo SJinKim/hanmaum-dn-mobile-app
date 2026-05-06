@@ -32,6 +32,9 @@ dev-log-*.md
 # --- Local AI tool data ---
 .superpowers/
 
+# --- Local docs (plans, specs) ---
+docs/
+
 # --- Font download artifacts ---
 composeApp/src/commonMain/Plus_Jakarta_Sans/README.txt
 /tasks/lessons.md
