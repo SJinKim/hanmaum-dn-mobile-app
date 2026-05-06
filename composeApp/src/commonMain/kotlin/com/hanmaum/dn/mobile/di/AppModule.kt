@@ -24,6 +24,9 @@ import com.hanmaum.dn.mobile.features.ministry.data.repository.MinistryRepositor
 import com.hanmaum.dn.mobile.features.ministry.domain.repository.MinistryRepository
 import com.hanmaum.dn.mobile.features.ministry.presentation.detail.MinistryDetailViewModel
 import com.hanmaum.dn.mobile.features.ministry.presentation.list.MinistryListViewModel
+import com.hanmaum.dn.mobile.features.floorplan.data.repository.FloorPlanRepositoryImpl
+import com.hanmaum.dn.mobile.features.floorplan.domain.repository.FloorPlanRepository
+import com.hanmaum.dn.mobile.features.floorplan.presentation.FloorPlanViewModel
 import com.hanmaum.dn.mobile.features.pending.presentation.PendingViewModel
 import com.hanmaum.dn.mobile.features.pending.presentation.SplashViewModel
 import com.hanmaum.dn.mobile.features.profile.presentation.ProfileViewModel
@@ -80,4 +83,8 @@ val appModule = module {
     // Geofence
     single<ChurchLocationRepository> { ChurchLocationRepositoryImpl(get()) }
     single { GeofenceCoordinator(get(), get(), get(), get()) }
+
+    // FloorPlan
+    single<FloorPlanRepository> { FloorPlanRepositoryImpl(get()) }
+    viewModel { FloorPlanViewModel(get()) }
 }
