@@ -26,6 +26,7 @@ import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.BibleVerseSection
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.HeroBannerSection
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.LatestNewsSection
+import com.hanmaum.dn.mobile.features.announcement.presentation.components.QuickAccessSection
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.MorningServiceCard
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.WeeklyVerseSection
 import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceUiState
@@ -37,6 +38,7 @@ import kotlinx.coroutines.launch
 fun HomeScreen(
     onAnnouncementClick: (String) -> Unit,
     onViewAllClick: () -> Unit,
+    onFloorPlanClick: () -> Unit,
 ) {
     val viewModel: HomeViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -85,6 +87,7 @@ fun HomeScreen(
                     onAnnouncementClick = onAnnouncementClick,
                     onViewAllClick      = onViewAllClick,
                     onCheckIn           = attendanceViewModel::checkIn,
+                    onFloorPlanClick    = onFloorPlanClick,
                 )
             }
             if (showRationale) {
@@ -128,6 +131,7 @@ private fun HomeContent(
     onAnnouncementClick: (String) -> Unit,
     onViewAllClick: () -> Unit,
     onCheckIn: () -> Unit,
+    onFloorPlanClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -159,6 +163,12 @@ private fun HomeContent(
             newsList    = state.announcements,
             onItemClick = onAnnouncementClick,
             onViewAllClick = onViewAllClick,
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        QuickAccessSection(
+            onFloorPlanClick = onFloorPlanClick,
         )
 
         Spacer(modifier = Modifier.height(32.dp))
