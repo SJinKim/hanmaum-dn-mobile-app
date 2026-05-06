@@ -13,3 +13,4 @@ import kotlinx.serialization.Serializable
 @Serializable object MinistryListRoute
 @Serializable data class MinistryDetailRoute(val publicId: String)
 @Serializable object CommunityRoute
+@Serializable object FloorPlanRoute
