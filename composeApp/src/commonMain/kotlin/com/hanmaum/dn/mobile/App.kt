@@ -130,6 +130,7 @@ fun App() {
                                 navController.navigate(AnnouncementDetailRoute(id = id))
                             },
                             onViewAllClick = { navController.navigate(AnnouncementListRoute) },
+                            onFloorPlanClick = { navController.navigate(FloorPlanRoute) },
                         )
                     }
 
