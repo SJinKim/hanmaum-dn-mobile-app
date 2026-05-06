@@ -112,14 +112,20 @@ fun MorningServiceCard(
                 }
             }
 
-            // Error message (network/server error)
-            if (state.checkInError != null) {
+            // Status message
+            if (state.isCheckedIn) {
+                Text(
+                    text  = "출석 완료하셨습니다!",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            } else if (state.checkInError != null) {
                 Text(
                     text  = state.checkInError,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                 )
-            } else if (!state.isInWindow && !state.isCheckedIn) {
+            } else if (!state.isInWindow) {
                 Text(
                     text  = "출석 시간이 아닙니다",
                     style = MaterialTheme.typography.bodySmall,
