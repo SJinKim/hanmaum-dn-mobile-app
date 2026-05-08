@@ -1,9 +1,7 @@
 package com.hanmaum.dn.mobile.features.floorplan.presentation
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -75,21 +73,21 @@ fun FloorPlanScreen(
                     )
                 }
                 is FloorPlanUiState.Success -> {
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        FloorSelector(
-                            floors = state.floors,
-                            selectedFloor = state.selectedFloor,
-                            onFloorSelected = viewModel::selectFloor,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                        FloorCanvas(
-                            rooms = state.rooms,
-                            selectedRoom = state.selectedRoom,
-                            onRoomTap = viewModel::selectRoom,
-                            onEmptyTap = viewModel::clearSelectedRoom,
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
+                    FloorCanvas(
+                        rooms = state.rooms,
+                        selectedRoom = state.selectedRoom,
+                        onRoomTap = viewModel::selectRoom,
+                        onEmptyTap = viewModel::clearSelectedRoom,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                    FloorSelector(
+                        floors = state.floors,
+                        selectedFloor = state.selectedFloor,
+                        onFloorSelected = viewModel::selectFloor,
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(start = 12.dp, top = 12.dp),
+                    )
                     state.selectedRoom?.let { room ->
                         RoomBottomSheet(
                             room = room,
