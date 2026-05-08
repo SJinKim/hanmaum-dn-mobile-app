@@ -102,7 +102,7 @@ fun FloorPlanScreen(
                     if (showList) {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(bottom = 120.dp),
+                            contentPadding = PaddingValues(top = 60.dp, bottom = 120.dp),
                         ) {
                             items(state.rooms) { room ->
                                 ListItem(
