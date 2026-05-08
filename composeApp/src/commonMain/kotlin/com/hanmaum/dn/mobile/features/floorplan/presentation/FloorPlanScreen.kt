@@ -5,18 +5,20 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.FormatListBulleted
-import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,6 +26,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -38,7 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.features.floorplan.presentation.components.FloorCanvas
-import com.hanmaum.dn.mobile.features.floorplan.presentation.components.FloorSelector
+import com.hanmaum.dn.mobile.features.floorplan.presentation.components.FloorPlanFilterBar
 import com.hanmaum.dn.mobile.features.floorplan.presentation.components.RoomBottomSheet
 import com.hanmaum.dn.mobile.features.floorplan.presentation.components.RoomPeekCard
 import org.koin.compose.viewmodel.koinViewModel
@@ -50,6 +53,11 @@ fun FloorPlanScreen(
 ) {
     val viewModel: FloorPlanViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    var showList by remember { mutableStateOf(false) }
+    LaunchedEffect(uiState) {
+        if (uiState !is FloorPlanUiState.Success) showList = false
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
@@ -66,12 +74,26 @@ fun FloorPlanScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "뒤로",
-                            tint = MaterialTheme.colorScheme.onSurface,
                         )
+                    }
+                },
+                actions = {
+                    if (showList) {
+                        TextButton(onClick = { showList = false }) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text("목록", style = MaterialTheme.typography.labelMedium)
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
             )
         },
@@ -90,7 +112,6 @@ fun FloorPlanScreen(
                     )
                 }
                 is FloorPlanUiState.Success -> {
-                    var showList by remember { mutableStateOf(false) }
                     var showFullSheet by remember { mutableStateOf(false) }
                     LaunchedEffect(state.selectedRoom) {
                         if (state.selectedRoom == null) showFullSheet = false
@@ -99,80 +120,75 @@ fun FloorPlanScreen(
                         showList = false
                     }
 
-                    if (showList) {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(top = 60.dp, bottom = 120.dp),
-                        ) {
-                            items(state.rooms) { room ->
-                                ListItem(
-                                    headlineContent = {
-                                        Text(
-                                            text = room.name,
-                                            style = MaterialTheme.typography.titleSmall,
-                                            fontWeight = FontWeight.Bold,
-                                        )
-                                    },
-                                    supportingContent = if (room.description.isNotBlank()) {
-                                        {
-                                            Text(
-                                                room.description,
-                                                style = MaterialTheme.typography.bodySmall,
-                                            )
-                                        }
-                                    } else null,
-                                    modifier = Modifier.clickable {
-                                        viewModel.selectRoom(room)
-                                        showList = false
-                                    },
-                                )
-                                HorizontalDivider()
-                            }
-                        }
-                    } else {
-                        FloorCanvas(
-                            rooms = state.rooms,
-                            selectedRoom = state.selectedRoom,
-                            onRoomTap = viewModel::selectRoom,
-                            onEmptyTap = viewModel::clearSelectedRoom,
-                            modifier = Modifier.fillMaxSize(),
-                        )
-                    }
-
-                    FloorSelector(
-                        floors = state.floors,
-                        selectedFloor = state.selectedFloor,
-                        onFloorSelected = viewModel::selectFloor,
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(start = 12.dp, top = 12.dp),
-                    )
-
-                    FloatingActionButton(
-                        onClick = { showList = !showList },
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(end = 16.dp, bottom = 104.dp),
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                    ) {
-                        Icon(
-                            imageVector = if (showList) Icons.Default.Map else Icons.Default.FormatListBulleted,
-                            contentDescription = if (showList) "지도 보기" else "목록 보기",
-                        )
-                    }
-
-                    AnimatedVisibility(
-                        visible = state.selectedRoom != null && !showList,
-                        enter = slideInVertically { it },
-                        exit = slideOutVertically { it },
-                        modifier = Modifier.align(Alignment.BottomCenter),
-                    ) {
-                        state.selectedRoom?.let { room ->
-                            RoomPeekCard(
-                                room = room,
-                                onDismiss = viewModel::clearSelectedRoom,
-                                onExpand = { showFullSheet = true },
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        if (!showList) {
+                            FloorPlanFilterBar(
+                                floors = state.floors,
+                                selectedFloor = state.selectedFloor,
+                                rooms = state.rooms,
+                                selectedRoom = state.selectedRoom,
+                                onFloorSelected = viewModel::selectFloor,
+                                onRoomSelected = viewModel::selectRoom,
+                                onRoomDeselected = viewModel::clearSelectedRoom,
+                                onShowList = { showList = true },
                             )
+                        }
+
+                        Box(modifier = Modifier.weight(1f)) {
+                            if (showList) {
+                                LazyColumn(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentPadding = PaddingValues(bottom = 16.dp),
+                                ) {
+                                    items(state.rooms) { room ->
+                                        ListItem(
+                                            headlineContent = {
+                                                Text(
+                                                    text = room.name,
+                                                    style = MaterialTheme.typography.titleSmall,
+                                                    fontWeight = FontWeight.Bold,
+                                                )
+                                            },
+                                            supportingContent = if (room.description.isNotBlank()) {
+                                                {
+                                                    Text(
+                                                        room.description,
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                    )
+                                                }
+                                            } else null,
+                                            modifier = Modifier.clickable {
+                                                viewModel.selectRoom(room)
+                                                showList = false
+                                            },
+                                        )
+                                        HorizontalDivider()
+                                    }
+                                }
+                            } else {
+                                FloorCanvas(
+                                    rooms = state.rooms,
+                                    selectedRoom = state.selectedRoom,
+                                    onRoomTap = viewModel::selectRoom,
+                                    onEmptyTap = viewModel::clearSelectedRoom,
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
+
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = state.selectedRoom != null && !showList,
+                                enter = slideInVertically { it },
+                                exit = slideOutVertically { it },
+                                modifier = Modifier.align(Alignment.BottomCenter),
+                            ) {
+                                state.selectedRoom?.let { room ->
+                                    RoomPeekCard(
+                                        room = room,
+                                        onDismiss = viewModel::clearSelectedRoom,
+                                        onExpand = { showFullSheet = true },
+                                    )
+                                }
+                            }
                         }
                     }
 
