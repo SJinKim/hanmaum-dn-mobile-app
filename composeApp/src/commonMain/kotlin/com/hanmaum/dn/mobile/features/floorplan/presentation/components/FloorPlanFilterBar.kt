@@ -21,6 +21,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -45,22 +46,27 @@ fun FloorPlanFilterBar(
         tonalElevation = 2.dp,
     ) {
         Column(modifier = Modifier.padding(horizontal = 12.dp)) {
-            // Row 1: floor chips + 목록 button
+            val roomScrollState = rememberScrollState()
+            LaunchedEffect(selectedFloor.id) { roomScrollState.scrollTo(0) }
+
+            // Row 1: scrollable floor chips + 목록 button
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp, bottom = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                floors.forEach { floor ->
-                    FilterChip(
-                        selected = floor.id == selectedFloor.id,
-                        onClick = { onFloorSelected(floor) },
-                        label = { Text(floor.name, style = MaterialTheme.typography.labelLarge) },
-                        modifier = Modifier.padding(end = 6.dp),
-                    )
+                Row(modifier = Modifier.weight(1f).horizontalScroll(rememberScrollState())) {
+                    floors.forEach { floor ->
+                        FilterChip(
+                            selected = floor.id == selectedFloor.id,
+                            onClick = { onFloorSelected(floor) },
+                            label = { Text(floor.name, style = MaterialTheme.typography.labelLarge) },
+                            modifier = Modifier.padding(end = 6.dp),
+                        )
+                    }
                 }
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(8.dp))
                 OutlinedButton(
                     onClick = onShowList,
                     contentPadding = PaddingValues(horizontal = 12.dp),
@@ -79,7 +85,7 @@ fun FloorPlanFilterBar(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
+                    .horizontalScroll(roomScrollState)
                     .padding(bottom = 8.dp),
             ) {
                 rooms.forEach { room ->
