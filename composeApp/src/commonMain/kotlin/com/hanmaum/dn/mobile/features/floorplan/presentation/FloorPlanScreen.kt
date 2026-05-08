@@ -5,6 +5,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -94,9 +95,15 @@ fun FloorPlanScreen(
                     LaunchedEffect(state.selectedRoom) {
                         if (state.selectedRoom == null) showFullSheet = false
                     }
+                    LaunchedEffect(state.selectedFloor) {
+                        showList = false
+                    }
 
                     if (showList) {
-                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(bottom = 120.dp),
+                        ) {
                             items(state.rooms) { room ->
                                 ListItem(
                                     headlineContent = {
@@ -155,7 +162,7 @@ fun FloorPlanScreen(
                     }
 
                     AnimatedVisibility(
-                        visible = state.selectedRoom != null,
+                        visible = state.selectedRoom != null && !showList,
                         enter = slideInVertically { it },
                         exit = slideOutVertically { it },
                         modifier = Modifier.align(Alignment.BottomCenter),
