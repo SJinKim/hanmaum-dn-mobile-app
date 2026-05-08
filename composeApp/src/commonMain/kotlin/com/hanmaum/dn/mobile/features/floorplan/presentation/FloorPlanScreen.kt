@@ -1,5 +1,8 @@
 package com.hanmaum.dn.mobile.features.floorplan.presentation
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -15,7 +18,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -24,6 +31,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.features.floorplan.presentation.components.FloorCanvas
 import com.hanmaum.dn.mobile.features.floorplan.presentation.components.FloorSelector
 import com.hanmaum.dn.mobile.features.floorplan.presentation.components.RoomBottomSheet
+import com.hanmaum.dn.mobile.features.floorplan.presentation.components.RoomPeekCard
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,6 +81,11 @@ fun FloorPlanScreen(
                     )
                 }
                 is FloorPlanUiState.Success -> {
+                    var showFullSheet by remember { mutableStateOf(false) }
+                    LaunchedEffect(state.selectedRoom) {
+                        if (state.selectedRoom == null) showFullSheet = false
+                    }
+
                     FloorCanvas(
                         rooms = state.rooms,
                         selectedRoom = state.selectedRoom,
@@ -88,10 +101,24 @@ fun FloorPlanScreen(
                             .align(Alignment.TopStart)
                             .padding(start = 12.dp, top = 12.dp),
                     )
-                    state.selectedRoom?.let { room ->
+                    AnimatedVisibility(
+                        visible = state.selectedRoom != null,
+                        enter = slideInVertically { it },
+                        exit = slideOutVertically { it },
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                    ) {
+                        state.selectedRoom?.let { room ->
+                            RoomPeekCard(
+                                room = room,
+                                onDismiss = viewModel::clearSelectedRoom,
+                                onExpand = { showFullSheet = true },
+                            )
+                        }
+                    }
+                    if (showFullSheet && state.selectedRoom != null) {
                         RoomBottomSheet(
-                            room = room,
-                            onDismiss = viewModel::clearSelectedRoom,
+                            room = state.selectedRoom!!,
+                            onDismiss = { showFullSheet = false },
                         )
                     }
                 }
