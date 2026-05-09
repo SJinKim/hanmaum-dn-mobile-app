@@ -6,6 +6,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 hanmaum-dn-mobile-app is a **Kotlin Multiplatform (KMP)** mobile app targeting Android and iOS, built with **Compose Multiplatform** for shared UI. It is a church app (한마음 DN) with authentication via Keycloak, member management, and announcements.
 
+## Design Skills
+
+All screens must conform to `designs/dn_app/DESIGN.md` (single source of truth for colors, typography, surfaces, shape, and elevation).
+
+- **New screen from scratch**: run `lazyweb:lazyweb-quick-references` for references first, then apply DESIGN.md tokens.
+- **Significant visual redesign**: run `lazyweb:lazyweb-design-improve` (needs a screenshot of the current state) to get reference-backed improvement ideas.
+- **Minor modifications** (padding, text, small fixes): just follow DESIGN.md tokens — no lazyweb step needed.
+- **Animations**: use `spring()` specs with `animateFloatAsState` / `AnimatedVisibility` — never linear or ease-in-out transitions.
+
 ## Build Commands
 
 ```bash

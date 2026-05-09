@@ -7,6 +7,8 @@
 - [ ] No println, dead code, hardcoded URLs, or secrets
 - [ ] All HTTP calls go through `createHttpClient(tokenStorage)` — no raw Ktor instances
 - [ ] Screens follow designs/dn_app/DESIGN.md
+- [ ] New screens: lazyweb references consulted before building (`lazyweb:lazyweb-quick-references`)
+- [ ] Significant redesigns: `lazyweb:lazyweb-design-improve` run with a current screenshot
 - [ ] Navigation uses the type-safe `Routes.kt` objects — no string routes
 
 ## Build
