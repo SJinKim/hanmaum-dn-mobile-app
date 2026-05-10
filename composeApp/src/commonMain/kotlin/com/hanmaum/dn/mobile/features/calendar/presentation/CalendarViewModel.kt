@@ -57,13 +57,13 @@ class CalendarViewModel(private val repository: CalendarRepository) : ViewModel(
 
     fun switchView(mode: ViewMode) {
         _uiState.update { it.copy(viewMode = mode) }
-        if (mode == ViewMode.LIST && !_uiState.value.yearEventsLoaded) {
+        if (mode == ViewMode.LIST && !_uiState.value.yearEventsLoaded && !_uiState.value.isYearLoading) {
             loadYearEvents()
         }
     }
 
     private fun loadYearEvents() {
-        val year = _uiState.value.year
+        val year = _uiState.value.todayYear
         _uiState.update { it.copy(isYearLoading = true) }
         viewModelScope.launch {
             repository.getYearEvents(year).fold(
