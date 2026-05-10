@@ -93,11 +93,11 @@ private fun ViewModeToggle(
         animationSpec = spring(), label = "listBg",
     )
     val calendarTextColor by animateColorAsState(
-        if (currentMode == ViewMode.CALENDAR) Color.White else Color(0xFF6B6B6B),
+        if (currentMode == ViewMode.CALENDAR) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = spring(), label = "calendarText",
     )
     val listTextColor by animateColorAsState(
-        if (currentMode == ViewMode.LIST) Color.White else Color(0xFF6B6B6B),
+        if (currentMode == ViewMode.LIST) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = spring(), label = "listText",
     )
 
@@ -106,7 +106,7 @@ private fun ViewModeToggle(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .clip(CircleShape)
-            .background(Color(0xFFEBEBEB))
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .padding(3.dp),
     ) {
         Box(
@@ -201,7 +201,7 @@ private fun CalendarContent(
         }
 
         if (state.error != null) {
-            item { Text(state.error!!, color = MaterialTheme.colorScheme.error) }
+            item { Text(state.error.orEmpty(), color = MaterialTheme.colorScheme.error) }
         }
 
         val displayEvents = if (state.selectedDay != null) {
@@ -327,7 +327,7 @@ private fun EmptyMonthCard() {
             "이벤트 없음",
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
             style    = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic),
-            color    = Color(0xFFD0D0D0),
+            color    = MaterialTheme.colorScheme.outline,
         )
     }
 }
@@ -369,7 +369,7 @@ private fun EventListCard(event: CalendarEvent, onClick: () -> Unit) {
                         fontWeight    = FontWeight.Bold,
                         letterSpacing = (0.05).sp,
                     ),
-                    color = Color(0xFFC0C0C0),
+                    color = MaterialTheme.colorScheme.outline,
                 )
             }
             Column(
