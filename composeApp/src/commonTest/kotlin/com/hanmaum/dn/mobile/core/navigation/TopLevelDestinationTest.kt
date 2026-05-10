@@ -20,12 +20,12 @@ class TopLevelDestinationTest {
     }
 
     @Test
-    fun `all lists destinations in Home Community Ministries News Profile order`() {
+    fun `all lists destinations in Home News Calendar Album Profile order`() {
         val entries = TopLevelDestination.all
         assertTrue(entries[0] is TopLevelDestination.Home)
-        assertTrue(entries[1] is TopLevelDestination.Community)
-        assertTrue(entries[2] is TopLevelDestination.Ministries)
-        assertTrue(entries[3] is TopLevelDestination.News)
+        assertTrue(entries[1] is TopLevelDestination.News)
+        assertTrue(entries[2] is TopLevelDestination.Calendar)
+        assertTrue(entries[3] is TopLevelDestination.Album)
         assertTrue(entries[4] is TopLevelDestination.Profile)
     }
 
@@ -40,7 +40,7 @@ class TopLevelDestinationTest {
     }
 
     @Test
-    fun `Ministries routeClass is MinistryListRoute`() {
-        assertEquals(MinistryListRoute::class, TopLevelDestination.Ministries.routeClass)
+    fun `Calendar routeClass is CalendarRoute`() {
+        assertEquals(CalendarRoute::class, TopLevelDestination.Calendar.routeClass)
     }
 }

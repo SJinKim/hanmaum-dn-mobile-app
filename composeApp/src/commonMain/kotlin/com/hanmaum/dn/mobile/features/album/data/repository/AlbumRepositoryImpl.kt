@@ -9,14 +9,14 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 
-private const val PCLOUD_API = "https://api.pcloud.com"
-
 class AlbumRepositoryImpl(private val client: HttpClient) : AlbumRepository {
 
     private val code = BuildKonfig.PCLOUD_PUBLIC_CODE
+    private val folderEndpoint = BuildKonfig.PCLOUD_FOLDER_ENDPOINT
+    private val downloadEndpoint = BuildKonfig.PCLOUD_DOWNLOAD_ENDPOINT
 
     override suspend fun getFolderContents(): Result<List<AlbumItem>> = runCatching {
-        val response = client.get("$PCLOUD_API/getpublinkcontents?code=$code")
+        val response = client.get("$folderEndpoint?code=$code")
         val body = response.body<PCloudFolderResponse>()
         if (body.result != 0) error("pCloud error code ${body.result}")
         body.metadata?.contents
@@ -26,7 +26,7 @@ class AlbumRepositoryImpl(private val client: HttpClient) : AlbumRepository {
     }
 
     override suspend fun getDownloadUrl(fileId: Long): Result<String> = runCatching {
-        val response = client.get("$PCLOUD_API/getpublinkdownload?code=$code&fileid=$fileId")
+        val response = client.get("$downloadEndpoint?code=$code&fileid=$fileId")
         val body = response.body<PCloudDownloadResponse>()
         if (body.result != 0 || body.hosts.isEmpty()) error("pCloud download error ${body.result}")
         "https://${body.hosts[0]}${body.path}"
