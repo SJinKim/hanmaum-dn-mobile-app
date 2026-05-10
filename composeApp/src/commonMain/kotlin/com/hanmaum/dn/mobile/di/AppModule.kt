@@ -3,6 +3,7 @@ package com.hanmaum.dn.mobile.di
 import com.hanmaum.dn.mobile.core.data.repository.TokenStorageImpl
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.core.network.createHttpClient
+import com.russhwolf.settings.Settings
 import com.hanmaum.dn.mobile.features.announcement.data.repository.AnnouncementRepositoryImpl
 import com.hanmaum.dn.mobile.features.announcement.domain.repository.AnnouncementRepository
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementDetailViewModel
@@ -39,7 +40,7 @@ val appModule = module {
     single<AuthRepository> { AuthRepositoryImpl(get()) }
     single<MemberRepository> { MemberRepositoryImpl(get()) }
     single { createHttpClient(get()) } // Client
-    single<TokenStorage> { TokenStorageImpl() } // Storage
+    single<TokenStorage> { TokenStorageImpl(Settings()) }
 
     //Splash VM
     viewModel { SplashViewModel(get(), get(), get()) }
