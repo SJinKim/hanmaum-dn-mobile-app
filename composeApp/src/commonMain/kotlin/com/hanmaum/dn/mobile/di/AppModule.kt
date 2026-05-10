@@ -25,6 +25,9 @@ import com.hanmaum.dn.mobile.features.ministry.data.repository.MinistryRepositor
 import com.hanmaum.dn.mobile.features.ministry.domain.repository.MinistryRepository
 import com.hanmaum.dn.mobile.features.ministry.presentation.detail.MinistryDetailViewModel
 import com.hanmaum.dn.mobile.features.ministry.presentation.list.MinistryListViewModel
+import com.hanmaum.dn.mobile.features.album.data.repository.AlbumRepositoryImpl
+import com.hanmaum.dn.mobile.features.album.domain.repository.AlbumRepository
+import com.hanmaum.dn.mobile.features.album.presentation.AlbumViewModel
 import com.hanmaum.dn.mobile.features.floorplan.data.repository.FloorPlanRepositoryImpl
 import com.hanmaum.dn.mobile.features.floorplan.domain.repository.FloorPlanRepository
 import com.hanmaum.dn.mobile.features.floorplan.presentation.FloorPlanViewModel
@@ -88,4 +91,8 @@ val appModule = module {
     // FloorPlan
     single<FloorPlanRepository> { FloorPlanRepositoryImpl(get()) }
     viewModel { FloorPlanViewModel(get()) }
+
+    // Album
+    single<AlbumRepository> { AlbumRepositoryImpl(get()) }
+    viewModel { AlbumViewModel(get()) }
 }
