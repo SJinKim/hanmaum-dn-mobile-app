@@ -37,6 +37,7 @@ class CalendarViewModelTest {
     fun `loads events for current month on init`() = runTest {
         val repo = object : CalendarRepository {
             override suspend fun getEvents(year: Int, month: Int) = Result.success(listOf(fakeEvent(15)))
+            override suspend fun getYearEvents(year: Int) = Result.success(emptyList<CalendarEvent>())
         }
         val vm = CalendarViewModel(repo)
         dispatcher.scheduler.advanceUntilIdle()
@@ -49,6 +50,7 @@ class CalendarViewModelTest {
     fun `previousMonth decrements month correctly`() = runTest {
         val repo = object : CalendarRepository {
             override suspend fun getEvents(year: Int, month: Int) = Result.success(emptyList<CalendarEvent>())
+            override suspend fun getYearEvents(year: Int) = Result.success(emptyList<CalendarEvent>())
         }
         val vm = CalendarViewModel(repo)
         dispatcher.scheduler.advanceUntilIdle()
@@ -65,6 +67,7 @@ class CalendarViewModelTest {
     fun `selectDay toggles — second tap deselects`() = runTest {
         val repo = object : CalendarRepository {
             override suspend fun getEvents(year: Int, month: Int) = Result.success(emptyList<CalendarEvent>())
+            override suspend fun getYearEvents(year: Int) = Result.success(emptyList<CalendarEvent>())
         }
         val vm = CalendarViewModel(repo)
         dispatcher.scheduler.advanceUntilIdle()
@@ -79,6 +82,7 @@ class CalendarViewModelTest {
     fun `selectEvent sets selectedEvent and dismissEventDetail clears it`() = runTest {
         val repo = object : CalendarRepository {
             override suspend fun getEvents(year: Int, month: Int) = Result.success(listOf(fakeEvent(10)))
+            override suspend fun getYearEvents(year: Int) = Result.success(emptyList<CalendarEvent>())
         }
         val vm = CalendarViewModel(repo)
         dispatcher.scheduler.advanceUntilIdle()

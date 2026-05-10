@@ -29,6 +29,16 @@ class CalendarRepositoryImpl(private val client: HttpClient) : CalendarRepositor
         body.items.map { it.toDomain() }
     }
 
+    override suspend fun getYearEvents(year: Int): Result<List<CalendarEvent>> = runCatching {
+        val url = "$GCAL_BASE/$calendarId/events" +
+            "?key=$apiKey" +
+            "&timeMin=${year}-01-01T00:00:00Z" +
+            "&timeMax=${year + 1}-01-01T00:00:00Z" +
+            "&orderBy=startTime&singleEvents=true&maxResults=500"
+        val body = client.get(url).body<GoogleCalendarEventsResponse>()
+        body.items.map { it.toDomain() }
+    }
+
     private fun GoogleCalendarEventItem.toDomain() = CalendarEvent(
         id          = id,
         title       = summary,
