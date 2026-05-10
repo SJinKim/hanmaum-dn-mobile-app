@@ -20,6 +20,7 @@ import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementDeta
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementListScreen
 import com.hanmaum.dn.mobile.features.announcement.presentation.HomeScreen
 import com.hanmaum.dn.mobile.features.community.presentation.CommunityStubScreen
+import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceScreen
 import com.hanmaum.dn.mobile.features.floorplan.presentation.FloorPlanScreen
 import com.hanmaum.dn.mobile.features.login.presentation.RegisterScreen
 import com.hanmaum.dn.mobile.features.login.screen.LoginScreen
@@ -186,6 +187,10 @@ fun App() {
                         FloorPlanScreen(
                             onBackClick = { navController.popBackStack() },
                         )
+                    }
+
+                    composable<AttendanceRoute> {
+                        AttendanceScreen(onBackClick = { navController.popBackStack() })
                     }
                 }
             }
