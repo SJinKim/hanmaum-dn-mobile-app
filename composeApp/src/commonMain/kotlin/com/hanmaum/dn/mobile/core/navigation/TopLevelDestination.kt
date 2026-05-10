@@ -1,11 +1,11 @@
 package com.hanmaum.dn.mobile.core.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.ui.graphics.vector.ImageVector
 import kotlin.reflect.KClass
 
@@ -22,25 +22,25 @@ sealed class TopLevelDestination<T : Any>(
         label = "홈",
     )
 
-    data object Community : TopLevelDestination<CommunityRoute>(
-        routeClass = CommunityRoute::class,
-        routeInstance = CommunityRoute,
-        icon = Icons.Default.Group,
-        label = "커뮤니티",
-    )
-
-    data object Ministries : TopLevelDestination<MinistryListRoute>(
-        routeClass = MinistryListRoute::class,
-        routeInstance = MinistryListRoute,
-        icon = Icons.Default.Star,
-        label = "사역",
-    )
-
     data object News : TopLevelDestination<AnnouncementListRoute>(
         routeClass = AnnouncementListRoute::class,
         routeInstance = AnnouncementListRoute,
         icon = Icons.Default.Newspaper,
         label = "소식",
+    )
+
+    data object Calendar : TopLevelDestination<CalendarRoute>(
+        routeClass = CalendarRoute::class,
+        routeInstance = CalendarRoute,
+        icon = Icons.Default.CalendarMonth,
+        label = "캘린더",
+    )
+
+    data object Album : TopLevelDestination<AlbumRoute>(
+        routeClass = AlbumRoute::class,
+        routeInstance = AlbumRoute,
+        icon = Icons.Default.PhotoLibrary,
+        label = "앨범",
     )
 
     data object Profile : TopLevelDestination<ProfileRoute>(
@@ -51,6 +51,6 @@ sealed class TopLevelDestination<T : Any>(
     )
 
     companion object {
-        val all: List<TopLevelDestination<*>> = listOf(Home, Community, Ministries, News, Profile)
+        val all: List<TopLevelDestination<*>> = listOf(Home, News, Calendar, Album, Profile)
     }
 }
