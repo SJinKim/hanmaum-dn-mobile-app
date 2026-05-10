@@ -2,8 +2,17 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 
-
-
+// Read .env secrets
+val envFile = rootProject.file(".env")
+val envProps = mutableMapOf<String, String>()
+if (envFile.exists()) {
+    envFile.readLines()
+        .filter { it.isNotBlank() && !it.startsWith("#") && "=" in it }
+        .forEach { line ->
+            val idx = line.indexOf('=')
+            envProps[line.substring(0, idx).trim()] = line.substring(idx + 1).trim()
+        }
+}
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -20,6 +29,9 @@ buildkonfig {
     defaultConfigs {
         buildConfigField(STRING, "BACKEND_URL", "http://10.0.2.2:8080")
         buildConfigField(STRING, "KEYCLOAK_URL", "http://10.0.2.2:8091")
+        buildConfigField(STRING, "GOOGLE_CALENDAR_ID",    envProps["GOOGLE_CALENDAR_ID"]    ?: "")
+        buildConfigField(STRING, "GOOGLE_CALENDAR_API_KEY", envProps["GOOGLE_CALENDAR_API_KEY"] ?: "")
+        buildConfigField(STRING, "PCLOUD_PUBLIC_CODE",    envProps["PCLOUD_PUBLIC_CODE"]    ?: "")
     }
 
     targetConfigs {
@@ -90,6 +102,9 @@ kotlin {
             implementation(libs.bundles.koin.common)
             implementation(libs.multiplatform.settings)
             implementation(libs.kotlinx.datetime)
+
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
 
         }
         iosMain.dependencies {
