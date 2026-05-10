@@ -55,6 +55,32 @@ class CalendarViewModel(private val repository: CalendarRepository) : ViewModel(
         loadCurrentMonth()
     }
 
+    fun switchView(mode: ViewMode) {
+        _uiState.update { it.copy(viewMode = mode) }
+        if (mode == ViewMode.LIST && !_uiState.value.yearEventsLoaded) {
+            loadYearEvents()
+        }
+    }
+
+    private fun loadYearEvents() {
+        val year = _uiState.value.year
+        _uiState.update { it.copy(isYearLoading = true) }
+        viewModelScope.launch {
+            repository.getYearEvents(year).fold(
+                onSuccess = { events ->
+                    _uiState.update {
+                        it.copy(yearEvents = events, yearEventsLoaded = true, isYearLoading = false)
+                    }
+                },
+                onFailure = { err ->
+                    _uiState.update {
+                        it.copy(isYearLoading = false, error = err.message ?: "연간 일정 로딩 실패")
+                    }
+                },
+            )
+        }
+    }
+
     private fun loadCurrentMonth() {
         val (year, month) = _uiState.value.run { year to month }
         _uiState.update { it.copy(isLoading = true, error = null) }
