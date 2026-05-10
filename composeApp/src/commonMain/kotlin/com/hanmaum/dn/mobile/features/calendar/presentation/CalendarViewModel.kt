@@ -16,7 +16,12 @@ class CalendarViewModel(private val repository: CalendarRepository) : ViewModel(
 
     private val _uiState = MutableStateFlow(run {
         val now = kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-        CalendarUiState(year = now.year, month = now.monthNumber)
+        CalendarUiState(
+            year = now.year,
+            month = now.monthNumber,
+            todayYear = now.year,
+            todayMonth = now.monthNumber,
+        )
     })
     val uiState: StateFlow<CalendarUiState> = _uiState.asStateFlow()
 
