@@ -3,6 +3,7 @@ package com.hanmaum.dn.mobile.features.calendar
 import com.hanmaum.dn.mobile.features.calendar.domain.model.CalendarEvent
 import com.hanmaum.dn.mobile.features.calendar.domain.repository.CalendarRepository
 import com.hanmaum.dn.mobile.features.calendar.presentation.CalendarViewModel
+import com.hanmaum.dn.mobile.features.calendar.presentation.ViewMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -16,6 +17,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CalendarViewModelTest {
@@ -37,6 +39,7 @@ class CalendarViewModelTest {
     fun `loads events for current month on init`() = runTest {
         val repo = object : CalendarRepository {
             override suspend fun getEvents(year: Int, month: Int) = Result.success(listOf(fakeEvent(15)))
+            override suspend fun getYearEvents(year: Int) = Result.success(emptyList<CalendarEvent>())
         }
         val vm = CalendarViewModel(repo)
         dispatcher.scheduler.advanceUntilIdle()
@@ -49,6 +52,7 @@ class CalendarViewModelTest {
     fun `previousMonth decrements month correctly`() = runTest {
         val repo = object : CalendarRepository {
             override suspend fun getEvents(year: Int, month: Int) = Result.success(emptyList<CalendarEvent>())
+            override suspend fun getYearEvents(year: Int) = Result.success(emptyList<CalendarEvent>())
         }
         val vm = CalendarViewModel(repo)
         dispatcher.scheduler.advanceUntilIdle()
@@ -65,6 +69,7 @@ class CalendarViewModelTest {
     fun `selectDay toggles — second tap deselects`() = runTest {
         val repo = object : CalendarRepository {
             override suspend fun getEvents(year: Int, month: Int) = Result.success(emptyList<CalendarEvent>())
+            override suspend fun getYearEvents(year: Int) = Result.success(emptyList<CalendarEvent>())
         }
         val vm = CalendarViewModel(repo)
         dispatcher.scheduler.advanceUntilIdle()
@@ -79,6 +84,7 @@ class CalendarViewModelTest {
     fun `selectEvent sets selectedEvent and dismissEventDetail clears it`() = runTest {
         val repo = object : CalendarRepository {
             override suspend fun getEvents(year: Int, month: Int) = Result.success(listOf(fakeEvent(10)))
+            override suspend fun getYearEvents(year: Int) = Result.success(emptyList<CalendarEvent>())
         }
         val vm = CalendarViewModel(repo)
         dispatcher.scheduler.advanceUntilIdle()
@@ -88,5 +94,65 @@ class CalendarViewModelTest {
 
         vm.dismissEventDetail()
         assertNull(vm.uiState.value.selectedEvent)
+    }
+
+    @Test
+    fun `switchView to LIST loads year events and sets yearEventsLoaded`() = runTest {
+        var yearFetchCount = 0
+        val repo = object : CalendarRepository {
+            override suspend fun getEvents(year: Int, month: Int) = Result.success(emptyList<CalendarEvent>())
+            override suspend fun getYearEvents(year: Int): Result<List<CalendarEvent>> {
+                yearFetchCount++
+                return Result.success(listOf(fakeEvent(1)))
+            }
+        }
+        val vm = CalendarViewModel(repo)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        vm.switchView(ViewMode.LIST)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(ViewMode.LIST, vm.uiState.value.viewMode)
+        assertEquals(1, yearFetchCount)
+        assertTrue(vm.uiState.value.yearEventsLoaded)
+        assertEquals(1, vm.uiState.value.yearEvents.size)
+    }
+
+    @Test
+    fun `switchView to LIST does not re-fetch when already loaded`() = runTest {
+        var yearFetchCount = 0
+        val repo = object : CalendarRepository {
+            override suspend fun getEvents(year: Int, month: Int) = Result.success(emptyList<CalendarEvent>())
+            override suspend fun getYearEvents(year: Int): Result<List<CalendarEvent>> {
+                yearFetchCount++
+                return Result.success(listOf(fakeEvent(1)))
+            }
+        }
+        val vm = CalendarViewModel(repo)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        vm.switchView(ViewMode.LIST)
+        dispatcher.scheduler.advanceUntilIdle()
+        vm.switchView(ViewMode.CALENDAR)
+        vm.switchView(ViewMode.LIST)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, yearFetchCount)
+    }
+
+    @Test
+    fun `switchView to LIST sets yearEventsLoaded even when year has no events`() = runTest {
+        val repo = object : CalendarRepository {
+            override suspend fun getEvents(year: Int, month: Int) = Result.success(emptyList<CalendarEvent>())
+            override suspend fun getYearEvents(year: Int) = Result.success(emptyList<CalendarEvent>())
+        }
+        val vm = CalendarViewModel(repo)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        vm.switchView(ViewMode.LIST)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(vm.uiState.value.yearEventsLoaded)
+        assertEquals(0, vm.uiState.value.yearEvents.size)
     }
 }

@@ -16,7 +16,12 @@ class CalendarViewModel(private val repository: CalendarRepository) : ViewModel(
 
     private val _uiState = MutableStateFlow(run {
         val now = kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-        CalendarUiState(year = now.year, month = now.monthNumber)
+        CalendarUiState(
+            year = now.year,
+            month = now.monthNumber,
+            todayYear = now.year,
+            todayMonth = now.monthNumber,
+        )
     })
     val uiState: StateFlow<CalendarUiState> = _uiState.asStateFlow()
 
@@ -48,6 +53,32 @@ class CalendarViewModel(private val repository: CalendarRepository) : ViewModel(
             s.copy(year = y, month = m, selectedDay = null, selectedEvent = null)
         }
         loadCurrentMonth()
+    }
+
+    fun switchView(mode: ViewMode) {
+        _uiState.update { it.copy(viewMode = mode) }
+        if (mode == ViewMode.LIST && !_uiState.value.yearEventsLoaded && !_uiState.value.isYearLoading) {
+            loadYearEvents()
+        }
+    }
+
+    private fun loadYearEvents() {
+        val year = _uiState.value.todayYear
+        _uiState.update { it.copy(isYearLoading = true) }
+        viewModelScope.launch {
+            repository.getYearEvents(year).fold(
+                onSuccess = { events ->
+                    _uiState.update {
+                        it.copy(yearEvents = events, yearEventsLoaded = true, isYearLoading = false)
+                    }
+                },
+                onFailure = { err ->
+                    _uiState.update {
+                        it.copy(isYearLoading = false, error = err.message ?: "연간 일정 로딩 실패")
+                    }
+                },
+            )
+        }
     }
 
     private fun loadCurrentMonth() {
