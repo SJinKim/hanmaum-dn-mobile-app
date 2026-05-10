@@ -76,7 +76,7 @@ class CalendarViewModelTest {
     }
 
     @Test
-    fun `selectEvent sets selectedEvent, dismissEventDetail clears it`() = runTest {
+    fun `selectEvent sets selectedEvent and dismissEventDetail clears it`() = runTest {
         val repo = object : CalendarRepository {
             override suspend fun getEvents(year: Int, month: Int) = Result.success(listOf(fakeEvent(10)))
         }

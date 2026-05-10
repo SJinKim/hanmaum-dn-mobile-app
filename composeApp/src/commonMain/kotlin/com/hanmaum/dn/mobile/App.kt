@@ -21,6 +21,7 @@ import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementList
 import com.hanmaum.dn.mobile.features.announcement.presentation.HomeScreen
 import com.hanmaum.dn.mobile.features.album.presentation.AlbumScreen
 import com.hanmaum.dn.mobile.features.album.presentation.PhotoViewerScreen
+import com.hanmaum.dn.mobile.features.calendar.presentation.CalendarScreen
 import com.hanmaum.dn.mobile.features.community.presentation.CommunityStubScreen
 import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceScreen
 import com.hanmaum.dn.mobile.features.floorplan.presentation.FloorPlanScreen
@@ -203,6 +204,8 @@ fun App() {
                         val route: PhotoViewerRoute = backStackEntry.toRoute()
                         PhotoViewerScreen(photoUrl = route.photoUrl, onBackClick = { navController.popBackStack() })
                     }
+
+                    composable<CalendarRoute> { CalendarScreen() }
                 }
             }
         }
