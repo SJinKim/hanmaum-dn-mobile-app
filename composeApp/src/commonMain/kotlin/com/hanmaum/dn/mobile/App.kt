@@ -19,7 +19,11 @@ import com.hanmaum.dn.mobile.core.presentation.theme.AppTheme
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementDetailScreen
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementListScreen
 import com.hanmaum.dn.mobile.features.announcement.presentation.HomeScreen
+import com.hanmaum.dn.mobile.features.album.presentation.AlbumScreen
+import com.hanmaum.dn.mobile.features.album.presentation.PhotoViewerScreen
+import com.hanmaum.dn.mobile.features.calendar.presentation.CalendarScreen
 import com.hanmaum.dn.mobile.features.community.presentation.CommunityStubScreen
+import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceScreen
 import com.hanmaum.dn.mobile.features.floorplan.presentation.FloorPlanScreen
 import com.hanmaum.dn.mobile.features.login.presentation.RegisterScreen
 import com.hanmaum.dn.mobile.features.login.screen.LoginScreen
@@ -187,6 +191,21 @@ fun App() {
                             onBackClick = { navController.popBackStack() },
                         )
                     }
+
+                    composable<AttendanceRoute> {
+                        AttendanceScreen(onBackClick = { navController.popBackStack() })
+                    }
+
+                    composable<AlbumRoute> {
+                        AlbumScreen(onPhotoClick = { url -> navController.navigate(PhotoViewerRoute(photoUrl = url)) })
+                    }
+
+                    composable<PhotoViewerRoute> { backStackEntry ->
+                        val route: PhotoViewerRoute = backStackEntry.toRoute()
+                        PhotoViewerScreen(photoUrl = route.photoUrl, onBackClick = { navController.popBackStack() })
+                    }
+
+                    composable<CalendarRoute> { CalendarScreen() }
                 }
             }
         }

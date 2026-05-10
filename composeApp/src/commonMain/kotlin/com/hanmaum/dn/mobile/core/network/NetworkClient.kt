@@ -104,9 +104,12 @@ fun createHttpClient(tokenStorage: TokenStorage): HttpClient {
                 }
 
                 sendWithoutRequest { request ->
+                    val host = request.url.host
+                    val backendHost = Url(BuildKonfig.BACKEND_URL).host
                     val path = request.url.encodedPath
-                    val shouldSkipAuth = path.contains("register") || path.contains("openid-connect")
-                    !shouldSkipAuth
+                    val isBackend = host.isBlank() || host == backendHost
+                    val isAuthEndpoint = path.contains("register") || path.contains("openid-connect")
+                    isBackend && !isAuthEndpoint
                 }
             }
         }

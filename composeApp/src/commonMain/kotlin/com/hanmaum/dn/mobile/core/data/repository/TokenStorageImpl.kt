@@ -3,8 +3,7 @@ package com.hanmaum.dn.mobile.core.data.repository
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.russhwolf.settings.Settings
 
-class TokenStorageImpl : TokenStorage {
-    private val settings = Settings()
+class TokenStorageImpl(private val settings: Settings) : TokenStorage {
 
     override fun saveAccessToken(token: String) {
         settings.putString(KEY_ACCESS, token)

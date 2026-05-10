@@ -45,7 +45,7 @@ Each feature under `features/<name>/` follows clean architecture:
 Shared infrastructure lives in `core/`:
 - `core/network/` — Ktor `HttpClient` creation with bearer auth plugin
 - `core/domain/repository/TokenStorage` — interface for token persistence
-- `core/data/repository/TokenStorageImpl` — **in-memory only** (tokens lost on restart — TODO: replace with persistent storage)
+- `core/data/repository/TokenStorageImpl` — persists via `com.russhwolf:multiplatform-settings-no-arg` (`SharedPreferences` on Android, `NSUserDefaults` on iOS)
 - `core/navigation/Routes.kt` — type-safe `@Serializable` navigation route objects
 - `core/domain/model/NavRoute.kt` — platform-agnostic `enum` used by ViewModels to signal navigation intent
 
