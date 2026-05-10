@@ -98,6 +98,9 @@ To change URLs, edit the `buildkonfig {}` block in `composeApp/build.gradle.kts`
 - When given a bug report: just fix it — no hand-holding requests.
 - Point at logs, errors, failing tests and resolve autonomously.
 
+### Git Commits
+- **Never** add `Co-Authored-By:` trailers to any commit message — not for Claude, not for any tool.
+
 ### Core Principles
 - Simplicity First: minimal code impact per change.
 - No Laziness: find root causes, no temporary fixes.
