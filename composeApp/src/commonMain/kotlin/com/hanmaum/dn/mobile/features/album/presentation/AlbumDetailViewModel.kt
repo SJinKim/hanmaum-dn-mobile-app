@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 
 class AlbumDetailViewModel(
     private val pcloudCode: String,
-    val albumName: String,
+    private val albumName: String,
     private val repository: AlbumDetailRepository,
 ) : ViewModel() {
 

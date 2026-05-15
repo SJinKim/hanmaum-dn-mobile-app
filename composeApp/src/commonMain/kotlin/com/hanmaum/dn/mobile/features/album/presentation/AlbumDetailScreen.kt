@@ -43,29 +43,41 @@ fun AlbumDetailScreen(
             )
         },
     ) { padding ->
-        BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(padding)) {
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val columns = when {
                 maxWidth < 600.dp -> 3
                 maxWidth < 900.dp -> 4
                 else -> 5
             }
             when (state) {
-                AlbumDetailUiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                AlbumDetailUiState.Loading -> Box(
+                    Modifier.fillMaxSize().padding(padding),
+                    contentAlignment = Alignment.Center,
+                ) {
                     CircularProgressIndicator()
                 }
-                is AlbumDetailUiState.Error -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text((state as AlbumDetailUiState.Error).message, color = MaterialTheme.colorScheme.error)
+                is AlbumDetailUiState.Error -> {
+                    val e = state as AlbumDetailUiState.Error
+                    Box(
+                        Modifier.fillMaxSize().padding(padding),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(e.message, color = MaterialTheme.colorScheme.error)
+                    }
                 }
                 is AlbumDetailUiState.Success -> {
                     val s = state as AlbumDetailUiState.Success
                     if (s.items.isEmpty()) {
-                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Box(
+                            Modifier.fillMaxSize().padding(padding),
+                            contentAlignment = Alignment.Center,
+                        ) {
                             Text("아직 사진이 없습니다", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     } else {
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(columns),
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier.fillMaxSize().padding(padding),
                             contentPadding = PaddingValues(2.dp),
                             horizontalArrangement = Arrangement.spacedBy(2.dp),
                             verticalArrangement = Arrangement.spacedBy(2.dp),
