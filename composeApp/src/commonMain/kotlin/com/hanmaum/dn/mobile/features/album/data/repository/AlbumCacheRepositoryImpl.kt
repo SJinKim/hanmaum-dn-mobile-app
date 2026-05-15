@@ -12,7 +12,7 @@ class AlbumCacheRepositoryImpl(private val settings: Settings) : AlbumCacheRepos
     private val json = Json { ignoreUnknownKeys = true }
 
     override fun getCachedAlbumList(): List<Album>? = runCatching {
-        settings.getStringOrNull(KEY_ALBUM_LIST)?.let { json.decodeFromString(it) }
+        settings.getStringOrNull(KEY_ALBUM_LIST)?.let { json.decodeFromString<List<Album>>(it) }
     }.getOrNull()
 
     override fun saveAlbumList(albums: List<Album>) {
@@ -20,7 +20,7 @@ class AlbumCacheRepositoryImpl(private val settings: Settings) : AlbumCacheRepos
     }
 
     override fun getCachedMeta(pcloudCode: String): AlbumMeta? = runCatching {
-        settings.getStringOrNull(metaKey(pcloudCode))?.let { json.decodeFromString(it) }
+        settings.getStringOrNull(metaKey(pcloudCode))?.let { json.decodeFromString<AlbumMeta>(it) }
     }.getOrNull()
 
     override fun saveMeta(pcloudCode: String, meta: AlbumMeta) {
