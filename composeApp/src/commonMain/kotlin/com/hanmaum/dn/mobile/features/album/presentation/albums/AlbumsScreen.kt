@@ -51,24 +51,33 @@ fun AlbumsScreen(
 
             is AlbumsUiState.Success -> {
                 val s = state as AlbumsUiState.Success
-                BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                    val columns = when {
-                        maxWidth < 600.dp -> 2
-                        maxWidth < 900.dp -> 3
-                        else -> 4
-                    }
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(columns),
+                if (s.albums.isEmpty()) {
+                    Box(
                         modifier = Modifier.fillMaxSize().padding(padding),
-                        contentPadding = PaddingValues(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        contentAlignment = Alignment.Center,
                     ) {
-                        items(s.albums, key = { it.album.publicId }) { summary ->
-                            AlbumCard(
-                                summary = summary,
-                                onClick = { onAlbumClick(summary.album.pcloudCode, summary.album.name) },
-                            )
+                        Text("앨범이 없습니다", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                } else {
+                    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                        val columns = when {
+                            maxWidth < 600.dp -> 2
+                            maxWidth < 900.dp -> 3
+                            else -> 4
+                        }
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(columns),
+                            modifier = Modifier.fillMaxSize().padding(padding),
+                            contentPadding = PaddingValues(12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            items(s.albums, key = { it.album.publicId }) { summary ->
+                                AlbumCard(
+                                    summary = summary,
+                                    onClick = { onAlbumClick(summary.album.pcloudCode, summary.album.name) },
+                                )
+                            }
                         }
                     }
                 }
@@ -103,7 +112,7 @@ private fun AlbumCard(summary: AlbumSummary, onClick: () -> Unit) {
         Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
             Text(
                 text = summary.album.name,
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.titleSmall,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.onSurface,
