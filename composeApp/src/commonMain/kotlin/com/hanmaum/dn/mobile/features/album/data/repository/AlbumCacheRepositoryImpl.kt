@@ -9,20 +9,22 @@ import kotlinx.serialization.json.Json
 
 class AlbumCacheRepositoryImpl(private val settings: Settings) : AlbumCacheRepository {
 
+    private val json = Json { ignoreUnknownKeys = true }
+
     override fun getCachedAlbumList(): List<Album>? = runCatching {
-        settings.getStringOrNull(KEY_ALBUM_LIST)?.let { Json.decodeFromString(it) }
+        settings.getStringOrNull(KEY_ALBUM_LIST)?.let { json.decodeFromString(it) }
     }.getOrNull()
 
     override fun saveAlbumList(albums: List<Album>) {
-        settings.putString(KEY_ALBUM_LIST, Json.encodeToString(albums))
+        settings.putString(KEY_ALBUM_LIST, json.encodeToString(albums))
     }
 
     override fun getCachedMeta(pcloudCode: String): AlbumMeta? = runCatching {
-        settings.getStringOrNull(metaKey(pcloudCode))?.let { Json.decodeFromString(it) }
+        settings.getStringOrNull(metaKey(pcloudCode))?.let { json.decodeFromString(it) }
     }.getOrNull()
 
     override fun saveMeta(pcloudCode: String, meta: AlbumMeta) {
-        settings.putString(metaKey(pcloudCode), Json.encodeToString(meta))
+        settings.putString(metaKey(pcloudCode), json.encodeToString(meta))
     }
 
     private fun metaKey(pcloudCode: String) = "album_meta_$pcloudCode"
