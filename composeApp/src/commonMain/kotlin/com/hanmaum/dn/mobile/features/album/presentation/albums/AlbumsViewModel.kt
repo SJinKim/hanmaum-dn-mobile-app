@@ -43,18 +43,19 @@ class AlbumsViewModel(
                     val current = (_uiState.value as? AlbumsUiState.Success)?.albums ?: emptyList()
                     val merged = albums.map { album ->
                         val existing = current.find { it.album.publicId == album.publicId }
-                        existing?.copy(album = album) ?: AlbumSummary(
-                            album = album,
-                            coverUrl = cacheRepository.getCachedMeta(album.pcloudCode)?.coverUrl,
-                            photoCount = cacheRepository.getCachedMeta(album.pcloudCode)?.photoCount,
-                        )
+                        existing?.copy(album = album) ?: run {
+                            val meta = cacheRepository.getCachedMeta(album.pcloudCode)
+                            AlbumSummary(album = album, coverUrl = meta?.coverUrl, photoCount = meta?.photoCount)
+                        }
                     }
                     _uiState.value = AlbumsUiState.Success(merged)
-                    merged.forEach { summary -> launch { resolveAlbumMeta(summary.album) } }
+                    merged.forEach { summary -> viewModelScope.launch { resolveAlbumMeta(summary.album) } }
                 },
-                onFailure = {
-                    if (_uiState.value !is AlbumsUiState.Success) {
-                        _uiState.value = AlbumsUiState.Error(it.message ?: "앨범 목록 로딩 실패")
+                onFailure = { err ->
+                    _uiState.update { current ->
+                        if (current !is AlbumsUiState.Success)
+                            AlbumsUiState.Error(err.message ?: "앨범 목록 로딩 실패")
+                        else current
                     }
                 },
             )
