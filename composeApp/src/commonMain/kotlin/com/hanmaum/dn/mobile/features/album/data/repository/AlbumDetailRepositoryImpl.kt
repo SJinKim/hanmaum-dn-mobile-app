@@ -27,7 +27,8 @@ class AlbumDetailRepositoryImpl(private val client: HttpClient) : AlbumDetailRep
     override suspend fun getDownloadUrl(pcloudCode: String, fileId: Long): Result<String> = runCatching {
         val response = client.get("$downloadEndpoint?code=$pcloudCode&fileid=$fileId")
         val body = response.body<PCloudDownloadResponse>()
-        if (body.result != 0 || body.hosts.isEmpty()) error("pCloud download error ${body.result}")
+        if (body.result != 0) error("pCloud download error code ${body.result}")
+        if (body.hosts.isEmpty()) error("pCloud download returned no hosts (result=${body.result})")
         "https://${body.hosts[0]}${body.path}"
     }
 
