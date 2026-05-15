@@ -25,9 +25,14 @@ import com.hanmaum.dn.mobile.features.ministry.data.repository.MinistryRepositor
 import com.hanmaum.dn.mobile.features.ministry.domain.repository.MinistryRepository
 import com.hanmaum.dn.mobile.features.ministry.presentation.detail.MinistryDetailViewModel
 import com.hanmaum.dn.mobile.features.ministry.presentation.list.MinistryListViewModel
-import com.hanmaum.dn.mobile.features.album.data.repository.AlbumRepositoryImpl
-import com.hanmaum.dn.mobile.features.album.domain.repository.AlbumRepository
-import com.hanmaum.dn.mobile.features.album.presentation.AlbumViewModel
+import com.hanmaum.dn.mobile.features.album.data.repository.AlbumCacheRepositoryImpl
+import com.hanmaum.dn.mobile.features.album.data.repository.AlbumDetailRepositoryImpl
+import com.hanmaum.dn.mobile.features.album.data.repository.AlbumsRepositoryImpl
+import com.hanmaum.dn.mobile.features.album.domain.repository.AlbumCacheRepository
+import com.hanmaum.dn.mobile.features.album.domain.repository.AlbumDetailRepository
+import com.hanmaum.dn.mobile.features.album.domain.repository.AlbumsRepository
+import com.hanmaum.dn.mobile.features.album.presentation.AlbumDetailViewModel
+import com.hanmaum.dn.mobile.features.album.presentation.albums.AlbumsViewModel
 import com.hanmaum.dn.mobile.features.calendar.data.repository.CalendarRepositoryImpl
 import com.hanmaum.dn.mobile.features.calendar.domain.repository.CalendarRepository
 import com.hanmaum.dn.mobile.features.calendar.presentation.CalendarViewModel
@@ -96,8 +101,13 @@ val appModule = module {
     viewModel { FloorPlanViewModel(get()) }
 
     // Album
-    single<AlbumRepository> { AlbumRepositoryImpl(get()) }
-    viewModel { AlbumViewModel(get()) }
+    single<AlbumDetailRepository> { AlbumDetailRepositoryImpl(get()) }
+    single<AlbumsRepository> { AlbumsRepositoryImpl(get()) }
+    single<AlbumCacheRepository> { AlbumCacheRepositoryImpl(Settings()) }
+    viewModel { AlbumsViewModel(get(), get(), get()) }
+    viewModel { (pcloudCode: String, albumName: String) ->
+        AlbumDetailViewModel(pcloudCode = pcloudCode, albumName = albumName, repository = get())
+    }
 
     // Calendar
     single<CalendarRepository> { CalendarRepositoryImpl(get()) }

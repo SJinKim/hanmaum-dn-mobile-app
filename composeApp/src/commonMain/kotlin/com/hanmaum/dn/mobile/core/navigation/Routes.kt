@@ -15,6 +15,7 @@ import kotlinx.serialization.Serializable
 @Serializable object CommunityRoute
 @Serializable object FloorPlanRoute
 @Serializable object AttendanceRoute
-@Serializable object AlbumRoute
+@Serializable object AlbumsRoute
+@Serializable data class AlbumDetailRoute(val pcloudCode: String, val albumName: String)
 @Serializable data class PhotoViewerRoute(val photoUrl: String)
 @Serializable object CalendarRoute

@@ -31,7 +31,6 @@ buildkonfig {
         buildConfigField(STRING, "KEYCLOAK_URL", "http://10.0.2.2:8091")
         buildConfigField(STRING, "GOOGLE_CALENDAR_ID",    envProps["GOOGLE_CALENDAR_ID"]    ?: "")
         buildConfigField(STRING, "GOOGLE_CALENDAR_API_KEY", envProps["GOOGLE_CALENDAR_API_KEY"] ?: "")
-        buildConfigField(STRING, "PCLOUD_PUBLIC_CODE",       envProps["PCLOUD_PUBLIC_CODE"]       ?: "")
         buildConfigField(STRING, "PCLOUD_FOLDER_ENDPOINT",   envProps["PCLOUD_FOLDER_ENDPOINT"]   ?: "")
         buildConfigField(STRING, "PCLOUD_DOWNLOAD_ENDPOINT", envProps["PCLOUD_DOWNLOAD_ENDPOINT"] ?: "")
     }
