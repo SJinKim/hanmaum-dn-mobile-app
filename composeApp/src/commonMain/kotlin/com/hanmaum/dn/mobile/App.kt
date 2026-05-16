@@ -19,8 +19,9 @@ import com.hanmaum.dn.mobile.core.presentation.theme.AppTheme
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementDetailScreen
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementListScreen
 import com.hanmaum.dn.mobile.features.announcement.presentation.HomeScreen
-import com.hanmaum.dn.mobile.features.album.presentation.AlbumScreen
+import com.hanmaum.dn.mobile.features.album.presentation.AlbumDetailScreen
 import com.hanmaum.dn.mobile.features.album.presentation.PhotoViewerScreen
+import com.hanmaum.dn.mobile.features.album.presentation.albums.AlbumsScreen
 import com.hanmaum.dn.mobile.features.calendar.presentation.CalendarScreen
 import com.hanmaum.dn.mobile.features.community.presentation.CommunityStubScreen
 import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceScreen
@@ -196,8 +197,22 @@ fun App() {
                         AttendanceScreen(onBackClick = { navController.popBackStack() })
                     }
 
-                    composable<AlbumRoute> {
-                        AlbumScreen(onPhotoClick = { url -> navController.navigate(PhotoViewerRoute(photoUrl = url)) })
+                    composable<AlbumsRoute> {
+                        AlbumsScreen(
+                            onAlbumClick = { pcloudCode, albumName ->
+                                navController.navigate(AlbumDetailRoute(pcloudCode = pcloudCode, albumName = albumName))
+                            }
+                        )
+                    }
+
+                    composable<AlbumDetailRoute> { backStackEntry ->
+                        val route: AlbumDetailRoute = backStackEntry.toRoute()
+                        AlbumDetailScreen(
+                            pcloudCode = route.pcloudCode,
+                            albumName = route.albumName,
+                            onPhotoClick = { url -> navController.navigate(PhotoViewerRoute(photoUrl = url)) },
+                            onBackClick = { navController.popBackStack() },
+                        )
                     }
 
                     composable<PhotoViewerRoute> { backStackEntry ->

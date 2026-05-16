@@ -36,9 +36,9 @@ sealed class TopLevelDestination<T : Any>(
         label = "캘린더",
     )
 
-    data object Album : TopLevelDestination<AlbumRoute>(
-        routeClass = AlbumRoute::class,
-        routeInstance = AlbumRoute,
+    data object Album : TopLevelDestination<AlbumsRoute>(
+        routeClass = AlbumsRoute::class,
+        routeInstance = AlbumsRoute,
         icon = Icons.Default.PhotoLibrary,
         label = "앨범",
     )
