@@ -42,7 +42,7 @@ fun AppTopBar(
             IconButton(onClick = {}) {
                 Icon(
                     imageVector        = Icons.Outlined.Notifications,
-                    contentDescription = strings.navNews,
+                    contentDescription = strings.notifications,
                     tint               = MaterialTheme.colorScheme.onSurface,
                 )
             }

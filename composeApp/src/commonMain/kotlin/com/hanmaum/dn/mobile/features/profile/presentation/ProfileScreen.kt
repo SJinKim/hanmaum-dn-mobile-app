@@ -40,7 +40,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -148,7 +147,7 @@ private fun ProfileViewContent(
 
         Icon(
             imageVector        = Icons.Default.AccountCircle,
-            contentDescription = strings.navProfile,
+            contentDescription = null,
             modifier           = Modifier.size(100.dp),
             tint               = MaterialTheme.colorScheme.primary,
         )
@@ -218,7 +217,8 @@ private fun ProfileViewContent(
         }
         Spacer(Modifier.height(12.dp))
         Card(
-            modifier  = Modifier.fillMaxWidth().clickable { showLanguagePicker = true },
+            modifier  = Modifier.fillMaxWidth(),
+            onClick   = { showLanguagePicker = true },
             shape     = MaterialTheme.shapes.large,
             colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
@@ -248,8 +248,8 @@ private fun ProfileViewContent(
         ) {
             Column {
                 Text(
-                    text      = "“Lead with love, serve with grace, and watch the community bloom.”",
-                    style     = MaterialTheme.typography.bodyLarge.copy(fontStyle = FontStyle.Italic),
+                    text      = """“Lead with love, serve with grace, and watch the community bloom.”""".trimIndent(),
+                    style     = MaterialTheme.typography.bodyLarge,
                     color     = MaterialTheme.colorScheme.onBackground,
                     fontStyle = FontStyle.Italic,
                 )
@@ -347,7 +347,7 @@ private fun ProfileEditContent(
         Spacer(Modifier.height(24.dp))
 
         Text(
-            text     = "PHONE NUMBER",
+            text     = strings.labelPhone,
             style    = MaterialTheme.typography.labelSmall,
             color    = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 6.dp),
@@ -371,7 +371,7 @@ private fun ProfileEditContent(
 
         Spacer(Modifier.height(16.dp))
         Text(
-            text     = "PROFILE IMAGE URL",
+            text     = strings.profileImageUrl,
             style    = MaterialTheme.typography.labelSmall,
             color    = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 6.dp),
@@ -395,7 +395,7 @@ private fun ProfileEditContent(
 
         Spacer(Modifier.height(16.dp))
         Text(
-            text     = "STREET",
+            text     = strings.labelStreet,
             style    = MaterialTheme.typography.labelSmall,
             color    = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 6.dp),
@@ -419,7 +419,7 @@ private fun ProfileEditContent(
 
         Spacer(Modifier.height(16.dp))
         Text(
-            text     = "ZIP CODE",
+            text     = strings.labelZipCode,
             style    = MaterialTheme.typography.labelSmall,
             color    = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 6.dp),
@@ -443,7 +443,7 @@ private fun ProfileEditContent(
 
         Spacer(Modifier.height(16.dp))
         Text(
-            text     = "CITY",
+            text     = strings.labelCity,
             style    = MaterialTheme.typography.labelSmall,
             color    = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 6.dp),
@@ -508,11 +508,9 @@ private fun LanguagePickerSheet(
     onDismiss: () -> Unit,
 ) {
     val strings = LocalStrings.current
-    val sheetState = rememberModalBottomSheetState()
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState       = sheetState,
     ) {
         Column(modifier = Modifier.padding(horizontal = 24.dp).padding(bottom = 32.dp)) {
             Text(

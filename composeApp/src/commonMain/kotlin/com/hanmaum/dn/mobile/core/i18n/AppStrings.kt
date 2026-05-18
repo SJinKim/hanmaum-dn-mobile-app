@@ -19,6 +19,8 @@ interface AppStrings {
     val navProfile: String
     // Attendance
     val navAttendance: String
+    // Notifications
+    val notifications: String
     // Profile screen
     val profileEdit: String
     val profileLogout: String
@@ -32,6 +34,7 @@ interface AppStrings {
     val labelZipCode: String
     val labelCity: String
     val labelPrimaryGroup: String
+    val profileImageUrl: String
     // Ministry
     val registerNow: String
     val registered: String
@@ -67,6 +70,7 @@ object EnStrings : AppStrings {
     override val navAlbum = "Album"
     override val navProfile = "Profile"
     override val navAttendance = "Attendance"
+    override val notifications = "Notifications"
     override val profileEdit = "Edit Profile"
     override val profileLogout = "Logout"
     override val profileLanguage = "LANGUAGE"
@@ -78,6 +82,7 @@ object EnStrings : AppStrings {
     override val labelZipCode = "ZIP CODE"
     override val labelCity = "CITY"
     override val labelPrimaryGroup = "PRIMARY GROUP"
+    override val profileImageUrl = "PROFILE IMAGE URL"
     override val registerNow = "Register Now"
     override val registered = "Applied ✓"
     override val alreadyMember = "Already a member ✓"
@@ -108,6 +113,7 @@ object KoStrings : AppStrings {
     override val navAlbum = "앨범"
     override val navProfile = "프로필"
     override val navAttendance = "출석 체크"
+    override val notifications = "알림"
     override val profileEdit = "프로필 수정"
     override val profileLogout = "로그아웃"
     override val profileLanguage = "언어"
@@ -119,6 +125,7 @@ object KoStrings : AppStrings {
     override val labelZipCode = "우편번호"
     override val labelCity = "도시"
     override val labelPrimaryGroup = "소속 그룹"
+    override val profileImageUrl = "프로필 사진 URL"
     override val registerNow = "신청하기"
     override val registered = "신청되었습니다 ✓"
     override val alreadyMember = "멤버입니다 ✓"
@@ -149,6 +156,7 @@ object DeStrings : AppStrings {
     override val navAlbum = "Album"
     override val navProfile = "Profil"
     override val navAttendance = "Anwesenheit"
+    override val notifications = "Benachrichtigungen"
     override val profileEdit = "Profil bearbeiten"
     override val profileLogout = "Abmelden"
     override val profileLanguage = "SPRACHE"
@@ -160,6 +168,7 @@ object DeStrings : AppStrings {
     override val labelZipCode = "POSTLEITZAHL"
     override val labelCity = "STADT"
     override val labelPrimaryGroup = "HAUPTGRUPPE"
+    override val profileImageUrl = "PROFILBILD-URL"
     override val registerNow = "Jetzt anmelden"
     override val registered = "Angemeldet ✓"
     override val alreadyMember = "Bereits Mitglied ✓"
