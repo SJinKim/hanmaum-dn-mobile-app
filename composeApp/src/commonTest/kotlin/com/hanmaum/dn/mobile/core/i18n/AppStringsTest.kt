@@ -2,7 +2,6 @@ package com.hanmaum.dn.mobile.core.i18n
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class AppStringsTest {
@@ -27,7 +26,12 @@ class AppStringsTest {
         val s = KoStrings
         assertTrue(s.retry.isNotBlank())
         assertTrue(s.save.isNotBlank())
+        assertTrue(s.back.isNotBlank())
         assertTrue(s.navHome.isNotBlank())
+        assertTrue(s.selectLanguage.isNotBlank())
+        assertTrue(s.list.isNotBlank())
+        assertTrue(s.checkStatus.isNotBlank())
+        assertEquals("년", s.yearSuffix)
         assertEquals(13, s.months.size)
         assertTrue(s.months[1].isNotBlank())
     }
@@ -37,7 +41,12 @@ class AppStringsTest {
         val s = DeStrings
         assertTrue(s.retry.isNotBlank())
         assertTrue(s.save.isNotBlank())
+        assertTrue(s.back.isNotBlank())
         assertTrue(s.navHome.isNotBlank())
+        assertTrue(s.selectLanguage.isNotBlank())
+        assertTrue(s.list.isNotBlank())
+        assertTrue(s.checkStatus.isNotBlank())
+        assertEquals("", s.yearSuffix)
         assertEquals(13, s.months.size)
         assertTrue(s.months[1].isNotBlank())
     }

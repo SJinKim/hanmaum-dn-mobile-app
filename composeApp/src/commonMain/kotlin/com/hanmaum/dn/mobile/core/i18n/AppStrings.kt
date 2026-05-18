@@ -20,7 +20,6 @@ interface AppStrings {
     // Attendance
     val navAttendance: String
     // Profile screen
-    val profileTitle: String
     val profileEdit: String
     val profileLogout: String
     val profileLanguage: String
@@ -68,7 +67,6 @@ object EnStrings : AppStrings {
     override val navAlbum = "Album"
     override val navProfile = "Profile"
     override val navAttendance = "Attendance"
-    override val profileTitle = "My Profile"
     override val profileEdit = "Edit Profile"
     override val profileLogout = "Logout"
     override val profileLanguage = "LANGUAGE"
@@ -110,7 +108,6 @@ object KoStrings : AppStrings {
     override val navAlbum = "앨범"
     override val navProfile = "프로필"
     override val navAttendance = "출석 체크"
-    override val profileTitle = "내 프로필"
     override val profileEdit = "프로필 수정"
     override val profileLogout = "로그아웃"
     override val profileLanguage = "언어"
@@ -152,7 +149,6 @@ object DeStrings : AppStrings {
     override val navAlbum = "Album"
     override val navProfile = "Profil"
     override val navAttendance = "Anwesenheit"
-    override val profileTitle = "Mein Profil"
     override val profileEdit = "Profil bearbeiten"
     override val profileLogout = "Abmelden"
     override val profileLanguage = "SPRACHE"
