@@ -15,6 +15,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.features.pending.presentation.PendingViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -26,6 +27,7 @@ fun PendingScreen(
     val viewModel: PendingViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val strings = LocalStrings.current
 
     // Navigation Logic
     LaunchedEffect(state.navigateTo) {
@@ -100,14 +102,14 @@ fun PendingScreen(
                         contentColor   = MaterialTheme.colorScheme.onPrimary,
                     ),
                 ) {
-                    Text("승인 상태 확인", style = MaterialTheme.typography.labelLarge)
+                    Text(strings.checkStatus, style = MaterialTheme.typography.labelLarge)
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // LOGOUT BUTTON
                 TextButton(onClick = { viewModel.onLogoutClicked() }) {
-                    Text("로그아웃", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(strings.profileLogout, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }

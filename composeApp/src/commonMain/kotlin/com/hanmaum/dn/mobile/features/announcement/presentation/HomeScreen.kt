@@ -21,6 +21,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import com.hanmaum.dn.mobile.core.geofence.GeofenceManager
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.geofence.GeofencePermissionRequest
 import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.BibleVerseSection
@@ -102,6 +103,7 @@ fun HomeScreen(
 
 @Composable
 private fun HomeTopBar() {
+    val strings = LocalStrings.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -117,7 +119,7 @@ private fun HomeTopBar() {
         IconButton(onClick = { /* 알림 기능 추가 예정 */ }) {
             Icon(
                 imageVector = Icons.Default.Notifications,
-                contentDescription = "알림",
+                contentDescription = strings.notifications,
                 tint = MaterialTheme.colorScheme.onSurface,
             )
         }
@@ -177,6 +179,7 @@ private fun HomeContent(
 
 @Composable
 private fun GeofenceRationaleCard(onAllow: () -> Unit, onDismiss: () -> Unit) {
+    val strings = LocalStrings.current
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -197,8 +200,8 @@ private fun GeofenceRationaleCard(onAllow: () -> Unit, onDismiss: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = onDismiss) { Text("나중에") }
-                Button(onClick = onAllow) { Text("권한 허용") }
+                OutlinedButton(onClick = onDismiss) { Text(strings.laterButton) }
+                Button(onClick = onAllow) { Text(strings.allowPermission) }
             }
         }
     }
