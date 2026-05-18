@@ -28,15 +28,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.features.calendar.domain.model.CalendarEvent
 import org.koin.compose.viewmodel.koinViewModel
 
-private val MONTH_KR = listOf("", "1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월")
 private val DAY_HEADERS = listOf("일", "월", "화", "수", "목", "금", "토")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(viewModel: CalendarViewModel = koinViewModel()) {
+    val strings = LocalStrings.current
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     if (state.selectedEvent != null) {
@@ -49,7 +50,7 @@ fun CalendarScreen(viewModel: CalendarViewModel = koinViewModel()) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("캘린더") },
+                title = { Text(strings.navCalendar) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
             )
         },
@@ -84,6 +85,7 @@ private fun ViewModeToggle(
     onModeChange: (ViewMode) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val strings = LocalStrings.current
     val calendarBg by animateColorAsState(
         if (currentMode == ViewMode.CALENDAR) MaterialTheme.colorScheme.primary else Color.Transparent,
         animationSpec = spring(), label = "calendarBg",
@@ -119,7 +121,7 @@ private fun ViewModeToggle(
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                "캘린더",
+                strings.navCalendar,
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = calendarTextColor,
             )
@@ -134,7 +136,7 @@ private fun ViewModeToggle(
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                "목록",
+                strings.list,
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = listTextColor,
             )
@@ -147,6 +149,7 @@ private fun CalendarContent(
     state: CalendarUiState,
     viewModel: CalendarViewModel,
 ) {
+    val strings = LocalStrings.current
     LazyColumn(
         modifier            = Modifier.fillMaxSize(),
         contentPadding      = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -161,7 +164,7 @@ private fun CalendarContent(
                 IconButton(onClick = viewModel::previousMonth) {
                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, "이전 달")
                 }
-                Text("${state.year}년 ${MONTH_KR[state.month]}", style = MaterialTheme.typography.titleLarge)
+                Text("${state.year}${strings.yearSuffix} ${strings.months[state.month]}", style = MaterialTheme.typography.titleLarge)
                 IconButton(onClick = viewModel::nextMonth) {
                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, "다음 달")
                 }
@@ -287,6 +290,7 @@ private fun EventListView(
 
 @Composable
 private fun MonthSectionHeader(month: Int, count: Int, isCurrent: Boolean) {
+    val strings = LocalStrings.current
     Row(
         modifier              = Modifier
             .fillMaxWidth()
@@ -295,7 +299,7 @@ private fun MonthSectionHeader(month: Int, count: Int, isCurrent: Boolean) {
         verticalAlignment     = Alignment.Bottom,
     ) {
         Text(
-            MONTH_KR[month],
+            strings.months[month],
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight    = FontWeight.ExtraBold,
                 letterSpacing = (-0.02).sp,
