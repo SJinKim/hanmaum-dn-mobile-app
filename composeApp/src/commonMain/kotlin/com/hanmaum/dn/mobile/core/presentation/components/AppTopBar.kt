@@ -11,12 +11,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppTopBar(
     onBackClick: (() -> Unit)? = null,
 ) {
+    val strings = LocalStrings.current
     TopAppBar(
         title = {
             Text(
@@ -30,7 +32,7 @@ fun AppTopBar(
                 IconButton(onClick = onBackClick) {
                     Icon(
                         imageVector        = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "뒤로",
+                        contentDescription = strings.back,
                         tint               = MaterialTheme.colorScheme.onSurface,
                     )
                 }
@@ -40,7 +42,7 @@ fun AppTopBar(
             IconButton(onClick = {}) {
                 Icon(
                     imageVector        = Icons.Outlined.Notifications,
-                    contentDescription = "알림",
+                    contentDescription = strings.navNews,
                     tint               = MaterialTheme.colorScheme.onSurface,
                 )
             }

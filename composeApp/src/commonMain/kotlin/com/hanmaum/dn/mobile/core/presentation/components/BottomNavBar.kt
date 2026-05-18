@@ -9,6 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.navigation.TopLevelDestination
 
 @Composable
@@ -16,6 +17,8 @@ fun BottomNavBar(
     currentDestination: NavDestination?,
     onDestinationSelected: (TopLevelDestination<*>) -> Unit,
 ) {
+    val strings = LocalStrings.current
+
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surface,
     ) {
@@ -29,11 +32,18 @@ fun BottomNavBar(
 
         TopLevelDestination.all.forEach { dest ->
             val selected = currentDestination?.hasRoute(dest.routeClass) == true
+            val label = when (dest) {
+                is TopLevelDestination.Home     -> strings.navHome
+                is TopLevelDestination.News     -> strings.navNews
+                is TopLevelDestination.Calendar -> strings.navCalendar
+                is TopLevelDestination.Album    -> strings.navAlbum
+                is TopLevelDestination.Profile  -> strings.navProfile
+            }
             NavigationBarItem(
                 selected = selected,
                 onClick  = { onDestinationSelected(dest) },
-                icon     = { Icon(dest.icon, contentDescription = dest.label) },
-                label    = { Text(dest.label, style = MaterialTheme.typography.labelSmall) },
+                icon     = { Icon(dest.icon, contentDescription = label) },
+                label    = { Text(label, style = MaterialTheme.typography.labelSmall) },
                 colors   = itemColors,
             )
         }

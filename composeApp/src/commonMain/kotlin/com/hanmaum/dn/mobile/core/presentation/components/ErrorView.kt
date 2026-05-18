@@ -9,57 +9,47 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 
 @Composable
 fun ErrorView(
     msg: String?,
-    onRetry: () -> Unit
+    onRetry: () -> Unit,
 ) {
+    val strings = LocalStrings.current
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
+        modifier            = Modifier.fillMaxSize().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
-        // Warn-Icon
         Icon(
-            imageVector = Icons.Rounded.Warning,
+            imageVector        = Icons.Rounded.Warning,
             contentDescription = "Error",
-            tint = MaterialTheme.colorScheme.error,
-            modifier = Modifier.size(48.dp)
+            tint               = MaterialTheme.colorScheme.error,
+            modifier           = Modifier.size(48.dp),
         )
-
         Spacer(modifier = Modifier.height(16.dp))
-
-        // Fehlermeldung
         Text(
-            text = "오류가 발생했습니다",
+            text  = strings.errorOccurred,
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
         )
-
         if (msg != null) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = msg,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
+                text      = msg,
+                style     = MaterialTheme.typography.bodyMedium,
+                color     = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
             )
         }
-
         Spacer(modifier = Modifier.height(24.dp))
-
-        // Retry Button
         Button(
             onClick = onRetry,
-            shape  = MaterialTheme.shapes.extraSmall,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.error,
-            ),
+            shape   = MaterialTheme.shapes.extraSmall,
+            colors  = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
         ) {
-            Text("다시 시도", style = MaterialTheme.typography.labelLarge)
+            Text(strings.retry, style = MaterialTheme.typography.labelLarge)
         }
     }
 }

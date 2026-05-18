@@ -5,6 +5,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
@@ -13,6 +17,12 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
+import com.hanmaum.dn.mobile.core.domain.repository.LocaleRepository
+import com.hanmaum.dn.mobile.core.i18n.AppLocale
+import com.hanmaum.dn.mobile.core.i18n.DeStrings
+import com.hanmaum.dn.mobile.core.i18n.EnStrings
+import com.hanmaum.dn.mobile.core.i18n.KoStrings
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.navigation.*
 import com.hanmaum.dn.mobile.core.presentation.components.BottomNavBar
 import com.hanmaum.dn.mobile.core.presentation.theme.AppTheme
@@ -34,10 +44,22 @@ import com.hanmaum.dn.mobile.features.pending.screen.PendingScreen
 import com.hanmaum.dn.mobile.features.pending.screen.SplashScreen
 import com.hanmaum.dn.mobile.features.profile.presentation.ProfileScreen
 import org.koin.compose.KoinContext
+import org.koin.compose.koinInject
 
 @Composable
 fun App() {
     KoinContext {
+        val localeRepo = koinInject<LocaleRepository>()
+        var locale by remember { mutableStateOf(localeRepo.getLocale()) }
+        val strings = remember(locale) {
+            when (locale) {
+                AppLocale.EN -> EnStrings
+                AppLocale.KO -> KoStrings
+                AppLocale.DE -> DeStrings
+            }
+        }
+
+        CompositionLocalProvider(LocalStrings provides strings) {
         AppTheme {
             val navController = rememberNavController()
             val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -163,6 +185,11 @@ fun App() {
                                     popUpTo(0) { inclusive = true }
                                 }
                             },
+                            currentLocale = locale,
+                            onLocaleChange = { newLocale ->
+                                localeRepo.setLocale(newLocale)
+                                locale = newLocale
+                            },
                         )
                     }
 
@@ -224,5 +251,6 @@ fun App() {
                 }
             }
         }
+        } // CompositionLocalProvider
     }
 }
