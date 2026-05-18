@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -24,17 +25,18 @@ fun AttendanceScreen(
     onBackClick: () -> Unit,
     viewModel: AttendanceViewModel = koinViewModel(),
 ) {
+    val strings = LocalStrings.current
     val state by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("출석 체크") },
+                title = { Text(strings.navAttendance) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "뒤로가기",
+                            contentDescription = strings.back,
                         )
                     }
                 },

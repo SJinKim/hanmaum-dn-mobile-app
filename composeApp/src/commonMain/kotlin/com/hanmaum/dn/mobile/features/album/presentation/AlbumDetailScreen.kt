@@ -16,6 +16,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -28,6 +29,7 @@ fun AlbumDetailScreen(
     onBackClick: () -> Unit,
     viewModel: AlbumDetailViewModel = koinViewModel { parametersOf(pcloudCode, albumName) },
 ) {
+    val strings = LocalStrings.current
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -36,7 +38,7 @@ fun AlbumDetailScreen(
                 title = { Text(albumName) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "뒤로가기")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = strings.back)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -72,7 +74,7 @@ fun AlbumDetailScreen(
                             Modifier.fillMaxSize().padding(padding),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Text("아직 사진이 없습니다", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(strings.albumEmpty, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     } else {
                         LazyVerticalGrid(

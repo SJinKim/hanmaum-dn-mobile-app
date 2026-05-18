@@ -14,6 +14,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.features.album.domain.model.AlbumSummary
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -23,12 +24,13 @@ fun AlbumsScreen(
     onAlbumClick: (pcloudCode: String, albumName: String) -> Unit,
     viewModel: AlbumsViewModel = koinViewModel(),
 ) {
+    val strings = LocalStrings.current
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("앨범") },
+                title = { Text(strings.navAlbum) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
             )
         },
@@ -56,7 +58,7 @@ fun AlbumsScreen(
                         modifier = Modifier.fillMaxSize().padding(padding),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text("앨범이 없습니다", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(strings.albumsEmpty, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 } else {
                     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
