@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
 import com.hanmaum.dn.mobile.features.ministry.domain.model.RegistrationStatus
 import org.koin.compose.viewmodel.koinViewModel
@@ -85,6 +86,7 @@ private fun MinistryDetailContent(
     onBackClick: () -> Unit,
     onRegisterClick: () -> Unit,
 ) {
+    val strings = LocalStrings.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -114,7 +116,7 @@ private fun MinistryDetailContent(
             ) {
                 Icon(
                     imageVector        = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "뒤로",
+                    contentDescription = strings.back,
                     tint               = Color.White,
                 )
             }
@@ -257,6 +259,7 @@ private fun RegistrationButton(
     status: RegistrationStatus,
     onClick: () -> Unit,
 ) {
+    val strings = LocalStrings.current
     when (status) {
         RegistrationStatus.NONE -> {
             Button(
@@ -268,7 +271,7 @@ private fun RegistrationButton(
                     contentColor   = MaterialTheme.colorScheme.onPrimaryContainer,
                 ),
             ) {
-                Text("Register Now", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
+                Text(strings.registerNow, style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
             }
         }
         RegistrationStatus.PENDING -> {
@@ -278,7 +281,7 @@ private fun RegistrationButton(
                 modifier = Modifier.fillMaxWidth().height(54.dp),
                 shape    = MaterialTheme.shapes.extraSmall,
             ) {
-                Text("신청되었습니다", style = MaterialTheme.typography.labelLarge)
+                Text(strings.registered, style = MaterialTheme.typography.labelLarge)
             }
         }
         RegistrationStatus.APPROVED -> {
@@ -292,7 +295,7 @@ private fun RegistrationButton(
                     disabledContentColor   = MaterialTheme.colorScheme.onTertiaryContainer,
                 ),
             ) {
-                Text("멤버입니다 ✓", style = MaterialTheme.typography.labelLarge)
+                Text(strings.alreadyMember, style = MaterialTheme.typography.labelLarge)
             }
         }
     }
@@ -308,6 +311,7 @@ private fun RegistrationBottomSheet(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val strings = LocalStrings.current
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
@@ -323,8 +327,8 @@ private fun RegistrationBottomSheet(
             OutlinedTextField(
                 value         = note,
                 onValueChange = { if (it.length <= 500) onNoteChange(it) },
-                label         = { Text("자기소개 (선택)") },
-                placeholder   = { Text("리더에게 전달할 자기소개를 입력하세요") },
+                label         = { Text(strings.bioLabel) },
+                placeholder   = { Text(strings.bioPlaceholder) },
                 modifier      = Modifier.fillMaxWidth(),
                 minLines      = 3,
                 maxLines      = 5,
@@ -353,7 +357,7 @@ private fun RegistrationBottomSheet(
                         color       = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                 } else {
-                    Text("신청하기", style = MaterialTheme.typography.labelLarge)
+                    Text(strings.registerNow, style = MaterialTheme.typography.labelLarge)
                 }
             }
         }

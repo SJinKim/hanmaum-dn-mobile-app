@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.features.floorplan.presentation.components.FloorCanvas
 import com.hanmaum.dn.mobile.features.floorplan.presentation.components.FloorPlanFilterBar
 import com.hanmaum.dn.mobile.features.floorplan.presentation.components.RoomBottomSheet
@@ -53,6 +54,7 @@ fun FloorPlanScreen(
 ) {
     val viewModel: FloorPlanViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val strings = LocalStrings.current
 
     var showList by remember { mutableStateOf(false) }
     LaunchedEffect(uiState) {
@@ -73,7 +75,7 @@ fun FloorPlanScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "뒤로",
+                            contentDescription = strings.back,
                         )
                     }
                 },
@@ -86,7 +88,7 @@ fun FloorPlanScreen(
                                 modifier = Modifier.size(18.dp),
                             )
                             Spacer(Modifier.width(4.dp))
-                            Text("목록", style = MaterialTheme.typography.labelMedium)
+                            Text(strings.list, style = MaterialTheme.typography.labelMedium)
                         }
                     }
                 },
