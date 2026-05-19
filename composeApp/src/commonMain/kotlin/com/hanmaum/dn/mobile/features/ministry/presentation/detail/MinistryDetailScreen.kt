@@ -320,7 +320,7 @@ private fun RegistrationBottomSheet(
                 .padding(bottom = 32.dp),
         ) {
             Text(
-                "부서 신청",
+                strings.ministryRegisterSheet,
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
             )
             Spacer(Modifier.height(16.dp))

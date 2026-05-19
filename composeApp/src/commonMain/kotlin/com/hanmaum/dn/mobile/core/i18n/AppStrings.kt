@@ -53,6 +53,26 @@ interface AppStrings {
     // Calendar — 1-indexed (index 0 is unused empty string)
     val months: List<String>
     val yearSuffix: String
+    // Pending screen
+    val pendingTitle: String
+    val pendingBody: String
+    // Calendar navigation & labels
+    val calendarPrevMonth: String
+    val calendarNextMonth: String
+    val calendarEventsThisMonth: String
+    val calendarNoEvents: String
+    val calendarNoEventsThisDay: String
+    val calendarAllDay: String
+    val dayHeaders: List<String>
+    // Attendance
+    val attendanceNoService: String
+    val attendanceCheckedIn: String
+    val attendanceReady: String
+    val attendanceLocation: String
+    // Floor plan
+    val floorPlanTitle: String
+    // Ministry
+    val ministryRegisterSheet: String
 }
 
 object EnStrings : AppStrings {
@@ -96,6 +116,21 @@ object EnStrings : AppStrings {
     override val months = listOf("", "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December")
     override val yearSuffix = ""
+    override val pendingTitle = "Pending Approval"
+    override val pendingBody = "Your registration has been submitted. An admin will review your application soon."
+    override val calendarPrevMonth = "Previous month"
+    override val calendarNextMonth = "Next month"
+    override val calendarEventsThisMonth = "Events this month"
+    override val calendarNoEvents = "No events"
+    override val calendarNoEventsThisDay = "No events on this day"
+    override val calendarAllDay = "All day"
+    override val dayHeaders = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+    override val attendanceNoService = "No service today"
+    override val attendanceCheckedIn = "Checked in!"
+    override val attendanceReady = "Ready to check in"
+    override val attendanceLocation = "Location"
+    override val floorPlanTitle = "Church Map"
+    override val ministryRegisterSheet = "Ministry Registration"
 }
 
 object KoStrings : AppStrings {
@@ -139,6 +174,21 @@ object KoStrings : AppStrings {
     override val months = listOf("", "1월", "2월", "3월", "4월", "5월", "6월",
         "7월", "8월", "9월", "10월", "11월", "12월")
     override val yearSuffix = "년"
+    override val pendingTitle = "가입 대기 중"
+    override val pendingBody = "가입 신청이 완료되었습니다.\n관리자가 곧 신청을 검토할 예정입니다."
+    override val calendarPrevMonth = "이전 달"
+    override val calendarNextMonth = "다음 달"
+    override val calendarEventsThisMonth = "이번 달 행사"
+    override val calendarNoEvents = "이벤트 없음"
+    override val calendarNoEventsThisDay = "이 날은 행사가 없습니다"
+    override val calendarAllDay = "하루 종일"
+    override val dayHeaders = listOf("일", "월", "화", "수", "목", "금", "토")
+    override val attendanceNoService = "오늘은 예배가 없습니다"
+    override val attendanceCheckedIn = "출석 완료!"
+    override val attendanceReady = "출석 가능"
+    override val attendanceLocation = "위치"
+    override val floorPlanTitle = "교회 지도"
+    override val ministryRegisterSheet = "부서 신청"
 }
 
 object DeStrings : AppStrings {
@@ -182,4 +232,19 @@ object DeStrings : AppStrings {
     override val months = listOf("", "Januar", "Februar", "März", "April", "Mai", "Juni",
         "Juli", "August", "September", "Oktober", "November", "Dezember")
     override val yearSuffix = ""
+    override val pendingTitle = "Genehmigung ausstehend"
+    override val pendingBody = "Ihre Anmeldung wurde eingereicht. Ein Administrator wird Ihre Anfrage in Kürze prüfen."
+    override val calendarPrevMonth = "Vorheriger Monat"
+    override val calendarNextMonth = "Nächster Monat"
+    override val calendarEventsThisMonth = "Veranstaltungen diesen Monat"
+    override val calendarNoEvents = "Keine Veranstaltungen"
+    override val calendarNoEventsThisDay = "Keine Veranstaltungen an diesem Tag"
+    override val calendarAllDay = "Ganztägig"
+    override val dayHeaders = listOf("So", "Mo", "Di", "Mi", "Do", "Fr", "Sa")
+    override val attendanceNoService = "Heute kein Gottesdienst"
+    override val attendanceCheckedIn = "Eingecheckt!"
+    override val attendanceReady = "Bereit zum Einchecken"
+    override val attendanceLocation = "Standort"
+    override val floorPlanTitle = "Kirchenkarte"
+    override val ministryRegisterSheet = "Abteilungsanmeldung"
 }

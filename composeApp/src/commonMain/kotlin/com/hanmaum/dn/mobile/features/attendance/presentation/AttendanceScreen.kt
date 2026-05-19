@@ -81,13 +81,14 @@ fun AttendanceScreen(
 
 @Composable
 private fun NoServiceContent() {
+    val strings = LocalStrings.current
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.padding(horizontal = 32.dp),
     ) {
         Text(
-            text = "오늘은 예배가 없습니다",
+            text = strings.attendanceNoService,
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface,
         )
@@ -101,6 +102,7 @@ private fun NoServiceContent() {
 
 @Composable
 private fun CheckedInContent(serviceLabel: String) {
+    val strings = LocalStrings.current
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -115,13 +117,13 @@ private fun CheckedInContent(serviceLabel: String) {
         ) {
             Icon(
                 imageVector = Icons.Filled.Check,
-                contentDescription = "출석 완료",
+                contentDescription = strings.attendanceCheckedIn,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(40.dp),
             )
         }
         Text(
-            text = "출석 완료!",
+            text = strings.attendanceCheckedIn,
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface,
         )

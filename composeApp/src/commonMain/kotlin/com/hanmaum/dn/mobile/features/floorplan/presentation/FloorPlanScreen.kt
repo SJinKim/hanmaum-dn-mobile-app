@@ -67,7 +67,7 @@ fun FloorPlanScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "교회 지도",
+                        text = strings.floorPlanTitle,
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     )
                 },
