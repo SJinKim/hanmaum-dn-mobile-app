@@ -14,18 +14,25 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,6 +47,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlin.time.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -165,12 +175,11 @@ fun RegisterScreen(
         )
         Spacer(Modifier.height(12.dp))
 
-        FieldLabel("생일 (YYYY-MM-DD)")
-        FilledField(
+        FieldLabel("생일 (YYYY.MM.DD)")
+        BirthdayField(
             value         = state.birthDate,
             onValueChange = viewModel::onBirthDateChange,
-            placeholder   = "2000-01-01",
-            keyboardType  = KeyboardType.Text,
+            error         = state.birthDateError,
         )
 
         Spacer(Modifier.height(16.dp))
@@ -258,6 +267,74 @@ fun RegisterScreen(
 
         Spacer(Modifier.height(40.dp))
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BirthdayField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    error: String? = null,
+) {
+    var showPicker by remember { mutableStateOf(false) }
+    val pickerState = rememberDatePickerState()
+
+    if (showPicker) {
+        DatePickerDialog(
+            onDismissRequest = { showPicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    pickerState.selectedDateMillis?.let { millis ->
+                        val dt = Instant.fromEpochMilliseconds(millis).toLocalDateTime(TimeZone.UTC)
+                        val y = dt.year.toString().padStart(4, '0')
+                        val m = dt.monthNumber.toString().padStart(2, '0')
+                        val d = dt.dayOfMonth.toString().padStart(2, '0')
+                        onValueChange("$y.$m.$d")
+                    }
+                    showPicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPicker = false }) { Text("Cancel") }
+            },
+        ) {
+            DatePicker(state = pickerState)
+        }
+    }
+
+    TextField(
+        value = value,
+        onValueChange = { raw ->
+            val digits = raw.filter { it.isDigit() }.take(8)
+            val formatted = when {
+                digits.length <= 4 -> digits
+                digits.length <= 6 -> "${digits.take(4)}.${digits.drop(4)}"
+                else -> "${digits.take(4)}.${digits.drop(4).take(2)}.${digits.drop(6)}"
+            }
+            onValueChange(formatted)
+        },
+        placeholder = { Text("2000.01.01") },
+        trailingIcon = {
+            IconButton(onClick = { showPicker = true }) {
+                Icon(
+                    imageVector = Icons.Default.CalendarMonth,
+                    contentDescription = "날짜 선택",
+                )
+            }
+        },
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        shape = MaterialTheme.shapes.small,
+        isError = error != null,
+        supportingText = error?.let { msg -> { Text(msg) } },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor   = MaterialTheme.colorScheme.surfaceVariant,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            focusedIndicatorColor   = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+        ),
+    )
 }
 
 @Composable

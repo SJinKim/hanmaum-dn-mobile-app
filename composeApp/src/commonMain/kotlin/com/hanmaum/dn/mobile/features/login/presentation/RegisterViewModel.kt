@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 
 class RegisterViewModel(
     private val authRepository: AuthRepository,
@@ -29,7 +30,7 @@ class RegisterViewModel(
     // Optionale
     fun onBaptismChange(v: String) = _uiState.update { it.copy(baptism = v) }
     fun onGenderChange(v: String) = _uiState.update { it.copy(gender = v) }
-    fun onBirthDateChange(v: String) = _uiState.update { it.copy(birthDate = v) }
+    fun onBirthDateChange(v: String) = _uiState.update { it.copy(birthDate = v, birthDateError = null) }
     fun onPhoneChange(v: String) = _uiState.update { it.copy(phoneNumber = v) }
     fun onStreetChange(v: String) = _uiState.update { it.copy(street = v) }
     fun onZipChange(v: String) = _uiState.update { it.copy(zipCode = v) }
@@ -38,9 +39,14 @@ class RegisterViewModel(
         val s = _uiState.value
 
         // 1. VALIDIERUNG
-        // Nur noch Name, Email und Stadt sind harte Pflichtfelder
         if (s.firstName.isBlank() || s.lastName.isBlank() || s.email.isBlank() || s.password.isBlank() || s.zipCode.isBlank() || s.city.isBlank() ) {
             _uiState.update { it.copy(error = "필수 항목입니다.") }
+            return
+        }
+
+        val birthDateError = validateBirthDate(s.birthDate)
+        if (birthDateError != null) {
+            _uiState.update { it.copy(birthDateError = birthDateError) }
             return
         }
 
@@ -56,7 +62,7 @@ class RegisterViewModel(
                 city = s.city,
                 baptism = s.baptism.ifBlank { null },
                 gender = s.gender.ifBlank { null },
-                birthDate = s.birthDate.ifBlank { null },
+                birthDate = s.birthDate.replace('.', '-').takeIf { it.length == 10 },
                 phoneNumber = s.phoneNumber.ifBlank { null },
                 street = s.street.ifBlank { null },
                 zipCode = s.zipCode.ifBlank { null }
@@ -103,6 +109,19 @@ class RegisterViewModel(
                     )
                 }
             }
+        }
+    }
+
+    // Returns an error message string, or null if the date is valid (no error).
+    private fun validateBirthDate(date: String): String? {
+        if (date.isBlank()) return null
+        if (date.length < 10) return "날짜를 완전히 입력해주세요 (YYYY.MM.DD)"
+        return try {
+            val parts = date.split(".")
+            LocalDate(parts[0].toInt(), parts[1].toInt(), parts[2].toInt())
+            null // date is valid, no error
+        } catch (e: Exception) {
+            "유효하지 않은 날짜입니다"
         }
     }
 
