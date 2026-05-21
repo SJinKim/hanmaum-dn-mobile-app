@@ -28,15 +28,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.features.calendar.domain.model.CalendarEvent
 import org.koin.compose.viewmodel.koinViewModel
 
-private val MONTH_KR = listOf("", "1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월")
-private val DAY_HEADERS = listOf("일", "월", "화", "수", "목", "금", "토")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(viewModel: CalendarViewModel = koinViewModel()) {
+    val strings = LocalStrings.current
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     if (state.selectedEvent != null) {
@@ -49,7 +49,7 @@ fun CalendarScreen(viewModel: CalendarViewModel = koinViewModel()) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("캘린더") },
+                title = { Text(strings.navCalendar) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
             )
         },
@@ -84,6 +84,7 @@ private fun ViewModeToggle(
     onModeChange: (ViewMode) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val strings = LocalStrings.current
     val calendarBg by animateColorAsState(
         if (currentMode == ViewMode.CALENDAR) MaterialTheme.colorScheme.primary else Color.Transparent,
         animationSpec = spring(), label = "calendarBg",
@@ -119,7 +120,7 @@ private fun ViewModeToggle(
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                "캘린더",
+                strings.navCalendar,
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = calendarTextColor,
             )
@@ -134,7 +135,7 @@ private fun ViewModeToggle(
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                "목록",
+                strings.list,
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = listTextColor,
             )
@@ -147,6 +148,7 @@ private fun CalendarContent(
     state: CalendarUiState,
     viewModel: CalendarViewModel,
 ) {
+    val strings = LocalStrings.current
     LazyColumn(
         modifier            = Modifier.fillMaxSize(),
         contentPadding      = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -159,18 +161,18 @@ private fun CalendarContent(
                 modifier                = Modifier.fillMaxWidth(),
             ) {
                 IconButton(onClick = viewModel::previousMonth) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, "이전 달")
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, strings.calendarPrevMonth)
                 }
-                Text("${state.year}년 ${MONTH_KR[state.month]}", style = MaterialTheme.typography.titleLarge)
+                Text("${state.year}${strings.yearSuffix} ${strings.months[state.month]}", style = MaterialTheme.typography.titleLarge)
                 IconButton(onClick = viewModel::nextMonth) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, "다음 달")
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, strings.calendarNextMonth)
                 }
             }
         }
 
         item {
             Row(Modifier.fillMaxWidth()) {
-                DAY_HEADERS.forEach { d ->
+                strings.dayHeaders.forEach { d ->
                     Text(
                         d,
                         modifier  = Modifier.weight(1f),
@@ -214,7 +216,7 @@ private fun CalendarContent(
         if (displayEvents.isNotEmpty()) {
             item {
                 Text(
-                    if (state.selectedDay != null) "${state.selectedDay}일 일정" else "이번 달 행사",
+                    if (state.selectedDay != null) "${state.selectedDay}일 일정" else strings.calendarEventsThisMonth,
                     style    = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(top = 8.dp),
                 )
@@ -225,7 +227,7 @@ private fun CalendarContent(
         } else if (!state.isLoading && state.error == null) {
             item {
                 Text(
-                    if (state.selectedDay != null) "이 날은 행사가 없습니다" else "이번 달 등록된 행사가 없습니다",
+                    if (state.selectedDay != null) strings.calendarNoEventsThisDay else strings.calendarNoEvents,
                     color    = MaterialTheme.colorScheme.onSurfaceVariant,
                     style    = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(top = 8.dp),
@@ -287,6 +289,7 @@ private fun EventListView(
 
 @Composable
 private fun MonthSectionHeader(month: Int, count: Int, isCurrent: Boolean) {
+    val strings = LocalStrings.current
     Row(
         modifier              = Modifier
             .fillMaxWidth()
@@ -295,7 +298,7 @@ private fun MonthSectionHeader(month: Int, count: Int, isCurrent: Boolean) {
         verticalAlignment     = Alignment.Bottom,
     ) {
         Text(
-            MONTH_KR[month],
+            strings.months[month],
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight    = FontWeight.ExtraBold,
                 letterSpacing = (-0.02).sp,
@@ -317,6 +320,7 @@ private fun MonthSectionHeader(month: Int, count: Int, isCurrent: Boolean) {
 
 @Composable
 private fun EmptyMonthCard() {
+    val strings = LocalStrings.current
     Card(
         modifier  = Modifier.fillMaxWidth(),
         shape     = MaterialTheme.shapes.large,
@@ -324,7 +328,7 @@ private fun EmptyMonthCard() {
         elevation = CardDefaults.cardElevation(0.dp),
     ) {
         Text(
-            "이벤트 없음",
+            strings.calendarNoEvents,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
             style    = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic),
             color    = MaterialTheme.colorScheme.outline,
@@ -334,13 +338,14 @@ private fun EmptyMonthCard() {
 
 @Composable
 private fun EventListCard(event: CalendarEvent, onClick: () -> Unit) {
+    val strings = LocalStrings.current
     val dayInt  = event.startDate.substring(8, 10).trimStart('0').ifEmpty { "0" }.toInt()
     val dow     = dayOfWeek(
         year  = event.startDate.substring(0, 4).toInt(),
         month = event.startDate.substring(5, 7).toInt(),
         day   = dayInt,
     )
-    val timeStr = if (event.isAllDay) "하루 종일"
+    val timeStr = if (event.isAllDay) strings.calendarAllDay
                   else event.startDate.substringAfterLast('T').take(5)
 
     Card(
@@ -364,7 +369,7 @@ private fun EventListCard(event: CalendarEvent, onClick: () -> Unit) {
                     color = MaterialTheme.colorScheme.primary,
                 )
                 Text(
-                    DAY_HEADERS[dow],
+                    strings.dayHeaders[dow],
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight    = FontWeight.Bold,
                         letterSpacing = (0.05).sp,
@@ -464,6 +469,7 @@ private fun MonthGrid(
 
 @Composable
 private fun EventCard(event: CalendarEvent, onClick: () -> Unit) {
+    val strings = LocalStrings.current
     Card(
         modifier  = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape     = MaterialTheme.shapes.large,
@@ -475,7 +481,7 @@ private fun EventCard(event: CalendarEvent, onClick: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Text(event.title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
-            val timeStr = if (event.isAllDay) "하루 종일"
+            val timeStr = if (event.isAllDay) strings.calendarAllDay
                           else event.startDate.substringAfterLast('T').take(5)
             Text(timeStr, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
             if (event.location != null) {

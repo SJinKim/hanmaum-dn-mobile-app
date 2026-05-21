@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -24,17 +25,18 @@ fun AttendanceScreen(
     onBackClick: () -> Unit,
     viewModel: AttendanceViewModel = koinViewModel(),
 ) {
+    val strings = LocalStrings.current
     val state by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("출석 체크") },
+                title = { Text(strings.navAttendance) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "뒤로가기",
+                            contentDescription = strings.back,
                         )
                     }
                 },
@@ -79,13 +81,14 @@ fun AttendanceScreen(
 
 @Composable
 private fun NoServiceContent() {
+    val strings = LocalStrings.current
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.padding(horizontal = 32.dp),
     ) {
         Text(
-            text = "오늘은 예배가 없습니다",
+            text = strings.attendanceNoService,
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface,
         )
@@ -99,6 +102,7 @@ private fun NoServiceContent() {
 
 @Composable
 private fun CheckedInContent(serviceLabel: String) {
+    val strings = LocalStrings.current
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -113,13 +117,13 @@ private fun CheckedInContent(serviceLabel: String) {
         ) {
             Icon(
                 imageVector = Icons.Filled.Check,
-                contentDescription = "출석 완료",
+                contentDescription = strings.attendanceCheckedIn,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(40.dp),
             )
         }
         Text(
-            text = "출석 완료!",
+            text = strings.attendanceCheckedIn,
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface,
         )

@@ -25,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.features.floorplan.domain.model.Floor
 import com.hanmaum.dn.mobile.features.floorplan.domain.model.Room
 
@@ -41,6 +42,7 @@ fun FloorPlanFilterBar(
     onShowList: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val strings = LocalStrings.current
     Surface(
         modifier = modifier.fillMaxWidth(),
         tonalElevation = 2.dp,
@@ -78,7 +80,7 @@ fun FloorPlanFilterBar(
                         modifier = Modifier.size(16.dp),
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("목록", style = MaterialTheme.typography.labelSmall)
+                    Text(strings.list, style = MaterialTheme.typography.labelSmall)
                 }
             }
             // Row 2: scrollable room chips

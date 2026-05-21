@@ -15,6 +15,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.features.pending.presentation.PendingViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -26,6 +27,7 @@ fun PendingScreen(
     val viewModel: PendingViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val strings = LocalStrings.current
 
     // Navigation Logic
     LaunchedEffect(state.navigateTo) {
@@ -69,7 +71,7 @@ fun PendingScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
-                text = "가입 대기 중\n(Warte auf Freigabe)",
+                text = strings.pendingTitle,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
@@ -78,8 +80,7 @@ fun PendingScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "가입 신청이 완료되었습니다.\n관리자의 승인 후 로그인이 가능합니다.\n잠시만 기다려 주세요.",
-                // DE: Registrierung erfolgreich. Warte auf Admin-Bestätigung.
+                text = strings.pendingBody,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -100,14 +101,14 @@ fun PendingScreen(
                         contentColor   = MaterialTheme.colorScheme.onPrimary,
                     ),
                 ) {
-                    Text("승인 상태 확인", style = MaterialTheme.typography.labelLarge)
+                    Text(strings.checkStatus, style = MaterialTheme.typography.labelLarge)
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // LOGOUT BUTTON
                 TextButton(onClick = { viewModel.onLogoutClicked() }) {
-                    Text("로그아웃", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(strings.profileLogout, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }

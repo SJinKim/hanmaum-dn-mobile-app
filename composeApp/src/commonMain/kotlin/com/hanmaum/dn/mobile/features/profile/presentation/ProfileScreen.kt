@@ -1,6 +1,7 @@
 package com.hanmaum.dn.mobile.features.profile.presentation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Group
@@ -28,8 +30,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -39,6 +44,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -48,6 +56,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.hanmaum.dn.mobile.core.i18n.AppLocale
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.components.AppTopBar
 import com.hanmaum.dn.mobile.core.presentation.theme.SoftPeach
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
@@ -56,10 +66,13 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun ProfileScreen(
     onLogout: () -> Unit,
+    currentLocale: AppLocale,
+    onLocaleChange: (AppLocale) -> Unit,
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val loggedOut by viewModel.loggedOut.collectAsState()
+    val strings = LocalStrings.current
 
     LaunchedEffect(loggedOut) {
         if (loggedOut) onLogout()
@@ -81,7 +94,7 @@ fun ProfileScreen(
                     ) {
                         Text(state.message, color = MaterialTheme.colorScheme.error)
                         Spacer(Modifier.height(8.dp))
-                        Button(onClick = { viewModel.loadProfile() }) { Text("다시 시도") }
+                        Button(onClick = { viewModel.loadProfile() }) { Text(strings.retry) }
                     }
                 }
                 is ProfileUiState.Success -> {
@@ -98,9 +111,11 @@ fun ProfileScreen(
                         )
                     } else {
                         ProfileViewContent(
-                            profile       = state.profile,
-                            onEditClick   = { viewModel.startEditing() },
-                            onLogoutClick = { viewModel.logout() },
+                            profile        = state.profile,
+                            currentLocale  = currentLocale,
+                            onEditClick    = { viewModel.startEditing() },
+                            onLogoutClick  = { viewModel.logout() },
+                            onLocaleChange = onLocaleChange,
                         )
                     }
                 }
@@ -109,12 +124,18 @@ fun ProfileScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ProfileViewContent(
     profile: MemberResponse,
+    currentLocale: AppLocale,
     onEditClick: () -> Unit,
     onLogoutClick: () -> Unit,
+    onLocaleChange: (AppLocale) -> Unit,
 ) {
+    val strings = LocalStrings.current
+    var showLanguagePicker by remember { mutableStateOf(false) }
+
     Column(
         modifier            = Modifier
             .fillMaxSize()
@@ -124,10 +145,9 @@ private fun ProfileViewContent(
     ) {
         Spacer(Modifier.height(16.dp))
 
-        // Avatar
         Icon(
             imageVector        = Icons.Default.AccountCircle,
-            contentDescription = "프로필 아이콘",
+            contentDescription = null,
             modifier           = Modifier.size(100.dp),
             tint               = MaterialTheme.colorScheme.primary,
         )
@@ -156,43 +176,41 @@ private fun ProfileViewContent(
         ) {
             Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(6.dp))
-            Text("Edit Profile", style = MaterialTheme.typography.labelMedium)
+            Text(strings.profileEdit, style = MaterialTheme.typography.labelMedium)
         }
 
         Spacer(Modifier.height(28.dp))
 
-        // Info cards
         profile.email?.let {
-            InfoCard(icon = Icons.Default.Email, label = "EMAIL ADDRESS", value = it)
+            InfoCard(icon = Icons.Default.Email, label = strings.labelEmail, value = it)
             Spacer(Modifier.height(12.dp))
         }
         profile.phoneNumber?.let {
-            InfoCard(icon = Icons.Default.Phone, label = "PHONE NUMBER", value = it)
+            InfoCard(icon = Icons.Default.Phone, label = strings.labelPhone, value = it)
             Spacer(Modifier.height(12.dp))
         }
         profile.street?.let {
-            InfoCard(icon = Icons.Default.Home, label = "STREET", value = it)
+            InfoCard(icon = Icons.Default.Home, label = strings.labelStreet, value = it)
             Spacer(Modifier.height(12.dp))
         }
         profile.zipCode?.let {
-            InfoCard(icon = Icons.Default.Home, label = "ZIP CODE", value = it)
+            InfoCard(icon = Icons.Default.Home, label = strings.labelZipCode, value = it)
             Spacer(Modifier.height(12.dp))
         }
         profile.city?.let {
-            InfoCard(icon = Icons.Default.Home, label = "CITY", value = it)
+            InfoCard(icon = Icons.Default.Home, label = strings.labelCity, value = it)
             Spacer(Modifier.height(12.dp))
         }
         profile.groupName?.let {
-            InfoCard(icon = Icons.Default.Group, label = "PRIMARY GROUP", value = it)
+            InfoCard(icon = Icons.Default.Group, label = strings.labelPrimaryGroup, value = it)
             Spacer(Modifier.height(12.dp))
         }
 
         Spacer(Modifier.height(8.dp))
 
-        // Account Preferences section
         Row(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text  = "Account Preferences",
+                text  = strings.profileAccountPreferences,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onBackground,
             )
@@ -200,19 +218,20 @@ private fun ProfileViewContent(
         Spacer(Modifier.height(12.dp))
         Card(
             modifier  = Modifier.fillMaxWidth(),
+            onClick   = { showLanguagePicker = true },
             shape     = MaterialTheme.shapes.large,
             colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text  = "LANGUAGE",
+                    text  = strings.profileLanguage,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.outline,
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text  = "English (US)",
+                    text  = currentLocale.nativeName,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -221,7 +240,6 @@ private fun ProfileViewContent(
 
         Spacer(Modifier.height(28.dp))
 
-        // Quote section
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -230,8 +248,8 @@ private fun ProfileViewContent(
         ) {
             Column {
                 Text(
-                    text      = "\u201CLead with love, serve with grace, and watch the community bloom.\u201D",
-                    style     = MaterialTheme.typography.bodyLarge.copy(fontStyle = FontStyle.Italic),
+                    text      = """“Lead with love, serve with grace, and watch the community bloom.”""".trimIndent(),
+                    style     = MaterialTheme.typography.bodyLarge,
                     color     = MaterialTheme.colorScheme.onBackground,
                     fontStyle = FontStyle.Italic,
                 )
@@ -253,10 +271,21 @@ private fun ProfileViewContent(
         ) {
             Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
-            Text("Logout", style = MaterialTheme.typography.labelLarge)
+            Text(strings.profileLogout, style = MaterialTheme.typography.labelLarge)
         }
 
         Spacer(Modifier.height(40.dp))
+    }
+
+    if (showLanguagePicker) {
+        LanguagePickerSheet(
+            currentLocale = currentLocale,
+            onSelect      = { locale ->
+                onLocaleChange(locale)
+                showLanguagePicker = false
+            },
+            onDismiss = { showLanguagePicker = false },
+        )
     }
 }
 
@@ -307,17 +336,18 @@ private fun ProfileEditContent(
     onSave: () -> Unit,
     onCancel: () -> Unit,
 ) {
+    val strings = LocalStrings.current
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(24.dp),
     ) {
-        Text("프로필 수정", style = MaterialTheme.typography.titleLarge)
+        Text(strings.profileEdit, style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(24.dp))
 
         Text(
-            text     = "PHONE NUMBER",
+            text     = strings.labelPhone,
             style    = MaterialTheme.typography.labelSmall,
             color    = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 6.dp),
@@ -341,7 +371,7 @@ private fun ProfileEditContent(
 
         Spacer(Modifier.height(16.dp))
         Text(
-            text     = "PROFILE IMAGE URL",
+            text     = strings.profileImageUrl,
             style    = MaterialTheme.typography.labelSmall,
             color    = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 6.dp),
@@ -365,7 +395,7 @@ private fun ProfileEditContent(
 
         Spacer(Modifier.height(16.dp))
         Text(
-            text     = "STREET",
+            text     = strings.labelStreet,
             style    = MaterialTheme.typography.labelSmall,
             color    = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 6.dp),
@@ -389,7 +419,7 @@ private fun ProfileEditContent(
 
         Spacer(Modifier.height(16.dp))
         Text(
-            text     = "ZIP CODE",
+            text     = strings.labelZipCode,
             style    = MaterialTheme.typography.labelSmall,
             color    = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 6.dp),
@@ -413,7 +443,7 @@ private fun ProfileEditContent(
 
         Spacer(Modifier.height(16.dp))
         Text(
-            text     = "CITY",
+            text     = strings.labelCity,
             style    = MaterialTheme.typography.labelSmall,
             color    = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 6.dp),
@@ -446,7 +476,7 @@ private fun ProfileEditContent(
                 onClick  = onCancel,
                 modifier = Modifier.weight(1f).height(50.dp),
                 shape    = MaterialTheme.shapes.extraSmall,
-            ) { Text("취소", style = MaterialTheme.typography.labelLarge) }
+            ) { Text(strings.cancel, style = MaterialTheme.typography.labelLarge) }
             Button(
                 onClick  = onSave,
                 modifier = Modifier.weight(1f).height(50.dp),
@@ -459,12 +489,63 @@ private fun ProfileEditContent(
             ) {
                 if (state.isSaving) {
                     CircularProgressIndicator(
-                        modifier    = Modifier.size(18.dp).semantics { contentDescription = "저장 중" },
+                        modifier    = Modifier.size(18.dp).semantics { contentDescription = strings.saving },
                         strokeWidth = 2.dp,
                     )
                 } else {
-                    Text("저장")
+                    Text(strings.save)
                 }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LanguagePickerSheet(
+    currentLocale: AppLocale,
+    onSelect: (AppLocale) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val strings = LocalStrings.current
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 24.dp).padding(bottom = 32.dp)) {
+            Text(
+                text  = strings.selectLanguage,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.height(16.dp))
+            AppLocale.entries.forEach { locale ->
+                Row(
+                    modifier              = Modifier
+                        .fillMaxWidth()
+                        .clickable { onSelect(locale) }
+                        .padding(vertical = 14.dp),
+                    verticalAlignment     = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text  = locale.nativeName,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = if (locale == currentLocale)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.onSurface,
+                    )
+                    if (locale == currentLocale) {
+                        Icon(
+                            imageVector        = Icons.Default.Check,
+                            contentDescription = null,
+                            tint               = MaterialTheme.colorScheme.primary,
+                            modifier           = Modifier.size(20.dp),
+                        )
+                    }
+                }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
             }
         }
     }
