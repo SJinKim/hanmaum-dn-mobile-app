@@ -17,6 +17,7 @@ data class RegisterUiState(
     val city: String = "",
     val gender: String = "",
     val birthDate: String = "",
+    val birthDateError: String? = null,
     val phoneNumber: String = "",
     val street: String = "",
     val zipCode: String = ""
