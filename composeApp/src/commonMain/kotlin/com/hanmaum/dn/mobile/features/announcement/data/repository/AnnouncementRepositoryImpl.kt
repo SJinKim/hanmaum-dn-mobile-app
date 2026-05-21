@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.announcement.data.repository
 
+import com.hanmaum.dn.mobile.core.domain.model.ApiResponse
 import com.hanmaum.dn.mobile.features.announcement.domain.model.Announcement
 import com.hanmaum.dn.mobile.features.announcement.domain.repository.AnnouncementRepository
 import io.ktor.client.HttpClient
@@ -17,7 +18,7 @@ class AnnouncementRepositoryImpl(
             if (response.status != HttpStatusCode.OK) {
                 emptyList()
             } else {
-                response.body()
+                response.body<ApiResponse<List<Announcement>>>().data ?: emptyList()
             }
         } catch (_: Exception) {
             emptyList()

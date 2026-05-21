@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.announcement.data.repository
 
+import com.hanmaum.dn.mobile.core.domain.model.ApiResponse
 import com.hanmaum.dn.mobile.features.announcement.domain.model.Announcement
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
@@ -9,7 +10,6 @@ import io.ktor.client.request.HttpRequestData
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -18,7 +18,7 @@ import kotlin.test.assertNull
 private val testJson = Json { ignoreUnknownKeys = true }
 
 private fun encodeAnnouncements(items: List<Announcement>): String =
-    testJson.encodeToString(ListSerializer(Announcement.serializer()), items)
+    testJson.encodeToString(ApiResponse(success = true, data = items))
 
 private fun mockClient(
     responseJson: String,
@@ -64,7 +64,7 @@ class AnnouncementRepositoryImplTest {
 
     @Test
     fun getAnnouncements_returnsEmptyList() = runTest {
-        val client = mockClient("[]")
+        val client = mockClient(encodeAnnouncements(emptyList()))
         val result = AnnouncementRepositoryImpl(client).getAnnouncements()
 
         assertEquals(0, result.size)
@@ -73,7 +73,7 @@ class AnnouncementRepositoryImplTest {
     @Test
     fun getAnnouncements_requestsCorrectPath() = runTest {
         var capturedPath = ""
-        val client = mockClient("[]") { request -> capturedPath = request.url.encodedPath }
+        val client = mockClient(encodeAnnouncements(emptyList())) { request -> capturedPath = request.url.encodedPath }
         AnnouncementRepositoryImpl(client).getAnnouncements()
 
         assertEquals("/announcements", capturedPath)
