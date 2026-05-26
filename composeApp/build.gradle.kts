@@ -1,3 +1,4 @@
+import com.google.firebase.appdistribution.gradle.firebaseAppDistribution
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
@@ -21,6 +22,8 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinxSerialization)
     alias(libs.plugins.buildkonfig)
+    id("com.google.gms.google-services")
+    id("com.google.firebase.appdistribution")
 }
 
 buildkonfig {
@@ -29,6 +32,7 @@ buildkonfig {
     defaultConfigs {
         buildConfigField(STRING, "BACKEND_URL", "http://10.0.2.2:8080")
         buildConfigField(STRING, "KEYCLOAK_URL", "http://10.0.2.2:8091")
+        buildConfigField(STRING, "KEYCLOAK_REALM", "hanmaum")
         buildConfigField(STRING, "GOOGLE_CALENDAR_ID",    envProps["GOOGLE_CALENDAR_ID"]    ?: "")
         buildConfigField(STRING, "GOOGLE_CALENDAR_API_KEY", envProps["GOOGLE_CALENDAR_API_KEY"] ?: "")
         buildConfigField(STRING, "PCLOUD_FOLDER_ENDPOINT",   envProps["PCLOUD_FOLDER_ENDPOINT"]   ?: "")
@@ -36,12 +40,19 @@ buildkonfig {
     }
 
     targetConfigs {
-        create("android") {
-            // nutzt defaults
-        }
         create("ios") {
             buildConfigField(STRING, "BACKEND_URL", "http://localhost:8080")
             buildConfigField(STRING, "KEYCLOAK_URL", "http://localhost:8091")
+        }
+        create("st") {
+            buildConfigField(STRING, "BACKEND_URL", "https://api.graceops.de")
+            buildConfigField(STRING, "KEYCLOAK_URL", "https://auth.graceops.de")
+            buildConfigField(STRING, "KEYCLOAK_REALM", "hanmaum-dn-st")
+        }
+        create("prod") {
+            buildConfigField(STRING, "BACKEND_URL", "https://api.graceops.de")
+            buildConfigField(STRING, "KEYCLOAK_URL", "https://auth.graceops.de")
+            buildConfigField(STRING, "KEYCLOAK_REALM", "hanmaum-dn-prod")
         }
     }
 }
@@ -71,10 +82,13 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
-            // --- NEU: Android Engine ---
+
             implementation(libs.ktor.client.okhttp)
             implementation(libs.koin.android)
             implementation(libs.play.services.location)
+
+            implementation(project.dependencies.platform("com.google.firebase:firebase-bom:34.13.0"))
+            implementation(libs.firebase.analytics)
         }
         commonMain.dependencies {
             implementation(libs.runtime)
@@ -125,6 +139,25 @@ android {
     namespace = "com.hanmaum.dn.mobile"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
+    signingConfigs {
+        create("release") {
+            val keystoreFile = rootProject.file("release.keystore")
+            if (keystoreFile.exists()) {
+                storeFile = keystoreFile
+                storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
+                keyAlias = System.getenv("KEY_ALIAS") ?: ""
+                keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+            }
+        }
+    }
+
+    flavorDimensions += "env"
+    productFlavors {
+        create("dev")  { dimension = "env" }
+        create("st")   { dimension = "env" }
+        create("prod") { dimension = "env" }
+    }
+
     defaultConfig {
         applicationId = "com.hanmaum.dn.mobile"
         minSdk = libs.versions.android.minSdk.get().toInt()
@@ -138,8 +171,21 @@ android {
         }
     }
     buildTypes {
+        getByName("debug") {
+            firebaseAppDistribution {
+                artifactType = "APK"
+                groups = "internal-testers-graceops"
+                releaseNotes = "Debug build – ${System.getenv("RELEASE_NOTES") ?: "manual distribution"}"
+            }
+        }
         getByName("release") {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.findByName("release")
+            firebaseAppDistribution {
+                artifactType = "APK"
+                groups = "internal-testers-graceops"
+                releaseNotes = "Release build – ${System.getenv("RELEASE_NOTES") ?: "manual distribution"}"
+            }
         }
     }
     compileOptions {

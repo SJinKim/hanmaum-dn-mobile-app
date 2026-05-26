@@ -2,7 +2,7 @@ name: PR Check (KMP)
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
   workflow_dispatch:
 
 jobs:
@@ -33,7 +33,7 @@ jobs:
         run: ./gradlew lint
 
       - name: Run Common & Android Unit Tests
-        run: ./gradlew :composeApp:testDebugUnitTest
+        run: ./gradlew :composeApp:testDevDebugUnitTest
 
   ios-check:
     needs: android-common-check

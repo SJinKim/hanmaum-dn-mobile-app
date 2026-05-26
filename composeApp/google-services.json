@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "300793829418",
+    "project_id": "hanmaum-dn-mobile-app-88236",
+    "storage_bucket": "hanmaum-dn-mobile-app-88236.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:300793829418:android:f8de6935f1718b85a5cb53",
+        "android_client_info": {
+          "package_name": "com.hanmaum.dn.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7OET22LERpj1NtDKs79dCvpVl1lLg5Fk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

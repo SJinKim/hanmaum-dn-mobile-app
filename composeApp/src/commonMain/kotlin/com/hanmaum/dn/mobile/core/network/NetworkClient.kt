@@ -79,7 +79,7 @@ fun createHttpClient(tokenStorage: TokenStorage): HttpClient {
                         ?: return@refreshTokens null
                     try {
                         val response = refreshClient.submitForm(
-                            url = "${BuildKonfig.KEYCLOAK_URL}/realms/hanmaum/protocol/openid-connect/token",
+                            url = "${BuildKonfig.KEYCLOAK_URL}/realms/${BuildKonfig.KEYCLOAK_REALM}/protocol/openid-connect/token",
                             formParameters = parameters {
                                 append("client_id", "hanmaum-mobile")
                                 append("grant_type", "refresh_token")
