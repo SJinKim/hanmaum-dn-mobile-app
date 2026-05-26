@@ -18,7 +18,7 @@ class AuthRepositoryImpl(
 ) : AuthRepository {
 
     override suspend fun login(user: String, pass: String): TokenResponse {
-        val keycloakUrl = "${BuildKonfig.KEYCLOAK_URL}/realms/hanmaum/protocol/openid-connect/token"
+        val keycloakUrl = "${BuildKonfig.KEYCLOAK_URL}/realms/${BuildKonfig.KEYCLOAK_REALM}/protocol/openid-connect/token"
 
         val response: HttpResponse = client.submitForm(
             url = keycloakUrl,
@@ -39,10 +39,6 @@ class AuthRepositoryImpl(
     }
 
     override suspend fun register(request: RegisterRequest): Result<Unit> {
-        println("JIN: REGISTER STARTED!!")
-        // Passe die URL an deine Umgebung an!
-        // Android Emulator: http://10.0.2.2:8080/api/members
-        // iOS Simulator / Echtes Gerät: Deine lokale IP (z.B. http://192.168.1.50:8080/api/members)
         return try {
             val response = client.post("members/register") {
                 contentType(ContentType.Application.Json)
