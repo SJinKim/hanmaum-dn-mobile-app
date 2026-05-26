@@ -37,9 +37,14 @@ jobs:
           echo "PCLOUD_FOLDER_ENDPOINT=${PCLOUD_FOLDER_ENDPOINT}" >> .env
           echo "PCLOUD_DOWNLOAD_ENDPOINT=${PCLOUD_DOWNLOAD_ENDPOINT}" >> .env
 
+      - name: Write Firebase service account
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: echo "${FIREBASE_SERVICE_ACCOUNT}" > firebase-service-account.json
+
       - name: Build & Distribute (stDebug)
         env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          GOOGLE_APPLICATION_CREDENTIALS: firebase-service-account.json
           RELEASE_NOTES: "ST · ${{ github.ref_name }} @ ${{ github.sha }}"
         run: |
           chmod +x gradlew
@@ -82,9 +87,14 @@ jobs:
           RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
         run: echo "${RELEASE_KEYSTORE_BASE64}" | base64 --decode > release.keystore
 
+      - name: Write Firebase service account
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: echo "${FIREBASE_SERVICE_ACCOUNT}" > firebase-service-account.json
+
       - name: Build & Distribute (prodRelease)
         env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          GOOGLE_APPLICATION_CREDENTIALS: firebase-service-account.json
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
