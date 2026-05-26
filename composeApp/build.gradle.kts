@@ -24,6 +24,7 @@ plugins {
     alias(libs.plugins.buildkonfig)
     id("com.google.gms.google-services")
     id("com.google.firebase.appdistribution")
+    id("com.google.firebase.crashlytics")
 }
 
 buildkonfig {
@@ -89,6 +90,7 @@ kotlin {
 
             implementation(project.dependencies.platform("com.google.firebase:firebase-bom:34.13.0"))
             implementation(libs.firebase.analytics)
+            implementation(libs.firebase.crashlytics)
         }
         commonMain.dependencies {
             implementation(libs.runtime)

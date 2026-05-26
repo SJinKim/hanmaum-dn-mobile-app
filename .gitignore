@@ -20,6 +20,11 @@ node_modules/
 
 .env
 
+# --- Secrets (never commit) ---
+firebase-service-account.json
+release.keystore
+*.keystore
+
 # --- Git worktrees ---
 .worktrees/
 
@@ -31,6 +36,9 @@ dev-log-*.md
 
 # --- Local AI tool data ---
 .superpowers/
+.lazyweb/
+.run/
+AGENTS.md
 
 # --- Local docs (plans, specs) ---
 docs/
