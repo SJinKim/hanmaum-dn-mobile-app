@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.components.AppTopBar
 
-// TODO: Replace with full Community feature implementation
 @Composable
 fun CommunityStubScreen() {
     val strings = LocalStrings.current
