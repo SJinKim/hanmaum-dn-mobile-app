@@ -15,8 +15,7 @@ import com.hanmaum.dn.mobile.core.presentation.theme.GoldLight
 import com.hanmaum.dn.mobile.core.presentation.theme.MutedGray
 import com.hanmaum.dn.mobile.core.presentation.theme.SanctuaryWhite
 
-// TODO(api): Replace hardcoded strings with data from /api/v1/verses/weekly
-// wired through VerseRepository → HomeViewModel in a future session.
+// Hardcoded placeholder — will be wired to /api/v1/verses/weekly via VerseRepository → HomeViewModel
 @Composable
 fun WeeklyVerseSection() {
     Column(
