@@ -21,9 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.hanmaum.dn.mobile.core.presentation.theme.CardWhite
-import com.hanmaum.dn.mobile.core.presentation.theme.CoralDark
-import com.hanmaum.dn.mobile.core.presentation.theme.MutedGray
+import com.hanmaum.dn.mobile.core.presentation.theme.LightPrimaryDark
 import com.hanmaum.dn.mobile.features.announcement.domain.model.Announcement
 import kotlinx.coroutines.delay
 
@@ -81,7 +79,7 @@ private fun HeroBannerCard(
             .clip(RoundedCornerShape(24.dp))
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(CoralDark, Color(0xFF1A0A0A))
+                    colors = listOf(LightPrimaryDark, Color(0xFF1A0A0A))
                 )
             )
             .clickable(onClick = onClick)
@@ -130,8 +128,8 @@ private fun HeroBannerCard(
                 onClick = onClick,
                 shape = RoundedCornerShape(50.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = CardWhite,
-                    contentColor   = CoralDark,
+                    containerColor = Color.White,
+                    contentColor   = LightPrimaryDark,
                 ),
                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
             ) {
@@ -161,8 +159,8 @@ private fun HeroBannerIndicators(
                     .size(8.dp)
                     .clip(CircleShape)
                     .background(
-                        if (isSelected) CoralDark
-                        else MutedGray.copy(alpha = 0.4f)
+                        if (isSelected) LightPrimaryDark
+                        else Color.Gray.copy(alpha = 0.4f)
                     )
             )
         }
@@ -179,7 +177,7 @@ private fun HeroBannerLoading() {
             .clip(RoundedCornerShape(24.dp))
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(CoralDark, Color(0xFF1A0A0A))
+                    colors = listOf(LightPrimaryDark, Color(0xFF1A0A0A))
                 )
             ),
         contentAlignment = Alignment.Center,
