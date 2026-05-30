@@ -25,6 +25,8 @@ import com.hanmaum.dn.mobile.core.presentation.theme.LightPrimaryDark
 import com.hanmaum.dn.mobile.features.announcement.domain.model.Announcement
 import kotlinx.coroutines.delay
 
+private val GradientFadeBlack = Color(0xFF1A0A0A)
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HeroBannerSection(
@@ -79,7 +81,7 @@ private fun HeroBannerCard(
             .clip(RoundedCornerShape(24.dp))
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(LightPrimaryDark, Color(0xFF1A0A0A))
+                    colors = listOf(LightPrimaryDark, GradientFadeBlack)
                 )
             )
             .clickable(onClick = onClick)
@@ -128,7 +130,7 @@ private fun HeroBannerCard(
                 onClick = onClick,
                 shape = RoundedCornerShape(50.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
                     contentColor   = LightPrimaryDark,
                 ),
                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
@@ -177,7 +179,7 @@ private fun HeroBannerLoading() {
             .clip(RoundedCornerShape(24.dp))
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(LightPrimaryDark, Color(0xFF1A0A0A))
+                    colors = listOf(LightPrimaryDark, GradientFadeBlack)
                 )
             ),
         contentAlignment = Alignment.Center,

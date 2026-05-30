@@ -19,7 +19,7 @@ fun WeeklyVerseSection() {
             .padding(horizontal = 16.dp)
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.onBackground)
+            .background(MaterialTheme.colorScheme.inverseSurface)
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
