@@ -33,7 +33,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
@@ -42,6 +41,10 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import com.hanmaum.dn.mobile.core.navigation.TopLevelDestination
 import com.hanmaum.dn.mobile.core.presentation.theme.AppMotion
+import com.hanmaum.dn.mobile.core.presentation.theme.PillBackground
+import com.hanmaum.dn.mobile.core.presentation.theme.PillIconActive
+import com.hanmaum.dn.mobile.core.presentation.theme.PillIconInactive
+import com.hanmaum.dn.mobile.core.presentation.theme.PillIndicator
 import kotlin.math.roundToInt
 
 @Composable
@@ -77,7 +80,7 @@ fun FloatingPillNav(
             .fillMaxWidth()
             .height(56.dp)
             .clip(RoundedCornerShape(100.dp))
-            .background(Color(0xDD2C1A0E))
+            .background(PillBackground)
             .onSizeChanged { pillWidthPx = it.width },
     ) {
         if (itemWidthPx > 0) {
@@ -88,7 +91,7 @@ fun FloatingPillNav(
                     .fillMaxHeight()
                     .padding(6.dp)
                     .clip(RoundedCornerShape(100.dp))
-                    .background(Color(0x30C4A882)),
+                    .background(PillIndicator),
             )
         }
 
@@ -138,21 +141,21 @@ private fun PillNavItem(
                     Icon(
                         imageVector = destination.icon,
                         contentDescription = null,
-                        tint = Color(0xFFC4A882),
+                        tint = PillIconActive,
                         modifier = Modifier.size(18.dp),
                     )
                     Spacer(Modifier.width(5.dp))
                     Text(
                         text = destination.label,
                         style = MaterialTheme.typography.labelLarge,
-                        color = Color(0xFFC4A882),
+                        color = PillIconActive,
                     )
                 }
             } else {
                 Icon(
                     imageVector = destination.icon,
                     contentDescription = destination.label,
-                    tint = Color(0x66C4A882),
+                    tint = PillIconInactive,
                     modifier = Modifier.size(18.dp),
                 )
             }

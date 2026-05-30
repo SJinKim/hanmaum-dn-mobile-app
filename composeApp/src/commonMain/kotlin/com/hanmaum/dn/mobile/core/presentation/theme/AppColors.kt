@@ -33,6 +33,12 @@ val DarkPrimary      = Color(0xFFA0622A)
 val DarkPrimaryDark  = Color(0xFF6A3A10)
 val DarkOnPrimary    = Color(0xFFFDE8C0)
 
+// ── Floating Pill Nav — always dark-frosted in both light and dark modes ───────
+val PillBackground   = Color(0xDD2C1A0E) // DarkOnSurface @ 87% opacity
+val PillIndicator    = Color(0x30C4A882) // LightMuted @ 19% opacity — active chip
+val PillIconActive   = Color(0xFFC4A882) // LightMuted @ 100% — active icon + label
+val PillIconInactive = Color(0x66C4A882) // LightMuted @ 40% — inactive icon
+
 // ── Shared ────────────────────────────────────────────────────────────────────
 val ErrorRed         = Color(0xFFBA1A1A)
 val ErrorContainer   = Color(0xFFFFDAD6)
