@@ -41,19 +41,12 @@ buildkonfig {
     }
 
     targetConfigs {
+        // "ios" matches the shared iosMain KMP source set (iosArm64 + iosSimulatorArm64).
+        // Android per-flavor URLs are injected via Android buildConfigField below — buildkonfig
+        // targetConfigs does not support Android product flavors in KMP projects.
         create("ios") {
             buildConfigField(STRING, "BACKEND_URL", "http://localhost:8080")
             buildConfigField(STRING, "KEYCLOAK_URL", "http://localhost:8091")
-        }
-        create("st") {
-            buildConfigField(STRING, "BACKEND_URL", "https://api.graceops.de")
-            buildConfigField(STRING, "KEYCLOAK_URL", "https://auth.graceops.de")
-            buildConfigField(STRING, "KEYCLOAK_REALM", "hanmaum-dn-st")
-        }
-        create("prod") {
-            buildConfigField(STRING, "BACKEND_URL", "https://api.graceops.de")
-            buildConfigField(STRING, "KEYCLOAK_URL", "https://auth.graceops.de")
-            buildConfigField(STRING, "KEYCLOAK_REALM", "hanmaum-dn-prod")
         }
     }
 }
@@ -137,6 +130,37 @@ kotlin {
     }
 }
 
+// buildkonfig generates androidMain/BuildKonfig.kt from defaultConfigs, which doesn't support
+// Android product flavors in KMP. Rewrite the generated actual in-place after generation so it
+// delegates to AGP's per-flavor BuildConfig instead of hardcoded values.
+// whenTaskAdded fires as soon as buildkonfig registers its task, regardless of afterEvaluate order.
+tasks.whenTaskAdded {
+    if (name == "generateBuildKonfig") {
+        doLast {
+            val file = layout.buildDirectory
+                .file("buildkonfig/androidMain/com/hanmaum/dn/mobile/BuildKonfig.kt")
+                .get().asFile
+            if (file.exists()) {
+                file.writeText("""
+package com.hanmaum.dn.mobile
+
+import kotlin.String
+
+internal actual object BuildKonfig {
+  public actual val BACKEND_URL: String get() = com.hanmaum.dn.mobile.BuildConfig.BACKEND_URL
+  public actual val KEYCLOAK_URL: String get() = com.hanmaum.dn.mobile.BuildConfig.KEYCLOAK_URL
+  public actual val KEYCLOAK_REALM: String get() = com.hanmaum.dn.mobile.BuildConfig.KEYCLOAK_REALM
+  public actual val GOOGLE_CALENDAR_ID: String get() = com.hanmaum.dn.mobile.BuildConfig.GOOGLE_CALENDAR_ID
+  public actual val GOOGLE_CALENDAR_API_KEY: String get() = com.hanmaum.dn.mobile.BuildConfig.GOOGLE_CALENDAR_API_KEY
+  public actual val PCLOUD_FOLDER_ENDPOINT: String get() = com.hanmaum.dn.mobile.BuildConfig.PCLOUD_FOLDER_ENDPOINT
+  public actual val PCLOUD_DOWNLOAD_ENDPOINT: String get() = com.hanmaum.dn.mobile.BuildConfig.PCLOUD_DOWNLOAD_ENDPOINT
+}
+                """.trimIndent())
+            }
+        }
+    }
+}
+
 android {
     namespace = "com.hanmaum.dn.mobile"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -153,11 +177,30 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     flavorDimensions += "env"
     productFlavors {
-        create("dev")  { dimension = "env" }
-        create("st")   { dimension = "env" }
-        create("prod") { dimension = "env" }
+        create("dev") {
+            dimension = "env"
+            buildConfigField("String", "BACKEND_URL", "\"http://10.0.2.2:8080\"")
+            buildConfigField("String", "KEYCLOAK_URL", "\"http://10.0.2.2:8091\"")
+            buildConfigField("String", "KEYCLOAK_REALM", "\"hanmaum\"")
+        }
+        create("st") {
+            dimension = "env"
+            buildConfigField("String", "BACKEND_URL", "\"https://api.graceops.de\"")
+            buildConfigField("String", "KEYCLOAK_URL", "\"https://auth.graceops.de\"")
+            buildConfigField("String", "KEYCLOAK_REALM", "\"hanmaum-dn-st\"")
+        }
+        create("prod") {
+            dimension = "env"
+            buildConfigField("String", "BACKEND_URL", "\"https://api.graceops.de\"")
+            buildConfigField("String", "KEYCLOAK_URL", "\"https://auth.graceops.de\"")
+            buildConfigField("String", "KEYCLOAK_REALM", "\"hanmaum-dn-prod\"")
+        }
     }
 
     defaultConfig {
@@ -166,6 +209,10 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+        buildConfigField("String", "GOOGLE_CALENDAR_ID",      "\"${envProps["GOOGLE_CALENDAR_ID"] ?: ""}\"")
+        buildConfigField("String", "GOOGLE_CALENDAR_API_KEY", "\"${envProps["GOOGLE_CALENDAR_API_KEY"] ?: ""}\"")
+        buildConfigField("String", "PCLOUD_FOLDER_ENDPOINT",   "\"${envProps["PCLOUD_FOLDER_ENDPOINT"] ?: ""}\"")
+        buildConfigField("String", "PCLOUD_DOWNLOAD_ENDPOINT", "\"${envProps["PCLOUD_DOWNLOAD_ENDPOINT"] ?: ""}\"")
     }
     packaging {
         resources {
