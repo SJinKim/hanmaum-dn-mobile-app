@@ -59,7 +59,6 @@ import androidx.compose.ui.unit.dp
 import com.hanmaum.dn.mobile.core.i18n.AppLocale
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.components.AppTopBar
-import com.hanmaum.dn.mobile.core.presentation.theme.SoftPeach
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -243,7 +242,7 @@ private fun ProfileViewContent(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(SoftPeach, MaterialTheme.shapes.large)
+                .background(MaterialTheme.colorScheme.surfaceContainerLow, MaterialTheme.shapes.large)
                 .padding(24.dp),
         ) {
             Column {

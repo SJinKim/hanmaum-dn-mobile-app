@@ -10,10 +10,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.hanmaum.dn.mobile.core.presentation.theme.DeepCharcoal
-import com.hanmaum.dn.mobile.core.presentation.theme.GoldLight
-import com.hanmaum.dn.mobile.core.presentation.theme.MutedGray
-import com.hanmaum.dn.mobile.core.presentation.theme.SanctuaryWhite
 
 // Hardcoded placeholder — will be wired to /api/v1/verses/weekly via VerseRepository → HomeViewModel
 @Composable
@@ -23,7 +19,7 @@ fun WeeklyVerseSection() {
             .padding(horizontal = 16.dp)
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(DeepCharcoal)
+            .background(MaterialTheme.colorScheme.inverseSurface)
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
@@ -32,19 +28,19 @@ fun WeeklyVerseSection() {
             style = MaterialTheme.typography.labelSmall.copy(
                 letterSpacing = 0.05.sp,
             ),
-            color = GoldLight,
+            color = MaterialTheme.colorScheme.primary,
         )
 
         Text(
             text = "여호와는 나의 목자시니 내게 부족함이 없으리로다",
             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-            color = SanctuaryWhite,
+            color = MaterialTheme.colorScheme.onPrimary,
         )
 
         Text(
             text = "시편 23:1",
             style = MaterialTheme.typography.labelMedium,
-            color = MutedGray,
+            color = MaterialTheme.colorScheme.outline,
         )
 
         TextButton(
@@ -55,7 +51,7 @@ fun WeeklyVerseSection() {
             Text(
                 text = "외우기 시작 →",
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = GoldLight,
+                color = MaterialTheme.colorScheme.primary,
             )
         }
     }

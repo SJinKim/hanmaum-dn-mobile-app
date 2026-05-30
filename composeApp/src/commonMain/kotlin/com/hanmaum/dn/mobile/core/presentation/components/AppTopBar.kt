@@ -1,16 +1,20 @@
 package com.hanmaum.dn.mobile.core.presentation.components
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -20,38 +24,27 @@ fun AppTopBar(
 ) {
     val strings = LocalStrings.current
     TopAppBar(
-        title = {
-            Text(
-                text  = "DN App",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.primary,
-            )
-        },
+        title = {},
         navigationIcon = {
             if (onBackClick != null) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        imageVector        = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = strings.back,
-                        tint               = MaterialTheme.colorScheme.onSurface,
-                    )
+                IconButton(
+                    onClick = onBackClick,
+                    modifier = Modifier.size(44.dp),
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
+                            contentDescription = strings.back,
+                            tint = MaterialTheme.colorScheme.outline,
+                            modifier = Modifier.size(28.dp),
+                        )
+                    }
                 }
             }
         },
-        actions = {
-            IconButton(onClick = {}) {
-                Icon(
-                    imageVector        = Icons.Outlined.Notifications,
-                    contentDescription = strings.notifications,
-                    tint               = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-        },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor             = MaterialTheme.colorScheme.background,
-            titleContentColor          = MaterialTheme.colorScheme.primary,
-            actionIconContentColor     = MaterialTheme.colorScheme.onSurface,
-            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+            containerColor = Color.Transparent,
+            navigationIconContentColor = MaterialTheme.colorScheme.outline,
         ),
     )
 }

@@ -9,16 +9,13 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.hanmaum.dn.mobile.core.presentation.theme.MutedGray
-import com.hanmaum.dn.mobile.core.presentation.theme.SoftPeach
-import com.hanmaum.dn.mobile.core.presentation.theme.WarmCharcoal
 
 @Composable
 fun BibleVerseSection(onViewAllClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(SoftPeach)
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .padding(horizontal = 24.dp, vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -27,7 +24,7 @@ fun BibleVerseSection(onViewAllClick: () -> Unit) {
             style = MaterialTheme.typography.labelSmall.copy(
                 letterSpacing = 0.05.sp,
             ),
-            color = MutedGray,
+            color = MaterialTheme.colorScheme.outline,
         )
 
         Text(
@@ -36,13 +33,13 @@ fun BibleVerseSection(onViewAllClick: () -> Unit) {
                 fontStyle = FontStyle.Italic,
                 fontWeight = FontWeight.Medium,
             ),
-            color = WarmCharcoal,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         Text(
             text = "요한복음 1:5",
             style = MaterialTheme.typography.labelMedium,
-            color = MutedGray,
+            color = MaterialTheme.colorScheme.outline,
         )
 
         TextButton(
