@@ -37,13 +37,13 @@ jobs:
 
   ios-check:
     needs: android-common-check
-    runs-on: macos-latest
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
 
-      - name: Select Xcode 16.3
+      - name: Select Xcode 16.2
         run: |
-          sudo xcode-select -s /Applications/Xcode_16.3.app/Contents/Developer
+          sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
           xcodebuild -version
 
       - name: Set up JDK 17
@@ -58,5 +58,5 @@ jobs:
       - name: Run iOS Tests
         run: ./gradlew :composeApp:iosSimulatorArm64Test
 
-      - name: Build iOS Framework
-        run: ./gradlew :composeApp:assembleReleaseX64
+      - name: Build iOS Simulator Framework
+        run: ./gradlew :composeApp:linkReleaseFrameworkIosSimulatorArm64
