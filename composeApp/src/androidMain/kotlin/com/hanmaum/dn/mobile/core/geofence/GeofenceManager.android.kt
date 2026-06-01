@@ -25,7 +25,11 @@ class AndroidGeofenceManager(private val context: Context) : GeofenceManager {
     }
 
     override fun startMonitoring(location: ChurchLocation, onEnter: () -> Unit) {
-        if (!isLocationPermissionGranted()) return
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
         // onEnter is not used on Android — geofence events are delivered via
         // GeofenceBroadcastReceiver which calls GeofenceCoordinator.notifyEntry() directly.
 
@@ -41,7 +45,11 @@ class AndroidGeofenceManager(private val context: Context) : GeofenceManager {
             .addGeofence(geofence)
             .build()
 
-        client.addGeofences(request, buildPendingIntent())
+        try {
+            client.addGeofences(request, buildPendingIntent())
+        } catch (_: SecurityException) {
+            // Permission can still be revoked between the check above and the platform call.
+        }
     }
 
     override fun stopMonitoring() {

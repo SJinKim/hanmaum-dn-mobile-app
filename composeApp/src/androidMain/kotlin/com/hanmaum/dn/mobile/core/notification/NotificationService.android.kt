@@ -30,7 +30,12 @@ class AndroidNotificationService(private val context: Context) : NotificationSer
     }
 
     override fun showAttendanceNotification() {
-        if (!isNotificationPermissionGranted()) return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
 
         val tapIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -49,7 +54,11 @@ class AndroidNotificationService(private val context: Context) : NotificationSer
             .setContentIntent(pendingIntent)
             .build()
 
-        NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification)
+        try {
+            NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification)
+        } catch (_: SecurityException) {
+            // Notification permission can be revoked between the check above and notify().
+        }
     }
 
     private fun createChannel() {
