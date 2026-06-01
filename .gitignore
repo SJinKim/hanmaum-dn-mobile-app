@@ -39,10 +39,21 @@ dev-log-*.md
 .lazyweb/
 .run/
 AGENTS.md
+!AGENTS.md
 
 # --- Local docs (plans, specs) ---
 docs/
+!docs/
+docs/*
+!docs/codex/
+!docs/codex/**
 
 # --- Font download artifacts ---
 composeApp/src/commonMain/Plus_Jakarta_Sans/README.txt
 /tasks/lessons.md
+
+# --- Codex local machine config ---
+.codex/config.toml
+.codex/local.toml
+.codex/cache/
+.codex/tmp/
