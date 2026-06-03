@@ -136,12 +136,13 @@ kotlin {
 // whenTaskAdded fires as soon as buildkonfig registers its task, regardless of afterEvaluate order.
 tasks.whenTaskAdded {
     if (name == "generateBuildKonfig") {
-        doLast {
-            val file = layout.buildDirectory
-                .file("buildkonfig/androidMain/com/hanmaum/dn/mobile/BuildKonfig.kt")
-                .get().asFile
-            if (file.exists()) {
-                file.writeText("""
+        // Resolve the path and content at configuration time so the doLast action below captures
+        // only a serializable Provider<RegularFile> and a String — never the Project. Referencing
+        // layout/project inside doLast would pull DefaultProject into the task's serialized state
+        // and break the configuration cache.
+        val generatedFile = layout.buildDirectory
+            .file("buildkonfig/androidMain/com/hanmaum/dn/mobile/BuildKonfig.kt")
+        val delegatingSource = """
 package com.hanmaum.dn.mobile
 
 import kotlin.String
@@ -155,7 +156,11 @@ internal actual object BuildKonfig {
   public actual val PCLOUD_FOLDER_ENDPOINT: String get() = com.hanmaum.dn.mobile.BuildConfig.PCLOUD_FOLDER_ENDPOINT
   public actual val PCLOUD_DOWNLOAD_ENDPOINT: String get() = com.hanmaum.dn.mobile.BuildConfig.PCLOUD_DOWNLOAD_ENDPOINT
 }
-                """.trimIndent())
+        """.trimIndent()
+        doLast {
+            val file = generatedFile.get().asFile
+            if (file.exists()) {
+                file.writeText(delegatingSource)
             }
         }
     }
@@ -191,7 +196,7 @@ android {
         }
         create("st") {
             dimension = "env"
-            buildConfigField("String", "BACKEND_URL", "\"https://api.graceops.de\"")
+            buildConfigField("String", "BACKEND_URL", "\"https://api.staging.graceops.de\"")
             buildConfigField("String", "KEYCLOAK_URL", "\"https://auth.graceops.de\"")
             buildConfigField("String", "KEYCLOAK_REALM", "\"hanmaum-dn-st\"")
         }
