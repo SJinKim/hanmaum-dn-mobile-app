@@ -38,6 +38,8 @@ dev-log-*.md
 .superpowers/
 .lazyweb/
 .run/
+.codex/
+.agents/
 AGENTS.md
 !AGENTS.md
 
