@@ -38,10 +38,17 @@ dev-log-*.md
 .superpowers/
 .lazyweb/
 .run/
+.codex/
+.agents/
 AGENTS.md
+!AGENTS.md
 
 # --- Local docs (plans, specs) ---
 docs/
+!docs/
+docs/*
+!docs/codex/
+!docs/codex/**
 
 # --- Font download artifacts ---
 composeApp/src/commonMain/Plus_Jakarta_Sans/README.txt
