@@ -40,6 +40,10 @@ dev-log-*.md
 .run/
 AGENTS.md
 
+# --- Codex / agent local config (per-machine, never commit) ---
+.codex/
+.agents/
+
 # --- Local docs (plans, specs) ---
 docs/
 
