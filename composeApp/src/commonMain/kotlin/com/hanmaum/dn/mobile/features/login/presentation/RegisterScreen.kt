@@ -210,6 +210,15 @@ fun RegisterScreen(
             keyboardType   = KeyboardType.Number,
             error          = strings.messageFor(state.zipCodeError),
             focusRequester = focusRequesters[RegisterField.ZIP_CODE],
+            trailing       = if (state.isCityLookupLoading) {
+                {
+                    CircularProgressIndicator(
+                        modifier    = Modifier.size(18.dp),
+                        strokeWidth = 2.dp,
+                        color       = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            } else null,
         )
 
         Spacer(Modifier.height(16.dp))
@@ -634,11 +643,13 @@ private fun FilledField(
     keyboardType: KeyboardType,
     error: String? = null,
     focusRequester: FocusRequester? = null,
+    trailing: (@Composable () -> Unit)? = null,
 ) {
     TextField(
         value           = value,
         onValueChange   = onValueChange,
         placeholder     = { Text(placeholder) },
+        trailingIcon    = trailing,
         modifier        = Modifier
             .fillMaxWidth()
             .then(focusRequester?.let { Modifier.focusRequester(it) } ?: Modifier),

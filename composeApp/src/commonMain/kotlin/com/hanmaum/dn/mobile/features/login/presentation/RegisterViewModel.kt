@@ -11,6 +11,8 @@ import com.hanmaum.dn.mobile.features.login.domain.model.RegisterException
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterRequest
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterValidation
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
+import com.hanmaum.dn.mobile.features.login.domain.repository.CityLookupRepository
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -19,7 +21,8 @@ import kotlinx.datetime.LocalDate
 
 class RegisterViewModel(
     private val authRepository: AuthRepository,
-    private val tokenStorage: TokenStorage
+    private val tokenStorage: TokenStorage,
+    private val cityLookupRepository: CityLookupRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterUiState())
@@ -50,11 +53,48 @@ class RegisterViewModel(
             passwordCriteria = PasswordPolicy.evaluate(v, it.email),
         )
     }
+    // Tracks the in-flight PLZ->city lookup so a newer postcode cancels the older one.
+    private var cityLookupJob: Job? = null
+
     fun onCityChange(v: String) = _uiState.update {
-        it.copy(city = v, cityError = null, bannerError = null)
+        // The user is taking over the city — stop autofilling over their input.
+        it.copy(city = v, cityError = null, bannerError = null, cityAutofilled = false)
     }
-    fun onZipChange(v: String) = _uiState.update {
-        it.copy(zipCode = v, zipCodeError = null, bannerError = null)
+    fun onZipChange(v: String) {
+        _uiState.update { it.copy(zipCode = v, zipCodeError = null, bannerError = null) }
+        maybeAutofillCity(v)
+    }
+
+    /**
+     * On a complete German PLZ, resolves the city via [cityLookupRepository] and
+     * fills it in — but only while the city is empty or was itself autofilled, so
+     * a manually-typed city is never overwritten. Failures are silent: the user
+     * keeps typing the city themselves.
+     */
+    private fun maybeAutofillCity(zip: String) {
+        cityLookupJob?.cancel()
+        val plz = zip.trim()
+        val current = _uiState.value
+        val mayAutofill = current.city.isBlank() || current.cityAutofilled
+        if (!mayAutofill || !RegisterValidation.isValidPostalCode(plz, "DE")) {
+            _uiState.update { it.copy(isCityLookupLoading = false) }
+            return
+        }
+        cityLookupJob = viewModelScope.launch {
+            _uiState.update { it.copy(isCityLookupLoading = true) }
+            val city = cityLookupRepository.cityForPostalCode(plz)
+            _uiState.update { state ->
+                // Re-check guards: the PLZ may have changed or the user may have
+                // typed a city while the request was in flight.
+                val stillApplicable = state.zipCode.trim() == plz &&
+                    (state.city.isBlank() || state.cityAutofilled)
+                if (city != null && stillApplicable) {
+                    state.copy(city = city, cityError = null, cityAutofilled = true, isCityLookupLoading = false)
+                } else {
+                    state.copy(isCityLookupLoading = false)
+                }
+            }
+        }
     }
 
     // Optionale
