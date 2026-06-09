@@ -4,7 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
+import com.hanmaum.dn.mobile.features.login.domain.model.Countries
+import com.hanmaum.dn.mobile.features.login.domain.model.PasswordPolicy
+import com.hanmaum.dn.mobile.features.login.domain.model.PhoneNumber
+import com.hanmaum.dn.mobile.features.login.domain.model.RegisterException
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterRequest
+import com.hanmaum.dn.mobile.features.login.domain.model.RegisterValidation
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,37 +26,124 @@ class RegisterViewModel(
     val uiState = _uiState.asStateFlow()
 
     // --- Events zum Ändern der Felder ---
-    fun onFirstNameChange(v: String) = _uiState.update { it.copy(firstName = v, error = null) }
-    fun onLastNameChange(v: String) = _uiState.update { it.copy(lastName = v, error = null) }
-    fun onEmailChange(v: String) = _uiState.update { it.copy(email = v, error = null) }
-    fun onPasswordChange(v: String) = _uiState.update { it.copy(password = v, error = null) }
-    fun onCityChange(v: String) = _uiState.update { it.copy(city = v, error = null) }
+    // Editing a field clears its own error and any top-of-form banner.
+    fun onFirstNameChange(v: String) = _uiState.update {
+        it.copy(firstName = v, firstNameError = null, bannerError = null)
+    }
+    fun onLastNameChange(v: String) = _uiState.update {
+        it.copy(lastName = v, lastNameError = null, bannerError = null)
+    }
+    fun onEmailChange(v: String) = _uiState.update {
+        // Recompute criteria so the "different from your email" check stays in sync.
+        it.copy(
+            email = v,
+            emailError = null,
+            bannerError = null,
+            passwordCriteria = PasswordPolicy.evaluate(it.password, v),
+        )
+    }
+    fun onPasswordChange(v: String) = _uiState.update {
+        it.copy(
+            password = v,
+            passwordError = null,
+            bannerError = null,
+            passwordCriteria = PasswordPolicy.evaluate(v, it.email),
+        )
+    }
+    fun onCityChange(v: String) = _uiState.update {
+        it.copy(city = v, cityError = null, bannerError = null)
+    }
+    fun onZipChange(v: String) = _uiState.update {
+        it.copy(zipCode = v, zipCodeError = null, bannerError = null)
+    }
 
     // Optionale
     fun onBaptismChange(v: String) = _uiState.update { it.copy(baptism = v) }
     fun onGenderChange(v: String) = _uiState.update { it.copy(gender = v) }
     fun onBirthDateChange(v: String) = _uiState.update { it.copy(birthDate = v, birthDateError = null) }
-    fun onPhoneChange(v: String) = _uiState.update { it.copy(phoneNumber = v) }
-    fun onStreetChange(v: String) = _uiState.update { it.copy(street = v) }
-    fun onZipChange(v: String) = _uiState.update { it.copy(zipCode = v) }
+    fun onPhoneChange(v: String) = _uiState.update { it.copy(phoneNumber = PhoneNumber.sanitizeNational(v)) }
+    fun onPhoneCountryChange(iso: String) = _uiState.update { it.copy(phoneCountryIso = iso) }
+    /** Sets the dial-code country from the device locale on first composition. */
+    fun setDefaultPhoneCountry(iso: String) = _uiState.update {
+        it.copy(phoneCountryIso = Countries.byIsoOrDefault(iso).iso)
+    }
+    fun onStreetChange(v: String) = _uiState.update { it.copy(street = v, streetError = null, bannerError = null) }
+    fun onHouseNumberChange(v: String) = _uiState.update { it.copy(houseNumber = v, houseNumberError = null, bannerError = null) }
 
     fun register() {
         val s = _uiState.value
 
-        // 1. VALIDIERUNG
-        if (s.firstName.isBlank() || s.lastName.isBlank() || s.email.isBlank() || s.password.isBlank() || s.zipCode.isBlank() || s.city.isBlank() ) {
-            _uiState.update { it.copy(error = "필수 항목입니다.") }
-            return
+        // 1. VALIDIERUNG — collect every field error so the user sees them all at once.
+        val emailError = when {
+            s.email.isBlank() -> RegisterFieldError.REQUIRED
+            !RegisterValidation.isValidEmail(s.email) -> RegisterFieldError.INVALID_EMAIL
+            else -> null
+        }
+        val passwordError = when {
+            s.password.isBlank() -> RegisterFieldError.REQUIRED
+            !s.passwordCriteria.allMet -> RegisterFieldError.PASSWORD_REQUIREMENTS
+            else -> null
+        }
+        val firstNameError = RegisterFieldError.REQUIRED.takeIf { s.firstName.isBlank() }
+        val lastNameError = RegisterFieldError.REQUIRED.takeIf { s.lastName.isBlank() }
+        val cityError = when {
+            s.city.isBlank() -> RegisterFieldError.REQUIRED
+            !RegisterValidation.isValidCity(s.city) -> RegisterFieldError.INVALID_CITY
+            else -> null
+        }
+        val zipCodeError = when {
+            s.zipCode.isBlank() -> RegisterFieldError.REQUIRED
+            !RegisterValidation.isValidPostalCode(s.zipCode) -> RegisterFieldError.INVALID_POSTCODE
+            else -> null
+        }
+        // Address is optional as a whole, but the Straße/Hausnummer split must be
+        // consistent: if either part is entered, both are required, and the house
+        // number must contain a digit.
+        val addressProvided = s.street.isNotBlank() || s.houseNumber.isNotBlank()
+        val streetError = RegisterFieldError.REQUIRED.takeIf { addressProvided && s.street.isBlank() }
+        val houseNumberError = when {
+            !addressProvided -> null
+            s.houseNumber.isBlank() -> RegisterFieldError.REQUIRED
+            !RegisterValidation.isValidHouseNumber(s.houseNumber) -> RegisterFieldError.INVALID_HOUSE_NUMBER
+            else -> null
+        }
+        val birthDateError = validateBirthDate(s.birthDate)
+
+        // First invalid field in visual order (last name renders above first name).
+        val focusTarget = when {
+            lastNameError != null -> RegisterField.LAST_NAME
+            firstNameError != null -> RegisterField.FIRST_NAME
+            emailError != null -> RegisterField.EMAIL
+            cityError != null -> RegisterField.CITY
+            zipCodeError != null -> RegisterField.ZIP_CODE
+            passwordError != null -> RegisterField.PASSWORD
+            streetError != null -> RegisterField.STREET
+            houseNumberError != null -> RegisterField.HOUSE_NUMBER
+            else -> null
         }
 
-        val birthDateError = validateBirthDate(s.birthDate)
-        if (birthDateError != null) {
-            _uiState.update { it.copy(birthDateError = birthDateError) }
+        val hasError = focusTarget != null || birthDateError != null
+        if (hasError) {
+            _uiState.update {
+                it.copy(
+                    firstNameError = firstNameError,
+                    lastNameError = lastNameError,
+                    emailError = emailError,
+                    cityError = cityError,
+                    zipCodeError = zipCodeError,
+                    passwordError = passwordError,
+                    birthDateError = birthDateError,
+                    streetError = streetError,
+                    houseNumberError = houseNumberError,
+                    focusTarget = focusTarget,
+                    bannerError = null,
+                )
+            }
             return
         }
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update { it.copy(isLoading = true, bannerError = null) }
 
             // 2. MAPPING (String -> Nullable für Backend)
             val request = RegisterRequest(
@@ -63,8 +155,11 @@ class RegisterViewModel(
                 baptism = s.baptism.ifBlank { null },
                 gender = s.gender.ifBlank { null },
                 birthDate = s.birthDate.replace('.', '-').takeIf { it.length == 10 },
-                phoneNumber = s.phoneNumber.ifBlank { null },
-                street = s.street.ifBlank { null },
+                phoneNumber = PhoneNumber.toE164(
+                    dialCode = Countries.byIsoOrDefault(s.phoneCountryIso).dialCode,
+                    national = s.phoneNumber,
+                ),
+                street = RegisterValidation.combineStreet(s.street, s.houseNumber),
                 zipCode = s.zipCode.ifBlank { null }
             )
 
@@ -75,13 +170,12 @@ class RegisterViewModel(
                 // --> Erfolg! Jetzt Auto-Login
                 performAutoLogin(s.email, s.password)
             }.onFailure { exception ->
-                // --> Fehler! Zeige die Nachricht vom Backend an (z.B. "Email existiert schon")
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        error = exception.message ?: "Ein Fehler ist aufgetreten."
-                    )
-                }
+                // Show a clean backend message if we have one, else a localized generic.
+                val banner = (exception as? RegisterException)?.userMessage
+                    ?.takeIf { it.isNotBlank() }
+                    ?.let { RegisterBanner.ServerMessage(it) }
+                    ?: RegisterBanner.Generic
+                _uiState.update { it.copy(isLoading = false, bannerError = banner) }
             }
         }
     }
@@ -105,28 +199,33 @@ class RegisterViewModel(
                     it.copy(
                         isLoading = false,
                         isSuccess = true,
-                        error = "등록 성공했습니다. 로그인 해주세요."
+                        bannerError = RegisterBanner.RegisteredPleaseLogin,
                     )
                 }
             }
         }
     }
 
-    // Returns an error message string, or null if the date is valid (no error).
-    private fun validateBirthDate(date: String): String? {
+    // Returns a field error, or null if the (optional) date is valid/empty.
+    private fun validateBirthDate(date: String): RegisterFieldError? {
         if (date.isBlank()) return null
-        if (date.length < 10) return "날짜를 완전히 입력해주세요 (YYYY.MM.DD)"
+        if (date.length < 10) return RegisterFieldError.DATE_INCOMPLETE
         return try {
             val parts = date.split(".")
             LocalDate(parts[0].toInt(), parts[1].toInt(), parts[2].toInt())
             null // date is valid, no error
         } catch (e: Exception) {
-            "유효하지 않은 날짜입니다"
+            RegisterFieldError.DATE_INVALID
         }
     }
 
     fun onNavigationHandled() {
         _uiState.update { it.copy(navigateTo = null) }
+    }
+
+    /** Called by the UI once it has focused/scrolled to the invalid field. */
+    fun onFocusHandled() {
+        _uiState.update { it.copy(focusTarget = null) }
     }
 
 }
