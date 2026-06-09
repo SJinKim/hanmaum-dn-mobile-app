@@ -103,3 +103,59 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew assembleProdRelease appDistributionUploadProdRelease --no-daemon
+
+  # ── develop → TestFlight (iOS, staging backend) ───────────────────────────
+  distribute-testflight:
+    name: iOS → TestFlight
+    if: github.ref == 'refs/heads/develop'
+    runs-on: macos-14
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 16.2
+        run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: wrapper
+
+      - name: Set up Ruby & Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: iosApp
+
+      - name: Write .env (buildkonfig fields + iOS staging URLs)
+        env:
+          GOOGLE_CALENDAR_ID: ${{ secrets.GOOGLE_CALENDAR_ID }}
+          GOOGLE_CALENDAR_API_KEY: ${{ secrets.GOOGLE_CALENDAR_API_KEY }}
+          PCLOUD_FOLDER_ENDPOINT: ${{ secrets.PCLOUD_FOLDER_ENDPOINT }}
+          PCLOUD_DOWNLOAD_ENDPOINT: ${{ secrets.PCLOUD_DOWNLOAD_ENDPOINT }}
+        run: |
+          echo "GOOGLE_CALENDAR_ID=${GOOGLE_CALENDAR_ID}" > .env
+          echo "GOOGLE_CALENDAR_API_KEY=${GOOGLE_CALENDAR_API_KEY}" >> .env
+          echo "PCLOUD_FOLDER_ENDPOINT=${PCLOUD_FOLDER_ENDPOINT}" >> .env
+          echo "PCLOUD_DOWNLOAD_ENDPOINT=${PCLOUD_DOWNLOAD_ENDPOINT}" >> .env
+          echo "IOS_BACKEND_URL=https://api.staging.graceops.de" >> .env
+          echo "IOS_KEYCLOAK_URL=https://auth.graceops.de" >> .env
+          echo "IOS_KEYCLOAK_REALM=hanmaum-dn-st" >> .env
+
+      - name: Build & upload to TestFlight
+        working-directory: iosApp
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          chmod +x ../gradlew
+          bundle exec fastlane beta
