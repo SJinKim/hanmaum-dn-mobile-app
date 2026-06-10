@@ -69,13 +69,52 @@ kotlin {
         }
     }
     
-    listOf(
+    val iosTargets = listOf(
         iosArm64(),
         iosSimulatorArm64()
-    ).forEach { iosTarget ->
+    )
+    iosTargets.forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+        }
+    }
+
+    // ── iOS simulator link workaround (Kotlin/Native 2.3.0 + Xcode 16) ───────────
+    // Kotlin/Native's bundled CoreLocation auto-links the private framework
+    // `_LocationEssentials`. That framework exists only in the device runtime, not
+    // in the iOS *simulator* SDK, so the simulator link (linkDebugTestIosSimulatorArm64)
+    // fails with "framework '_LocationEssentials' not found" — independent of the
+    // selected Xcode version.
+    //
+    // `_LocationEssentials` is absent from the simulator at both link AND runtime, so
+    // a plain stub linked at its real install path makes dyld abort at launch
+    // ("Library not loaded"). Workaround: generate a .tbd stub under build/ (git-ignored)
+    // whose install-name points at libSystem (always present in the simulator). This
+    // satisfies the linker's `-framework` lookup and resolves the runtime load command
+    // to an existing dylib. No `_LocationEssentials` symbols are referenced, so aliasing
+    // it is harmless. Applied to the *simulator* target only — NEVER the iosArm64 device
+    // build, which links the real framework.
+    //
+    // Upstream: https://youtrack.jetbrains.com/issue/KT-71566
+    // Remove this block once the bundled CoreLocation no longer references
+    // `_LocationEssentials` (i.e. after upgrading to a Kotlin version with the fix).
+    if (System.getProperty("os.name").startsWith("Mac")) {
+        val stubFramework = project.layout.buildDirectory
+            .dir("ci-frameworks/_LocationEssentials.framework").get().asFile
+        val stubTbd = stubFramework.resolve("_LocationEssentials.tbd")
+        stubFramework.mkdirs()
+        stubTbd.writeText(
+            """
+            --- !tapi-tbd
+            tbd-version: 4
+            targets: [ arm64-ios-simulator, x86_64-ios-simulator ]
+            install-name: '/usr/lib/libSystem.B.dylib'
+            ...
+            """.trimIndent() + "\n"
+        )
+        iosTargets.first { it.name == "iosSimulatorArm64" }.binaries.all {
+            linkerOpts("-F", stubFramework.parentFile.absolutePath)
         }
     }
     

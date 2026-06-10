@@ -192,6 +192,10 @@ private fun ProfileViewContent(
             InfoCard(icon = Icons.Default.Home, label = strings.labelStreet, value = it)
             Spacer(Modifier.height(12.dp))
         }
+        profile.houseNumber?.let {
+            InfoCard(icon = Icons.Default.Home, label = strings.labelHouseNumber, value = it)
+            Spacer(Modifier.height(12.dp))
+        }
         profile.zipCode?.let {
             InfoCard(icon = Icons.Default.Home, label = strings.labelZipCode, value = it)
             Spacer(Modifier.height(12.dp))

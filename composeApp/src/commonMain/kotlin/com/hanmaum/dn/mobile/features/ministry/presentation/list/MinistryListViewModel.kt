@@ -24,7 +24,7 @@ class MinistryListViewModel(
             _uiState.value = MinistryListUiState.Loading
             repository.getMinistries(activeOnly = true).fold(
                 onSuccess = { _uiState.value = MinistryListUiState.Success(it) },
-                onFailure = { _uiState.value = MinistryListUiState.Error(it.message ?: "부서 목록 로딩 실패") },
+                onFailure = { _uiState.value = MinistryListUiState.Error(it.message ?: "사역 목록 로딩 실패") },
             )
         }
     }

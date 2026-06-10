@@ -8,6 +8,17 @@ interface AppStrings {
     val cancel: String
     val saving: String
     val errorOccurred: String
+    // Register form validation
+    val errorRequired: String
+    val errorInvalidEmail: String
+    val errorPasswordRequirements: String
+    val errorDateIncomplete: String
+    val errorDateInvalid: String
+    val errorInvalidPostcode: String
+    val errorInvalidCity: String
+    val errorInvalidHouseNumber: String
+    val registerFailed: String
+    val registerSuccessLogin: String
     // Notification permission dialog (HomeScreen)
     val laterButton: String
     val allowPermission: String
@@ -31,16 +42,19 @@ interface AppStrings {
     val labelEmail: String
     val labelPhone: String
     val labelStreet: String
+    val labelHouseNumber: String
     val labelZipCode: String
     val labelCity: String
     val labelPrimaryGroup: String
     val profileImageUrl: String
     // Ministry
-    val registerNow: String
-    val registered: String
-    val alreadyMember: String
-    val bioLabel: String
-    val bioPlaceholder: String
+    val ministryListTitle: String
+    val ministryListSubtitle: String
+    val ministryListEmpty: String
+    val ministryAbout: String
+    val ministryRequirements: String
+    val ministrySchedule: String
+    val ministryContact: String
     // Pending screen
     val checkStatus: String
     // Album
@@ -71,8 +85,6 @@ interface AppStrings {
     val attendanceLocation: String
     // Floor plan
     val floorPlanTitle: String
-    // Ministry
-    val ministryRegisterSheet: String
 }
 
 object EnStrings : AppStrings {
@@ -82,6 +94,16 @@ object EnStrings : AppStrings {
     override val cancel = "Cancel"
     override val saving = "Saving…"
     override val errorOccurred = "An error occurred"
+    override val errorRequired = "This field is required"
+    override val errorInvalidEmail = "Please enter a valid email address"
+    override val errorPasswordRequirements = "Password doesn't meet the requirements"
+    override val errorDateIncomplete = "Please enter the full date (YYYY.MM.DD)"
+    override val errorDateInvalid = "Invalid date"
+    override val errorInvalidPostcode = "Enter a valid postcode (5 digits)"
+    override val errorInvalidCity = "Enter a valid city"
+    override val errorInvalidHouseNumber = "Enter a valid house number (e.g. 5, 12a)"
+    override val registerFailed = "Registration failed. Please try again."
+    override val registerSuccessLogin = "Registration successful. Please log in."
     override val laterButton = "Later"
     override val allowPermission = "Allow"
     override val navHome = "Home"
@@ -99,15 +121,18 @@ object EnStrings : AppStrings {
     override val labelEmail = "EMAIL ADDRESS"
     override val labelPhone = "PHONE NUMBER"
     override val labelStreet = "STREET"
+    override val labelHouseNumber = "HOUSE NO."
     override val labelZipCode = "ZIP CODE"
     override val labelCity = "CITY"
     override val labelPrimaryGroup = "PRIMARY GROUP"
     override val profileImageUrl = "PROFILE IMAGE URL"
-    override val registerNow = "Register Now"
-    override val registered = "Applied ✓"
-    override val alreadyMember = "Already a member ✓"
-    override val bioLabel = "Bio (optional)"
-    override val bioPlaceholder = "Introduce yourself to the leader"
+    override val ministryListTitle = "Ministries"
+    override val ministryListSubtitle = "Discover the ministries serving our church"
+    override val ministryListEmpty = "No ministries yet"
+    override val ministryAbout = "About"
+    override val ministryRequirements = "Requirements"
+    override val ministrySchedule = "Schedule"
+    override val ministryContact = "Contact"
     override val checkStatus = "Check Status"
     override val albumEmpty = "No photos yet"
     override val albumsEmpty = "No albums"
@@ -130,7 +155,6 @@ object EnStrings : AppStrings {
     override val attendanceReady = "Ready to check in"
     override val attendanceLocation = "Location"
     override val floorPlanTitle = "Church Map"
-    override val ministryRegisterSheet = "Ministry Registration"
 }
 
 object KoStrings : AppStrings {
@@ -140,6 +164,16 @@ object KoStrings : AppStrings {
     override val cancel = "취소"
     override val saving = "저장 중"
     override val errorOccurred = "오류가 발생했습니다"
+    override val errorRequired = "필수 항목입니다"
+    override val errorInvalidEmail = "올바른 이메일을 입력해주세요"
+    override val errorPasswordRequirements = "비밀번호 조건을 충족하지 않습니다"
+    override val errorDateIncomplete = "날짜를 완전히 입력해주세요 (YYYY.MM.DD)"
+    override val errorDateInvalid = "유효하지 않은 날짜입니다"
+    override val errorInvalidPostcode = "올바른 우편번호를 입력해주세요 (5자리)"
+    override val errorInvalidCity = "올바른 도시명을 입력해주세요"
+    override val errorInvalidHouseNumber = "올바른 번지수를 입력해주세요 (예: 5, 12a)"
+    override val registerFailed = "회원가입에 실패했습니다. 다시 시도해주세요."
+    override val registerSuccessLogin = "등록 성공했습니다. 로그인 해주세요."
     override val laterButton = "나중에"
     override val allowPermission = "권한 허용"
     override val navHome = "홈"
@@ -157,15 +191,18 @@ object KoStrings : AppStrings {
     override val labelEmail = "이메일"
     override val labelPhone = "전화번호"
     override val labelStreet = "주소"
+    override val labelHouseNumber = "번지"
     override val labelZipCode = "우편번호"
     override val labelCity = "도시"
     override val labelPrimaryGroup = "소속 그룹"
     override val profileImageUrl = "프로필 사진 URL"
-    override val registerNow = "신청하기"
-    override val registered = "신청되었습니다 ✓"
-    override val alreadyMember = "멤버입니다 ✓"
-    override val bioLabel = "자기소개 (선택)"
-    override val bioPlaceholder = "리더에게 전달할 자기소개를 입력하세요"
+    override val ministryListTitle = "사역"
+    override val ministryListSubtitle = "교회의 다양한 사역을 만나보세요"
+    override val ministryListEmpty = "등록된 사역이 없습니다"
+    override val ministryAbout = "소개"
+    override val ministryRequirements = "지원 자격"
+    override val ministrySchedule = "일정"
+    override val ministryContact = "문의"
     override val checkStatus = "승인 상태 확인"
     override val albumEmpty = "아직 사진이 없습니다"
     override val albumsEmpty = "앨범이 없습니다"
@@ -188,7 +225,6 @@ object KoStrings : AppStrings {
     override val attendanceReady = "출석 가능"
     override val attendanceLocation = "위치"
     override val floorPlanTitle = "교회 지도"
-    override val ministryRegisterSheet = "부서 신청"
 }
 
 object DeStrings : AppStrings {
@@ -198,6 +234,16 @@ object DeStrings : AppStrings {
     override val cancel = "Abbrechen"
     override val saving = "Wird gespeichert…"
     override val errorOccurred = "Ein Fehler ist aufgetreten"
+    override val errorRequired = "Dieses Feld ist erforderlich"
+    override val errorInvalidEmail = "Bitte geben Sie eine gültige E-Mail-Adresse ein"
+    override val errorPasswordRequirements = "Passwort erfüllt die Anforderungen nicht"
+    override val errorDateIncomplete = "Bitte geben Sie das vollständige Datum ein (YYYY.MM.DD)"
+    override val errorDateInvalid = "Ungültiges Datum"
+    override val errorInvalidPostcode = "Bitte gültige PLZ eingeben (5 Ziffern)"
+    override val errorInvalidCity = "Bitte gültige Stadt eingeben"
+    override val errorInvalidHouseNumber = "Bitte gültige Hausnummer angeben (z. B. 5, 12a)"
+    override val registerFailed = "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut."
+    override val registerSuccessLogin = "Registrierung erfolgreich. Bitte melden Sie sich an."
     override val laterButton = "Später"
     override val allowPermission = "Erlauben"
     override val navHome = "Start"
@@ -215,15 +261,18 @@ object DeStrings : AppStrings {
     override val labelEmail = "E-MAIL-ADRESSE"
     override val labelPhone = "TELEFONNUMMER"
     override val labelStreet = "STRASSE"
+    override val labelHouseNumber = "HAUSNUMMER"
     override val labelZipCode = "POSTLEITZAHL"
     override val labelCity = "STADT"
     override val labelPrimaryGroup = "HAUPTGRUPPE"
     override val profileImageUrl = "PROFILBILD-URL"
-    override val registerNow = "Jetzt anmelden"
-    override val registered = "Angemeldet ✓"
-    override val alreadyMember = "Bereits Mitglied ✓"
-    override val bioLabel = "Biografie (optional)"
-    override val bioPlaceholder = "Stellen Sie sich dem Leiter vor"
+    override val ministryListTitle = "Dienste"
+    override val ministryListSubtitle = "Entdecken Sie die Dienste unserer Gemeinde"
+    override val ministryListEmpty = "Noch keine Dienste"
+    override val ministryAbout = "Über uns"
+    override val ministryRequirements = "Voraussetzungen"
+    override val ministrySchedule = "Zeitplan"
+    override val ministryContact = "Kontakt"
     override val checkStatus = "Status prüfen"
     override val albumEmpty = "Noch keine Fotos"
     override val albumsEmpty = "Keine Alben"
@@ -246,5 +295,4 @@ object DeStrings : AppStrings {
     override val attendanceReady = "Bereit zum Einchecken"
     override val attendanceLocation = "Standort"
     override val floorPlanTitle = "Kirchenkarte"
-    override val ministryRegisterSheet = "Abteilungsanmeldung"
 }

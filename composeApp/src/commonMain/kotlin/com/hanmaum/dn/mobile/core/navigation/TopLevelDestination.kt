@@ -3,9 +3,9 @@ package com.hanmaum.dn.mobile.core.navigation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.VolunteerActivism
 import androidx.compose.ui.graphics.vector.ImageVector
 import kotlin.reflect.KClass
 
@@ -22,11 +22,11 @@ sealed class TopLevelDestination<T : Any>(
         label = "홈",
     )
 
-    data object News : TopLevelDestination<AnnouncementListRoute>(
-        routeClass = AnnouncementListRoute::class,
-        routeInstance = AnnouncementListRoute,
-        icon = Icons.Default.Newspaper,
-        label = "소식",
+    data object Ministry : TopLevelDestination<MinistryListRoute>(
+        routeClass = MinistryListRoute::class,
+        routeInstance = MinistryListRoute,
+        icon = Icons.Default.VolunteerActivism,
+        label = "사역",
     )
 
     data object Calendar : TopLevelDestination<CalendarRoute>(
@@ -51,6 +51,6 @@ sealed class TopLevelDestination<T : Any>(
     )
 
     companion object {
-        val all: List<TopLevelDestination<*>> = listOf(Home, News, Calendar, Album, Profile)
+        val all: List<TopLevelDestination<*>> = listOf(Home, Ministry, Calendar, Album, Profile)
     }
 }
