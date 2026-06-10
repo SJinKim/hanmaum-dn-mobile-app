@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,23 +11,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,16 +27,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
-import com.hanmaum.dn.mobile.features.ministry.domain.model.RegistrationStatus
+import com.hanmaum.dn.mobile.features.ministry.domain.model.Contact
+import com.hanmaum.dn.mobile.features.ministry.domain.model.MinistryDetail
+import com.hanmaum.dn.mobile.features.ministry.domain.model.Schedule
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MinistryDetailScreen(
     publicId: String,
@@ -55,36 +48,26 @@ fun MinistryDetailScreen(
     val viewModel: MinistryDetailViewModel = koinViewModel(parameters = { parametersOf(publicId) })
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+    ) {
         when (val s = state) {
-            is MinistryDetailUiState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            is MinistryDetailUiState.Error -> ErrorView(msg = s.message, onRetry = { viewModel.load() })
-            is MinistryDetailUiState.Success -> {
-                MinistryDetailContent(
-                    state           = s,
-                    onBackClick     = onBackClick,
-                    onRegisterClick = { viewModel.openSheet() },
-                )
-                if (s.showSheet) {
-                    RegistrationBottomSheet(
-                        note        = s.noteInput,
-                        isLoading   = s.isRegistering,
-                        error       = s.registerError,
-                        onNoteChange = { viewModel.updateNote(it) },
-                        onConfirm   = { viewModel.register() },
-                        onDismiss   = { viewModel.closeSheet() },
-                    )
-                }
-            }
+            is MinistryDetailUiState.Loading ->
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            is MinistryDetailUiState.Error ->
+                ErrorView(msg = s.message, onRetry = { viewModel.load() })
+            is MinistryDetailUiState.Success ->
+                MinistryDetailContent(detail = s.detail, onBackClick = onBackClick)
         }
     }
 }
 
 @Composable
 private fun MinistryDetailContent(
-    state: MinistryDetailUiState.Success,
+    detail: MinistryDetail,
     onBackClick: () -> Unit,
-    onRegisterClick: () -> Unit,
 ) {
     val strings = LocalStrings.current
     Column(
@@ -92,274 +75,186 @@ private fun MinistryDetailContent(
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
     ) {
-        // Hero header
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primary,
-                            MaterialTheme.colorScheme.primaryContainer,
-                        )
-                    )
-                ),
-        ) {
-            // Back button
+        // Hero: ministry image when present, gradient fallback otherwise
+        Box(modifier = Modifier.fillMaxWidth().height(140.dp)) {
+            if (detail.imageUrl != null) {
+                AsyncImage(
+                    model = detail.imageUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.linearGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.primary,
+                                    MaterialTheme.colorScheme.primaryContainer,
+                                )
+                            )
+                        ),
+                )
+            }
             IconButton(
-                onClick  = onBackClick,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .statusBarsPadding()
-                    .padding(4.dp),
+                onClick = onBackClick,
+                modifier = Modifier.align(Alignment.TopStart).padding(4.dp),
             ) {
                 Icon(
-                    imageVector        = Icons.AutoMirrored.Filled.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                     contentDescription = strings.back,
-                    tint               = Color.White,
+                    tint = Color.White,
                 )
             }
         }
 
-        // Content
-        Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-            Spacer(Modifier.height(24.dp))
-
+        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+            Spacer(Modifier.height(18.dp))
             Text(
-                text  = "COMMUNITY SPIRIT",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.primary,
-            )
-            Spacer(Modifier.height(8.dp))
-
-            Text(
-                text  = state.detail.name,
-                style = MaterialTheme.typography.headlineLarge,
+                text = detail.title,
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
                 color = MaterialTheme.colorScheme.onBackground,
             )
-            Spacer(Modifier.height(8.dp))
-
-            Text(
-                text  = state.detail.shortDescription,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-
-            Spacer(Modifier.height(28.dp))
-
-            // Our Mission section
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector        = Icons.Default.Star,
-                    contentDescription = null,
-                    tint               = MaterialTheme.colorScheme.primary,
-                    modifier           = Modifier.size(18.dp),
-                )
-                Spacer(Modifier.width(8.dp))
+            if (detail.subtitle.isNotBlank()) {
+                Spacer(Modifier.height(6.dp))
                 Text(
-                    text  = "Our Mission",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onBackground,
+                    text = detail.subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Spacer(Modifier.height(12.dp))
-            Text(
-                text  = state.detail.longDescription ?: state.detail.shortDescription,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
 
-            // When & Where section (if leader info available)
-            state.detail.leaderName?.let { leader ->
-                Spacer(Modifier.height(28.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector        = Icons.Default.CalendarToday,
-                        contentDescription = null,
-                        tint               = MaterialTheme.colorScheme.primary,
-                        modifier           = Modifier.size(18.dp),
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text  = "When & Where",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onBackground,
-                    )
+            if (detail.about.isNotBlank()) {
+                Section(title = strings.ministryAbout) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        detail.about.split("\n").map { it.trim() }.filter { it.isNotEmpty() }
+                            .forEach { para ->
+                                Text(
+                                    text = para,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                    }
                 }
-                Spacer(Modifier.height(12.dp))
-                Surface(
-                    shape = MaterialTheme.shapes.medium,
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        InfoRow(label = "리더", value = leader)
+            }
+
+            if (detail.requirements.isNotEmpty()) {
+                Section(title = strings.ministryRequirements) {
+                    Column {
+                        detail.requirements.forEachIndexed { index, req ->
+                            if (index > 0) HairlineSpacer()
+                            Text(
+                                text = req,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.padding(vertical = 9.dp),
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (detail.schedules.isNotEmpty()) {
+                Section(title = strings.ministrySchedule) {
+                    Column {
+                        detail.schedules.forEachIndexed { index, schedule ->
+                            if (index > 0) HairlineSpacer()
+                            ScheduleRow(schedule)
+                        }
+                    }
+                }
+            }
+
+            if (detail.contacts.isNotEmpty()) {
+                Section(title = strings.ministryContact) {
+                    Column {
+                        detail.contacts.forEachIndexed { index, contact ->
+                            if (index > 0) HairlineSpacer()
+                            ContactRow(contact)
+                        }
                     }
                 }
             }
 
             Spacer(Modifier.height(32.dp))
-
-            // CTA section
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape    = MaterialTheme.shapes.large,
-                color    = MaterialTheme.colorScheme.surfaceVariant,
-            ) {
-                Column(
-                    modifier              = Modifier.padding(24.dp),
-                    horizontalAlignment   = Alignment.CenterHorizontally,
-                ) {
-                    Text(
-                        text  = "Your seat at the table\nis already saved.",
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        text  = "한마음 교회와 함께 신앙 공동체의 일원이 되세요.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Spacer(Modifier.height(20.dp))
-                    RegistrationButton(
-                        status  = state.registrationStatus,
-                        onClick = onRegisterClick,
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(40.dp))
         }
     }
 }
 
 @Composable
-private fun InfoRow(label: String, value: String) {
+private fun Section(title: String, content: @Composable () -> Unit) {
+    Spacer(Modifier.height(22.dp))
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+        color = MaterialTheme.colorScheme.onBackground,
+    )
+    Spacer(Modifier.height(10.dp))
+    Surface(
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surfaceContainerLowest,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) { content() }
+    }
+}
+
+@Composable
+private fun HairlineSpacer() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(1.dp)
+            .background(MaterialTheme.colorScheme.outlineVariant),
+    )
+}
+
+@Composable
+private fun ScheduleRow(schedule: Schedule) {
     Row(
-        modifier              = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.fillMaxWidth().padding(vertical = 11.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text  = label,
-            style = MaterialTheme.typography.labelSmall,
+            text = schedule.description,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f),
+        )
+        Spacer(Modifier.size(12.dp))
+        Surface(
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+        ) {
+            Text(
+                text = "${schedule.startTime}–${schedule.endTime}",
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = 11.dp, vertical = 5.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun ContactRow(contact: Contact) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 11.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = contact.role,
+            style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.outline,
         )
         Text(
-            text  = value,
-            style = MaterialTheme.typography.bodySmall,
+            text = contact.name,
+            style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
-    }
-}
-
-@Composable
-private fun RegistrationButton(
-    status: RegistrationStatus,
-    onClick: () -> Unit,
-) {
-    val strings = LocalStrings.current
-    when (status) {
-        RegistrationStatus.NONE -> {
-            Button(
-                onClick        = onClick,
-                modifier       = Modifier.fillMaxWidth().height(54.dp),
-                shape          = MaterialTheme.shapes.extraSmall,
-                colors         = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor   = MaterialTheme.colorScheme.onPrimaryContainer,
-                ),
-            ) {
-                Text(strings.registerNow, style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
-            }
-        }
-        RegistrationStatus.PENDING -> {
-            Button(
-                onClick  = {},
-                enabled  = false,
-                modifier = Modifier.fillMaxWidth().height(54.dp),
-                shape    = MaterialTheme.shapes.extraSmall,
-            ) {
-                Text(strings.registered, style = MaterialTheme.typography.labelLarge)
-            }
-        }
-        RegistrationStatus.APPROVED -> {
-            Button(
-                onClick  = {},
-                enabled  = false,
-                modifier = Modifier.fillMaxWidth().height(54.dp),
-                shape    = MaterialTheme.shapes.extraSmall,
-                colors   = ButtonDefaults.buttonColors(
-                    disabledContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                    disabledContentColor   = MaterialTheme.colorScheme.onTertiaryContainer,
-                ),
-            ) {
-                Text(strings.alreadyMember, style = MaterialTheme.typography.labelLarge)
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun RegistrationBottomSheet(
-    note: String,
-    isLoading: Boolean,
-    error: String?,
-    onNoteChange: (String) -> Unit,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit,
-) {
-    val strings = LocalStrings.current
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .padding(bottom = 32.dp),
-        ) {
-            Text(
-                strings.ministryRegisterSheet,
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-            )
-            Spacer(Modifier.height(16.dp))
-            OutlinedTextField(
-                value         = note,
-                onValueChange = { if (it.length <= 500) onNoteChange(it) },
-                label         = { Text(strings.bioLabel) },
-                placeholder   = { Text(strings.bioPlaceholder) },
-                modifier      = Modifier.fillMaxWidth(),
-                minLines      = 3,
-                maxLines      = 5,
-                supportingText = { Text("${note.length}/500") },
-                shape         = MaterialTheme.shapes.small,
-            )
-            error?.let {
-                Spacer(Modifier.height(8.dp))
-                Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
-            }
-            Spacer(Modifier.height(16.dp))
-            Button(
-                onClick  = onConfirm,
-                modifier = Modifier.fillMaxWidth().height(54.dp),
-                enabled  = !isLoading,
-                shape    = MaterialTheme.shapes.extraSmall,
-                colors   = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor   = MaterialTheme.colorScheme.onPrimaryContainer,
-                ),
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier    = Modifier.size(18.dp),
-                        strokeWidth = 2.dp,
-                        color       = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                } else {
-                    Text(strings.registerNow, style = MaterialTheme.typography.labelLarge)
-                }
-            }
-        }
     }
 }
