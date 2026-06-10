@@ -41,12 +41,19 @@ buildkonfig {
     }
 
     targetConfigs {
-        // "ios" matches the shared iosMain KMP source set (iosArm64 + iosSimulatorArm64).
+        // buildkonfig matches targetConfigs by the exact Kotlin target NAME — there is no "ios"
+        // group, so both iOS targets must be configured explicitly (an earlier create("ios")
+        // never matched and silently left iOS on the 10.0.2.2 defaults).
+        // Local dev falls back to localhost; CI (TestFlight) injects staging URLs via .env so the
+        // shipped iOS build reaches a real backend (parity with Android's ST flavor).
         // Android per-flavor URLs are injected via Android buildConfigField below — buildkonfig
         // targetConfigs does not support Android product flavors in KMP projects.
-        create("ios") {
-            buildConfigField(STRING, "BACKEND_URL", "http://localhost:8080")
-            buildConfigField(STRING, "KEYCLOAK_URL", "http://localhost:8091")
+        listOf("iosArm64", "iosSimulatorArm64").forEach { target ->
+            create(target) {
+                buildConfigField(STRING, "BACKEND_URL", envProps["IOS_BACKEND_URL"] ?: "http://localhost:8080")
+                buildConfigField(STRING, "KEYCLOAK_URL", envProps["IOS_KEYCLOAK_URL"] ?: "http://localhost:8091")
+                buildConfigField(STRING, "KEYCLOAK_REALM", envProps["IOS_KEYCLOAK_REALM"] ?: "hanmaum")
+            }
         }
     }
 }
