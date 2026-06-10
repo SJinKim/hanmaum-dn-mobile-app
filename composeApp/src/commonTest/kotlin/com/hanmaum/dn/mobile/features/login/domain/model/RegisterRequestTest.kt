@@ -10,7 +10,7 @@ import kotlin.test.assertFalse
 class RegisterRequestTest {
 
     @Test
-    fun serializesZipCodeUsingBackendContractAndPreservesKoreanNames() {
+    fun serializesAddressUsingBackendContractAndPreservesKoreanNames() {
         val encoded = Json.encodeToString(
             RegisterRequest.serializer(),
             RegisterRequest(
@@ -19,6 +19,8 @@ class RegisterRequestTest {
                 email = "seungjin@example.com",
                 city = "Berlin",
                 password = "Secret123!",
+                street = "Hauptstraße",
+                houseNumber = "12a",
                 zipCode = "10115",
             )
         )
@@ -28,5 +30,8 @@ class RegisterRequestTest {
         assertEquals("김", json.getValue("lastName").jsonPrimitive.content)
         assertEquals("10115", json.getValue("zipCode").jsonPrimitive.content)
         assertFalse(json.containsKey("zip_code"))
+        // Street and house number go out as separate camelCase fields — never combined.
+        assertEquals("Hauptstraße", json.getValue("street").jsonPrimitive.content)
+        assertEquals("12a", json.getValue("houseNumber").jsonPrimitive.content)
     }
 }

@@ -31,18 +31,6 @@ object RegisterValidation {
 
     /** A house number must contain at least one digit (e.g. "5", "12a", "12-14"). */
     fun isValidHouseNumber(houseNumber: String): Boolean = houseNumber.any { it.isDigit() }
-
-    /**
-     * Combines the German "Straße" + "Hausnummer" split into the single `street`
-     * field the backend expects (e.g. "Hauptstraße 5"). Each part is trimmed;
-     * whichever parts are present are joined with a space. Returns null when both
-     * are blank so the optional field is omitted from the request.
-     */
-    fun combineStreet(streetName: String, houseNumber: String): String? =
-        listOf(streetName.trim(), houseNumber.trim())
-            .filter { it.isNotEmpty() }
-            .joinToString(" ")
-            .ifBlank { null }
 }
 
 /**

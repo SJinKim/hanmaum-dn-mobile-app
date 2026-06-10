@@ -1,9 +1,7 @@
 package com.hanmaum.dn.mobile.features.login.domain.model
 
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class RegisterValidationTest {
@@ -60,24 +58,5 @@ class RegisterValidationTest {
         assertTrue(RegisterValidation.isValidHouseNumber("12-14"))
         assertFalse(RegisterValidation.isValidHouseNumber(""))
         assertFalse(RegisterValidation.isValidHouseNumber("abc"))
-    }
-
-    @Test
-    fun combineStreetJoinsNameAndHouseNumber() {
-        assertEquals("Hauptstraße 5", RegisterValidation.combineStreet("Hauptstraße", "5"))
-        // Trims each part before joining.
-        assertEquals("Hauptstraße 5", RegisterValidation.combineStreet("  Hauptstraße  ", " 5 "))
-    }
-
-    @Test
-    fun combineStreetReturnsNullWhenBothBlank() {
-        assertNull(RegisterValidation.combineStreet("", ""))
-        assertNull(RegisterValidation.combineStreet("   ", "  "))
-    }
-
-    @Test
-    fun combineStreetKeepsWhicheverPartIsPresent() {
-        assertEquals("Hauptstraße", RegisterValidation.combineStreet("Hauptstraße", ""))
-        assertEquals("5", RegisterValidation.combineStreet("", "5"))
     }
 }

@@ -159,7 +159,8 @@ class RegisterViewModel(
                     dialCode = Countries.byIsoOrDefault(s.phoneCountryIso).dialCode,
                     national = s.phoneNumber,
                 ),
-                street = RegisterValidation.combineStreet(s.street, s.houseNumber),
+                street = s.street.ifBlank { null },
+                houseNumber = s.houseNumber.ifBlank { null },
                 zipCode = s.zipCode.ifBlank { null }
             )
 
