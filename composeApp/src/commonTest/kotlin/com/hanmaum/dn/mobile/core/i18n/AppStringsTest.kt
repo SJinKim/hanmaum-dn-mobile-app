@@ -19,6 +19,9 @@ class AppStringsTest {
         assertTrue(s.list.isNotBlank())
         assertEquals(13, s.months.size)
         assertTrue(s.months[1].isNotBlank())
+        assertTrue(s.ministryListTitle.isNotBlank())
+        assertTrue(s.ministryAbout.isNotBlank())
+        assertTrue(s.ministryContact.isNotBlank())
     }
 
     @Test
@@ -34,6 +37,9 @@ class AppStringsTest {
         assertEquals("년", s.yearSuffix)
         assertEquals(13, s.months.size)
         assertTrue(s.months[1].isNotBlank())
+        assertTrue(s.ministryListTitle.isNotBlank())
+        assertEquals("소개", s.ministryAbout)
+        assertEquals("일정", s.ministrySchedule)
     }
 
     @Test
@@ -49,6 +55,8 @@ class AppStringsTest {
         assertEquals("", s.yearSuffix)
         assertEquals(13, s.months.size)
         assertTrue(s.months[1].isNotBlank())
+        assertTrue(s.ministryListTitle.isNotBlank())
+        assertEquals("Über uns", s.ministryAbout)
     }
 
     @Test
