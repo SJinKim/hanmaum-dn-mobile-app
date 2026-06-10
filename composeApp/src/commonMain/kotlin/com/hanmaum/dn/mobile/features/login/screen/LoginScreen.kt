@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.login.screen
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -49,6 +50,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.features.login.presentation.LoginViewModel
+import hanmaumdnapp.composeapp.generated.resources.Res
+import hanmaumdnapp.composeapp.generated.resources.logo
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -85,12 +89,12 @@ fun LoginScreen(
     ) {
         Spacer(Modifier.height(64.dp))
 
-        Text(
-            text  = "DN App",
-            style = MaterialTheme.typography.displaySmall,
-            color = MaterialTheme.colorScheme.primary,
+        Image(
+            painter            = painterResource(Res.drawable.logo),
+            contentDescription = "Daniel & Nehemia logo",
+            modifier           = Modifier.height(120.dp),
         )
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(16.dp))
         Text(
             text  = "Welcome Back",
             style = MaterialTheme.typography.headlineLarge,
