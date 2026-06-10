@@ -2,6 +2,7 @@ package com.hanmaum.dn.mobile.features.login.data.repository
 
 import com.hanmaum.dn.mobile.BuildKonfig
 import com.hanmaum.dn.mobile.core.domain.model.ApiResponse
+import com.hanmaum.dn.mobile.features.login.domain.model.RegisterException
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterRequest
 import com.hanmaum.dn.mobile.features.login.domain.model.TokenResponse
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
@@ -12,10 +13,13 @@ import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.client.request.*
 import io.ktor.http.*
+import kotlinx.serialization.json.Json
 
 class AuthRepositoryImpl(
     private val client: HttpClient
 ) : AuthRepository {
+
+    private val lenientJson = Json { ignoreUnknownKeys = true }
 
     override suspend fun login(user: String, pass: String): TokenResponse {
         val keycloakUrl = "${BuildKonfig.KEYCLOAK_URL}/realms/${BuildKonfig.KEYCLOAK_REALM}/protocol/openid-connect/token"
@@ -61,7 +65,7 @@ class AuthRepositoryImpl(
                     if (apiResponse.success) {
                         Result.success(Unit)
                     } else {
-                        Result.failure(Exception(apiResponse.message ?: "Unbekannter Fehler"))
+                        Result.failure(RegisterException(apiResponse.message))
                     }
                 } catch(e: Exception) {
                     // Fallback, falls Response OK war aber kein ApiResponse Body
@@ -70,16 +74,20 @@ class AuthRepositoryImpl(
 
             } else {
                 // BEI FEHLER (400, 401, 500):
-                // KEIN .body<ApiResponse>() aufrufen! Das verursacht den Crash.
-                // Wir lesen den rohen Text.
+                // Body als Text lesen (kein .body<ApiResponse>() -> Crash bei falschem Content-Type),
+                // dann sicher als ApiResponse parsen, um eine saubere Nachricht zu extrahieren.
                 val errorText = response.bodyAsText()
-                Result.failure(Exception("Fehler (${response.status.value}): $errorText"))
+                val message = runCatching {
+                    lenientJson.decodeFromString<ApiResponse<Unit>>(errorText).message
+                }.getOrNull()
+                // null/blank -> ViewModel zeigt eine generische, lokalisierte Meldung.
+                Result.failure(RegisterException(message))
             }
 
         } catch (e: Exception) {
             e.printStackTrace()
-            // Netzwerkfehler (Kein Internet, Server down)
-            Result.failure(e)
+            // Netzwerkfehler (Kein Internet, Server down) -> generische Meldung.
+            Result.failure(RegisterException(null))
         }
     }
 }

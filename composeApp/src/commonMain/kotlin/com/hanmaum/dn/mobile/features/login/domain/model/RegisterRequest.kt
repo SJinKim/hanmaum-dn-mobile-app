@@ -18,5 +18,6 @@ data class RegisterRequest(
     val birthDate: String? = null, // Format: YYYY-MM-DD
     val phoneNumber: String? = null,
     val street: String? = null,
+    val houseNumber: String? = null,
     val zipCode: String? = null
 )

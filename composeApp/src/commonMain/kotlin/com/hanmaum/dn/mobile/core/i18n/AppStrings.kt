@@ -8,6 +8,17 @@ interface AppStrings {
     val cancel: String
     val saving: String
     val errorOccurred: String
+    // Register form validation
+    val errorRequired: String
+    val errorInvalidEmail: String
+    val errorPasswordRequirements: String
+    val errorDateIncomplete: String
+    val errorDateInvalid: String
+    val errorInvalidPostcode: String
+    val errorInvalidCity: String
+    val errorInvalidHouseNumber: String
+    val registerFailed: String
+    val registerSuccessLogin: String
     // Notification permission dialog (HomeScreen)
     val laterButton: String
     val allowPermission: String
@@ -82,6 +93,16 @@ object EnStrings : AppStrings {
     override val cancel = "Cancel"
     override val saving = "Saving…"
     override val errorOccurred = "An error occurred"
+    override val errorRequired = "This field is required"
+    override val errorInvalidEmail = "Please enter a valid email address"
+    override val errorPasswordRequirements = "Password doesn't meet the requirements"
+    override val errorDateIncomplete = "Please enter the full date (YYYY.MM.DD)"
+    override val errorDateInvalid = "Invalid date"
+    override val errorInvalidPostcode = "Enter a valid postcode (5 digits)"
+    override val errorInvalidCity = "Enter a valid city"
+    override val errorInvalidHouseNumber = "Enter a valid house number (e.g. 5, 12a)"
+    override val registerFailed = "Registration failed. Please try again."
+    override val registerSuccessLogin = "Registration successful. Please log in."
     override val laterButton = "Later"
     override val allowPermission = "Allow"
     override val navHome = "Home"
@@ -140,6 +161,16 @@ object KoStrings : AppStrings {
     override val cancel = "취소"
     override val saving = "저장 중"
     override val errorOccurred = "오류가 발생했습니다"
+    override val errorRequired = "필수 항목입니다"
+    override val errorInvalidEmail = "올바른 이메일을 입력해주세요"
+    override val errorPasswordRequirements = "비밀번호 조건을 충족하지 않습니다"
+    override val errorDateIncomplete = "날짜를 완전히 입력해주세요 (YYYY.MM.DD)"
+    override val errorDateInvalid = "유효하지 않은 날짜입니다"
+    override val errorInvalidPostcode = "올바른 우편번호를 입력해주세요 (5자리)"
+    override val errorInvalidCity = "올바른 도시명을 입력해주세요"
+    override val errorInvalidHouseNumber = "올바른 번지수를 입력해주세요 (예: 5, 12a)"
+    override val registerFailed = "회원가입에 실패했습니다. 다시 시도해주세요."
+    override val registerSuccessLogin = "등록 성공했습니다. 로그인 해주세요."
     override val laterButton = "나중에"
     override val allowPermission = "권한 허용"
     override val navHome = "홈"
@@ -198,6 +229,16 @@ object DeStrings : AppStrings {
     override val cancel = "Abbrechen"
     override val saving = "Wird gespeichert…"
     override val errorOccurred = "Ein Fehler ist aufgetreten"
+    override val errorRequired = "Dieses Feld ist erforderlich"
+    override val errorInvalidEmail = "Bitte geben Sie eine gültige E-Mail-Adresse ein"
+    override val errorPasswordRequirements = "Passwort erfüllt die Anforderungen nicht"
+    override val errorDateIncomplete = "Bitte geben Sie das vollständige Datum ein (YYYY.MM.DD)"
+    override val errorDateInvalid = "Ungültiges Datum"
+    override val errorInvalidPostcode = "Bitte gültige PLZ eingeben (5 Ziffern)"
+    override val errorInvalidCity = "Bitte gültige Stadt eingeben"
+    override val errorInvalidHouseNumber = "Bitte gültige Hausnummer angeben (z. B. 5, 12a)"
+    override val registerFailed = "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut."
+    override val registerSuccessLogin = "Registrierung erfolgreich. Bitte melden Sie sich an."
     override val laterButton = "Später"
     override val allowPermission = "Erlauben"
     override val navHome = "Start"
