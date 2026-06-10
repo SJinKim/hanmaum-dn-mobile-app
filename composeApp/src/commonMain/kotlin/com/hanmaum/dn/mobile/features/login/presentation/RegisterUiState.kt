@@ -51,6 +51,8 @@ data class RegisterUiState(
     val passwordCriteria: PasswordCriteria = PasswordCriteria(),
     val baptism: String = "",
     val city: String = "",
+    val isCityLookupLoading: Boolean = false, // PLZ->city autofill request in flight
+    val cityAutofilled: Boolean = false,      // city was set by lookup, not typed — safe to overwrite
     val gender: String = "",
     val birthDate: String = "",
     val phoneNumber: String = "",      // national digits only; combined with dial code on submit
