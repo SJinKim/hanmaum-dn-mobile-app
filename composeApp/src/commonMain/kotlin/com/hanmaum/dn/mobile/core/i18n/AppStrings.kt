@@ -31,6 +31,7 @@ interface AppStrings {
     val labelEmail: String
     val labelPhone: String
     val labelStreet: String
+    val labelHouseNumber: String
     val labelZipCode: String
     val labelCity: String
     val labelPrimaryGroup: String
@@ -99,6 +100,7 @@ object EnStrings : AppStrings {
     override val labelEmail = "EMAIL ADDRESS"
     override val labelPhone = "PHONE NUMBER"
     override val labelStreet = "STREET"
+    override val labelHouseNumber = "HOUSE NO."
     override val labelZipCode = "ZIP CODE"
     override val labelCity = "CITY"
     override val labelPrimaryGroup = "PRIMARY GROUP"
@@ -157,6 +159,7 @@ object KoStrings : AppStrings {
     override val labelEmail = "이메일"
     override val labelPhone = "전화번호"
     override val labelStreet = "주소"
+    override val labelHouseNumber = "번지"
     override val labelZipCode = "우편번호"
     override val labelCity = "도시"
     override val labelPrimaryGroup = "소속 그룹"
@@ -215,6 +218,7 @@ object DeStrings : AppStrings {
     override val labelEmail = "E-MAIL-ADRESSE"
     override val labelPhone = "TELEFONNUMMER"
     override val labelStreet = "STRASSE"
+    override val labelHouseNumber = "HAUSNUMMER"
     override val labelZipCode = "POSTLEITZAHL"
     override val labelCity = "STADT"
     override val labelPrimaryGroup = "HAUPTGRUPPE"
