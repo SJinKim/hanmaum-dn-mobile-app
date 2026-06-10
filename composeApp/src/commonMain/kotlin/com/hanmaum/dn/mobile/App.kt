@@ -187,7 +187,6 @@ fun App() {
 
                     composable<MinistryListRoute> {
                         MinistryListScreen(
-                            onBackClick     = { navController.popBackStack() },
                             onMinistryClick = { publicId ->
                                 navController.navigate(MinistryDetailRoute(publicId = publicId))
                             },

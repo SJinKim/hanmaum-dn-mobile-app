@@ -2,31 +2,32 @@ package com.hanmaum.dn.mobile.features.ministry.domain.model
 
 data class Ministry(
     val publicId: String,
-    val name: String,
-    val shortDescription: String,
+    val title: String,
+    val subtitle: String,
     val imageUrl: String?,
-    val leaderName: String?,
+    val contacts: List<Contact>,
     val isActive: Boolean,
 )
 
 data class MinistryDetail(
     val publicId: String,
-    val name: String,
-    val shortDescription: String,
-    val longDescription: String?,
+    val title: String,
+    val subtitle: String,
+    val about: String,
+    val requirements: List<String>,
+    val schedules: List<Schedule>,
+    val contacts: List<Contact>,
     val imageUrl: String?,
-    val leaderName: String?,
     val isActive: Boolean,
 )
 
-data class MyRegistration(
-    val publicId: String,
-    val status: RegistrationStatus,
-    val note: String?,
+data class Schedule(
+    val description: String,
+    val startTime: String,
+    val endTime: String,
 )
 
-enum class RegistrationStatus {
-    PENDING,
-    APPROVED,
-    NONE, // no record exists, or backend returned REJECTED (treat as re-apply)
-}
+data class Contact(
+    val role: String,
+    val name: String,
+)

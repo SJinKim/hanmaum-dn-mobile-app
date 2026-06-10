@@ -48,11 +48,13 @@ interface AppStrings {
     val labelPrimaryGroup: String
     val profileImageUrl: String
     // Ministry
-    val registerNow: String
-    val registered: String
-    val alreadyMember: String
-    val bioLabel: String
-    val bioPlaceholder: String
+    val ministryListTitle: String
+    val ministryListSubtitle: String
+    val ministryListEmpty: String
+    val ministryAbout: String
+    val ministryRequirements: String
+    val ministrySchedule: String
+    val ministryContact: String
     // Pending screen
     val checkStatus: String
     // Album
@@ -83,8 +85,6 @@ interface AppStrings {
     val attendanceLocation: String
     // Floor plan
     val floorPlanTitle: String
-    // Ministry
-    val ministryRegisterSheet: String
 }
 
 object EnStrings : AppStrings {
@@ -126,11 +126,13 @@ object EnStrings : AppStrings {
     override val labelCity = "CITY"
     override val labelPrimaryGroup = "PRIMARY GROUP"
     override val profileImageUrl = "PROFILE IMAGE URL"
-    override val registerNow = "Register Now"
-    override val registered = "Applied ✓"
-    override val alreadyMember = "Already a member ✓"
-    override val bioLabel = "Bio (optional)"
-    override val bioPlaceholder = "Introduce yourself to the leader"
+    override val ministryListTitle = "Ministries"
+    override val ministryListSubtitle = "Discover the ministries serving our church"
+    override val ministryListEmpty = "No ministries yet"
+    override val ministryAbout = "About"
+    override val ministryRequirements = "Requirements"
+    override val ministrySchedule = "Schedule"
+    override val ministryContact = "Contact"
     override val checkStatus = "Check Status"
     override val albumEmpty = "No photos yet"
     override val albumsEmpty = "No albums"
@@ -153,7 +155,6 @@ object EnStrings : AppStrings {
     override val attendanceReady = "Ready to check in"
     override val attendanceLocation = "Location"
     override val floorPlanTitle = "Church Map"
-    override val ministryRegisterSheet = "Ministry Registration"
 }
 
 object KoStrings : AppStrings {
@@ -195,11 +196,13 @@ object KoStrings : AppStrings {
     override val labelCity = "도시"
     override val labelPrimaryGroup = "소속 그룹"
     override val profileImageUrl = "프로필 사진 URL"
-    override val registerNow = "신청하기"
-    override val registered = "신청되었습니다 ✓"
-    override val alreadyMember = "멤버입니다 ✓"
-    override val bioLabel = "자기소개 (선택)"
-    override val bioPlaceholder = "리더에게 전달할 자기소개를 입력하세요"
+    override val ministryListTitle = "사역"
+    override val ministryListSubtitle = "교회의 다양한 사역을 만나보세요"
+    override val ministryListEmpty = "등록된 사역이 없습니다"
+    override val ministryAbout = "소개"
+    override val ministryRequirements = "지원 자격"
+    override val ministrySchedule = "일정"
+    override val ministryContact = "문의"
     override val checkStatus = "승인 상태 확인"
     override val albumEmpty = "아직 사진이 없습니다"
     override val albumsEmpty = "앨범이 없습니다"
@@ -222,7 +225,6 @@ object KoStrings : AppStrings {
     override val attendanceReady = "출석 가능"
     override val attendanceLocation = "위치"
     override val floorPlanTitle = "교회 지도"
-    override val ministryRegisterSheet = "부서 신청"
 }
 
 object DeStrings : AppStrings {
@@ -264,11 +266,13 @@ object DeStrings : AppStrings {
     override val labelCity = "STADT"
     override val labelPrimaryGroup = "HAUPTGRUPPE"
     override val profileImageUrl = "PROFILBILD-URL"
-    override val registerNow = "Jetzt anmelden"
-    override val registered = "Angemeldet ✓"
-    override val alreadyMember = "Bereits Mitglied ✓"
-    override val bioLabel = "Biografie (optional)"
-    override val bioPlaceholder = "Stellen Sie sich dem Leiter vor"
+    override val ministryListTitle = "Dienste"
+    override val ministryListSubtitle = "Entdecken Sie die Dienste unserer Gemeinde"
+    override val ministryListEmpty = "Noch keine Dienste"
+    override val ministryAbout = "Über uns"
+    override val ministryRequirements = "Voraussetzungen"
+    override val ministrySchedule = "Zeitplan"
+    override val ministryContact = "Kontakt"
     override val checkStatus = "Status prüfen"
     override val albumEmpty = "Noch keine Fotos"
     override val albumsEmpty = "Keine Alben"
@@ -291,5 +295,4 @@ object DeStrings : AppStrings {
     override val attendanceReady = "Bereit zum Einchecken"
     override val attendanceLocation = "Standort"
     override val floorPlanTitle = "Kirchenkarte"
-    override val ministryRegisterSheet = "Abteilungsanmeldung"
 }

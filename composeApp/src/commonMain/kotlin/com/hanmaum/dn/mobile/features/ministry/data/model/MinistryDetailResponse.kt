@@ -5,16 +5,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class MinistryDetailResponse(
     val publicId: String,
-    val name: String,
-    val shortDescription: String,
-    val longDescription: String? = null,
+    val title: String,
+    val subtitle: String,
+    val about: String,
+    val requirements: List<String> = emptyList(),
+    val schedules: List<ScheduleResponse> = emptyList(),
+    val contacts: List<ContactResponse> = emptyList(),
     val imageUrl: String? = null,
-    val leader: LeaderResponse? = null,
-    val isActive: Boolean,
-)
-
-@Serializable
-data class LeaderResponse(
-    val publicId: String,
-    val fullName: String,
+    val active: Boolean,
 )
