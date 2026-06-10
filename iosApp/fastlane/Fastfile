@@ -22,7 +22,9 @@ platform :ios do
       scheme: "iosApp",
       configuration: "Release",
       export_method: "app-store",
-      api_key: api_key,
+      # NOTE: build_app/gym has no `api_key` option. It reads the App Store Connect
+      # API key from the lane context (set by app_store_connect_api_key above) and
+      # passes it to xcodebuild for `-allowProvisioningUpdates`.
       # -allowProvisioningUpdates lets Xcode create/refresh the distribution cert and
       # the App Store provisioning profile (incl. Push + App Groups) automatically in CI.
       xcargs: "-allowProvisioningUpdates CURRENT_PROJECT_VERSION=#{build_number}",
