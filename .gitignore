@@ -53,6 +53,8 @@ docs/
 docs/*
 !docs/codex/
 !docs/codex/**
+!docs/superpowers/
+!docs/superpowers/**
 
 # --- Font download artifacts ---
 composeApp/src/commonMain/Plus_Jakarta_Sans/README.txt
@@ -67,6 +69,7 @@ composeApp/src/commonMain/Plus_Jakarta_Sans/README.txt
 # --- Fastlane / Ruby (local) ---
 iosApp/vendor/
 iosApp/.bundle/
+iosApp/Gemfile.lock
 iosApp/fastlane/AuthKey_*.p8
 iosApp/fastlane/report.xml
 iosApp/fastlane/README.md

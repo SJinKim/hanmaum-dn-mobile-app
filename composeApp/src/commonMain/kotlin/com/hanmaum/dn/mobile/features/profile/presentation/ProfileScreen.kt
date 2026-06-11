@@ -56,7 +56,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.hanmaum.dn.mobile.core.domain.model.ThemeMode
 import com.hanmaum.dn.mobile.core.i18n.AppLocale
+import com.hanmaum.dn.mobile.core.i18n.AppStrings
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.components.AppTopBar
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
@@ -67,6 +69,8 @@ fun ProfileScreen(
     onLogout: () -> Unit,
     currentLocale: AppLocale,
     onLocaleChange: (AppLocale) -> Unit,
+    currentTheme: ThemeMode,
+    onThemeChange: (ThemeMode) -> Unit,
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -112,9 +116,11 @@ fun ProfileScreen(
                         ProfileViewContent(
                             profile        = state.profile,
                             currentLocale  = currentLocale,
+                            currentTheme   = currentTheme,
                             onEditClick    = { viewModel.startEditing() },
                             onLogoutClick  = { viewModel.logout() },
                             onLocaleChange = onLocaleChange,
+                            onThemeChange  = onThemeChange,
                         )
                     }
                 }
@@ -128,12 +134,15 @@ fun ProfileScreen(
 private fun ProfileViewContent(
     profile: MemberResponse,
     currentLocale: AppLocale,
+    currentTheme: ThemeMode,
     onEditClick: () -> Unit,
     onLogoutClick: () -> Unit,
     onLocaleChange: (AppLocale) -> Unit,
+    onThemeChange: (ThemeMode) -> Unit,
 ) {
     val strings = LocalStrings.current
     var showLanguagePicker by remember { mutableStateOf(false) }
+    var showThemePicker by remember { mutableStateOf(false) }
 
     Column(
         modifier            = Modifier
@@ -240,6 +249,28 @@ private fun ProfileViewContent(
                 )
             }
         }
+        Spacer(Modifier.height(12.dp))
+        Card(
+            modifier  = Modifier.fillMaxWidth(),
+            onClick   = { showThemePicker = true },
+            shape     = MaterialTheme.shapes.large,
+            colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text  = strings.profileTheme,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.outline,
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text  = themeModeLabel(currentTheme, strings),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
 
         Spacer(Modifier.height(28.dp))
 
@@ -288,6 +319,16 @@ private fun ProfileViewContent(
                 showLanguagePicker = false
             },
             onDismiss = { showLanguagePicker = false },
+        )
+    }
+    if (showThemePicker) {
+        ThemePickerSheet(
+            currentTheme = currentTheme,
+            onSelect     = { mode ->
+                onThemeChange(mode)
+                showThemePicker = false
+            },
+            onDismiss = { showThemePicker = false },
         )
     }
 }
@@ -498,6 +539,63 @@ private fun ProfileEditContent(
                 } else {
                     Text(strings.save)
                 }
+            }
+        }
+    }
+}
+
+private fun themeModeLabel(mode: ThemeMode, strings: AppStrings): String = when (mode) {
+    ThemeMode.SYSTEM -> strings.themeSystem
+    ThemeMode.LIGHT  -> strings.themeLight
+    ThemeMode.DARK   -> strings.themeDark
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ThemePickerSheet(
+    currentTheme: ThemeMode,
+    onSelect: (ThemeMode) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val strings = LocalStrings.current
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 24.dp).padding(bottom = 32.dp)) {
+            Text(
+                text  = strings.selectTheme,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.height(16.dp))
+            ThemeMode.entries.forEach { mode ->
+                Row(
+                    modifier              = Modifier
+                        .fillMaxWidth()
+                        .clickable { onSelect(mode) }
+                        .padding(vertical = 14.dp),
+                    verticalAlignment     = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text  = themeModeLabel(mode, strings),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = if (mode == currentTheme)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.onSurface,
+                    )
+                    if (mode == currentTheme) {
+                        Icon(
+                            imageVector        = Icons.Default.Check,
+                            contentDescription = null,
+                            tint               = MaterialTheme.colorScheme.primary,
+                            modifier           = Modifier.size(20.dp),
+                        )
+                    }
+                }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
             }
         }
     }

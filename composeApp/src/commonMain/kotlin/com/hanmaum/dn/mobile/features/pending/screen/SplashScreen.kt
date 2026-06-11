@@ -12,6 +12,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.features.pending.presentation.SplashViewModel
@@ -44,6 +45,7 @@ fun SplashScreen(
             painter            = painterResource(Res.drawable.logo),
             contentDescription = "Daniel & Nehemia logo",
             modifier           = Modifier.size(200.dp),
+            colorFilter        = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
         )
     }
 }

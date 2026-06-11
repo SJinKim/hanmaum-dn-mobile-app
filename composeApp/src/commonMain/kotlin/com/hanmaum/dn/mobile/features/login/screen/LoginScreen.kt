@@ -42,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -93,6 +94,7 @@ fun LoginScreen(
             painter            = painterResource(Res.drawable.logo),
             contentDescription = "Daniel & Nehemia logo",
             modifier           = Modifier.height(120.dp),
+            colorFilter        = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
         )
         Spacer(Modifier.height(16.dp))
         Text(

@@ -52,7 +52,7 @@ fun LatestNewsSection(
 
         // === Karten ===
         Card(
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier.fillMaxWidth()
@@ -95,7 +95,7 @@ fun LatestNewsSection(
                     if (index < topFiveNews.lastIndex) {
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = 16.dp),
-                            color = Color(0xFFF5F5F5)
+                            color = MaterialTheme.colorScheme.surfaceContainer
                         )
                     }
                 }
