@@ -2,21 +2,19 @@ require "base64"
 
 default_platform(:ios)
 
+APP_IDENTIFIER = "com.hanmaum.dn.mobile.HanmaumDnApp".freeze
+
 platform :ios do
   desc "Build the app and upload it to TestFlight"
   lane :beta do
     key_id = ENV.fetch("APP_STORE_CONNECT_API_KEY_ID")
     issuer_id = ENV.fetch("APP_STORE_CONNECT_API_ISSUER_ID")
 
-    # Decode the base64 .p8 key to a file. xcodebuild needs the key on disk to
-    # authenticate to App Store Connect during the archive (for
-    # -allowProvisioningUpdates). gym/build_app does NOT forward the
-    # lane-context API key to the archive command, so we pass it explicitly via
-    # xcargs below.
+    # Decode the base64 .p8 key to a file. Drives both match (cert/profile sync)
+    # and the TestFlight upload.
     key_path = File.expand_path("AuthKey_#{key_id}.p8")
     File.write(key_path, Base64.decode64(ENV.fetch("APP_STORE_CONNECT_API_KEY_BASE64")))
 
-    # Same key drives the TestFlight upload below.
     api_key = app_store_connect_api_key(
       key_id: key_id,
       issuer_id: issuer_id,
@@ -24,8 +22,35 @@ platform :ios do
       in_house: false
     )
 
+    # On CI, create a temporary keychain for match to import the cert into.
+    setup_ci
+
+    # Pull the App Store distribution cert + provisioning profile from the match
+    # storage and install them. readonly: CI never creates or revokes certs —
+    # that is done once locally with `fastlane match appstore`.
+    match(
+      type: "appstore",
+      readonly: true,
+      api_key: api_key
+    )
+
+    # match exports the installed profile's name into this env var.
+    profile_name = ENV.fetch("sigh_#{APP_IDENTIFIER}_appstore_profile-name")
+
+    # Switch the project to manual signing with the match cert/profile so the
+    # archive (not just the export) signs with the persistent Distribution
+    # identity instead of trying to auto-create a Development cert per CI run.
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "iosApp.xcodeproj",
+      team_id: ENV.fetch("TEAM_ID", "GTR8X52BY5"),
+      code_sign_identity: "Apple Distribution",
+      bundle_identifier: APP_IDENTIFIER,
+      profile_name: profile_name,
+      targets: ["iosApp"]
+    )
+
     # TestFlight requires a unique, monotonic build number per upload.
-    # CI passes the GitHub run number; local runs fall back to a timestamp.
     build_number = ENV["BUILD_NUMBER"] || Time.now.strftime("%Y%m%d%H%M")
 
     build_app(
@@ -33,19 +58,12 @@ platform :ios do
       scheme: "iosApp",
       configuration: "Release",
       export_method: "app-store",
-      # -allowProvisioningUpdates lets Xcode create/refresh the distribution cert
-      # and App Store provisioning profile automatically in CI; the
-      # -authenticationKey* args give xcodebuild the App Store Connect API key it
-      # needs to do that (gym does not pass these to the archive command for us).
-      xcargs: [
-        "-allowProvisioningUpdates",
-        "-authenticationKeyPath", key_path,
-        "-authenticationKeyID", key_id,
-        "-authenticationKeyIssuerID", issuer_id,
-        "CURRENT_PROJECT_VERSION=#{build_number}"
-      ].join(" "),
+      xcargs: "CURRENT_PROJECT_VERSION=#{build_number}",
       export_options: {
-        signingStyle: "automatic"
+        signingStyle: "manual",
+        provisioningProfiles: {
+          APP_IDENTIFIER => profile_name
+        }
       },
       output_directory: "build",
       output_name: "HanmaumDnApp.ipa",
