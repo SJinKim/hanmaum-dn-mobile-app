@@ -63,3 +63,10 @@ composeApp/src/commonMain/Plus_Jakarta_Sans/README.txt
 .codex/local.toml
 .codex/cache/
 .codex/tmp/
+
+# --- Fastlane / Ruby (local) ---
+iosApp/vendor/
+iosApp/.bundle/
+iosApp/fastlane/AuthKey_*.p8
+iosApp/fastlane/report.xml
+iosApp/fastlane/README.md
