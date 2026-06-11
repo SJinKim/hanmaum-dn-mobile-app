@@ -38,6 +38,11 @@ interface AppStrings {
     val profileLanguage: String
     val profileAccountPreferences: String
     val selectLanguage: String
+    val profileTheme: String
+    val selectTheme: String
+    val themeSystem: String
+    val themeLight: String
+    val themeDark: String
     // Info card labels
     val labelEmail: String
     val labelPhone: String
@@ -118,6 +123,11 @@ object EnStrings : AppStrings {
     override val profileLanguage = "LANGUAGE"
     override val profileAccountPreferences = "Account Preferences"
     override val selectLanguage = "Select Language"
+    override val profileTheme = "THEME"
+    override val selectTheme = "Select Theme"
+    override val themeSystem = "System"
+    override val themeLight = "Light"
+    override val themeDark = "Dark"
     override val labelEmail = "EMAIL ADDRESS"
     override val labelPhone = "PHONE NUMBER"
     override val labelStreet = "STREET"
@@ -188,6 +198,11 @@ object KoStrings : AppStrings {
     override val profileLanguage = "언어"
     override val profileAccountPreferences = "계정 설정"
     override val selectLanguage = "언어 선택"
+    override val profileTheme = "테마"
+    override val selectTheme = "테마 선택"
+    override val themeSystem = "시스템"
+    override val themeLight = "라이트"
+    override val themeDark = "다크"
     override val labelEmail = "이메일"
     override val labelPhone = "전화번호"
     override val labelStreet = "주소"
@@ -258,6 +273,11 @@ object DeStrings : AppStrings {
     override val profileLanguage = "SPRACHE"
     override val profileAccountPreferences = "Kontoeinstellungen"
     override val selectLanguage = "Sprache auswählen"
+    override val profileTheme = "DARSTELLUNG"
+    override val selectTheme = "Darstellung wählen"
+    override val themeSystem = "System"
+    override val themeLight = "Hell"
+    override val themeDark = "Dunkel"
     override val labelEmail = "E-MAIL-ADRESSE"
     override val labelPhone = "TELEFONNUMMER"
     override val labelStreet = "STRASSE"
