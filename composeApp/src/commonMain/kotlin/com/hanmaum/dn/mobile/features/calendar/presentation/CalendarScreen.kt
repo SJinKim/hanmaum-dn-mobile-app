@@ -94,11 +94,11 @@ private fun ViewModeToggle(
         animationSpec = spring(), label = "listBg",
     )
     val calendarTextColor by animateColorAsState(
-        if (currentMode == ViewMode.CALENDAR) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+        if (currentMode == ViewMode.CALENDAR) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = spring(), label = "calendarText",
     )
     val listTextColor by animateColorAsState(
-        if (currentMode == ViewMode.LIST) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+        if (currentMode == ViewMode.LIST) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = spring(), label = "listText",
     )
 

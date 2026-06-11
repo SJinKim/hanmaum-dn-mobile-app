@@ -30,7 +30,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -98,12 +97,12 @@ private fun ArticleContent(
                     .align(Alignment.BottomStart)
                     .padding(16.dp),
                 shape = MaterialTheme.shapes.extraSmall,
-                color = Color.White.copy(alpha = 0.25f),
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f),
             ) {
                 Text(
                     text     = item.getAnnouncementCategoryName().uppercase(),
                     style    = MaterialTheme.typography.labelSmall,
-                    color    = Color.White,
+                    color    = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                 )
             }
@@ -121,7 +120,7 @@ private fun ArticleContent(
                     Icon(
                         imageVector        = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "뒤로",
-                        tint               = Color.White,
+                        tint               = MaterialTheme.colorScheme.onPrimary,
                     )
                 }
                 Row {
@@ -129,7 +128,7 @@ private fun ArticleContent(
                         Icon(
                             imageVector        = Icons.Default.Share,
                             contentDescription = "공유",
-                            tint               = Color.White,
+                            tint               = MaterialTheme.colorScheme.onPrimary,
                         )
                     }
                 }
