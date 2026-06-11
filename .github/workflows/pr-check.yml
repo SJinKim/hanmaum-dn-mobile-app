@@ -58,5 +58,16 @@ jobs:
       - name: Run iOS Tests
         run: ./gradlew :composeApp:iosSimulatorArm64Test
 
-      - name: Build iOS Simulator Framework
-        run: ./gradlew :composeApp:linkReleaseFrameworkIosSimulatorArm64
+      - name: Build iOS app (Swift + Kotlin framework)
+        # Compiles the Swift iosApp target against the Kotlin framework — catches
+        # Swift<->Kotlin interop mismatches (e.g. missing args from dropped Kotlin
+        # defaults) that the gradle framework-link tasks above never see. Simulator
+        # build with signing disabled, so no certs/secrets and no full archive.
+        run: |
+          xcodebuild build \
+            -project iosApp/iosApp.xcodeproj \
+            -scheme iosApp \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
