@@ -1,8 +1,10 @@
 package com.hanmaum.dn.mobile.di
 
 import com.hanmaum.dn.mobile.core.data.repository.LocaleRepositoryImpl
+import com.hanmaum.dn.mobile.core.data.repository.ThemeRepositoryImpl
 import com.hanmaum.dn.mobile.core.data.repository.TokenStorageImpl
 import com.hanmaum.dn.mobile.core.domain.repository.LocaleRepository
+import com.hanmaum.dn.mobile.core.domain.repository.ThemeRepository
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.core.network.createHttpClient
 import com.russhwolf.settings.Settings
@@ -58,6 +60,7 @@ val appModule = module {
     single { createHttpClient(get()) } // Client
     single<TokenStorage> { TokenStorageImpl(Settings()) }
     single<LocaleRepository> { LocaleRepositoryImpl(Settings()) }
+    single<ThemeRepository> { ThemeRepositoryImpl(Settings()) }
 
     //Splash VM
     viewModel { SplashViewModel(get(), get(), get()) }
