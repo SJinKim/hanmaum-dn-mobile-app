@@ -59,10 +59,8 @@ Mirror the **existing locale pattern** exactly. The locale feature already solve
 
 ### 4.4 Toggle UI (in Profile)
 - The theme picker lives in `ProfileScreen`, where the locale picker already lives — **no new Settings screen**.
-- Control: a three-option selector (System / Light / Dark) styled per DESIGN.md:
-  - Filter-chip / segmented pill shape (`shape_full`), selected = `primary` @ 15% alpha bg + `primary` text + `primary` @ 30% alpha border; unselected = `surface_container_low` bg + `muted` text (DESIGN.md §7 Filter Chips).
-  - Press: scale `0.97` with `spring(dampingRatio=0.6, stiffness=400)`.
-- Labels are localized through the existing `LocalStrings` mechanism (add strings for "Theme / System / Light / Dark" to `EnStrings`, `KoStrings`, `DeStrings`).
+- It **mirrors the existing language picker exactly** (the "mirror the locale pattern" principle, §3): a tappable `Card` in the "Account Preferences" section showing the current mode, which opens a `ModalBottomSheet` (`ThemePickerSheet`) listing System / Light / Dark. The selected row is marked with `primary` text + a `Check` icon, exactly like `LanguagePickerSheet`. This keeps the two settings visually and structurally identical and reuses the already-themed Material3 sheet (which inherits DESIGN.md tokens via `MaterialTheme`).
+- Labels are localized through the existing `LocalStrings` mechanism (add `profileTheme`, `selectTheme`, `themeSystem`, `themeLight`, `themeDark` to `AppStrings` + `EnStrings`, `KoStrings`, `DeStrings`).
 
 ### 4.5 Logo tinting
 - Wrap the logo `Image` on **Splash** (`SplashScreen.kt`) and **Login** (`LoginScreen.kt`) with `colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)`.
