@@ -17,7 +17,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
+import com.hanmaum.dn.mobile.core.domain.model.ThemeMode
 import com.hanmaum.dn.mobile.core.domain.repository.LocaleRepository
+import com.hanmaum.dn.mobile.core.domain.repository.ThemeRepository
 import com.hanmaum.dn.mobile.core.i18n.AppLocale
 import com.hanmaum.dn.mobile.core.i18n.DeStrings
 import com.hanmaum.dn.mobile.core.i18n.EnStrings
@@ -51,6 +53,8 @@ fun App() {
     KoinContext {
         val localeRepo = koinInject<LocaleRepository>()
         var locale by remember { mutableStateOf(localeRepo.getLocale()) }
+        val themeRepo = koinInject<ThemeRepository>()
+        var themeMode by remember { mutableStateOf(themeRepo.getThemeMode()) }
         val strings = remember(locale) {
             when (locale) {
                 AppLocale.EN -> EnStrings
@@ -60,7 +64,7 @@ fun App() {
         }
 
         CompositionLocalProvider(LocalStrings provides strings) {
-            AppTheme {
+            AppTheme(themeMode = themeMode) {
             val navController = rememberNavController()
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry?.destination
@@ -181,6 +185,11 @@ fun App() {
                             onLocaleChange = { newLocale ->
                                 localeRepo.setLocale(newLocale)
                                 locale = newLocale
+                            },
+                            currentTheme = themeMode,
+                            onThemeChange = { newMode ->
+                                themeRepo.setThemeMode(newMode)
+                                themeMode = newMode
                             },
                         )
                     }
