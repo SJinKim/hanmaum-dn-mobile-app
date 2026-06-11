@@ -1,15 +1,26 @@
+require "base64"
+
 default_platform(:ios)
 
 platform :ios do
   desc "Build the app and upload it to TestFlight"
   lane :beta do
-    # Authenticate with the App Store Connect API key (.p8, base64-encoded in CI secret).
-    # The same key drives both automatic provisioning (-allowProvisioningUpdates) and the upload.
+    key_id = ENV.fetch("APP_STORE_CONNECT_API_KEY_ID")
+    issuer_id = ENV.fetch("APP_STORE_CONNECT_API_ISSUER_ID")
+
+    # Decode the base64 .p8 key to a file. xcodebuild needs the key on disk to
+    # authenticate to App Store Connect during the archive (for
+    # -allowProvisioningUpdates). gym/build_app does NOT forward the
+    # lane-context API key to the archive command, so we pass it explicitly via
+    # xcargs below.
+    key_path = File.expand_path("AuthKey_#{key_id}.p8")
+    File.write(key_path, Base64.decode64(ENV.fetch("APP_STORE_CONNECT_API_KEY_BASE64")))
+
+    # Same key drives the TestFlight upload below.
     api_key = app_store_connect_api_key(
-      key_id: ENV.fetch("APP_STORE_CONNECT_API_KEY_ID"),
-      issuer_id: ENV.fetch("APP_STORE_CONNECT_API_ISSUER_ID"),
-      key_content: ENV.fetch("APP_STORE_CONNECT_API_KEY_BASE64"),
-      is_key_content_base64: true,
+      key_id: key_id,
+      issuer_id: issuer_id,
+      key_filepath: key_path,
       in_house: false
     )
 
@@ -22,12 +33,17 @@ platform :ios do
       scheme: "iosApp",
       configuration: "Release",
       export_method: "app-store",
-      # NOTE: build_app/gym has no `api_key` option. It reads the App Store Connect
-      # API key from the lane context (set by app_store_connect_api_key above) and
-      # passes it to xcodebuild for `-allowProvisioningUpdates`.
-      # -allowProvisioningUpdates lets Xcode create/refresh the distribution cert and
-      # the App Store provisioning profile (incl. Push + App Groups) automatically in CI.
-      xcargs: "-allowProvisioningUpdates CURRENT_PROJECT_VERSION=#{build_number}",
+      # -allowProvisioningUpdates lets Xcode create/refresh the distribution cert
+      # and App Store provisioning profile automatically in CI; the
+      # -authenticationKey* args give xcodebuild the App Store Connect API key it
+      # needs to do that (gym does not pass these to the archive command for us).
+      xcargs: [
+        "-allowProvisioningUpdates",
+        "-authenticationKeyPath", key_path,
+        "-authenticationKeyID", key_id,
+        "-authenticationKeyIssuerID", issuer_id,
+        "CURRENT_PROJECT_VERSION=#{build_number}"
+      ].join(" "),
       export_options: {
         signingStyle: "automatic"
       },
