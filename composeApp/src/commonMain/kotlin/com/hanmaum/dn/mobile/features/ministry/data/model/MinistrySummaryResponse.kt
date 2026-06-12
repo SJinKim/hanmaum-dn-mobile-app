@@ -6,8 +6,8 @@ import kotlinx.serialization.Serializable
 data class MinistrySummaryResponse(
     val publicId: String,
     val title: String,
-    val subtitle: String,
+    val subtitle: String? = null,
     val imageUrl: String? = null,
     val contacts: List<ContactResponse> = emptyList(),
-    val active: Boolean,
+    val active: Boolean = true,
 )

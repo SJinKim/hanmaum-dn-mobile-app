@@ -36,9 +36,19 @@ class MinistryListViewModelTest {
             Result.failure(NotImplementedError())
     }
 
+    /** Repo that returns a different result on each successive call. */
+    private fun sequenceRepo(results: List<Result<List<Ministry>>>) = object : MinistryRepository {
+        private var call = 0
+        override suspend fun getMinistries(activeOnly: Boolean) =
+            results[minOf(call++, results.size - 1)]
+        override suspend fun getMinistryDetail(publicId: String): Result<MinistryDetail> =
+            Result.failure(NotImplementedError())
+    }
+
     @Test
     fun `success emits Success with ministries`() = runTest {
         val vm = MinistryListViewModel(repo(Result.success(listOf(sample))))
+        vm.loadMinistries()
         dispatcher.scheduler.advanceUntilIdle()
 
         val state = assertIs<MinistryListUiState.Success>(vm.uiState.value)
@@ -49,7 +59,45 @@ class MinistryListViewModelTest {
     @Test
     fun `failure emits Error`() = runTest {
         val vm = MinistryListViewModel(repo(Result.failure(RuntimeException("네트워크 오류"))))
+        vm.loadMinistries()
         dispatcher.scheduler.advanceUntilIdle()
         assertIs<MinistryListUiState.Error>(vm.uiState.value)
+    }
+
+    @Test
+    fun `reload after success swaps in fresh data`() = runTest {
+        val updated = sample.copy(publicId = "m2", title = "새 사역")
+        val vm = MinistryListViewModel(
+            sequenceRepo(listOf(Result.success(listOf(sample)), Result.success(listOf(sample, updated)))),
+        )
+        vm.loadMinistries()
+        dispatcher.scheduler.advanceUntilIdle()
+        // Second entry to the tab picks up the newly-created ministry.
+        vm.loadMinistries()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val state = assertIs<MinistryListUiState.Success>(vm.uiState.value)
+        assertEquals(2, state.ministries.size)
+        assertEquals("새 사역", state.ministries[1].title)
+    }
+
+    @Test
+    fun `refresh failure after success keeps previously loaded data`() = runTest {
+        val vm = MinistryListViewModel(
+            sequenceRepo(
+                listOf(
+                    Result.success(listOf(sample)),
+                    Result.failure(RuntimeException("네트워크 오류")),
+                ),
+            ),
+        )
+        vm.loadMinistries()
+        dispatcher.scheduler.advanceUntilIdle()
+        // A transient refresh failure must not wipe the visible list.
+        vm.loadMinistries()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val state = assertIs<MinistryListUiState.Success>(vm.uiState.value)
+        assertEquals(1, state.ministries.size)
     }
 }

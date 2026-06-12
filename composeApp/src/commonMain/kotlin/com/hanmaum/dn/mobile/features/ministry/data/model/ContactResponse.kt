@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ContactResponse(
-    val role: String,
-    val name: String,
+    val role: String? = null,
+    val name: String? = null,
 )

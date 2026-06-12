@@ -35,7 +35,7 @@ class MinistryRepositoryImpl(
     private fun MinistrySummaryResponse.toDomain() = Ministry(
         publicId = publicId,
         title = title,
-        subtitle = subtitle,
+        subtitle = subtitle.orEmpty(),
         imageUrl = imageUrl,
         contacts = contacts.map { it.toDomain() },
         isActive = active,
@@ -44,8 +44,8 @@ class MinistryRepositoryImpl(
     private fun MinistryDetailResponse.toDomain() = MinistryDetail(
         publicId = publicId,
         title = title,
-        subtitle = subtitle,
-        about = about,
+        subtitle = subtitle.orEmpty(),
+        about = about.orEmpty(),
         requirements = requirements,
         schedules = schedules.map { it.toDomain() },
         contacts = contacts.map { it.toDomain() },
@@ -54,13 +54,13 @@ class MinistryRepositoryImpl(
     )
 
     private fun ScheduleResponse.toDomain() = Schedule(
-        description = description,
-        startTime = startTime,
-        endTime = endTime,
+        description = description.orEmpty(),
+        startTime = startTime.orEmpty(),
+        endTime = endTime.orEmpty(),
     )
 
     private fun ContactResponse.toDomain() = Contact(
-        role = role,
-        name = name,
+        role = role.orEmpty(),
+        name = name.orEmpty(),
     )
 }
