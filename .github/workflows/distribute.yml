@@ -3,12 +3,16 @@ name: Distribute
 on:
   push:
     branches: [develop, main]
+  # TestFlight is deployed on demand (see distribute-testflight) so beta builds
+  # are intentional release points, not one-per-commit. Run it from the Actions
+  # tab → "Distribute" → "Run workflow" (pick the develop branch).
+  workflow_dispatch:
 
 jobs:
   # ── develop → ST ──────────────────────────────────────────────────────────
   distribute-st:
     name: ST → Firebase App Distribution
-    if: github.ref == 'refs/heads/develop'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
 
     steps:
@@ -53,7 +57,7 @@ jobs:
   # ── main → Prod ───────────────────────────────────────────────────────────
   distribute-prod:
     name: Prod → Firebase App Distribution
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: prod
 
@@ -104,10 +108,12 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleProdRelease appDistributionUploadProdRelease --no-daemon
 
-  # ── develop → TestFlight (iOS, staging backend) ───────────────────────────
+  # ── manual → TestFlight (iOS, staging backend) ────────────────────────────
+  # Deployed on demand only (workflow_dispatch), so minor commits don't each
+  # produce a TestFlight build. Trigger from Actions → "Distribute" → Run workflow.
   distribute-testflight:
     name: iOS → TestFlight
-    if: github.ref == 'refs/heads/develop'
+    if: github.event_name == 'workflow_dispatch'
     # macos-15+ is required to run Xcode 26 (App Store Connect rejects uploads
     # not built with the iOS 26 SDK).
     runs-on: macos-15
