@@ -122,6 +122,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.biometric)
 
             implementation(libs.ktor.client.okhttp)
             implementation(libs.koin.android)

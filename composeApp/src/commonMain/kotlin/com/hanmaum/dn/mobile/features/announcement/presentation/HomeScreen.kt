@@ -53,6 +53,9 @@ fun HomeScreen(
     var showRationale by remember { mutableStateOf(false) }
     var requestingPermission by remember { mutableStateOf(false) }
 
+    // Refresh on every entry to the tab so web-app changes appear without re-login.
+    LaunchedEffect(Unit) { viewModel.loadAnnouncements() }
+
     LaunchedEffect(Unit) {
         geofenceCoordinator.initialize()
         if (!geofenceManager.isLocationPermissionGranted()) {

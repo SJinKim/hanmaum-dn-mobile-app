@@ -60,6 +60,7 @@ class AlbumsViewModelTest {
             albumDetailRepository = fakeDetailRepo(),
             cacheRepository = emptyCache(),
         )
+        vm.load()
         dispatcher.scheduler.advanceUntilIdle()
 
         val state = assertIs<AlbumsUiState.Success>(vm.uiState.value)
@@ -80,6 +81,7 @@ class AlbumsViewModelTest {
             albumDetailRepository = fakeDetailRepo(emptyList()), // pCloud returns no photos
             cacheRepository = cache,
         )
+        vm.load()
         dispatcher.scheduler.advanceUntilIdle()
 
         val state = assertIs<AlbumsUiState.Success>(vm.uiState.value)
@@ -94,6 +96,7 @@ class AlbumsViewModelTest {
             albumDetailRepository = fakeDetailRepo(),
             cacheRepository = emptyCache(),
         )
+        vm.load()
         dispatcher.scheduler.advanceUntilIdle()
         assertIs<AlbumsUiState.Error>(vm.uiState.value)
     }

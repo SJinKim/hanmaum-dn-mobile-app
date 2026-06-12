@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ScheduleResponse(
-    val description: String,
-    val startTime: String,
-    val endTime: String,
+    val description: String? = null,
+    val startTime: String? = null,
+    val endTime: String? = null,
 )

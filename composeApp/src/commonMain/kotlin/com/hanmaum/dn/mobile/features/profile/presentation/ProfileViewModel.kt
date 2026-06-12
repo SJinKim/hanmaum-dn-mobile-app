@@ -20,16 +20,22 @@ class ProfileViewModel(
     private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
-    init {
-        loadProfile()
-    }
-
+    /**
+     * Loads (or reloads) the profile. Driven by the screen on every entry so a
+     * profile edited elsewhere (e.g. the web app) stays current without a
+     * re-login. Refreshes silently when data is already shown, skips entirely
+     * while the user is editing (so an in-progress edit is never clobbered), and
+     * keeps the current data on a transient refresh failure.
+     */
     fun loadProfile() {
         viewModelScope.launch {
-            _uiState.value = ProfileUiState.Loading
+            val current = _uiState.value
+            if (current is ProfileUiState.Success && current.isEditing) return@launch
+            val hadData = current is ProfileUiState.Success
+            if (!hadData) _uiState.value = ProfileUiState.Loading
             memberRepository.getMyProfile().fold(
                 onSuccess = { _uiState.value = ProfileUiState.Success(it) },
-                onFailure = { _uiState.value = ProfileUiState.Error(it.message ?: "프로필 로딩 실패") },
+                onFailure = { if (!hadData) _uiState.value = ProfileUiState.Error(it.message ?: "프로필 로딩 실패") },
             )
         }
     }

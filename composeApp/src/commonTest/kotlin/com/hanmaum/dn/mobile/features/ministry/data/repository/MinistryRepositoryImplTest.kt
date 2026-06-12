@@ -133,4 +133,50 @@ class MinistryRepositoryImplTest {
         MinistryRepositoryImpl(client).getMinistryDetail("m1")
         assertTrue(path.endsWith("/ministries/m1"), "path was $path")
     }
+
+    // ─── Webapp-created records: optional fields omitted/null must not break parsing ──
+
+    @Test
+    fun getMinistries_webappRecordWithOmittedOptionalFields_parses() = runTest {
+        // A ministry created from the webapp with no subtitle and a contact that
+        // only has a name (no role). Previously this threw MissingFieldException
+        // and failed the whole list.
+        val json = """
+            {"success":true,"data":[
+              {"publicId":"m2","title":"새 사역","active":true,
+               "contacts":[{"name":"홍길동"}]}
+            ]}
+        """.trimIndent()
+        val result = MinistryRepositoryImpl(mockClient(json)).getMinistries()
+
+        val ministries = result.getOrThrow()
+        assertEquals(1, ministries.size)
+        assertEquals("m2", ministries[0].publicId)
+        assertEquals("새 사역", ministries[0].title)
+        assertEquals("", ministries[0].subtitle)
+        assertEquals(1, ministries[0].contacts.size)
+        assertEquals("홍길동", ministries[0].contacts[0].name)
+        assertEquals("", ministries[0].contacts[0].role)
+    }
+
+    @Test
+    fun getMinistryDetail_webappRecordWithOmittedOptionalFields_parses() = runTest {
+        // Detail with no subtitle/about and a schedule with no end time.
+        val json = """
+            {"success":true,"data":
+              {"publicId":"m2","title":"새 사역","active":true,
+               "schedules":[{"description":"매주 주일","startTime":"10:00"}]}
+            }
+        """.trimIndent()
+        val result = MinistryRepositoryImpl(mockClient(json)).getMinistryDetail("m2")
+
+        val d = result.getOrThrow()
+        assertEquals("m2", d.publicId)
+        assertEquals("", d.subtitle)
+        assertEquals("", d.about)
+        assertEquals(1, d.schedules.size)
+        assertEquals("매주 주일", d.schedules[0].description)
+        assertEquals("10:00", d.schedules[0].startTime)
+        assertEquals("", d.schedules[0].endTime)
+    }
 }

@@ -37,6 +37,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -71,11 +72,18 @@ fun ProfileScreen(
     onLocaleChange: (AppLocale) -> Unit,
     currentTheme: ThemeMode,
     onThemeChange: (ThemeMode) -> Unit,
+    biometricEnabled: Boolean,
+    biometricAvailable: Boolean,
+    onBiometricToggle: (Boolean) -> Unit,
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val loggedOut by viewModel.loggedOut.collectAsState()
     val strings = LocalStrings.current
+
+    // Refresh on every entry to the tab so an externally-edited profile stays
+    // current without re-login. Skips while editing (guarded in the ViewModel).
+    LaunchedEffect(Unit) { viewModel.loadProfile() }
 
     LaunchedEffect(loggedOut) {
         if (loggedOut) onLogout()
@@ -114,13 +122,16 @@ fun ProfileScreen(
                         )
                     } else {
                         ProfileViewContent(
-                            profile        = state.profile,
-                            currentLocale  = currentLocale,
-                            currentTheme   = currentTheme,
-                            onEditClick    = { viewModel.startEditing() },
-                            onLogoutClick  = { viewModel.logout() },
-                            onLocaleChange = onLocaleChange,
-                            onThemeChange  = onThemeChange,
+                            profile            = state.profile,
+                            currentLocale      = currentLocale,
+                            currentTheme       = currentTheme,
+                            biometricEnabled   = biometricEnabled,
+                            biometricAvailable = biometricAvailable,
+                            onEditClick        = { viewModel.startEditing() },
+                            onLogoutClick      = { viewModel.logout() },
+                            onLocaleChange     = onLocaleChange,
+                            onThemeChange      = onThemeChange,
+                            onBiometricToggle  = onBiometricToggle,
                         )
                     }
                 }
@@ -135,10 +146,13 @@ private fun ProfileViewContent(
     profile: MemberResponse,
     currentLocale: AppLocale,
     currentTheme: ThemeMode,
+    biometricEnabled: Boolean,
+    biometricAvailable: Boolean,
     onEditClick: () -> Unit,
     onLogoutClick: () -> Unit,
     onLocaleChange: (AppLocale) -> Unit,
     onThemeChange: (ThemeMode) -> Unit,
+    onBiometricToggle: (Boolean) -> Unit,
 ) {
     val strings = LocalStrings.current
     var showLanguagePicker by remember { mutableStateOf(false) }
@@ -268,6 +282,40 @@ private fun ProfileViewContent(
                     text  = themeModeLabel(currentTheme, strings),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
+        Spacer(Modifier.height(12.dp))
+        Card(
+            modifier  = Modifier.fillMaxWidth(),
+            shape     = MaterialTheme.shapes.large,
+            colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        ) {
+            Row(
+                modifier              = Modifier.fillMaxWidth().padding(16.dp),
+                verticalAlignment     = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text  = strings.profileAppLock,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    if (!biometricAvailable) {
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            text  = strings.appLockUnavailable,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.outline,
+                        )
+                    }
+                }
+                Switch(
+                    checked         = biometricEnabled,
+                    onCheckedChange = onBiometricToggle,
+                    enabled         = biometricAvailable,
                 )
             }
         }

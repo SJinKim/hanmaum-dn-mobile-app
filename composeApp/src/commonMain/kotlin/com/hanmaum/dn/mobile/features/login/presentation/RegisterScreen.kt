@@ -33,6 +33,8 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -63,10 +65,13 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.i18n.AppStrings
@@ -590,15 +595,27 @@ private fun BirthdayField(
         }
     }
 
+    // Drive the field with a TextFieldValue so we can keep the caret at the end
+    // after the "." separators are auto-inserted. With a plain String value the
+    // caret offset is preserved across the reformat and lands *before* the digit
+    // just typed (e.g. "1987.|1"), so the next digit is inserted ahead of it and
+    // the month/day digits get transposed ("198712" → "198721").
+    var fieldValue by remember { mutableStateOf(TextFieldValue(value, TextRange(value.length))) }
+    if (fieldValue.text != value) {
+        // External change (e.g. the date picker) — resync, caret at end.
+        fieldValue = TextFieldValue(value, TextRange(value.length))
+    }
+
     TextField(
-        value = value,
+        value = fieldValue,
         onValueChange = { raw ->
-            val digits = raw.filter { it.isDigit() }.take(8)
+            val digits = raw.text.filter { it.isDigit() }.take(8)
             val formatted = when {
                 digits.length <= 4 -> digits
                 digits.length <= 6 -> "${digits.take(4)}.${digits.drop(4)}"
                 else -> "${digits.take(4)}.${digits.drop(4).take(2)}.${digits.drop(6)}"
             }
+            fieldValue = TextFieldValue(formatted, TextRange(formatted.length))
             onValueChange(formatted)
         },
         placeholder = { Text("2000.01.01") },
@@ -845,13 +862,23 @@ private fun FilledPasswordField(
     focusRequester: FocusRequester? = null,
 ) {
     var isFocused by remember { mutableStateOf(false) }
+    var passwordVisible by remember { mutableStateOf(false) }
 
     Column {
         TextField(
             value                = value,
             onValueChange        = onValueChange,
             placeholder          = { Text("Create a password") },
-            visualTransformation = PasswordVisualTransformation(),
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon         = {
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(
+                        imageVector        = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                        contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                        tint               = MaterialTheme.colorScheme.outline,
+                    )
+                }
+            },
             keyboardOptions      = KeyboardOptions(keyboardType = KeyboardType.Password),
             modifier             = Modifier
                 .fillMaxWidth()

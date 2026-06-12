@@ -30,6 +30,14 @@ class SplashViewModel(
                 return@launch
             }
 
+            // "Keep me signed in" was off at login → this is a fresh launch, so
+            // drop the persisted session and require sign-in again.
+            if (!tokenStorage.isKeepSignedIn()) {
+                tokenStorage.clear()
+                _navigateTo.value = NavRoute.Login
+                return@launch
+            }
+
             memberRepository.getMyProfile()
                 .onSuccess { member ->
                     when (member.status) {

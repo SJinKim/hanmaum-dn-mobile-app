@@ -29,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -51,6 +52,10 @@ fun MinistryListScreen(
 ) {
     val viewModel: MinistryListViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Reload on every entry to the tab (the ViewModel survives tab switches), so a
+    // ministry created from the web app shows up without needing to re-login.
+    LaunchedEffect(Unit) { viewModel.loadMinistries() }
 
     Box(
         modifier = Modifier
