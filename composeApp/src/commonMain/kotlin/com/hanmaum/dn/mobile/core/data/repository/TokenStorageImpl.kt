@@ -22,6 +22,7 @@ class TokenStorageImpl(private val settings: Settings) : TokenStorage {
         settings.remove(KEY_ACCESS)
         settings.remove(KEY_REFRESH)
         settings.remove(KEY_KEEP_SIGNED_IN)
+        settings.remove(KEY_BIOMETRIC)
     }
 
     override fun setKeepSignedIn(value: Boolean) {
@@ -30,9 +31,16 @@ class TokenStorageImpl(private val settings: Settings) : TokenStorage {
 
     override fun isKeepSignedIn(): Boolean = settings.getBoolean(KEY_KEEP_SIGNED_IN, true)
 
+    override fun setBiometricEnabled(value: Boolean) {
+        settings.putBoolean(KEY_BIOMETRIC, value)
+    }
+
+    override fun isBiometricEnabled(): Boolean = settings.getBoolean(KEY_BIOMETRIC, false)
+
     companion object {
         private const val KEY_ACCESS = "access_token"
         private const val KEY_REFRESH = "refresh_token"
         private const val KEY_KEEP_SIGNED_IN = "keep_signed_in"
+        private const val KEY_BIOMETRIC = "biometric_enabled"
     }
 }

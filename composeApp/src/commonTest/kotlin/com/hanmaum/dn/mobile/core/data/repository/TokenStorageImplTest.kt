@@ -46,6 +46,27 @@ class TokenStorageImplTest {
     }
 
     @Test
+    fun `isBiometricEnabled defaults to false`() {
+        assertFalse(storage().isBiometricEnabled())
+    }
+
+    @Test
+    fun `setBiometricEnabled true round-trips`() {
+        val settings = MapSettings()
+        storage(settings).setBiometricEnabled(true)
+        assertTrue(storage(settings).isBiometricEnabled())
+    }
+
+    @Test
+    fun `clear resets biometricEnabled to false`() {
+        val settings = MapSettings()
+        val s = storage(settings)
+        s.setBiometricEnabled(true)
+        s.clear()
+        assertFalse(storage(settings).isBiometricEnabled())
+    }
+
+    @Test
     fun `access and refresh tokens round-trip`() {
         val settings = MapSettings()
         val s = storage(settings)

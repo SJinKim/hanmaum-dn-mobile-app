@@ -14,4 +14,8 @@ interface TokenStorage {
      */
     fun setKeepSignedIn(value: Boolean)
     fun isKeepSignedIn(): Boolean
+
+    /** Whether the biometric app lock is enabled. Defaults to false (opt-in). */
+    fun setBiometricEnabled(value: Boolean)
+    fun isBiometricEnabled(): Boolean
 }
