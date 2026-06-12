@@ -77,6 +77,10 @@ fun ProfileScreen(
     val loggedOut by viewModel.loggedOut.collectAsState()
     val strings = LocalStrings.current
 
+    // Refresh on every entry to the tab so an externally-edited profile stays
+    // current without re-login. Skips while editing (guarded in the ViewModel).
+    LaunchedEffect(Unit) { viewModel.loadProfile() }
+
     LaunchedEffect(loggedOut) {
         if (loggedOut) onLogout()
     }

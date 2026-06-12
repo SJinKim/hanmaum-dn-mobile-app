@@ -22,14 +22,18 @@ class HomeViewModel(
     private val _uiState = MutableStateFlow(HomeUiState(isLoading = true))
     val uiState = _uiState.asStateFlow()
 
-    init {
-        loadAnnouncements()
-    }
-
+    /**
+     * Loads (or reloads) announcements. Driven by the screen on every entry so
+     * content created in the web app appears without a re-login. Refreshes
+     * silently: the spinner shows only on the first load, and a transient
+     * refresh failure keeps the currently-shown list instead of replacing it
+     * with an error.
+     */
     fun loadAnnouncements() {
         viewModelScope.launch {
+            val hadData = _uiState.value.run { banners.isNotEmpty() || announcements.isNotEmpty() }
             try {
-                _uiState.update { it.copy(isLoading = true, error = null) }
+                _uiState.update { it.copy(isLoading = !hadData, error = null) }
 
                 val fetchedList = repository.getAnnouncements()
 
@@ -44,7 +48,7 @@ class HomeViewModel(
                     )
                 }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, error = e.message) }
+                _uiState.update { it.copy(isLoading = false, error = if (hadData) null else e.message) }
             }
         }
     }

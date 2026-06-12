@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,6 +27,9 @@ fun AlbumsScreen(
 ) {
     val strings = LocalStrings.current
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Refresh on every entry to the tab so web-app changes appear without re-login.
+    LaunchedEffect(Unit) { viewModel.load() }
 
     Scaffold(
         topBar = {
