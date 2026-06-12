@@ -63,10 +63,12 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.i18n.AppStrings
@@ -590,15 +592,27 @@ private fun BirthdayField(
         }
     }
 
+    // Drive the field with a TextFieldValue so we can keep the caret at the end
+    // after the "." separators are auto-inserted. With a plain String value the
+    // caret offset is preserved across the reformat and lands *before* the digit
+    // just typed (e.g. "1987.|1"), so the next digit is inserted ahead of it and
+    // the month/day digits get transposed ("198712" → "198721").
+    var fieldValue by remember { mutableStateOf(TextFieldValue(value, TextRange(value.length))) }
+    if (fieldValue.text != value) {
+        // External change (e.g. the date picker) — resync, caret at end.
+        fieldValue = TextFieldValue(value, TextRange(value.length))
+    }
+
     TextField(
-        value = value,
+        value = fieldValue,
         onValueChange = { raw ->
-            val digits = raw.filter { it.isDigit() }.take(8)
+            val digits = raw.text.filter { it.isDigit() }.take(8)
             val formatted = when {
                 digits.length <= 4 -> digits
                 digits.length <= 6 -> "${digits.take(4)}.${digits.drop(4)}"
                 else -> "${digits.take(4)}.${digits.drop(4).take(2)}.${digits.drop(6)}"
             }
+            fieldValue = TextFieldValue(formatted, TextRange(formatted.length))
             onValueChange(formatted)
         },
         placeholder = { Text("2000.01.01") },
