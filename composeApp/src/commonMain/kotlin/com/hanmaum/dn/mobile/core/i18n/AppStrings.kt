@@ -43,6 +43,12 @@ interface AppStrings {
     val themeSystem: String
     val themeLight: String
     val themeDark: String
+    val profileAppLock: String
+    val appLockUnavailable: String
+    val lockTitle: String
+    val lockSubtitle: String
+    val lockUnlockButton: String
+    val lockUsePassword: String
     // Info card labels
     val labelEmail: String
     val labelPhone: String
@@ -128,6 +134,12 @@ object EnStrings : AppStrings {
     override val themeSystem = "System"
     override val themeLight = "Light"
     override val themeDark = "Dark"
+    override val profileAppLock = "App Lock (Face ID / Touch ID)"
+    override val appLockUnavailable = "No biometrics enrolled on this device"
+    override val lockTitle = "Locked"
+    override val lockSubtitle = "Unlock DN App to continue"
+    override val lockUnlockButton = "Unlock"
+    override val lockUsePassword = "Use password instead"
     override val labelEmail = "EMAIL ADDRESS"
     override val labelPhone = "PHONE NUMBER"
     override val labelStreet = "STREET"
@@ -203,6 +215,12 @@ object KoStrings : AppStrings {
     override val themeSystem = "시스템"
     override val themeLight = "라이트"
     override val themeDark = "다크"
+    override val profileAppLock = "앱 잠금 (Face ID / Touch ID)"
+    override val appLockUnavailable = "기기에 등록된 생체 인증이 없습니다"
+    override val lockTitle = "잠금"
+    override val lockSubtitle = "계속하려면 DN 앱 잠금을 해제하세요"
+    override val lockUnlockButton = "잠금 해제"
+    override val lockUsePassword = "비밀번호로 로그인"
     override val labelEmail = "이메일"
     override val labelPhone = "전화번호"
     override val labelStreet = "주소"
@@ -278,6 +296,12 @@ object DeStrings : AppStrings {
     override val themeSystem = "System"
     override val themeLight = "Hell"
     override val themeDark = "Dunkel"
+    override val profileAppLock = "App-Sperre (Face ID / Touch ID)"
+    override val appLockUnavailable = "Keine Biometrie auf diesem Gerät eingerichtet"
+    override val lockTitle = "Gesperrt"
+    override val lockSubtitle = "Entsperre die DN App, um fortzufahren"
+    override val lockUnlockButton = "Entsperren"
+    override val lockUsePassword = "Stattdessen Passwort verwenden"
     override val labelEmail = "E-MAIL-ADRESSE"
     override val labelPhone = "TELEFONNUMMER"
     override val labelStreet = "STRASSE"
