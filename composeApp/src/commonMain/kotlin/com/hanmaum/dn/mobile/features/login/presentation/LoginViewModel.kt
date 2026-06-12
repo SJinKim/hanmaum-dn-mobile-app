@@ -27,7 +27,7 @@ class LoginViewModel(
     val uiState = _uiState.asStateFlow()
 
     // 2. Events verarbeiten
-    fun onLoginClicked(user: String, pass: String) {
+    fun onLoginClicked(user: String, pass: String, keepSignedIn: Boolean = true) {
         if (user.isBlank() || pass.isBlank()) {
             _uiState.update { it.copy( error = "아이디와 비밀번호를 입력해주세요.") }
         }
@@ -44,6 +44,9 @@ class LoginViewModel(
                 // TOKEN Speichern
                 tokenStorage.saveAccessToken(tokenResponse.accessToken)
                 tokenStorage.saveRefreshToken(tokenResponse.refreshToken)
+                // Remember the user's "Keep me signed in" choice so the splash
+                // screen knows whether to auto-login on the next app launch.
+                tokenStorage.setKeepSignedIn(keepSignedIn)
 
                 // Force Ktor's BearerAuthProvider to drop any cached (possibly
                 // stale) tokens so the very next authed call reads the ones we

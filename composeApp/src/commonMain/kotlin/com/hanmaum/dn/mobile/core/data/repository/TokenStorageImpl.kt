@@ -21,10 +21,18 @@ class TokenStorageImpl(private val settings: Settings) : TokenStorage {
     override fun clear() {
         settings.remove(KEY_ACCESS)
         settings.remove(KEY_REFRESH)
+        settings.remove(KEY_KEEP_SIGNED_IN)
     }
+
+    override fun setKeepSignedIn(value: Boolean) {
+        settings.putBoolean(KEY_KEEP_SIGNED_IN, value)
+    }
+
+    override fun isKeepSignedIn(): Boolean = settings.getBoolean(KEY_KEEP_SIGNED_IN, true)
 
     companion object {
         private const val KEY_ACCESS = "access_token"
         private const val KEY_REFRESH = "refresh_token"
+        private const val KEY_KEEP_SIGNED_IN = "keep_signed_in"
     }
 }

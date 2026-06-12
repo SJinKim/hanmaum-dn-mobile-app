@@ -68,6 +68,7 @@ fun LoginScreen(
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var keepSignedIn by remember { mutableStateOf(true) }
 
     LaunchedEffect(state.navigateTo) {
         state.navigateTo?.let { route ->
@@ -95,19 +96,6 @@ fun LoginScreen(
             contentDescription = "Daniel & Nehemia logo",
             modifier           = Modifier.height(120.dp),
             colorFilter        = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-        )
-        Spacer(Modifier.height(16.dp))
-        Text(
-            text  = "Welcome Back",
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        Spacer(Modifier.height(8.dp))
-        Text(
-            text      = "Sign in to stay connected with your community.",
-            style     = MaterialTheme.typography.bodyMedium,
-            color     = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
         )
 
         Spacer(Modifier.height(32.dp))
@@ -211,8 +199,8 @@ fun LoginScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Checkbox(
-                checked         = false,
-                onCheckedChange = { /* stub */ },
+                checked         = keepSignedIn,
+                onCheckedChange = { keepSignedIn = it },
                 colors          = CheckboxDefaults.colors(
                     uncheckedColor = MaterialTheme.colorScheme.outline,
                 ),
@@ -228,7 +216,7 @@ fun LoginScreen(
 
         // Login CTA
         Button(
-            onClick  = { viewModel.onLoginClicked(username, password) },
+            onClick  = { viewModel.onLoginClicked(username, password, keepSignedIn) },
             enabled  = !state.isLoading,
             modifier = Modifier.fillMaxWidth().height(56.dp),
             shape    = MaterialTheme.shapes.extraSmall,
@@ -283,48 +271,6 @@ fun LoginScreen(
                 )
             }
         }
-
         Spacer(Modifier.height(24.dp))
-
-        // Support footer
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape    = MaterialTheme.shapes.large,
-            colors   = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        ) {
-            Row(
-                modifier              = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment     = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Column {
-                    Text(
-                        text  = "SUPPORT",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.outline,
-                    )
-                    Text(
-                        text  = "Need help logging in?",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                }
-                Button(
-                    onClick = { /* stub */ },
-                    shape   = MaterialTheme.shapes.extraSmall,
-                    colors  = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary,
-                        contentColor   = MaterialTheme.colorScheme.onSecondary,
-                    ),
-                ) {
-                    Text("Contact", style = MaterialTheme.typography.labelMedium)
-                }
-            }
-        }
-
-        Spacer(Modifier.height(40.dp))
     }
 }
