@@ -3,9 +3,11 @@ name: Distribute
 on:
   push:
     branches: [develop, main]
+    tags: ['v*']            # push a release tag (e.g. v1.2.0) → TestFlight
   # TestFlight is deployed on demand (see distribute-testflight) so beta builds
-  # are intentional release points, not one-per-commit. Run it from the Actions
-  # tab → "Distribute" → "Run workflow" (pick the develop branch).
+  # are intentional release points, not one-per-commit. Trigger it either by
+  # pushing a v* tag, or manually from Actions → "Distribute" → "Run workflow"
+  # (pick the develop branch).
   workflow_dispatch:
 
 jobs:
@@ -113,13 +115,34 @@ jobs:
   # produce a TestFlight build. Trigger from Actions → "Distribute" → Run workflow.
   distribute-testflight:
     name: iOS → TestFlight
-    if: github.event_name == 'workflow_dispatch'
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/'))
     # macos-15+ is required to run Xcode 26 (App Store Connect rejects uploads
     # not built with the iOS 26 SDK).
     runs-on: macos-15
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0      # full history + tags, so git describe can read the latest tag
+
+      # Marketing version (CFBundleShortVersionString) follows the latest release
+      # tag; the build number (CFBundleVersion) is the always-incrementing run
+      # number. So a tag push ships its own version (v1.2.0 → 1.2.0), and a manual
+      # run reuses the latest tag's version while only the build number climbs —
+      # e.g. 1.2.0 (12) then 1.2.0 (13). Falls back to 1.0.0 before any tag exists.
+      - name: Resolve marketing version
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            LATEST_TAG="$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)"
+            VERSION="${LATEST_TAG#v}"
+          fi
+          [ -z "$VERSION" ] && VERSION="1.0.0"
+          echo "MARKETING_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "Shipping marketing version $VERSION, build ${{ github.run_number }}"
 
       - name: Select latest stable Xcode (iOS 26 SDK required by App Store Connect)
         uses: maxim-lobanov/setup-xcode@v1
@@ -166,6 +189,7 @@ jobs:
           APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
           BUILD_NUMBER: ${{ github.run_number }}
+          MARKETING_VERSION: ${{ env.MARKETING_VERSION }}
           # match: encrypted git store for the App Store distribution cert + profile.
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
