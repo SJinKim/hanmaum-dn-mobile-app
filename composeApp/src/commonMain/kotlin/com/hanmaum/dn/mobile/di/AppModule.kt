@@ -75,7 +75,7 @@ val appModule = module {
     single<ThemeRepository> { ThemeRepositoryImpl(Settings()) }
 
     //Splash VM
-    viewModel { SplashViewModel(get(), get(), get()) }
+    viewModel { SplashViewModel(get(), get(), get(), get()) }
 
 
     // Home VM

@@ -82,11 +82,13 @@ fun App() {
         // yet unlocked into memory. (Biometric opt-in no longer gates this — the
         // token is always behind device auth.)
         var locked by remember {
-            mutableStateOf(refreshVault.hasStored() && refreshVault.current() == null)
+            mutableStateOf(
+                tokenStorage.isKeepSignedIn() && refreshVault.hasStored() && refreshVault.current() == null
+            )
         }
         // Re-lock on background: drop the in-memory token and re-prompt next foreground.
         LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
-            if (refreshVault.hasStored()) {
+            if (tokenStorage.isKeepSignedIn() && refreshVault.hasStored()) {
                 refreshVault.lock()
                 locked = true
             }
