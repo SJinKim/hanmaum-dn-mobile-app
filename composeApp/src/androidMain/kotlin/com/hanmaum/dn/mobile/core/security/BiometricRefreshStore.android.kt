@@ -12,19 +12,19 @@ import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import android.util.Base64
 
-actual class BiometricRefreshStore(private val context: Context) {
+actual class BiometricRefreshStore(private val context: Context) : RefreshTokenPersistence {
 
     private val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
     private val keyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply { load(null) }
 
-    actual fun isDeviceSecured(): Boolean {
+    actual override fun isDeviceSecured(): Boolean {
         val km = context.getSystemService(android.app.KeyguardManager::class.java)
         return km?.isDeviceSecure == true
     }
 
-    actual fun hasStored(): Boolean = prefs.contains(KEY_CIPHERTEXT)
+    actual override fun hasStored(): Boolean = prefs.contains(KEY_CIPHERTEXT)
 
-    actual fun store(token: String) {
+    actual override fun store(token: String) {
         ensureKeyPair()
         // 1. Random AES-256 key encrypts the token (GCM).
         val aesKey = KeyGenerator.getInstance("AES").apply { init(256) }.generateKey()
@@ -42,7 +42,7 @@ actual class BiometricRefreshStore(private val context: Context) {
             .apply()
     }
 
-    actual fun delete() {
+    actual override fun delete() {
         prefs.edit().clear().apply()
         if (keyStore.containsAlias(KEY_ALIAS)) keyStore.deleteEntry(KEY_ALIAS)
     }

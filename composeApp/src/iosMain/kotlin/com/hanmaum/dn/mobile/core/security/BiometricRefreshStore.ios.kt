@@ -45,11 +45,11 @@ import platform.Security.errSecSuccess
 import platform.darwin.OSStatus
 
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-actual class BiometricRefreshStore {
+actual class BiometricRefreshStore : RefreshTokenPersistence {
 
-    actual fun isDeviceSecured(): Boolean = true // userPresence falls back to passcode; assume securable
+    actual override fun isDeviceSecured(): Boolean = true // userPresence falls back to passcode; assume securable
 
-    actual fun hasStored(): Boolean = memScoped {
+    actual override fun hasStored(): Boolean = memScoped {
         // Do NOT request data (no prompt) — only check existence.
         val query = cfDictionaryOf(
             kSecClass to kSecClassGenericPassword,
@@ -62,7 +62,7 @@ actual class BiometricRefreshStore {
         status == errSecSuccess
     }
 
-    actual fun store(token: String) {
+    actual override fun store(token: String) {
         delete()
         memScoped {
             val access = SecAccessControlCreateWithFlags(
@@ -101,7 +101,7 @@ actual class BiometricRefreshStore {
         NSString.create(nsData, NSUTF8StringEncoding) as String?
     }
 
-    actual fun delete() {
+    actual override fun delete() {
         memScoped {
             val query = cfDictionaryOf(
                 kSecClass to kSecClassGenericPassword,

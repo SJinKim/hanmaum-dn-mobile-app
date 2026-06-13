@@ -15,14 +15,23 @@ package com.hanmaum.dn.mobile.core.security
  * On iOS the read is a Keychain lookup whose `SecAccessControl` self-prompts, so the
  * Android-only members below are no-op/unused there.
  */
-expect class BiometricRefreshStore {
-    /** True if a device secret (biometric or passcode) exists so gating is possible. */
-    fun isDeviceSecured(): Boolean
 
+/** The subset of [BiometricRefreshStore] the vault needs; lets tests fake persistence. */
+interface RefreshTokenPersistence {
+    fun isDeviceSecured(): Boolean
     fun hasStored(): Boolean
+    fun store(token: String)
+    fun delete()
+}
+
+expect class BiometricRefreshStore : RefreshTokenPersistence {
+    /** True if a device secret (biometric or passcode) exists so gating is possible. */
+    override fun isDeviceSecured(): Boolean
+
+    override fun hasStored(): Boolean
 
     /** Persist (encrypt) the refresh token. No prompt. */
-    fun store(token: String)
+    override fun store(token: String)
 
-    fun delete()
+    override fun delete()
 }
