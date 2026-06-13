@@ -5,6 +5,7 @@ import com.hanmaum.dn.mobile.core.geofence.AndroidGeofenceManager
 import com.hanmaum.dn.mobile.core.geofence.GeofenceManager
 import com.hanmaum.dn.mobile.core.notification.AndroidNotificationService
 import com.hanmaum.dn.mobile.core.notification.NotificationService
+import com.hanmaum.dn.mobile.core.security.BiometricRefreshStore
 import com.russhwolf.settings.Settings
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.qualifier.named
@@ -14,4 +15,5 @@ actual val platformModule = module {
     single<GeofenceManager> { AndroidGeofenceManager(androidContext()) }
     single<NotificationService> { AndroidNotificationService(androidContext()) }
     single(named("secure")) { SecureSettingsFactory(androidContext()).create() }
+    single { BiometricRefreshStore(androidContext()) }
 }

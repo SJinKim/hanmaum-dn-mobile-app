@@ -3,6 +3,8 @@ package com.hanmaum.dn.mobile.core.session
 import com.hanmaum.dn.mobile.core.data.repository.TokenStorageImpl
 import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
+import com.hanmaum.dn.mobile.core.security.RefreshTokenPersistence
+import com.hanmaum.dn.mobile.core.security.RefreshTokenVault
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import com.russhwolf.settings.MapSettings
@@ -41,8 +43,15 @@ class SessionValidatorTest {
         ): Result<MemberResponse> = result
     }
 
+    private class NoopPersistence : RefreshTokenPersistence {
+        override fun isDeviceSecured() = true
+        override fun hasStored() = false
+        override fun store(token: String) {}
+        override fun delete() {}
+    }
+
     private fun storageWith(accessToken: String?): TokenStorage =
-        TokenStorageImpl(MapSettings()).apply {
+        TokenStorageImpl(MapSettings(), RefreshTokenVault(NoopPersistence())).apply {
             if (accessToken != null) saveAccessToken(accessToken)
         }
 

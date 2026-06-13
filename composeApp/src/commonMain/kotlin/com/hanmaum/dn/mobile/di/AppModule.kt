@@ -6,6 +6,8 @@ import com.hanmaum.dn.mobile.core.data.repository.TokenStorageImpl
 import com.hanmaum.dn.mobile.core.domain.repository.LocaleRepository
 import com.hanmaum.dn.mobile.core.domain.repository.ThemeRepository
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
+import com.hanmaum.dn.mobile.core.security.BiometricRefreshStore
+import com.hanmaum.dn.mobile.core.security.RefreshTokenVault
 import com.hanmaum.dn.mobile.core.network.createHttpClient
 import com.hanmaum.dn.mobile.core.network.invalidateBearerCache
 import com.hanmaum.dn.mobile.core.session.SessionManager
@@ -63,7 +65,8 @@ val appModule = module {
     single<CityLookupRepository> { CityLookupRepositoryImpl(get()) }
     single<MemberRepository> { MemberRepositoryImpl(get()) }
     single { createHttpClient(get(), get()) } // Client
-    single<TokenStorage> { TokenStorageImpl(get(named("secure"))) }
+    single { RefreshTokenVault(get<BiometricRefreshStore>()) }
+    single<TokenStorage> { TokenStorageImpl(get(named("secure")), get()) }
     // Canonical logout pipeline. The cache-clear is a deferred lambda so there's
     // no construction cycle with the authed HttpClient it reaches into.
     single { SessionManager(get()) { get<HttpClient>().invalidateBearerCache() } }
