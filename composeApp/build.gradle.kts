@@ -160,6 +160,7 @@ kotlin {
 
             implementation(libs.bundles.koin.common)
             implementation(libs.multiplatform.settings)
+            implementation(libs.multiplatform.settings.core)
             implementation(libs.kotlinx.datetime)
 
             implementation(libs.coil.compose)
