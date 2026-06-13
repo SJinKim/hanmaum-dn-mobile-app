@@ -54,7 +54,10 @@ import com.hanmaum.dn.mobile.core.session.SessionManager
 import com.hanmaum.dn.mobile.core.session.SessionValidator
 import com.hanmaum.dn.mobile.core.presentation.components.LockScreen
 import com.hanmaum.dn.mobile.core.security.BiometricResult
+import com.hanmaum.dn.mobile.core.security.RefreshTokenVault
+import com.hanmaum.dn.mobile.core.security.UnlockResult
 import com.hanmaum.dn.mobile.core.security.rememberBiometricAuthenticator
+import com.hanmaum.dn.mobile.core.security.rememberRefreshTokenUnlocker
 import kotlinx.coroutines.launch
 
 @Composable
@@ -69,16 +72,22 @@ fun App() {
         val tokenStorage = koinInject<TokenStorage>()
         val sessionManager = koinInject<SessionManager>()
         val sessionValidator = koinInject<SessionValidator>()
+        val refreshVault = koinInject<RefreshTokenVault>()
+        val unlocker = rememberRefreshTokenUnlocker()
+        // biometric + biometricEnabled stay for the Profile toggle UI.
         val biometric = rememberBiometricAuthenticator()
         val lockScope = rememberCoroutineScope()
         var biometricEnabled by remember { mutableStateOf(tokenStorage.isBiometricEnabled()) }
-        // Locked when the lock is enabled and there is a session to protect.
+        // Locked whenever a stay-signed-in session has a gated token that isn't
+        // yet unlocked into memory. (Biometric opt-in no longer gates this — the
+        // token is always behind device auth.)
         var locked by remember {
-            mutableStateOf(tokenStorage.isBiometricEnabled() && tokenStorage.getAccessToken() != null)
+            mutableStateOf(refreshVault.hasStored() && refreshVault.current() == null)
         }
-        // Re-lock when the app is backgrounded so the next foreground re-prompts.
+        // Re-lock on background: drop the in-memory token and re-prompt next foreground.
         LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
-            if (tokenStorage.isBiometricEnabled() && tokenStorage.getAccessToken() != null) {
+            if (refreshVault.hasStored()) {
+                refreshVault.lock()
                 locked = true
             }
         }
@@ -113,18 +122,25 @@ fun App() {
                 }
             }
 
-            // Auto-prompt whenever the app becomes locked.
+            // Auto-prompt the gated read whenever locked.
             LaunchedEffect(locked) {
                 if (locked) {
-                    val result = biometric.authenticate(
-                        strings.lockTitle, strings.lockSubtitle, strings.lockUsePassword,
-                    )
-                    if (result == BiometricResult.SUCCESS) {
-                        locked = false
-                        // Face ID is only a local gate — after a long idle the
-                        // offline token may already be dead. Probe the session;
-                        // a definitive rejection routes to Login via the sink above.
-                        sessionValidator.isSessionValid()
+                    when (val result = unlocker.unlock(strings.lockSubtitle)) {
+                        is UnlockResult.Success -> {
+                            refreshVault.acceptUnlocked(result.token)
+                            locked = false
+                            sessionValidator.isSessionValid() // dead token → logout sink → Login
+                        }
+                        UnlockResult.Empty -> {
+                            // Nothing to unlock → go to login.
+                            locked = false
+                            navController.navigate(LoginRoute) {
+                                popUpTo(0) { inclusive = true }; launchSingleTop = true
+                            }
+                        }
+                        UnlockResult.Cancelled, UnlockResult.Failed -> {
+                            // Stay locked; the LockScreen's retry button re-triggers.
+                        }
                     }
                 }
             }
@@ -340,18 +356,24 @@ fun App() {
                 LockScreen(
                     onUnlock = {
                         lockScope.launch {
-                            val result = biometric.authenticate(
-                                strings.lockTitle, strings.lockSubtitle, strings.lockUsePassword,
-                            )
-                            if (result == BiometricResult.SUCCESS) {
-                                locked = false
-                                sessionValidator.isSessionValid()
+                            when (val result = unlocker.unlock(strings.lockSubtitle)) {
+                                is UnlockResult.Success -> {
+                                    refreshVault.acceptUnlocked(result.token)
+                                    locked = false
+                                    sessionValidator.isSessionValid()
+                                }
+                                UnlockResult.Empty -> {
+                                    locked = false
+                                    navController.navigate(LoginRoute) {
+                                        popUpTo(0) { inclusive = true }; launchSingleTop = true
+                                    }
+                                }
+                                UnlockResult.Cancelled, UnlockResult.Failed -> Unit
                             }
                         }
                     },
                     onUsePassword = {
-                        // Deliberate sign-out → canonical pipeline (revoke +
-                        // clear + cache drop); the global sink navigates to Login.
+                        // Deliberate sign-out → canonical pipeline; sink navigates to Login.
                         lockScope.launch { sessionManager.logout() }
                     },
                 )
