@@ -7,7 +7,11 @@ import com.hanmaum.dn.mobile.core.domain.repository.LocaleRepository
 import com.hanmaum.dn.mobile.core.domain.repository.ThemeRepository
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.core.network.createHttpClient
+import com.hanmaum.dn.mobile.core.network.invalidateBearerCache
+import com.hanmaum.dn.mobile.core.session.SessionManager
+import com.hanmaum.dn.mobile.core.session.SessionValidator
 import com.russhwolf.settings.Settings
+import io.ktor.client.HttpClient
 import com.hanmaum.dn.mobile.features.announcement.data.repository.AnnouncementRepositoryImpl
 import com.hanmaum.dn.mobile.features.announcement.domain.repository.AnnouncementRepository
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementDetailViewModel
@@ -57,8 +61,12 @@ val appModule = module {
     single<AuthRepository> { AuthRepositoryImpl(get()) }
     single<CityLookupRepository> { CityLookupRepositoryImpl(get()) }
     single<MemberRepository> { MemberRepositoryImpl(get()) }
-    single { createHttpClient(get()) } // Client
+    single { createHttpClient(get(), get()) } // Client
     single<TokenStorage> { TokenStorageImpl(Settings()) }
+    // Canonical logout pipeline. The cache-clear is a deferred lambda so there's
+    // no construction cycle with the authed HttpClient it reaches into.
+    single { SessionManager(get()) { get<HttpClient>().invalidateBearerCache() } }
+    single { SessionValidator(get(), get()) }
     single<LocaleRepository> { LocaleRepositoryImpl(Settings()) }
     single<ThemeRepository> { ThemeRepositoryImpl(Settings()) }
 

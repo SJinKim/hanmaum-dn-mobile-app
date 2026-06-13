@@ -50,6 +50,8 @@ import org.koin.compose.koinInject
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
+import com.hanmaum.dn.mobile.core.session.SessionManager
+import com.hanmaum.dn.mobile.core.session.SessionValidator
 import com.hanmaum.dn.mobile.core.presentation.components.LockScreen
 import com.hanmaum.dn.mobile.core.security.BiometricResult
 import com.hanmaum.dn.mobile.core.security.rememberBiometricAuthenticator
@@ -65,6 +67,8 @@ fun App() {
 
         // ── Biometric app lock ────────────────────────────────────────────────
         val tokenStorage = koinInject<TokenStorage>()
+        val sessionManager = koinInject<SessionManager>()
+        val sessionValidator = koinInject<SessionValidator>()
         val biometric = rememberBiometricAuthenticator()
         val lockScope = rememberCoroutineScope()
         var biometricEnabled by remember { mutableStateOf(tokenStorage.isBiometricEnabled()) }
@@ -96,13 +100,32 @@ fun App() {
                 currentDestination?.hasRoute(dest.routeClass) == true
             }
 
+            // Single global logout sink. Every logout path funnels through
+            // SessionManager and emits here; this is the only place that
+            // navigates to Login on sign-out, so there's no double-navigation.
+            LaunchedEffect(Unit) {
+                sessionManager.events.collect {
+                    locked = false
+                    navController.navigate(LoginRoute) {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            }
+
             // Auto-prompt whenever the app becomes locked.
             LaunchedEffect(locked) {
                 if (locked) {
                     val result = biometric.authenticate(
                         strings.lockTitle, strings.lockSubtitle, strings.lockUsePassword,
                     )
-                    if (result == BiometricResult.SUCCESS) locked = false
+                    if (result == BiometricResult.SUCCESS) {
+                        locked = false
+                        // Face ID is only a local gate — after a long idle the
+                        // offline token may already be dead. Probe the session;
+                        // a definitive rejection routes to Login via the sink above.
+                        sessionValidator.isSessionValid()
+                    }
                 }
             }
 
@@ -210,11 +233,6 @@ fun App() {
 
                     composable<ProfileRoute> {
                         ProfileScreen(
-                            onLogout = {
-                                navController.navigate(LoginRoute) {
-                                    popUpTo(0) { inclusive = true }
-                                }
-                            },
                             currentLocale = locale,
                             onLocaleChange = { newLocale ->
                                 localeRepo.setLocale(newLocale)
@@ -325,13 +343,16 @@ fun App() {
                             val result = biometric.authenticate(
                                 strings.lockTitle, strings.lockSubtitle, strings.lockUsePassword,
                             )
-                            if (result == BiometricResult.SUCCESS) locked = false
+                            if (result == BiometricResult.SUCCESS) {
+                                locked = false
+                                sessionValidator.isSessionValid()
+                            }
                         }
                     },
                     onUsePassword = {
-                        tokenStorage.clear()
-                        locked = false
-                        navController.navigate(LoginRoute) { popUpTo(0) { inclusive = true } }
+                        // Deliberate sign-out → canonical pipeline (revoke +
+                        // clear + cache drop); the global sink navigates to Login.
+                        lockScope.launch { sessionManager.logout() }
                     },
                 )
             }

@@ -39,7 +39,7 @@ class LoginViewModel(
 
             try {
                 // UseCase ausführen
-                val tokenResponse = authRepository.login(user, pass)
+                val tokenResponse = authRepository.login(user, pass, keepSignedIn)
 
                 // TOKEN Speichern
                 tokenStorage.saveAccessToken(tokenResponse.accessToken)
