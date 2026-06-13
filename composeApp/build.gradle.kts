@@ -131,6 +131,8 @@ kotlin {
             implementation(project.dependencies.platform("com.google.firebase:firebase-bom:34.13.0"))
             implementation(libs.firebase.analytics)
             implementation(libs.firebase.crashlytics)
+
+            implementation(libs.androidx.security.crypto)
         }
         commonMain.dependencies {
             implementation(libs.runtime)
