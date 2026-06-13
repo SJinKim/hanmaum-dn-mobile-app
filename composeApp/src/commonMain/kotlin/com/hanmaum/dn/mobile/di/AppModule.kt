@@ -52,6 +52,7 @@ import com.hanmaum.dn.mobile.features.floorplan.presentation.FloorPlanViewModel
 import com.hanmaum.dn.mobile.features.pending.presentation.PendingViewModel
 import com.hanmaum.dn.mobile.features.pending.presentation.SplashViewModel
 import com.hanmaum.dn.mobile.features.profile.presentation.ProfileViewModel
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.core.module.dsl.viewModel
 
@@ -62,7 +63,7 @@ val appModule = module {
     single<CityLookupRepository> { CityLookupRepositoryImpl(get()) }
     single<MemberRepository> { MemberRepositoryImpl(get()) }
     single { createHttpClient(get(), get()) } // Client
-    single<TokenStorage> { TokenStorageImpl(Settings()) }
+    single<TokenStorage> { TokenStorageImpl(get(named("secure"))) }
     // Canonical logout pipeline. The cache-clear is a deferred lambda so there's
     // no construction cycle with the authed HttpClient it reaches into.
     single { SessionManager(get()) { get<HttpClient>().invalidateBearerCache() } }
