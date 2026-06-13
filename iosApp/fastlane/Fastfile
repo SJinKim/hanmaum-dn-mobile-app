@@ -5,13 +5,46 @@ default_platform(:ios)
 APP_IDENTIFIER = "com.hanmaum.dn.mobile.HanmaumDnApp".freeze
 
 platform :ios do
-  desc "Build the app and upload it to TestFlight"
+  desc "Build the app and upload it to TestFlight (staging beta)"
   lane :beta do
+    api_key = build_signed_app
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true,
+      distribute_external: false
+    )
+  end
+
+  desc "Build the app and upload it to App Store Connect for production"
+  lane :release do
+    api_key = build_signed_app
+
+    # Upload the production binary to App Store Connect so it can be attached to
+    # an App Store version. The build is NOT auto-submitted for review:
+    #   - metadata + screenshots are managed by hand for the first release, so
+    #     skip_metadata/skip_screenshots avoid deliver trying to sync them;
+    #   - submit_for_review: false leaves the actual "Submit for Review" as a
+    #     manual click in App Store Connect.
+    # force: true skips the HTML metadata-preview confirmation (no TTY on CI).
+    upload_to_app_store(
+      api_key: api_key,
+      skip_metadata: true,
+      skip_screenshots: true,
+      submit_for_review: false,
+      run_precheck_before_submit: false,
+      precheck_include_in_app_purchases: false,
+      force: true
+    )
+  end
+
+  # Shared signing + archive. Returns the App Store Connect API key object so the
+  # caller (beta → TestFlight, release → App Store) can run its own upload step.
+  private_lane :build_signed_app do
     key_id = ENV.fetch("APP_STORE_CONNECT_API_KEY_ID")
     issuer_id = ENV.fetch("APP_STORE_CONNECT_API_ISSUER_ID")
 
     # Decode the base64 .p8 key to a file. Drives both match (cert/profile sync)
-    # and the TestFlight upload.
+    # and the upload.
     key_path = File.expand_path("AuthKey_#{key_id}.p8")
     File.write(key_path, Base64.decode64(ENV.fetch("APP_STORE_CONNECT_API_KEY_BASE64")))
 
@@ -50,7 +83,7 @@ platform :ios do
       targets: ["iosApp"]
     )
 
-    # TestFlight requires a unique, monotonic build number per upload.
+    # TestFlight / App Store require a unique, monotonic build number per upload.
     build_number = ENV["BUILD_NUMBER"] || Time.now.strftime("%Y%m%d%H%M")
 
     # Marketing version (CFBundleShortVersionString). CI resolves this from the
@@ -77,10 +110,6 @@ platform :ios do
       clean: true
     )
 
-    upload_to_testflight(
-      api_key: api_key,
-      skip_waiting_for_build_processing: true,
-      distribute_external: false
-    )
+    api_key
   end
 end
