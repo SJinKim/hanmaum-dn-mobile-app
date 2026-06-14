@@ -63,7 +63,7 @@ class RefreshTokenVaultTest {
     }
 
     @Test
-    fun `unlocked flips true on store and acceptUnlocked, false on lock and clear`() {
+    fun `unlocked flips true on store and acceptUnlocked and false on lock and clear`() {
         val vault = RefreshTokenVault(FakePersistence())
         assertFalse(vault.unlocked.value)
         vault.store("t1")
