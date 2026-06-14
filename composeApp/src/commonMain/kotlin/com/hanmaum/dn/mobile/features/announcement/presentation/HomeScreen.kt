@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
 import com.hanmaum.dn.mobile.core.geofence.GeofenceManager
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.geofence.GeofencePermissionRequest
@@ -49,6 +50,7 @@ fun HomeScreen(
 
     val geofenceCoordinator: GeofenceCoordinator = koinInject()
     val geofenceManager: GeofenceManager = koinInject()
+    val locationPreferences: LocationPreferences = koinInject()
 
     var showRationale by remember { mutableStateOf(false) }
     var requestingPermission by remember { mutableStateOf(false) }
@@ -58,7 +60,8 @@ fun HomeScreen(
 
     LaunchedEffect(Unit) {
         geofenceCoordinator.initialize()
-        if (!geofenceManager.isLocationPermissionGranted()) {
+        // Ask for location only once; respect a prior decision (see Profile to change it).
+        if (!locationPreferences.isPromptDismissed() && !geofenceManager.isLocationPermissionGranted()) {
             showRationale = true
         }
     }
@@ -69,7 +72,9 @@ fun HomeScreen(
         GeofencePermissionRequest { granted ->
             requestingPermission = false
             showRationale = false
+            locationPreferences.setPromptDismissed(true)
             if (granted) {
+                locationPreferences.setSharingEnabled(true)
                 coroutineScope.launch { geofenceCoordinator.initialize() }
             }
         }
@@ -97,7 +102,10 @@ fun HomeScreen(
             if (showRationale) {
                 GeofenceRationaleCard(
                     onAllow = { requestingPermission = true },
-                    onDismiss = { showRationale = false },
+                    onDismiss = {
+                        locationPreferences.setPromptDismissed(true)
+                        showRationale = false
+                    },
                 )
             }
         }

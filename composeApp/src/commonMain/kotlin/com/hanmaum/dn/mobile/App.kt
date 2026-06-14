@@ -47,13 +47,9 @@ import com.hanmaum.dn.mobile.features.pending.screen.SplashScreen
 import com.hanmaum.dn.mobile.features.profile.presentation.ProfileScreen
 import org.koin.compose.KoinContext
 import org.koin.compose.koinInject
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LifecycleEventEffect
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
-import com.hanmaum.dn.mobile.core.presentation.components.LockScreen
-import com.hanmaum.dn.mobile.core.security.BiometricResult
+import com.hanmaum.dn.mobile.core.security.CredentialStore
 import com.hanmaum.dn.mobile.core.security.rememberBiometricAuthenticator
-import kotlinx.coroutines.launch
 
 @Composable
 fun App() {
@@ -63,21 +59,11 @@ fun App() {
         val themeRepo = koinInject<ThemeRepository>()
         var themeMode by remember { mutableStateOf(themeRepo.getThemeMode()) }
 
-        // ── Biometric app lock ────────────────────────────────────────────────
+        // ── Face ID sign-in ───────────────────────────────────────────────────
         val tokenStorage = koinInject<TokenStorage>()
+        val credentialStore = koinInject<CredentialStore>()
         val biometric = rememberBiometricAuthenticator()
-        val lockScope = rememberCoroutineScope()
         var biometricEnabled by remember { mutableStateOf(tokenStorage.isBiometricEnabled()) }
-        // Locked when the lock is enabled and there is a session to protect.
-        var locked by remember {
-            mutableStateOf(tokenStorage.isBiometricEnabled() && tokenStorage.getAccessToken() != null)
-        }
-        // Re-lock when the app is backgrounded so the next foreground re-prompts.
-        LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
-            if (tokenStorage.isBiometricEnabled() && tokenStorage.getAccessToken() != null) {
-                locked = true
-            }
-        }
         val strings = remember(locale) {
             when (locale) {
                 AppLocale.EN -> EnStrings
@@ -94,16 +80,6 @@ fun App() {
 
             val showBottomBar = TopLevelDestination.all.any { dest ->
                 currentDestination?.hasRoute(dest.routeClass) == true
-            }
-
-            // Auto-prompt whenever the app becomes locked.
-            LaunchedEffect(locked) {
-                if (locked) {
-                    val result = biometric.authenticate(
-                        strings.lockTitle, strings.lockSubtitle, strings.lockUsePassword,
-                    )
-                    if (result == BiometricResult.SUCCESS) locked = false
-                }
             }
 
             Box(modifier = Modifier.fillMaxSize()) {
@@ -229,17 +205,12 @@ fun App() {
                             biometricAvailable = biometric.isAvailable(),
                             onBiometricToggle = { enable ->
                                 if (enable) {
-                                    lockScope.launch {
-                                        val result = biometric.authenticate(
-                                            strings.lockTitle, strings.lockSubtitle, strings.lockUsePassword,
-                                        )
-                                        if (result == BiometricResult.SUCCESS) {
-                                            tokenStorage.setBiometricEnabled(true)
-                                            biometricEnabled = true
-                                        }
-                                    }
+                                    // Credentials are captured on the next successful login.
+                                    tokenStorage.setBiometricEnabled(true)
+                                    biometricEnabled = true
                                 } else {
                                     tokenStorage.setBiometricEnabled(false)
+                                    credentialStore.clear()
                                     biometricEnabled = false
                                 }
                             },
@@ -318,24 +289,7 @@ fun App() {
             }
             }
 
-            if (locked) {
-                LockScreen(
-                    onUnlock = {
-                        lockScope.launch {
-                            val result = biometric.authenticate(
-                                strings.lockTitle, strings.lockSubtitle, strings.lockUsePassword,
-                            )
-                            if (result == BiometricResult.SUCCESS) locked = false
-                        }
-                    },
-                    onUsePassword = {
-                        tokenStorage.clear()
-                        locked = false
-                        navController.navigate(LoginRoute) { popUpTo(0) { inclusive = true } }
-                    },
-                )
-            }
-            } // lock overlay Box(fillMaxSize)
+            } // Box(fillMaxSize)
             }
         } // CompositionLocalProvider
     }

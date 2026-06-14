@@ -6,6 +6,7 @@ import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.core.network.invalidateBearerCache
+import com.hanmaum.dn.mobile.core.security.CredentialStore
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import io.ktor.client.HttpClient
@@ -20,14 +21,25 @@ class LoginViewModel(
     private val memberRepository: MemberRepository,
     private val tokenStorage: TokenStorage,
     private val httpClient: HttpClient,
+    private val credentialStore: CredentialStore,
 ) : ViewModel() {
 
     // 1. UI State: Single Source of Truth
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState = _uiState.asStateFlow()
 
+    /** True when Face ID sign-in is enabled and credentials are saved to autofill. */
+    fun canFaceIdSignIn(): Boolean =
+        tokenStorage.isBiometricEnabled() && credentialStore.hasCredentials()
+
+    /** Signs in using the credentials saved for Face ID. Caller must pass a successful biometric check first. */
+    fun loginWithSavedCredentials() {
+        val creds = credentialStore.getCredentials() ?: return
+        onLoginClicked(creds.email, creds.password, keepSignedIn = true, enableFaceId = false)
+    }
+
     // 2. Events verarbeiten
-    fun onLoginClicked(user: String, pass: String, keepSignedIn: Boolean = true) {
+    fun onLoginClicked(user: String, pass: String, keepSignedIn: Boolean = true, enableFaceId: Boolean = false) {
         if (user.isBlank() || pass.isBlank()) {
             _uiState.update { it.copy( error = "아이디와 비밀번호를 입력해주세요.") }
         }
@@ -59,6 +71,12 @@ class LoginViewModel(
                 val profileResult = memberRepository.getMyProfile()
 
                 profileResult.onSuccess { member ->
+                    // Persist credentials for Face ID sign-in if the user opted in
+                    // (via the login checkbox or a previously enabled toggle).
+                    if (enableFaceId || tokenStorage.isBiometricEnabled()) {
+                        credentialStore.saveCredentials(user, pass)
+                        tokenStorage.setBiometricEnabled(true)
+                    }
                     // DECIDE
                     if (member.status == MemberStatus.ACTIVE) {
                         _uiState.update {

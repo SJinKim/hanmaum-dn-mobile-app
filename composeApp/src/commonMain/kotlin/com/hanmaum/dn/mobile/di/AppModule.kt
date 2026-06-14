@@ -1,11 +1,14 @@
 package com.hanmaum.dn.mobile.di
 
 import com.hanmaum.dn.mobile.core.data.repository.LocaleRepositoryImpl
+import com.hanmaum.dn.mobile.core.data.repository.LocationPreferencesImpl
 import com.hanmaum.dn.mobile.core.data.repository.ThemeRepositoryImpl
 import com.hanmaum.dn.mobile.core.data.repository.TokenStorageImpl
 import com.hanmaum.dn.mobile.core.domain.repository.LocaleRepository
+import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
 import com.hanmaum.dn.mobile.core.domain.repository.ThemeRepository
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
+import com.hanmaum.dn.mobile.core.security.CredentialStore
 import com.hanmaum.dn.mobile.core.network.createHttpClient
 import com.russhwolf.settings.Settings
 import com.hanmaum.dn.mobile.features.announcement.data.repository.AnnouncementRepositoryImpl
@@ -61,6 +64,8 @@ val appModule = module {
     single<TokenStorage> { TokenStorageImpl(Settings()) }
     single<LocaleRepository> { LocaleRepositoryImpl(Settings()) }
     single<ThemeRepository> { ThemeRepositoryImpl(Settings()) }
+    single<LocationPreferences> { LocationPreferencesImpl(Settings()) }
+    single { CredentialStore(get()) }
 
     //Splash VM
     viewModel { SplashViewModel(get(), get(), get()) }
@@ -87,10 +92,10 @@ val appModule = module {
     viewModel { RegisterViewModel(get(), get(), get()) }
 
     // Login VM
-    viewModel { LoginViewModel(get(), get(), get(), get()) }
+    viewModel { LoginViewModel(get(), get(), get(), get(), get()) }
 
     // Profile VM
-    viewModel { ProfileViewModel(get(), get()) }
+    viewModel { ProfileViewModel(get(), get(), get()) }
 
     // Ministry
     single<MinistryRepository> { MinistryRepositoryImpl(get()) }
@@ -103,7 +108,7 @@ val appModule = module {
 
     // Geofence
     single<ChurchLocationRepository> { ChurchLocationRepositoryImpl(get()) }
-    single { GeofenceCoordinator(get(), get(), get(), get()) }
+    single { GeofenceCoordinator(get(), get(), get(), get(), get()) }
 
     // FloorPlan
     single<FloorPlanRepository> { FloorPlanRepositoryImpl(get()) }
