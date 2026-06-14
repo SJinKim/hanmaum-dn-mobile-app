@@ -67,7 +67,6 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ProfileScreen(
-    onLogout: () -> Unit,
     currentLocale: AppLocale,
     onLocaleChange: (AppLocale) -> Unit,
     currentTheme: ThemeMode,
@@ -78,16 +77,11 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val loggedOut by viewModel.loggedOut.collectAsState()
     val strings = LocalStrings.current
 
     // Refresh on every entry to the tab so an externally-edited profile stays
     // current without re-login. Skips while editing (guarded in the ViewModel).
     LaunchedEffect(Unit) { viewModel.loadProfile() }
-
-    LaunchedEffect(loggedOut) {
-        if (loggedOut) onLogout()
-    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,

@@ -6,8 +6,14 @@ import com.hanmaum.dn.mobile.core.data.repository.TokenStorageImpl
 import com.hanmaum.dn.mobile.core.domain.repository.LocaleRepository
 import com.hanmaum.dn.mobile.core.domain.repository.ThemeRepository
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
+import com.hanmaum.dn.mobile.core.security.BiometricRefreshStore
+import com.hanmaum.dn.mobile.core.security.RefreshTokenVault
 import com.hanmaum.dn.mobile.core.network.createHttpClient
+import com.hanmaum.dn.mobile.core.network.invalidateBearerCache
+import com.hanmaum.dn.mobile.core.session.SessionManager
+import com.hanmaum.dn.mobile.core.session.SessionValidator
 import com.russhwolf.settings.Settings
+import io.ktor.client.HttpClient
 import com.hanmaum.dn.mobile.features.announcement.data.repository.AnnouncementRepositoryImpl
 import com.hanmaum.dn.mobile.features.announcement.domain.repository.AnnouncementRepository
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementDetailViewModel
@@ -48,6 +54,7 @@ import com.hanmaum.dn.mobile.features.floorplan.presentation.FloorPlanViewModel
 import com.hanmaum.dn.mobile.features.pending.presentation.PendingViewModel
 import com.hanmaum.dn.mobile.features.pending.presentation.SplashViewModel
 import com.hanmaum.dn.mobile.features.profile.presentation.ProfileViewModel
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.core.module.dsl.viewModel
 
@@ -57,13 +64,18 @@ val appModule = module {
     single<AuthRepository> { AuthRepositoryImpl(get()) }
     single<CityLookupRepository> { CityLookupRepositoryImpl(get()) }
     single<MemberRepository> { MemberRepositoryImpl(get()) }
-    single { createHttpClient(get()) } // Client
-    single<TokenStorage> { TokenStorageImpl(Settings()) }
+    single { createHttpClient(get(), get()) } // Client
+    single { RefreshTokenVault(get<BiometricRefreshStore>()) }
+    single<TokenStorage> { TokenStorageImpl(get(named("secure")), get()) }
+    // Canonical logout pipeline. The cache-clear is a deferred lambda so there's
+    // no construction cycle with the authed HttpClient it reaches into.
+    single { SessionManager(get()) { get<HttpClient>().invalidateBearerCache() } }
+    single { SessionValidator(get(), get()) }
     single<LocaleRepository> { LocaleRepositoryImpl(Settings()) }
     single<ThemeRepository> { ThemeRepositoryImpl(Settings()) }
 
     //Splash VM
-    viewModel { SplashViewModel(get(), get(), get()) }
+    viewModel { SplashViewModel(get(), get(), get(), get()) }
 
 
     // Home VM

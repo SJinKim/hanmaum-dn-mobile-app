@@ -5,22 +5,41 @@ import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
+import com.hanmaum.dn.mobile.core.security.RefreshTokenVault
 import com.hanmaum.dn.mobile.features.geofence.domain.GeofenceCoordinator
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class SplashViewModel(
     private val tokenStorage: TokenStorage,
     private val memberRepository: MemberRepository,
     private val geofenceCoordinator: GeofenceCoordinator,
+    private val refreshVault: RefreshTokenVault,
 ) : ViewModel() {
 
     private val _navigateTo = MutableStateFlow<NavRoute?>(null)
     val navigateTo = _navigateTo.asStateFlow()
 
-    init { checkSession() }
+    init { awaitUnlockThenCheck() }
+
+    private fun awaitUnlockThenCheck() {
+        viewModelScope.launch {
+            // If a stay-signed-in session is gated behind device auth, wait for the
+            // unlock (driven by the App lock screen) before any authed startup call.
+            // Otherwise an expired access token triggers a refresh with no in-memory
+            // refresh token, and the 401 would clear and destroy the session.
+            refreshVault.unlocked
+                .filter { unlocked ->
+                    unlocked || !refreshVault.hasStored() || !tokenStorage.isKeepSignedIn()
+                }
+                .first()
+            checkSession()
+        }
+    }
 
     private fun checkSession() {
         viewModelScope.launch {
