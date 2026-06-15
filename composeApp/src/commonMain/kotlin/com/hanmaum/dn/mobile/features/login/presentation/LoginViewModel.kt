@@ -7,6 +7,7 @@ import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.core.network.invalidateBearerCache
 import com.hanmaum.dn.mobile.core.security.CredentialStore
+import com.hanmaum.dn.mobile.core.security.Credentials
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import io.ktor.client.HttpClient
@@ -32,11 +33,11 @@ class LoginViewModel(
     fun canFaceIdSignIn(): Boolean =
         tokenStorage.isBiometricEnabled() && credentialStore.hasCredentials()
 
-    /** Signs in using the credentials saved for Face ID. Caller must pass a successful biometric check first. */
-    fun loginWithSavedCredentials() {
-        val creds = credentialStore.getCredentials() ?: return
-        onLoginClicked(creds.email, creds.password, keepSignedIn = true, enableFaceId = false)
-    }
+    /**
+     * Saved credentials for Face ID autofill, or null if none. The caller must
+     * pass a successful biometric check first, then autofill the fields and submit.
+     */
+    fun savedCredentials(): Credentials? = credentialStore.getCredentials()
 
     // 2. Events verarbeiten
     fun onLoginClicked(user: String, pass: String, keepSignedIn: Boolean = true, enableFaceId: Boolean = false) {

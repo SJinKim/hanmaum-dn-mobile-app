@@ -86,13 +86,23 @@ fun LoginScreen(
     val faceIdAvailable = remember { biometric.isAvailable() }
     val canFaceIdSignIn = remember { faceIdAvailable && viewModel.canFaceIdSignIn() }
 
+    // Autofills the email/password fields from the saved credentials, then submits.
+    // Caller must have passed a successful biometric check first.
+    fun autofillAndSignIn() {
+        viewModel.savedCredentials()?.let { creds ->
+            username = creds.email
+            password = creds.password
+            viewModel.onLoginClicked(creds.email, creds.password, keepSignedIn = true)
+        }
+    }
+
     // On entry, if Face ID sign-in is set up, prompt once and autofill+submit.
     LaunchedEffect(Unit) {
         if (canFaceIdSignIn) {
             val result = biometric.authenticate(
                 strings.lockTitle, strings.lockSubtitle, strings.lockUsePassword,
             )
-            if (result == BiometricResult.SUCCESS) viewModel.loginWithSavedCredentials()
+            if (result == BiometricResult.SUCCESS) autofillAndSignIn()
         }
     }
 
@@ -299,7 +309,7 @@ fun LoginScreen(
                         val result = biometric.authenticate(
                             strings.lockTitle, strings.lockSubtitle, strings.lockUsePassword,
                         )
-                        if (result == BiometricResult.SUCCESS) viewModel.loginWithSavedCredentials()
+                        if (result == BiometricResult.SUCCESS) autofillAndSignIn()
                     }
                 },
                 enabled  = !state.isLoading,
