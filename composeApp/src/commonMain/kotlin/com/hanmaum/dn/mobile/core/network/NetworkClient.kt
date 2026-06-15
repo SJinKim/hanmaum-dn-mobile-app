@@ -2,7 +2,6 @@ package com.hanmaum.dn.mobile.core.network
 
 import com.hanmaum.dn.mobile.BuildKonfig
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
-import com.hanmaum.dn.mobile.core.session.SessionManager
 import io.ktor.client.*
 import io.ktor.client.call.body
 import io.ktor.client.plugins.auth.*
@@ -37,10 +36,7 @@ fun HttpClient.invalidateBearerCache() {
         .forEach { provider -> provider.clearToken() }
 }
 
-fun createHttpClient(
-    tokenStorage: TokenStorage,
-    sessionManager: SessionManager,
-): HttpClient {
+fun createHttpClient(tokenStorage: TokenStorage): HttpClient {
     // Separate plain client for token refresh — no auth interceptor (avoids circular calls)
     val refreshClient = HttpClient {
         install(ContentNegotiation) {
@@ -88,36 +84,21 @@ fun createHttpClient(
                                 append("client_id", "hanmaum-mobile")
                                 append("grant_type", "refresh_token")
                                 append("refresh_token", refreshToken)
-                                // Keep an offline ("keep me signed in") session
-                                // offline across rotation; omit for a normal
-                                // short-lived SSO session.
-                                if (tokenStorage.isKeepSignedIn()) {
-                                    append("scope", "offline_access")
-                                }
                             }
                         )
-                        when {
-                            response.status == HttpStatusCode.OK -> {
-                                val tokens = response.body<RefreshTokenResponse>()
-                                tokenStorage.saveAccessToken(tokens.accessToken)
-                                tokens.refreshToken?.let { tokenStorage.saveRefreshToken(it) }
-                                BearerTokens(tokens.accessToken, tokens.refreshToken ?: refreshToken)
-                            }
-                            // Keycloak definitively rejected the refresh/offline
-                            // token (expired or revoked). The session is over —
-                            // tear it down through the canonical pipeline so the
-                            // user is cleanly routed back to login.
-                            response.status == HttpStatusCode.BadRequest ||
-                                response.status == HttpStatusCode.Unauthorized -> {
-                                sessionManager.onRefreshRejected()
-                                null
-                            }
-                            // Transient (5xx etc.). Don't destroy the session —
-                            // let the 401 surface so the caller can retry later.
-                            else -> null
+                        if (response.status == HttpStatusCode.OK) {
+                            val tokens = response.body<RefreshTokenResponse>()
+                            tokenStorage.saveAccessToken(tokens.accessToken)
+                            tokens.refreshToken?.let { tokenStorage.saveRefreshToken(it) }
+                            BearerTokens(tokens.accessToken, tokens.refreshToken ?: refreshToken)
+                        } else {
+                            // Don't clear storage here — a transient refresh failure
+                            // must not destroy tokens that were just saved by a
+                            // concurrent login. Returning null lets the 401 surface
+                            // to the caller, which decides whether to re-auth.
+                            null
                         }
                     } catch (e: Exception) {
-                        // Network error — transient. Never sign the user out here.
                         null
                     }
                 }

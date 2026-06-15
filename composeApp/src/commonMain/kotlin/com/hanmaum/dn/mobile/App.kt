@@ -47,18 +47,9 @@ import com.hanmaum.dn.mobile.features.pending.screen.SplashScreen
 import com.hanmaum.dn.mobile.features.profile.presentation.ProfileScreen
 import org.koin.compose.KoinContext
 import org.koin.compose.koinInject
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LifecycleEventEffect
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
-import com.hanmaum.dn.mobile.core.session.SessionManager
-import com.hanmaum.dn.mobile.core.session.SessionValidator
-import com.hanmaum.dn.mobile.core.presentation.components.LockScreen
-import com.hanmaum.dn.mobile.core.security.BiometricResult
-import com.hanmaum.dn.mobile.core.security.RefreshTokenVault
-import com.hanmaum.dn.mobile.core.security.UnlockResult
+import com.hanmaum.dn.mobile.core.security.CredentialStore
 import com.hanmaum.dn.mobile.core.security.rememberBiometricAuthenticator
-import com.hanmaum.dn.mobile.core.security.rememberRefreshTokenUnlocker
-import kotlinx.coroutines.launch
 
 @Composable
 fun App() {
@@ -68,31 +59,11 @@ fun App() {
         val themeRepo = koinInject<ThemeRepository>()
         var themeMode by remember { mutableStateOf(themeRepo.getThemeMode()) }
 
-        // ── Biometric app lock ────────────────────────────────────────────────
+        // ── Face ID sign-in ───────────────────────────────────────────────────
         val tokenStorage = koinInject<TokenStorage>()
-        val sessionManager = koinInject<SessionManager>()
-        val sessionValidator = koinInject<SessionValidator>()
-        val refreshVault = koinInject<RefreshTokenVault>()
-        val unlocker = rememberRefreshTokenUnlocker()
-        // biometric + biometricEnabled stay for the Profile toggle UI.
+        val credentialStore = koinInject<CredentialStore>()
         val biometric = rememberBiometricAuthenticator()
-        val lockScope = rememberCoroutineScope()
         var biometricEnabled by remember { mutableStateOf(tokenStorage.isBiometricEnabled()) }
-        // Locked whenever a stay-signed-in session has a gated token that isn't
-        // yet unlocked into memory. (Biometric opt-in no longer gates this — the
-        // token is always behind device auth.)
-        var locked by remember {
-            mutableStateOf(
-                tokenStorage.isKeepSignedIn() && refreshVault.hasStored() && refreshVault.current() == null
-            )
-        }
-        // Re-lock on background: drop the in-memory token and re-prompt next foreground.
-        LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
-            if (tokenStorage.isKeepSignedIn() && refreshVault.hasStored()) {
-                refreshVault.lock()
-                locked = true
-            }
-        }
         val strings = remember(locale) {
             when (locale) {
                 AppLocale.EN -> EnStrings
@@ -109,42 +80,6 @@ fun App() {
 
             val showBottomBar = TopLevelDestination.all.any { dest ->
                 currentDestination?.hasRoute(dest.routeClass) == true
-            }
-
-            // Single global logout sink. Every logout path funnels through
-            // SessionManager and emits here; this is the only place that
-            // navigates to Login on sign-out, so there's no double-navigation.
-            LaunchedEffect(Unit) {
-                sessionManager.events.collect {
-                    locked = false
-                    navController.navigate(LoginRoute) {
-                        popUpTo(0) { inclusive = true }
-                        launchSingleTop = true
-                    }
-                }
-            }
-
-            // Auto-prompt the gated read whenever locked.
-            LaunchedEffect(locked) {
-                if (locked) {
-                    when (val result = unlocker.unlock(strings.lockSubtitle)) {
-                        is UnlockResult.Success -> {
-                            refreshVault.acceptUnlocked(result.token)
-                            locked = false
-                            sessionValidator.isSessionValid() // dead token → logout sink → Login
-                        }
-                        UnlockResult.Empty -> {
-                            // Nothing to unlock → go to login.
-                            locked = false
-                            navController.navigate(LoginRoute) {
-                                popUpTo(0) { inclusive = true }; launchSingleTop = true
-                            }
-                        }
-                        UnlockResult.Cancelled, UnlockResult.Failed -> {
-                            // Stay locked; the LockScreen's retry button re-triggers.
-                        }
-                    }
-                }
             }
 
             Box(modifier = Modifier.fillMaxSize()) {
@@ -251,6 +186,11 @@ fun App() {
 
                     composable<ProfileRoute> {
                         ProfileScreen(
+                            onLogout = {
+                                navController.navigate(LoginRoute) {
+                                    popUpTo(0) { inclusive = true }
+                                }
+                            },
                             currentLocale = locale,
                             onLocaleChange = { newLocale ->
                                 localeRepo.setLocale(newLocale)
@@ -265,17 +205,12 @@ fun App() {
                             biometricAvailable = biometric.isAvailable(),
                             onBiometricToggle = { enable ->
                                 if (enable) {
-                                    lockScope.launch {
-                                        val result = biometric.authenticate(
-                                            strings.lockTitle, strings.lockSubtitle, strings.lockUsePassword,
-                                        )
-                                        if (result == BiometricResult.SUCCESS) {
-                                            tokenStorage.setBiometricEnabled(true)
-                                            biometricEnabled = true
-                                        }
-                                    }
+                                    // Credentials are captured on the next successful login.
+                                    tokenStorage.setBiometricEnabled(true)
+                                    biometricEnabled = true
                                 } else {
                                     tokenStorage.setBiometricEnabled(false)
+                                    credentialStore.clear()
                                     biometricEnabled = false
                                 }
                             },
@@ -354,33 +289,7 @@ fun App() {
             }
             }
 
-            if (locked) {
-                LockScreen(
-                    onUnlock = {
-                        lockScope.launch {
-                            when (val result = unlocker.unlock(strings.lockSubtitle)) {
-                                is UnlockResult.Success -> {
-                                    refreshVault.acceptUnlocked(result.token)
-                                    locked = false
-                                    sessionValidator.isSessionValid()
-                                }
-                                UnlockResult.Empty -> {
-                                    locked = false
-                                    navController.navigate(LoginRoute) {
-                                        popUpTo(0) { inclusive = true }; launchSingleTop = true
-                                    }
-                                }
-                                UnlockResult.Cancelled, UnlockResult.Failed -> Unit
-                            }
-                        }
-                    },
-                    onUsePassword = {
-                        // Deliberate sign-out → canonical pipeline; sink navigates to Login.
-                        lockScope.launch { sessionManager.logout() }
-                    },
-                )
-            }
-            } // lock overlay Box(fillMaxSize)
+            } // Box(fillMaxSize)
             }
         } // CompositionLocalProvider
     }

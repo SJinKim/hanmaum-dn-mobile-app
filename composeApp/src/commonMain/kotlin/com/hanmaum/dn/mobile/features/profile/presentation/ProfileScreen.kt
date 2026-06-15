@@ -47,6 +47,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,15 +59,22 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.hanmaum.dn.mobile.core.domain.model.ThemeMode
+import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
+import com.hanmaum.dn.mobile.core.geofence.GeofenceManager
+import com.hanmaum.dn.mobile.core.geofence.GeofencePermissionRequest
 import com.hanmaum.dn.mobile.core.i18n.AppLocale
 import com.hanmaum.dn.mobile.core.i18n.AppStrings
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.components.AppTopBar
+import com.hanmaum.dn.mobile.features.geofence.domain.GeofenceCoordinator
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ProfileScreen(
+    onLogout: () -> Unit,
     currentLocale: AppLocale,
     onLocaleChange: (AppLocale) -> Unit,
     currentTheme: ThemeMode,
@@ -77,11 +85,16 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val loggedOut by viewModel.loggedOut.collectAsState()
     val strings = LocalStrings.current
 
     // Refresh on every entry to the tab so an externally-edited profile stays
     // current without re-login. Skips while editing (guarded in the ViewModel).
     LaunchedEffect(Unit) { viewModel.loadProfile() }
+
+    LaunchedEffect(loggedOut) {
+        if (loggedOut) onLogout()
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -293,18 +306,16 @@ private fun ProfileViewContent(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text  = strings.profileAppLock,
+                        text  = strings.profileFaceIdLogin,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
-                    if (!biometricAvailable) {
-                        Spacer(Modifier.height(2.dp))
-                        Text(
-                            text  = strings.appLockUnavailable,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.outline,
-                        )
-                    }
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text  = if (biometricAvailable) strings.faceIdLoginDesc else strings.appLockUnavailable,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
                 }
                 Switch(
                     checked         = biometricEnabled,
@@ -313,6 +324,9 @@ private fun ProfileViewContent(
                 )
             }
         }
+
+        Spacer(Modifier.height(12.dp))
+        LocationSharingCard()
 
         Spacer(Modifier.height(28.dp))
 
@@ -372,6 +386,80 @@ private fun ProfileViewContent(
             },
             onDismiss = { showThemePicker = false },
         )
+    }
+}
+
+@Composable
+private fun LocationSharingCard() {
+    val strings = LocalStrings.current
+    val locationPreferences = koinInject<LocationPreferences>()
+    val geofenceManager = koinInject<GeofenceManager>()
+    val geofenceCoordinator = koinInject<GeofenceCoordinator>()
+    val scope = rememberCoroutineScope()
+
+    var enabled by remember {
+        mutableStateOf(locationPreferences.isSharingEnabled() && geofenceManager.isLocationPermissionGranted())
+    }
+    var requestingPermission by remember { mutableStateOf(false) }
+
+    if (requestingPermission) {
+        GeofencePermissionRequest { granted ->
+            requestingPermission = false
+            locationPreferences.setPromptDismissed(true)
+            if (granted) {
+                locationPreferences.setSharingEnabled(true)
+                enabled = true
+                scope.launch { geofenceCoordinator.initialize() }
+            } else {
+                locationPreferences.setSharingEnabled(false)
+                enabled = false
+            }
+        }
+    }
+
+    Card(
+        modifier  = Modifier.fillMaxWidth(),
+        shape     = MaterialTheme.shapes.large,
+        colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Row(
+            modifier              = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment     = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text  = strings.profileLocationSharing,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text  = strings.locationSharingDesc,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.outline,
+                )
+            }
+            Switch(
+                checked         = enabled,
+                onCheckedChange = { wantOn ->
+                    if (wantOn) {
+                        if (geofenceManager.isLocationPermissionGranted()) {
+                            locationPreferences.setSharingEnabled(true)
+                            enabled = true
+                            scope.launch { geofenceCoordinator.initialize() }
+                        } else {
+                            requestingPermission = true
+                        }
+                    } else {
+                        locationPreferences.setSharingEnabled(false)
+                        enabled = false
+                        scope.launch { geofenceCoordinator.stop() }
+                    }
+                },
+            )
+        }
     }
 }
 

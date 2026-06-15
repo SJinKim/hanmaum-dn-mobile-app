@@ -29,6 +29,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -38,6 +39,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,10 +51,16 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hanmaum.dn.mobile.BuildKonfig
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
+import com.hanmaum.dn.mobile.core.platform.rememberUrlLauncher
+import com.hanmaum.dn.mobile.core.security.BiometricResult
+import com.hanmaum.dn.mobile.core.security.rememberBiometricAuthenticator
 import com.hanmaum.dn.mobile.features.login.presentation.LoginViewModel
 import hanmaumdnapp.composeapp.generated.resources.Res
 import hanmaumdnapp.composeapp.generated.resources.logo
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -64,11 +72,39 @@ fun LoginScreen(
 ) {
     val viewModel: LoginViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val strings = LocalStrings.current
 
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var keepSignedIn by remember { mutableStateOf(true) }
+    var enableFaceId by remember { mutableStateOf(false) }
+
+    val biometric = rememberBiometricAuthenticator()
+    val openUrl = rememberUrlLauncher()
+    val scope = rememberCoroutineScope()
+    val faceIdAvailable = remember { biometric.isAvailable() }
+    val canFaceIdSignIn = remember { faceIdAvailable && viewModel.canFaceIdSignIn() }
+
+    // Autofills the email/password fields from the saved credentials, then submits.
+    // Caller must have passed a successful biometric check first.
+    fun autofillAndSignIn() {
+        viewModel.savedCredentials()?.let { creds ->
+            username = creds.email
+            password = creds.password
+            viewModel.onLoginClicked(creds.email, creds.password, keepSignedIn = true)
+        }
+    }
+
+    // On entry, if Face ID sign-in is set up, prompt once and autofill+submit.
+    LaunchedEffect(Unit) {
+        if (canFaceIdSignIn) {
+            val result = biometric.authenticate(
+                strings.lockTitle, strings.lockSubtitle, strings.lockUsePassword,
+            )
+            if (result == BiometricResult.SUCCESS) autofillAndSignIn()
+        }
+    }
 
     LaunchedEffect(state.navigateTo) {
         state.navigateTo?.let { route ->
@@ -147,11 +183,15 @@ fun LoginScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 TextButton(
-                    onClick         = { /* stub */ },
+                    onClick         = {
+                        val resetUrl = "${BuildKonfig.KEYCLOAK_URL}/realms/${BuildKonfig.KEYCLOAK_REALM}" +
+                            "/login-actions/reset-credentials?client_id=hanmaum-mobile"
+                        openUrl(resetUrl)
+                    },
                     contentPadding  = PaddingValues(0.dp),
                 ) {
                     Text(
-                        text  = "Forgot?",
+                        text  = strings.loginForgotPassword,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                     )
@@ -212,11 +252,32 @@ fun LoginScreen(
             )
         }
 
+        // Enable Face ID sign-in (only when biometrics available and not yet set up)
+        if (faceIdAvailable && !canFaceIdSignIn) {
+            Row(
+                modifier          = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Checkbox(
+                    checked         = enableFaceId,
+                    onCheckedChange = { enableFaceId = it },
+                    colors          = CheckboxDefaults.colors(
+                        uncheckedColor = MaterialTheme.colorScheme.outline,
+                    ),
+                )
+                Text(
+                    text  = strings.loginUseFaceId,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+
         Spacer(Modifier.height(20.dp))
 
         // Login CTA
         Button(
-            onClick  = { viewModel.onLoginClicked(username, password, keepSignedIn) },
+            onClick  = { viewModel.onLoginClicked(username, password, keepSignedIn, enableFaceId) },
             enabled  = !state.isLoading,
             modifier = Modifier.fillMaxWidth().height(56.dp),
             shape    = MaterialTheme.shapes.extraSmall,
@@ -236,6 +297,26 @@ fun LoginScreen(
                     "Login to DN App  →",
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                 )
+            }
+        }
+
+        // Manual Face ID sign-in (in case the auto-prompt on entry was cancelled)
+        if (canFaceIdSignIn) {
+            Spacer(Modifier.height(12.dp))
+            OutlinedButton(
+                onClick  = {
+                    scope.launch {
+                        val result = biometric.authenticate(
+                            strings.lockTitle, strings.lockSubtitle, strings.lockUsePassword,
+                        )
+                        if (result == BiometricResult.SUCCESS) autofillAndSignIn()
+                    }
+                },
+                enabled  = !state.isLoading,
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                shape    = MaterialTheme.shapes.extraSmall,
+            ) {
+                Text(strings.loginSignInWithFaceId, style = MaterialTheme.typography.labelLarge)
             }
         }
 

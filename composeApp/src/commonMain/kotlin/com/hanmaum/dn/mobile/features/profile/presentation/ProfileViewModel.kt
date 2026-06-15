@@ -2,7 +2,8 @@ package com.hanmaum.dn.mobile.features.profile.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hanmaum.dn.mobile.core.session.SessionManager
+import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
+import com.hanmaum.dn.mobile.core.security.CredentialStore
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,8 +12,12 @@ import kotlinx.coroutines.launch
 
 class ProfileViewModel(
     private val memberRepository: MemberRepository,
-    private val sessionManager: SessionManager,
+    private val tokenStorage: TokenStorage,
+    private val credentialStore: CredentialStore,
 ) : ViewModel() {
+
+    private val _loggedOut = MutableStateFlow(false)
+    val loggedOut: StateFlow<Boolean> = _loggedOut.asStateFlow()
 
     private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
@@ -81,10 +86,12 @@ class ProfileViewModel(
     }
 
     fun logout() {
-        // Routes through the canonical pipeline: revoke the Keycloak (offline)
-        // session, clear tokens, drop Ktor's bearer cache, and emit the global
-        // logout event that navigates to Login.
-        viewModelScope.launch { sessionManager.logout() }
+        viewModelScope.launch {
+            tokenStorage.clear()
+            // Forget saved Face ID credentials on explicit logout.
+            credentialStore.clear()
+            _loggedOut.value = true
+        }
     }
 
     fun saveProfile() {

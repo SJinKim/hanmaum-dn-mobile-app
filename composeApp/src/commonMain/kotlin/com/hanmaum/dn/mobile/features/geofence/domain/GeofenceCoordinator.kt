@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.geofence.domain
 
+import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
 import com.hanmaum.dn.mobile.core.geofence.GeofenceManager
 import com.hanmaum.dn.mobile.core.notification.NotificationService
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceDefinition
@@ -19,6 +20,7 @@ class GeofenceCoordinator(
     private val attendanceRepository: AttendanceRepository,
     private val geofenceManager: GeofenceManager,
     private val notificationService: NotificationService,
+    private val locationPreferences: LocationPreferences,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob()),
 ) {
     private val initMutex = Mutex()
@@ -26,13 +28,15 @@ class GeofenceCoordinator(
 
     /**
      * Fetches the church location from the server and registers the OS geofence.
-     * No-op if already registered or if location permission is not yet granted.
+     * No-op if already registered, if the user hasn't opted into location sharing,
+     * or if location permission is not yet granted.
      * Call this after login is confirmed (e.g. from SplashViewModel when status == ACTIVE).
      */
     suspend fun initialize() {
         if (isRegistered) return // fast path — avoids lock on steady state
         initMutex.withLock {
             if (isRegistered) return@withLock // double-check inside lock
+            if (!locationPreferences.isSharingEnabled()) return@withLock
             if (!geofenceManager.isLocationPermissionGranted()) return@withLock
 
             val location = churchLocationRepository.getChurchLocation().getOrElse { error ->
@@ -42,6 +46,14 @@ class GeofenceCoordinator(
 
             geofenceManager.startMonitoring(location) { notifyEntry() }
             isRegistered = true
+        }
+    }
+
+    /** Stops geofence monitoring (e.g. when the user turns off location sharing). */
+    suspend fun stop() {
+        initMutex.withLock {
+            geofenceManager.stopMonitoring()
+            isRegistered = false
         }
     }
 

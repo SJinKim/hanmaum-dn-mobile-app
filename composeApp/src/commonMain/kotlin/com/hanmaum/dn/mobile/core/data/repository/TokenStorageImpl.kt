@@ -1,13 +1,9 @@
 package com.hanmaum.dn.mobile.core.data.repository
 
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
-import com.hanmaum.dn.mobile.core.security.RefreshTokenVault
 import com.russhwolf.settings.Settings
 
-class TokenStorageImpl(
-    private val settings: Settings,
-    private val refreshVault: RefreshTokenVault,
-) : TokenStorage {
+class TokenStorageImpl(private val settings: Settings) : TokenStorage {
 
     override fun saveAccessToken(token: String) {
         settings.putString(KEY_ACCESS, token)
@@ -16,15 +12,15 @@ class TokenStorageImpl(
     override fun getAccessToken(): String? = settings.getStringOrNull(KEY_ACCESS)
 
     override fun saveRefreshToken(token: String?) {
-        if (token != null) refreshVault.store(token) else refreshVault.clear()
+        if (token != null) settings.putString(KEY_REFRESH, token)
+        else settings.remove(KEY_REFRESH)
     }
 
-    // In-memory only: returns the token unlocked for this session, else null.
-    override fun getRefreshToken(): String? = refreshVault.current()
+    override fun getRefreshToken(): String? = settings.getStringOrNull(KEY_REFRESH)
 
     override fun clear() {
         settings.remove(KEY_ACCESS)
-        refreshVault.clear()
+        settings.remove(KEY_REFRESH)
         settings.remove(KEY_KEEP_SIGNED_IN)
         settings.remove(KEY_BIOMETRIC)
     }
@@ -43,6 +39,7 @@ class TokenStorageImpl(
 
     companion object {
         private const val KEY_ACCESS = "access_token"
+        private const val KEY_REFRESH = "refresh_token"
         private const val KEY_KEEP_SIGNED_IN = "keep_signed_in"
         private const val KEY_BIOMETRIC = "biometric_enabled"
     }

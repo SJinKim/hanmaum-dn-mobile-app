@@ -49,6 +49,19 @@ interface AppStrings {
     val lockSubtitle: String
     val lockUnlockButton: String
     val lockUsePassword: String
+    // Face ID sign-in
+    val profileFaceIdLogin: String
+    val faceIdLoginDesc: String
+    val loginForgotPassword: String
+    val loginUseFaceId: String
+    val loginSignInWithFaceId: String
+    // Location sharing
+    val profileLocationSharing: String
+    val locationSharingDesc: String
+    // Announcement sections
+    val sectionThisMonth: String
+    val sectionLastMonth: String
+    val sectionEarlier: String
     // Info card labels
     val labelEmail: String
     val labelPhone: String
@@ -140,6 +153,16 @@ object EnStrings : AppStrings {
     override val lockSubtitle = "Unlock DN App to continue"
     override val lockUnlockButton = "Unlock"
     override val lockUsePassword = "Use password instead"
+    override val profileFaceIdLogin = "Face ID Sign-In"
+    override val faceIdLoginDesc = "Use Face ID / Touch ID to sign in automatically"
+    override val loginForgotPassword = "Forgot?"
+    override val loginUseFaceId = "Enable Face ID sign-in"
+    override val loginSignInWithFaceId = "Sign in with Face ID"
+    override val profileLocationSharing = "Location Sharing"
+    override val locationSharingDesc = "Allow attendance check-in near the church"
+    override val sectionThisMonth = "THIS MONTH"
+    override val sectionLastMonth = "LAST MONTH"
+    override val sectionEarlier = "EARLIER"
     override val labelEmail = "EMAIL ADDRESS"
     override val labelPhone = "PHONE NUMBER"
     override val labelStreet = "STREET"
@@ -221,6 +244,16 @@ object KoStrings : AppStrings {
     override val lockSubtitle = "계속하려면 DN 앱 잠금을 해제하세요"
     override val lockUnlockButton = "잠금 해제"
     override val lockUsePassword = "비밀번호로 로그인"
+    override val profileFaceIdLogin = "Face ID 로그인"
+    override val faceIdLoginDesc = "Face ID / Touch ID로 자동 로그인합니다"
+    override val loginForgotPassword = "비밀번호 찾기"
+    override val loginUseFaceId = "다음에 Face ID로 로그인"
+    override val loginSignInWithFaceId = "Face ID로 로그인"
+    override val profileLocationSharing = "위치 공유"
+    override val locationSharingDesc = "교회 근처에서 출석 체크를 허용합니다"
+    override val sectionThisMonth = "이번 달"
+    override val sectionLastMonth = "지난 달"
+    override val sectionEarlier = "이전"
     override val labelEmail = "이메일"
     override val labelPhone = "전화번호"
     override val labelStreet = "주소"
@@ -302,6 +335,16 @@ object DeStrings : AppStrings {
     override val lockSubtitle = "Entsperre die DN App, um fortzufahren"
     override val lockUnlockButton = "Entsperren"
     override val lockUsePassword = "Stattdessen Passwort verwenden"
+    override val profileFaceIdLogin = "Face-ID-Anmeldung"
+    override val faceIdLoginDesc = "Mit Face ID / Touch ID automatisch anmelden"
+    override val loginForgotPassword = "Vergessen?"
+    override val loginUseFaceId = "Face-ID-Anmeldung aktivieren"
+    override val loginSignInWithFaceId = "Mit Face ID anmelden"
+    override val profileLocationSharing = "Standortfreigabe"
+    override val locationSharingDesc = "Anwesenheits-Check-in in Kirchennähe erlauben"
+    override val sectionThisMonth = "DIESEN MONAT"
+    override val sectionLastMonth = "LETZTEN MONAT"
+    override val sectionEarlier = "FRÜHER"
     override val labelEmail = "E-MAIL-ADRESSE"
     override val labelPhone = "TELEFONNUMMER"
     override val labelStreet = "STRASSE"

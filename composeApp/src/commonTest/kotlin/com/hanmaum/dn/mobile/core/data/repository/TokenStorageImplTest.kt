@@ -1,25 +1,15 @@
 package com.hanmaum.dn.mobile.core.data.repository
 
-import com.hanmaum.dn.mobile.core.security.RefreshTokenPersistence
-import com.hanmaum.dn.mobile.core.security.RefreshTokenVault
 import com.russhwolf.settings.MapSettings
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-private class NoopPersistence : RefreshTokenPersistence {
-    var stored: String? = null
-    override fun isDeviceSecured() = true
-    override fun hasStored() = stored != null
-    override fun store(token: String) { stored = token }
-    override fun delete() { stored = null }
-}
-
 class TokenStorageImplTest {
 
-    private fun storage(settings: MapSettings = MapSettings()) =
-        TokenStorageImpl(settings, RefreshTokenVault(NoopPersistence()))
+    private fun storage(settings: MapSettings = MapSettings()) = TokenStorageImpl(settings)
 
     @Test
     fun `isKeepSignedIn defaults to true when nothing stored`() {
@@ -41,15 +31,17 @@ class TokenStorageImplTest {
     }
 
     @Test
-    fun `clear removes access token and resets keepSignedIn to default true`() {
+    fun `clear removes tokens and resets keepSignedIn to default true`() {
         val settings = MapSettings()
         val s = storage(settings)
         s.saveAccessToken("a")
+        s.saveRefreshToken("r")
         s.setKeepSignedIn(false)
 
         s.clear()
 
         assertNull(storage(settings).getAccessToken())
+        assertNull(storage(settings).getRefreshToken())
         assertTrue(storage(settings).isKeepSignedIn())
     }
 
@@ -75,11 +67,12 @@ class TokenStorageImplTest {
     }
 
     @Test
-    fun `access token round-trips`() {
+    fun `access and refresh tokens round-trip`() {
         val settings = MapSettings()
         val s = storage(settings)
         s.saveAccessToken("access-123")
-        // getAccessToken reads from Settings — uses the same shared MapSettings instance
-        assertTrue(storage(settings).getAccessToken() == "access-123")
+        s.saveRefreshToken("refresh-456")
+        assertEquals("access-123", storage(settings).getAccessToken())
+        assertEquals("refresh-456", storage(settings).getRefreshToken())
     }
 }

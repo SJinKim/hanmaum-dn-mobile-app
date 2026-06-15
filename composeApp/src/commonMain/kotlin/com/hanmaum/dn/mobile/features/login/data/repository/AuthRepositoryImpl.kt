@@ -21,7 +21,7 @@ class AuthRepositoryImpl(
 
     private val lenientJson = Json { ignoreUnknownKeys = true }
 
-    override suspend fun login(user: String, pass: String, keepSignedIn: Boolean): TokenResponse {
+    override suspend fun login(user: String, pass: String): TokenResponse {
         val keycloakUrl = "${BuildKonfig.KEYCLOAK_URL}/realms/${BuildKonfig.KEYCLOAK_REALM}/protocol/openid-connect/token"
 
         val response: HttpResponse = client.submitForm(
@@ -31,13 +31,6 @@ class AuthRepositoryImpl(
                 append("grant_type", "password")
                 append("username", user)
                 append("password", pass)
-                // "Keep me signed in" → request an offline token so the session
-                // survives app restart and long idle (governed by Keycloak's
-                // Offline Session Idle, default 30 days) instead of the short
-                // SSO Session Idle. Omitted otherwise for a normal session.
-                if (keepSignedIn) {
-                    append("scope", "offline_access")
-                }
             }
         )
 

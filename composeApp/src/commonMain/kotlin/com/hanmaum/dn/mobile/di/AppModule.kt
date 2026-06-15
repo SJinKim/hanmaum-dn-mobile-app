@@ -1,19 +1,16 @@
 package com.hanmaum.dn.mobile.di
 
 import com.hanmaum.dn.mobile.core.data.repository.LocaleRepositoryImpl
+import com.hanmaum.dn.mobile.core.data.repository.LocationPreferencesImpl
 import com.hanmaum.dn.mobile.core.data.repository.ThemeRepositoryImpl
 import com.hanmaum.dn.mobile.core.data.repository.TokenStorageImpl
 import com.hanmaum.dn.mobile.core.domain.repository.LocaleRepository
+import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
 import com.hanmaum.dn.mobile.core.domain.repository.ThemeRepository
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
-import com.hanmaum.dn.mobile.core.security.BiometricRefreshStore
-import com.hanmaum.dn.mobile.core.security.RefreshTokenVault
+import com.hanmaum.dn.mobile.core.security.CredentialStore
 import com.hanmaum.dn.mobile.core.network.createHttpClient
-import com.hanmaum.dn.mobile.core.network.invalidateBearerCache
-import com.hanmaum.dn.mobile.core.session.SessionManager
-import com.hanmaum.dn.mobile.core.session.SessionValidator
 import com.russhwolf.settings.Settings
-import io.ktor.client.HttpClient
 import com.hanmaum.dn.mobile.features.announcement.data.repository.AnnouncementRepositoryImpl
 import com.hanmaum.dn.mobile.features.announcement.domain.repository.AnnouncementRepository
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementDetailViewModel
@@ -54,7 +51,6 @@ import com.hanmaum.dn.mobile.features.floorplan.presentation.FloorPlanViewModel
 import com.hanmaum.dn.mobile.features.pending.presentation.PendingViewModel
 import com.hanmaum.dn.mobile.features.pending.presentation.SplashViewModel
 import com.hanmaum.dn.mobile.features.profile.presentation.ProfileViewModel
-import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.core.module.dsl.viewModel
 
@@ -64,18 +60,15 @@ val appModule = module {
     single<AuthRepository> { AuthRepositoryImpl(get()) }
     single<CityLookupRepository> { CityLookupRepositoryImpl(get()) }
     single<MemberRepository> { MemberRepositoryImpl(get()) }
-    single { createHttpClient(get(), get()) } // Client
-    single { RefreshTokenVault(get<BiometricRefreshStore>()) }
-    single<TokenStorage> { TokenStorageImpl(get(named("secure")), get()) }
-    // Canonical logout pipeline. The cache-clear is a deferred lambda so there's
-    // no construction cycle with the authed HttpClient it reaches into.
-    single { SessionManager(get()) { get<HttpClient>().invalidateBearerCache() } }
-    single { SessionValidator(get(), get()) }
+    single { createHttpClient(get()) } // Client
+    single<TokenStorage> { TokenStorageImpl(Settings()) }
     single<LocaleRepository> { LocaleRepositoryImpl(Settings()) }
     single<ThemeRepository> { ThemeRepositoryImpl(Settings()) }
+    single<LocationPreferences> { LocationPreferencesImpl(Settings()) }
+    single { CredentialStore(get()) }
 
     //Splash VM
-    viewModel { SplashViewModel(get(), get(), get(), get()) }
+    viewModel { SplashViewModel(get(), get(), get()) }
 
 
     // Home VM
@@ -99,10 +92,10 @@ val appModule = module {
     viewModel { RegisterViewModel(get(), get(), get()) }
 
     // Login VM
-    viewModel { LoginViewModel(get(), get(), get(), get()) }
+    viewModel { LoginViewModel(get(), get(), get(), get(), get()) }
 
     // Profile VM
-    viewModel { ProfileViewModel(get(), get()) }
+    viewModel { ProfileViewModel(get(), get(), get()) }
 
     // Ministry
     single<MinistryRepository> { MinistryRepositoryImpl(get()) }
@@ -115,7 +108,7 @@ val appModule = module {
 
     // Geofence
     single<ChurchLocationRepository> { ChurchLocationRepositoryImpl(get()) }
-    single { GeofenceCoordinator(get(), get(), get(), get()) }
+    single { GeofenceCoordinator(get(), get(), get(), get(), get()) }
 
     // FloorPlan
     single<FloorPlanRepository> { FloorPlanRepositoryImpl(get()) }
