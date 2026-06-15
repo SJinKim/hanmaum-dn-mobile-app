@@ -61,7 +61,10 @@ fun AttendanceScreen(
 
                 // State 2: Already checked in
                 state.isCheckedIn -> {
-                    CheckedInContent(serviceLabel = state.definition!!.title)
+                    CheckedInContent(
+                        serviceLabel = state.definition!!.title,
+                        date = state.checkedInDate,
+                    )
                 }
 
                 // State 3: Ready to check in
@@ -101,7 +104,7 @@ private fun NoServiceContent() {
 }
 
 @Composable
-private fun CheckedInContent(serviceLabel: String) {
+private fun CheckedInContent(serviceLabel: String, date: String?) {
     val strings = LocalStrings.current
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -127,11 +130,23 @@ private fun CheckedInContent(serviceLabel: String) {
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface,
         )
-        Text(
-            text = serviceLabel,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                text = serviceLabel,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (date != null) {
+                Text(
+                    text = date,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }
 
