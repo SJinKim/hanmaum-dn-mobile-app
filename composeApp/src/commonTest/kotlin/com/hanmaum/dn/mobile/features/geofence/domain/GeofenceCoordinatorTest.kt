@@ -3,6 +3,7 @@ package com.hanmaum.dn.mobile.features.geofence.domain
 import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
 import com.hanmaum.dn.mobile.core.geofence.GeofenceManager
 import com.hanmaum.dn.mobile.core.notification.NotificationService
+import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceCheckIn
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceDefinition
 import com.hanmaum.dn.mobile.features.attendance.domain.repository.AttendanceRepository
 import com.hanmaum.dn.mobile.features.geofence.domain.model.ChurchLocation
@@ -49,7 +50,9 @@ private class FakeAttendanceRepository(
     private val definitions: List<AttendanceDefinition> = emptyList()
 ) : AttendanceRepository {
     override suspend fun getActiveDefinitions() = Result.success(definitions)
-    override suspend fun checkIn() = Result.success(Unit)
+    override suspend fun checkIn() = Result.success(
+        AttendanceCheckIn(definitionPublicId = "def", definitionTitle = "Service", attendanceDate = "2026-06-15"),
+    )
 }
 
 private class FakeLocationPreferences(

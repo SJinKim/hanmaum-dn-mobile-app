@@ -1,10 +1,12 @@
 package com.hanmaum.dn.mobile.di
 
 import com.hanmaum.dn.mobile.core.data.repository.LocaleRepositoryImpl
+import com.hanmaum.dn.mobile.core.data.repository.AttendancePreferencesImpl
 import com.hanmaum.dn.mobile.core.data.repository.LocationPreferencesImpl
 import com.hanmaum.dn.mobile.core.data.repository.ThemeRepositoryImpl
 import com.hanmaum.dn.mobile.core.data.repository.TokenStorageImpl
 import com.hanmaum.dn.mobile.core.domain.repository.LocaleRepository
+import com.hanmaum.dn.mobile.core.domain.repository.AttendancePreferences
 import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
 import com.hanmaum.dn.mobile.core.domain.repository.ThemeRepository
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
@@ -65,6 +67,7 @@ val appModule = module {
     single<LocaleRepository> { LocaleRepositoryImpl(Settings()) }
     single<ThemeRepository> { ThemeRepositoryImpl(Settings()) }
     single<LocationPreferences> { LocationPreferencesImpl(Settings()) }
+    single<AttendancePreferences> { AttendancePreferencesImpl(Settings()) }
     single { CredentialStore(get()) }
 
     //Splash VM
@@ -104,7 +107,7 @@ val appModule = module {
 
     // Attendance
     single<AttendanceRepository> { AttendanceRepositoryImpl(get()) }
-    viewModel { AttendanceViewModel(get()) }
+    viewModel { AttendanceViewModel(get(), get()) }
 
     // Geofence
     single<ChurchLocationRepository> { ChurchLocationRepositoryImpl(get()) }
