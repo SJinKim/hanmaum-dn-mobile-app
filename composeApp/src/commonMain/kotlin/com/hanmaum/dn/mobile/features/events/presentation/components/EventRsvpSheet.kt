@@ -3,6 +3,7 @@ package com.hanmaum.dn.mobile.features.events.presentation.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -59,7 +60,7 @@ fun EventRsvpSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
-        shape = MaterialTheme.shapes.extraLarge, // shape_large
+        shape = MaterialTheme.shapes.extraLarge, // rounded sheet (shape_large)
     ) {
         Column(
             modifier = Modifier
@@ -197,7 +198,7 @@ private fun EventRow(
 
 @Composable
 private fun ErrorLine(error: String?) {
-    AnimatedVisibility(visible = error != null, enter = fadeIn(), exit = fadeOut()) {
+    AnimatedVisibility(visible = error != null, enter = fadeIn(animationSpec = spring()), exit = fadeOut(animationSpec = spring())) {
         Box(modifier = Modifier.padding(top = 4.dp)) {
             Text(
                 text = error.orEmpty(),
