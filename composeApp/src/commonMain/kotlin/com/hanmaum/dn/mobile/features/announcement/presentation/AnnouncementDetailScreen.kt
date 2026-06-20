@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,7 +27,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -34,8 +39,11 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
 import com.hanmaum.dn.mobile.features.announcement.domain.model.Announcement
+import com.hanmaum.dn.mobile.features.events.presentation.EventRsvpViewModel
+import com.hanmaum.dn.mobile.features.events.presentation.components.EventRsvpSheet
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -49,6 +57,14 @@ fun AnnouncementDetailScreen(
     )
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
+    // Independent RSVP VM: this screen is not a top-level destination, so the global
+    // EventRsvpHost is not mounted here. The sheet opens only on explicit CTA tap.
+    val rsvpViewModel: EventRsvpViewModel = koinViewModel()
+    val rsvpState by rsvpViewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) { rsvpViewModel.refresh() }
+    val matching = rsvpState.events.firstOrNull { it.announcementId == announcementId }
+    var sheetOpen by remember { mutableStateOf(false) }
+
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         when {
             state.isLoading -> {
@@ -59,10 +75,24 @@ fun AnnouncementDetailScreen(
             }
             state.announcement != null -> {
                 ArticleContent(
-                    item        = state.announcement!!,
+                    item = state.announcement!!,
                     onBackClick = onBackClick,
+                    // EVENT announcement with a live, window-open RSVP → show the CTA.
+                    showRsvpCta = state.announcement!!.category == "EVENT" && matching != null,
+                    onRsvpClick = { sheetOpen = true },
                 )
             }
+        }
+
+        if (sheetOpen && matching != null) {
+            EventRsvpSheet(
+                events = listOf(matching),
+                checkingInId = rsvpState.checkingInId,
+                checkedInIds = rsvpState.checkedInIds,
+                rowErrors = rsvpState.rowErrors,
+                onAttend = rsvpViewModel::checkIn,
+                onDismiss = { sheetOpen = false },
+            )
         }
     }
 }
@@ -71,6 +101,8 @@ fun AnnouncementDetailScreen(
 private fun ArticleContent(
     item: Announcement,
     onBackClick: () -> Unit,
+    showRsvpCta: Boolean = false,
+    onRsvpClick: () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -208,6 +240,16 @@ private fun ArticleContent(
                 Hashtag(item.getAnnouncementCategoryName())
                 Hashtag("한마음")
                 Hashtag("소식")
+            }
+
+            if (showRsvpCta) {
+                val strings = LocalStrings.current
+                Spacer(Modifier.height(24.dp))
+                Button(
+                    onClick = onRsvpClick,
+                    shape = MaterialTheme.shapes.extraLarge,
+                    modifier = Modifier.fillMaxWidth(),
+                ) { Text(strings.rsvpAnnouncementCta) }
             }
 
             Spacer(Modifier.height(40.dp))

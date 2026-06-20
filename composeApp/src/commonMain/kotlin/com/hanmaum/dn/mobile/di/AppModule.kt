@@ -18,9 +18,14 @@ import com.hanmaum.dn.mobile.features.announcement.domain.repository.Announcemen
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementDetailViewModel
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementListViewModel
 import com.hanmaum.dn.mobile.features.announcement.presentation.HomeViewModel
+import com.hanmaum.dn.mobile.core.data.repository.EventRsvpPreferencesImpl
+import com.hanmaum.dn.mobile.core.domain.repository.EventRsvpPreferences
 import com.hanmaum.dn.mobile.features.attendance.data.repository.AttendanceRepositoryImpl
 import com.hanmaum.dn.mobile.features.attendance.domain.repository.AttendanceRepository
 import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceViewModel
+import com.hanmaum.dn.mobile.features.events.data.repository.EventRsvpRepositoryImpl
+import com.hanmaum.dn.mobile.features.events.domain.repository.EventRsvpRepository
+import com.hanmaum.dn.mobile.features.events.presentation.EventRsvpViewModel
 import com.hanmaum.dn.mobile.features.geofence.data.repository.ChurchLocationRepositoryImpl
 import com.hanmaum.dn.mobile.features.geofence.domain.GeofenceCoordinator
 import com.hanmaum.dn.mobile.features.geofence.domain.repository.ChurchLocationRepository
@@ -108,6 +113,11 @@ val appModule = module {
     // Attendance
     single<AttendanceRepository> { AttendanceRepositoryImpl(get()) }
     viewModel { AttendanceViewModel(get(), get()) }
+
+    // Event RSVP
+    single<EventRsvpRepository> { EventRsvpRepositoryImpl(get()) }
+    single<EventRsvpPreferences> { EventRsvpPreferencesImpl(Settings()) }
+    viewModel { EventRsvpViewModel(get(), get()) }
 
     // Geofence
     single<ChurchLocationRepository> { ChurchLocationRepositoryImpl(get()) }
