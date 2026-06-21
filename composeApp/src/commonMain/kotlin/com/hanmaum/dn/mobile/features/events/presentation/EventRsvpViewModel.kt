@@ -67,14 +67,6 @@ class EventRsvpViewModel(
         }
     }
 
-    fun dismiss(publicId: String) {
-        preferences.markHandled(publicId)
-        _uiState.update {
-            val remaining = it.events.filterNot { e -> e.publicId == publicId }
-            it.copy(events = remaining, visible = remaining.isNotEmpty())
-        }
-    }
-
     fun dismissAll() {
         _uiState.value.events.forEach { preferences.markHandled(it.publicId) }
         _uiState.update { it.copy(events = emptyList(), visible = false) }
