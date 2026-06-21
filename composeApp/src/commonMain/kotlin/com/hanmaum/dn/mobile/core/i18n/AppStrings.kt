@@ -109,6 +109,14 @@ interface AppStrings {
     val attendanceLocation: String
     // Floor plan
     val floorPlanTitle: String
+    // Event RSVP
+    val rsvpSheetTitle: String
+    val rsvpMultiHeader: String
+    val rsvpAttend: String
+    val rsvpAttendShort: String
+    val rsvpLater: String
+    val rsvpDone: String
+    val rsvpAnnouncementCta: String
 }
 
 object EnStrings : AppStrings {
@@ -200,6 +208,13 @@ object EnStrings : AppStrings {
     override val attendanceReady = "Ready to check in"
     override val attendanceLocation = "Location"
     override val floorPlanTitle = "Church Map"
+    override val rsvpSheetTitle = "Event RSVP"
+    override val rsvpMultiHeader = "Events to attend"
+    override val rsvpAttend = "Attend"
+    override val rsvpAttendShort = "Attend"
+    override val rsvpLater = "Later"
+    override val rsvpDone = "Attending"
+    override val rsvpAnnouncementCta = "RSVP to this event"
 }
 
 object KoStrings : AppStrings {
@@ -291,6 +306,13 @@ object KoStrings : AppStrings {
     override val attendanceReady = "출석 가능"
     override val attendanceLocation = "위치"
     override val floorPlanTitle = "교회 지도"
+    override val rsvpSheetTitle = "행사 참석"
+    override val rsvpMultiHeader = "참석할 행사"
+    override val rsvpAttend = "참석하기"
+    override val rsvpAttendShort = "참석"
+    override val rsvpLater = "나중에"
+    override val rsvpDone = "참석 완료"
+    override val rsvpAnnouncementCta = "행사 참석하기"
 }
 
 object DeStrings : AppStrings {
@@ -382,4 +404,11 @@ object DeStrings : AppStrings {
     override val attendanceReady = "Bereit zum Einchecken"
     override val attendanceLocation = "Standort"
     override val floorPlanTitle = "Kirchenkarte"
+    override val rsvpSheetTitle = "Veranstaltung"
+    override val rsvpMultiHeader = "Teilnahme"
+    override val rsvpAttend = "Teilnehmen"
+    override val rsvpAttendShort = "Teilnehmen"
+    override val rsvpLater = "Später"
+    override val rsvpDone = "Zugesagt"
+    override val rsvpAnnouncementCta = "An Veranstaltung teilnehmen"
 }

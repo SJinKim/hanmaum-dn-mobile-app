@@ -37,6 +37,7 @@ import com.hanmaum.dn.mobile.features.album.presentation.albums.AlbumsScreen
 import com.hanmaum.dn.mobile.features.calendar.presentation.CalendarScreen
 import com.hanmaum.dn.mobile.features.community.presentation.CommunityStubScreen
 import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceScreen
+import com.hanmaum.dn.mobile.features.events.presentation.EventRsvpHost
 import com.hanmaum.dn.mobile.features.floorplan.presentation.FloorPlanScreen
 import com.hanmaum.dn.mobile.features.login.presentation.RegisterScreen
 import com.hanmaum.dn.mobile.features.login.screen.LoginScreen
@@ -285,6 +286,7 @@ fun App() {
                         },
                         modifier = Modifier.align(Alignment.BottomCenter),
                     )
+                    EventRsvpHost()
                 }
             }
             }
