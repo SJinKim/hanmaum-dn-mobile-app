@@ -73,3 +73,6 @@ iosApp/Gemfile.lock
 iosApp/fastlane/AuthKey_*.p8
 iosApp/fastlane/report.xml
 iosApp/fastlane/README.md
+
+# Local CI report scratch artifacts
+ci-report-*.md
