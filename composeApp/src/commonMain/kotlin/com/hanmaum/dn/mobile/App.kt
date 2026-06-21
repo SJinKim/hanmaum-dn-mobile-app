@@ -286,8 +286,6 @@ fun App() {
                         },
                         modifier = Modifier.align(Alignment.BottomCenter),
                     )
-                }
-                if (showBottomBar) {
                     EventRsvpHost()
                 }
             }
