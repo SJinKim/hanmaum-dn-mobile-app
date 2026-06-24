@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -66,6 +67,7 @@ import com.hanmaum.dn.mobile.core.i18n.AppLocale
 import com.hanmaum.dn.mobile.core.i18n.AppStrings
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.components.AppTopBar
+import com.hanmaum.dn.mobile.core.presentation.dismissKeyboardOnTap
 import com.hanmaum.dn.mobile.features.geofence.domain.GeofenceCoordinator
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
 import kotlinx.coroutines.launch
@@ -82,6 +84,8 @@ fun ProfileScreen(
     biometricEnabled: Boolean,
     biometricAvailable: Boolean,
     onBiometricToggle: (Boolean) -> Unit,
+    keepSignedIn: Boolean,
+    onKeepSignedInToggle: (Boolean) -> Unit,
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -134,11 +138,13 @@ fun ProfileScreen(
                             currentTheme       = currentTheme,
                             biometricEnabled   = biometricEnabled,
                             biometricAvailable = biometricAvailable,
+                            keepSignedIn       = keepSignedIn,
                             onEditClick        = { viewModel.startEditing() },
                             onLogoutClick      = { viewModel.logout() },
                             onLocaleChange     = onLocaleChange,
                             onThemeChange      = onThemeChange,
                             onBiometricToggle  = onBiometricToggle,
+                            onKeepSignedInToggle = onKeepSignedInToggle,
                         )
                     }
                 }
@@ -155,11 +161,13 @@ private fun ProfileViewContent(
     currentTheme: ThemeMode,
     biometricEnabled: Boolean,
     biometricAvailable: Boolean,
+    keepSignedIn: Boolean,
     onEditClick: () -> Unit,
     onLogoutClick: () -> Unit,
     onLocaleChange: (AppLocale) -> Unit,
     onThemeChange: (ThemeMode) -> Unit,
     onBiometricToggle: (Boolean) -> Unit,
+    onKeepSignedInToggle: (Boolean) -> Unit,
 ) {
     val strings = LocalStrings.current
     var showLanguagePicker by remember { mutableStateOf(false) }
@@ -292,6 +300,38 @@ private fun ProfileViewContent(
                 )
             }
         }
+        Spacer(Modifier.height(12.dp))
+        Card(
+            modifier  = Modifier.fillMaxWidth(),
+            shape     = MaterialTheme.shapes.large,
+            colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        ) {
+            Row(
+                modifier              = Modifier.fillMaxWidth().padding(16.dp),
+                verticalAlignment     = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text  = strings.profileKeepSignedIn,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text  = strings.keepSignedInDesc,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
+                }
+                Switch(
+                    checked         = keepSignedIn,
+                    onCheckedChange = onKeepSignedInToggle,
+                )
+            }
+        }
+
         Spacer(Modifier.height(12.dp))
         Card(
             modifier  = Modifier.fillMaxWidth(),
@@ -514,6 +554,8 @@ private fun ProfileEditContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .dismissKeyboardOnTap()
+            .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(24.dp),
     ) {

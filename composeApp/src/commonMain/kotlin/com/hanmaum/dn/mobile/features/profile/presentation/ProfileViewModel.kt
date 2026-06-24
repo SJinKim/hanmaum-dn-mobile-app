@@ -88,7 +88,11 @@ class ProfileViewModel(
     fun logout() {
         viewModelScope.launch {
             tokenStorage.clear()
-            // Forget saved Face ID credentials on explicit logout.
+            // Explicit logout is an intentional teardown: forget the saved Face ID
+            // credentials AND the biometric flag so the next login starts clean.
+            // (A plain session expiry keeps both so Face ID still works — see
+            // TokenStorageImpl.clear.)
+            tokenStorage.setBiometricEnabled(false)
             credentialStore.clear()
             _loggedOut.value = true
         }

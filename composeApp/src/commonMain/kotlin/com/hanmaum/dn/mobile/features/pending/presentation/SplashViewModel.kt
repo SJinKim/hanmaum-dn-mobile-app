@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
+import com.hanmaum.dn.mobile.core.security.CredentialStore
 import com.hanmaum.dn.mobile.features.geofence.domain.GeofenceCoordinator
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +16,7 @@ class SplashViewModel(
     private val tokenStorage: TokenStorage,
     private val memberRepository: MemberRepository,
     private val geofenceCoordinator: GeofenceCoordinator,
+    private val credentialStore: CredentialStore,
 ) : ViewModel() {
 
     private val _navigateTo = MutableStateFlow<NavRoute?>(null)
@@ -48,19 +50,27 @@ class SplashViewModel(
                             _navigateTo.value = NavRoute.Home
                         }
                         MemberStatus.PENDING -> _navigateTo.value = NavRoute.PendingApproval
-                        else -> handleAuthError()
+                        // REJECTED / DELETED: the account is no longer valid, so this
+                        // is an intentional teardown — forget the saved Face ID setup.
+                        else -> handleAuthError(forgetBiometric = true)
                     }
                 }
                 .onFailure { error ->
+                    // Transient failure (network / refresh). Drop the session but keep
+                    // the Face ID setup so the Login screen can still offer it.
                     println("Auto-Login fehlgeschlagen: ${error.message}")
-                    handleAuthError()
+                    handleAuthError(forgetBiometric = false)
                 }
         }
     }
 
-    private fun handleAuthError() {
+    private fun handleAuthError(forgetBiometric: Boolean) {
         viewModelScope.launch {
             tokenStorage.clear()
+            if (forgetBiometric) {
+                tokenStorage.setBiometricEnabled(false)
+                credentialStore.clear()
+            }
             _navigateTo.value = NavRoute.Login
         }
     }
