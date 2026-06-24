@@ -65,6 +65,7 @@ fun App() {
         val credentialStore = koinInject<CredentialStore>()
         val biometric = rememberBiometricAuthenticator()
         var biometricEnabled by remember { mutableStateOf(tokenStorage.isBiometricEnabled()) }
+        var keepSignedIn by remember { mutableStateOf(tokenStorage.isKeepSignedIn()) }
         val strings = remember(locale) {
             when (locale) {
                 AppLocale.EN -> EnStrings
@@ -214,6 +215,11 @@ fun App() {
                                     credentialStore.clear()
                                     biometricEnabled = false
                                 }
+                            },
+                            keepSignedIn = keepSignedIn,
+                            onKeepSignedInToggle = { enable ->
+                                tokenStorage.setKeepSignedIn(enable)
+                                keepSignedIn = enable
                             },
                         )
                     }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -21,10 +22,6 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -55,6 +52,7 @@ import com.hanmaum.dn.mobile.BuildKonfig
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.platform.rememberUrlLauncher
+import com.hanmaum.dn.mobile.core.presentation.dismissKeyboardOnTap
 import com.hanmaum.dn.mobile.core.security.BiometricResult
 import com.hanmaum.dn.mobile.core.security.rememberBiometricAuthenticator
 import com.hanmaum.dn.mobile.features.login.presentation.LoginViewModel
@@ -77,8 +75,6 @@ fun LoginScreen(
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var keepSignedIn by remember { mutableStateOf(true) }
-    var enableFaceId by remember { mutableStateOf(false) }
 
     val biometric = rememberBiometricAuthenticator()
     val openUrl = rememberUrlLauncher()
@@ -92,7 +88,7 @@ fun LoginScreen(
         viewModel.savedCredentials()?.let { creds ->
             username = creds.email
             password = creds.password
-            viewModel.onLoginClicked(creds.email, creds.password, keepSignedIn = true)
+            viewModel.onLoginClicked(creds.email, creds.password, enableFaceId = faceIdAvailable)
         }
     }
 
@@ -121,6 +117,8 @@ fun LoginScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .dismissKeyboardOnTap()
+            .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -231,53 +229,12 @@ fun LoginScreen(
             )
         }
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(24.dp))
 
-        // Keep me signed in (stub)
-        Row(
-            modifier          = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Checkbox(
-                checked         = keepSignedIn,
-                onCheckedChange = { keepSignedIn = it },
-                colors          = CheckboxDefaults.colors(
-                    uncheckedColor = MaterialTheme.colorScheme.outline,
-                ),
-            )
-            Text(
-                text  = "Keep me signed in",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-
-        // Enable Face ID sign-in (only when biometrics available and not yet set up)
-        if (faceIdAvailable && !canFaceIdSignIn) {
-            Row(
-                modifier          = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Checkbox(
-                    checked         = enableFaceId,
-                    onCheckedChange = { enableFaceId = it },
-                    colors          = CheckboxDefaults.colors(
-                        uncheckedColor = MaterialTheme.colorScheme.outline,
-                    ),
-                )
-                Text(
-                    text  = strings.loginUseFaceId,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-
-        Spacer(Modifier.height(20.dp))
-
-        // Login CTA
+        // Login CTA. "Keep me signed in" and Face ID are on by default — both are
+        // managed from the Profile settings, not shown as login checkboxes.
         Button(
-            onClick  = { viewModel.onLoginClicked(username, password, keepSignedIn, enableFaceId) },
+            onClick  = { viewModel.onLoginClicked(username, password, enableFaceId = faceIdAvailable) },
             enabled  = !state.isLoading,
             modifier = Modifier.fillMaxWidth().height(56.dp),
             shape    = MaterialTheme.shapes.extraSmall,

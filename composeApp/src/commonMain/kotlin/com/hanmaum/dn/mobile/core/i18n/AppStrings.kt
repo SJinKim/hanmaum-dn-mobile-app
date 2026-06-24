@@ -55,6 +55,9 @@ interface AppStrings {
     val loginForgotPassword: String
     val loginUseFaceId: String
     val loginSignInWithFaceId: String
+    // Keep me signed in
+    val profileKeepSignedIn: String
+    val keepSignedInDesc: String
     // Location sharing
     val profileLocationSharing: String
     val locationSharingDesc: String
@@ -166,6 +169,8 @@ object EnStrings : AppStrings {
     override val loginForgotPassword = "Forgot?"
     override val loginUseFaceId = "Enable Face ID sign-in"
     override val loginSignInWithFaceId = "Sign in with Face ID"
+    override val profileKeepSignedIn = "Keep me signed in"
+    override val keepSignedInDesc = "Stay signed in between app launches"
     override val profileLocationSharing = "Location Sharing"
     override val locationSharingDesc = "Allow attendance check-in near the church"
     override val sectionThisMonth = "THIS MONTH"
@@ -264,6 +269,8 @@ object KoStrings : AppStrings {
     override val loginForgotPassword = "비밀번호 찾기"
     override val loginUseFaceId = "다음에 Face ID로 로그인"
     override val loginSignInWithFaceId = "Face ID로 로그인"
+    override val profileKeepSignedIn = "로그인 상태 유지"
+    override val keepSignedInDesc = "앱을 다시 열어도 로그인 상태를 유지합니다"
     override val profileLocationSharing = "위치 공유"
     override val locationSharingDesc = "교회 근처에서 출석 체크를 허용합니다"
     override val sectionThisMonth = "이번 달"
@@ -362,6 +369,8 @@ object DeStrings : AppStrings {
     override val loginForgotPassword = "Vergessen?"
     override val loginUseFaceId = "Face-ID-Anmeldung aktivieren"
     override val loginSignInWithFaceId = "Mit Face ID anmelden"
+    override val profileKeepSignedIn = "Angemeldet bleiben"
+    override val keepSignedInDesc = "Zwischen App-Starts angemeldet bleiben"
     override val profileLocationSharing = "Standortfreigabe"
     override val locationSharingDesc = "Anwesenheits-Check-in in Kirchennähe erlauben"
     override val sectionThisMonth = "DIESEN MONAT"
