@@ -19,10 +19,15 @@ class TokenStorageImpl(private val settings: Settings) : TokenStorage {
     override fun getRefreshToken(): String? = settings.getStringOrNull(KEY_REFRESH)
 
     override fun clear() {
+        // Session-only teardown. Deliberately does NOT touch KEY_BIOMETRIC: Face ID
+        // sign-in must survive a session expiry (refresh-token expiry, "keep signed
+        // in" off, auth error) — that's exactly when the Login screen needs it to
+        // offer the saved-credential prompt. The biometric flag is cleared
+        // explicitly via setBiometricEnabled(false) on intentional teardown
+        // (explicit logout / REJECTED|DELETED account).
         settings.remove(KEY_ACCESS)
         settings.remove(KEY_REFRESH)
         settings.remove(KEY_KEEP_SIGNED_IN)
-        settings.remove(KEY_BIOMETRIC)
     }
 
     override fun setKeepSignedIn(value: Boolean) {

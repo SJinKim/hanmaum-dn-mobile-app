@@ -76,7 +76,7 @@ val appModule = module {
     single { CredentialStore(get()) }
 
     //Splash VM
-    viewModel { SplashViewModel(get(), get(), get()) }
+    viewModel { SplashViewModel(get(), get(), get(), get()) }
 
 
     // Home VM

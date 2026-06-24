@@ -58,11 +58,23 @@ class TokenStorageImplTest {
     }
 
     @Test
-    fun `clear resets biometricEnabled to false`() {
+    fun `clear preserves biometricEnabled so Face ID survives a session expiry`() {
         val settings = MapSettings()
         val s = storage(settings)
         s.setBiometricEnabled(true)
         s.clear()
+        // The biometric flag must outlive a session-only clear() — otherwise the
+        // Login screen can never offer Face ID sign-in after the session expires.
+        assertTrue(storage(settings).isBiometricEnabled())
+    }
+
+    @Test
+    fun `biometricEnabled is cleared only by an explicit setBiometricEnabled false`() {
+        val settings = MapSettings()
+        val s = storage(settings)
+        s.setBiometricEnabled(true)
+        s.clear()
+        s.setBiometricEnabled(false)
         assertFalse(storage(settings).isBiometricEnabled())
     }
 
