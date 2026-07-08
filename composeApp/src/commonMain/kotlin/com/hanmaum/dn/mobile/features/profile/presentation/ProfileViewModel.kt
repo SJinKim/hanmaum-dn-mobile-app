@@ -106,6 +106,7 @@ class ProfileViewModel(
                 phoneNumber = current.editPhone.ifBlank { null },
                 profileImageUrl = current.editImageUrl.ifBlank { null },
                 street = current.editStreet.ifBlank { null },
+                houseNumber = null,
                 zipCode = current.editZipCode.ifBlank { null },
                 city = current.editCity.ifBlank { null },
             ).fold(

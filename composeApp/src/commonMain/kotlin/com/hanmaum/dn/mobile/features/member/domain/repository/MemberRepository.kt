@@ -8,6 +8,7 @@ interface MemberRepository {
         phoneNumber: String?,
         profileImageUrl: String?,
         street: String?,
+        houseNumber: String?,
         zipCode: String?,
         city: String?,
     ): Result<MemberResponse>
