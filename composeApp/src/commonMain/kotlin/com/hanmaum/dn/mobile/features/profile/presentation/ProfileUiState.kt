@@ -10,6 +10,7 @@ sealed class ProfileUiState {
         val editPhone: String = profile.phoneNumber ?: "",
         val editImageUrl: String = profile.profileImageUrl ?: "",
         val editStreet: String = profile.street ?: "",
+        val editHouseNumber: String = profile.houseNumber ?: "",
         val editZipCode: String = profile.zipCode ?: "",
         val editCity: String = profile.city ?: "",
         val isSaving: Boolean = false,

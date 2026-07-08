@@ -126,6 +126,7 @@ fun ProfileScreen(
                             onPhoneChange    = { viewModel.updatePhone(it) },
                             onImageUrlChange = { viewModel.updateImageUrl(it) },
                             onStreetChange   = { viewModel.updateStreet(it) },
+                            onHouseNumberChange = { viewModel.updateHouseNumber(it) },
                             onZipCodeChange  = { viewModel.updateZipCode(it) },
                             onCityChange     = { viewModel.updateCity(it) },
                             onSave           = { viewModel.saveProfile() },
@@ -545,6 +546,7 @@ private fun ProfileEditContent(
     onPhoneChange: (String) -> Unit,
     onImageUrlChange: (String) -> Unit,
     onStreetChange: (String) -> Unit,
+    onHouseNumberChange: (String) -> Unit,
     onZipCodeChange: (String) -> Unit,
     onCityChange: (String) -> Unit,
     onSave: () -> Unit,
@@ -619,7 +621,31 @@ private fun ProfileEditContent(
         TextField(
             value         = state.editStreet,
             onValueChange = onStreetChange,
-            placeholder   = { Text("123 Main St") },
+            placeholder   = { Text("Musterstraße") },
+            modifier      = Modifier.fillMaxWidth(),
+            singleLine    = true,
+            shape         = MaterialTheme.shapes.small,
+            colors        = TextFieldDefaults.colors(
+                focusedContainerColor      = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedContainerColor    = MaterialTheme.colorScheme.surfaceVariant,
+                focusedIndicatorColor      = Color.Transparent,
+                unfocusedIndicatorColor    = Color.Transparent,
+                focusedPlaceholderColor    = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+                unfocusedPlaceholderColor  = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+            ),
+        )
+
+        Spacer(Modifier.height(16.dp))
+        Text(
+            text     = strings.labelHouseNumber,
+            style    = MaterialTheme.typography.labelSmall,
+            color    = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 6.dp),
+        )
+        TextField(
+            value         = state.editHouseNumber,
+            onValueChange = onHouseNumberChange,
+            placeholder   = { Text("12a") },
             modifier      = Modifier.fillMaxWidth(),
             singleLine    = true,
             shape         = MaterialTheme.shapes.small,

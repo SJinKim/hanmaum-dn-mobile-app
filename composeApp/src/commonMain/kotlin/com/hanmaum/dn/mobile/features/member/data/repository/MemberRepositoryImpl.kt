@@ -40,6 +40,7 @@ class MemberRepositoryImpl(
         phoneNumber: String?,
         profileImageUrl: String?,
         street: String?,
+        houseNumber: String?,
         zipCode: String?,
         city: String?,
     ): Result<MemberResponse> {
@@ -50,6 +51,7 @@ class MemberRepositoryImpl(
                     phoneNumber = phoneNumber,
                     profileImageUrl = profileImageUrl,
                     street = street,
+                    houseNumber = houseNumber,
                     zipCode = zipCode,
                     city = city,
                 ))
