@@ -26,10 +26,12 @@ private class FakeMemberRepository : MemberRepository {
         firstName = "Seungjin",
         lastName = "Kim",
         status = MemberStatus.ACTIVE,
+        division = "2교구",
         street = "Musterstraße",
         houseNumber = "12",
         zipCode = "50667",
         city = "Köln",
+        birthDate = "1992-12-07",
     )
 
     data class UpdateArgs(
@@ -120,7 +122,6 @@ class ProfileViewModelTest {
         val viewModel = vm(FakeMemberRepository())
         viewModel.loadProfile()
         dispatcher.scheduler.advanceUntilIdle()
-        viewModel.startEditing()
         viewModel.updateHouseNumber("12a")
         assertEquals("12a", success(viewModel).editHouseNumber)
     }
@@ -131,7 +132,6 @@ class ProfileViewModelTest {
         val viewModel = vm(repo)
         viewModel.loadProfile()
         dispatcher.scheduler.advanceUntilIdle()
-        viewModel.startEditing()
         viewModel.updateHouseNumber("12a")
         viewModel.saveProfile()
         dispatcher.scheduler.advanceUntilIdle()
@@ -146,20 +146,74 @@ class ProfileViewModelTest {
         val viewModel = vm(repo)
         viewModel.loadProfile()
         dispatcher.scheduler.advanceUntilIdle()
-        viewModel.startEditing()
         viewModel.saveProfile()
         dispatcher.scheduler.advanceUntilIdle()
         assertNull(repo.lastUpdate?.houseNumber)
     }
 
     @Test
-    fun `cancel editing resets house number to profile value`() = runTest {
+    fun `load seeds edit birth date in display format`() = runTest {
         val viewModel = vm(FakeMemberRepository())
         viewModel.loadProfile()
         dispatcher.scheduler.advanceUntilIdle()
-        viewModel.startEditing()
+        assertEquals("1992.12.07", success(viewModel).editBirthDate)
+    }
+
+    @Test
+    fun `state is not dirty after load and dirty after an edit`() = runTest {
+        val viewModel = vm(FakeMemberRepository())
+        viewModel.loadProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        assertEquals(false, success(viewModel).isDirty)
+        viewModel.updatePhone("+49 999")
+        assertEquals(true, success(viewModel).isDirty)
+    }
+
+    @Test
+    fun `save converts birth date to iso format`() = runTest {
+        val repo = FakeMemberRepository()
+        val viewModel = vm(repo)
+        viewModel.loadProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        viewModel.updateBirthDate("1990.01.31")
+        viewModel.saveProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        assertEquals("1990-01-31", repo.lastUpdate?.birthDate)
+    }
+
+    @Test
+    fun `save sets saveSuccess and state is clean again`() = runTest {
+        val viewModel = vm(FakeMemberRepository())
+        viewModel.loadProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        viewModel.updateCity("Bonn")
+        viewModel.saveProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        assertEquals(true, success(viewModel).saveSuccess)
+        assertEquals(false, success(viewModel).isDirty)
+        viewModel.consumeSaveSuccess()
+        assertEquals(false, success(viewModel).saveSuccess)
+    }
+
+    @Test
+    fun `reset edits restores loaded values`() = runTest {
+        val viewModel = vm(FakeMemberRepository())
+        viewModel.loadProfile()
+        dispatcher.scheduler.advanceUntilIdle()
         viewModel.updateHouseNumber("99")
-        viewModel.cancelEditing()
+        viewModel.resetEdits()
         assertEquals("12", success(viewModel).editHouseNumber)
+        assertEquals(false, success(viewModel).isDirty)
+    }
+
+    @Test
+    fun `silent refresh does not clobber a dirty edit`() = runTest {
+        val viewModel = vm(FakeMemberRepository())
+        viewModel.loadProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        viewModel.updatePhone("+49 111")
+        viewModel.loadProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        assertEquals("+49 111", success(viewModel).editPhone)
     }
 }

@@ -91,6 +91,9 @@ fun ProfileScreen(
     val uiState by viewModel.uiState.collectAsState()
     val loggedOut by viewModel.loggedOut.collectAsState()
     val strings = LocalStrings.current
+    // Interim local edit-mode flag: the ViewModel is now always-editable
+    // (view = edit); Task 6 rewrites this screen to drop the mode entirely.
+    var isEditing by remember { mutableStateOf(false) }
 
     // Refresh on every entry to the tab so an externally-edited profile stays
     // current without re-login. Skips while editing (guarded in the ViewModel).
@@ -120,7 +123,7 @@ fun ProfileScreen(
                     }
                 }
                 is ProfileUiState.Success -> {
-                    if (state.isEditing) {
+                    if (isEditing) {
                         ProfileEditContent(
                             state            = state,
                             onPhoneChange    = { viewModel.updatePhone(it) },
@@ -130,7 +133,10 @@ fun ProfileScreen(
                             onZipCodeChange  = { viewModel.updateZipCode(it) },
                             onCityChange     = { viewModel.updateCity(it) },
                             onSave           = { viewModel.saveProfile() },
-                            onCancel         = { viewModel.cancelEditing() },
+                            onCancel         = {
+                                viewModel.resetEdits()
+                                isEditing = false
+                            },
                         )
                     } else {
                         ProfileViewContent(
@@ -140,7 +146,7 @@ fun ProfileScreen(
                             biometricEnabled   = biometricEnabled,
                             biometricAvailable = biometricAvailable,
                             keepSignedIn       = keepSignedIn,
-                            onEditClick        = { viewModel.startEditing() },
+                            onEditClick        = { isEditing = true },
                             onLogoutClick      = { viewModel.logout() },
                             onLocaleChange     = onLocaleChange,
                             onThemeChange      = onThemeChange,
