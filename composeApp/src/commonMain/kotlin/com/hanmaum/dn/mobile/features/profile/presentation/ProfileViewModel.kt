@@ -54,6 +54,7 @@ class ProfileViewModel(
             editPhone = current.profile.phoneNumber ?: "",
             editImageUrl = current.profile.profileImageUrl ?: "",
             editStreet = current.profile.street ?: "",
+            editHouseNumber = current.profile.houseNumber ?: "",
             editZipCode = current.profile.zipCode ?: "",
             editCity = current.profile.city ?: "",
             saveError = null,
@@ -73,6 +74,11 @@ class ProfileViewModel(
     fun updateStreet(value: String) {
         val current = _uiState.value as? ProfileUiState.Success ?: return
         _uiState.value = current.copy(editStreet = value)
+    }
+
+    fun updateHouseNumber(value: String) {
+        val current = _uiState.value as? ProfileUiState.Success ?: return
+        _uiState.value = current.copy(editHouseNumber = value)
     }
 
     fun updateZipCode(value: String) {
@@ -106,7 +112,7 @@ class ProfileViewModel(
                 phoneNumber = current.editPhone.ifBlank { null },
                 profileImageUrl = current.editImageUrl.ifBlank { null },
                 street = current.editStreet.ifBlank { null },
-                houseNumber = null,
+                houseNumber = current.editHouseNumber.ifBlank { null },
                 zipCode = current.editZipCode.ifBlank { null },
                 city = current.editCity.ifBlank { null },
             ).fold(
