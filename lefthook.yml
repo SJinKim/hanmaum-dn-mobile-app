@@ -1,0 +1,56 @@
+# lefthook.yml — shared git hooks for hanmaum-dn-mobile-app
+#
+# One-time setup per machine:
+#   brew install lefthook && lefthook install
+#
+# Mirrors the CI gates that fail PRs anyway (pr-check.yml), so failures surface
+# in seconds locally instead of ~8 minutes in Actions — and enforces the
+# branching rule: nothing is committed directly to the integration or release
+# branches; work goes feature branch → PR → merge into develop.
+
+pre-commit:
+  parallel: false
+  commands:
+    protect-mainline:
+      run: |
+        branch="$(git symbolic-ref --short HEAD 2>/dev/null || echo detached)"
+        case "$branch" in
+          main|develop|dev)
+            echo "✋ Direct commits to '$branch' are not allowed."
+            echo "   git switch -c feature/<short-name>   # then PR into develop"
+            exit 1
+            ;;
+        esac
+    todo-gate:
+      glob: "composeApp/src/**/*"
+      run: |
+        if grep -n "TODO" {staged_files}; then
+          echo "✋ CI greps composeApp/src for TODO and fails the build. Remove them."
+          exit 1
+        fi
+
+commit-msg:
+  commands:
+    conventional-format:
+      run: |
+        first_line="$(head -1 {1})"
+        case "$first_line" in
+          Merge\ *|Revert\ *|fixup!\ *|squash!\ *) exit 0 ;;
+        esac
+        echo "$first_line" | grep -qE '^(feat|fix|refactor|test|chore|docs|perf|revert|ci)(\([a-z0-9-]+\))?: .{1,72}$' || {
+          echo "✋ Commit message must be: <type>(<scope>): <imperative summary ≤72 chars>"
+          echo "   types: feat|fix|refactor|test|chore|docs|perf|revert|ci"
+          exit 1
+        }
+    no-ai-trailers:
+      run: |
+        if grep -qiE '^ *co-authored-by' {1}; then
+          echo "✋ No Co-Authored-By trailers in this repo (tasks/lessons.md)."
+          exit 1
+        fi
+
+pre-push:
+  commands:
+    unit-tests:
+      glob: "*.{kt,kts}"
+      run: ./gradlew :composeApp:testDevDebugUnitTest
