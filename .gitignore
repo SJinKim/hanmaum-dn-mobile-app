@@ -76,3 +76,7 @@ iosApp/fastlane/README.md
 
 # Local CI report scratch artifacts
 ci-report-*.md
+
+# Loose target-design screenshots dropped at designs/ root (personal working
+# files for the feature in progress; curated references live in designs/<set>/)
+designs/IMG_*
