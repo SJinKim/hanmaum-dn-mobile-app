@@ -39,6 +39,7 @@ class MemberRepositoryImpl(
     override suspend fun updateMyProfile(
         phoneNumber: String?,
         profileImageUrl: String?,
+        birthDate: String?,
         street: String?,
         houseNumber: String?,
         zipCode: String?,
@@ -50,6 +51,7 @@ class MemberRepositoryImpl(
                 setBody(UpdateMyProfileRequest(
                     phoneNumber = phoneNumber,
                     profileImageUrl = profileImageUrl,
+                    birthDate = birthDate,
                     street = street,
                     houseNumber = houseNumber,
                     zipCode = zipCode,

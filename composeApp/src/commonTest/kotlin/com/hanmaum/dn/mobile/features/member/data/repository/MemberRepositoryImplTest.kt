@@ -48,10 +48,13 @@ class MemberRepositoryImplTest {
         firstName = "Seungjin",
         lastName = "Kim",
         status = MemberStatus.ACTIVE,
+        groupName = "다니엘조",
+        division = "2교구",
         street = "Musterstraße",
         houseNumber = "12",
         zipCode = "50667",
         city = "Köln",
+        birthDate = "1992-12-07",
     )
 
     @Test
@@ -73,7 +76,7 @@ class MemberRepositoryImplTest {
             path = req.url.encodedPath
         }
         MemberRepositoryImpl(client).updateMyProfile(
-            phoneNumber = null, profileImageUrl = null,
+            phoneNumber = null, profileImageUrl = null, birthDate = null,
             street = "Musterstraße", houseNumber = "12", zipCode = "50667", city = "Köln",
         )
         assertEquals(HttpMethod.Patch, method)
@@ -90,7 +93,7 @@ class MemberRepositoryImplTest {
         val json = testJson.encodeToString(ApiResponse(success = true, data = member))
         val client = mockClient(json) { req -> body = (req.body as TextContent).text }
         MemberRepositoryImpl(client).updateMyProfile(
-            phoneNumber = null, profileImageUrl = null,
+            phoneNumber = null, profileImageUrl = null, birthDate = null,
             street = "Musterstraße", houseNumber = "12", zipCode = "50667", city = "Köln",
         )
         assertTrue(body.contains("\"houseNumber\":\"12\""), "body was $body")
@@ -106,11 +109,56 @@ class MemberRepositoryImplTest {
         val json = testJson.encodeToString(ApiResponse(success = true, data = member))
         val client = mockClient(json) { req -> body = (req.body as TextContent).text }
         MemberRepositoryImpl(client).updateMyProfile(
-            phoneNumber = null, profileImageUrl = null,
+            phoneNumber = null, profileImageUrl = null, birthDate = null,
             street = null, houseNumber = null, zipCode = null, city = "Köln",
         )
         assertFalse(body.contains("houseNumber"), "body was $body")
         assertFalse(body.contains("street"), "body was $body")
         assertTrue(body.contains("\"city\":\"Köln\""), "body was $body")
+    }
+
+    @Test
+    fun getMyProfile_mapsDivisionAndBirthDate() = runTest {
+        val json = """
+            {"success":true,"data":{"publicId":"u1","firstName":"Seungjin","lastName":"Kim",
+             "status":"ACTIVE","groupName":"다니엘조","division":"2교구","birthDate":"1992-12-07"}}
+        """.trimIndent()
+        val p = MemberRepositoryImpl(mockClient(json)).getMyProfile().getOrThrow()
+        assertEquals("2교구", p.division)
+        assertEquals("1992-12-07", p.birthDate)
+    }
+
+    @Test
+    fun getMyProfile_toleratesOldBackendWithoutNewFields() = runTest {
+        val json = """
+            {"success":true,"data":{"publicId":"u1","firstName":"Seungjin","lastName":"Kim","status":"ACTIVE"}}
+        """.trimIndent()
+        val p = MemberRepositoryImpl(mockClient(json)).getMyProfile().getOrThrow()
+        assertEquals(null, p.division)
+        assertEquals(null, p.birthDate)
+    }
+
+    @Test
+    fun updateMyProfile_sendsBirthDateKeyCamelCase() = runTest {
+        var body = ""
+        val json = testJson.encodeToString(ApiResponse(success = true, data = member))
+        val client = mockClient(json) { req -> body = (req.body as TextContent).text }
+        MemberRepositoryImpl(client).updateMyProfile(
+            phoneNumber = null, profileImageUrl = null, birthDate = "1992-12-07",
+            street = null, houseNumber = null, zipCode = null, city = null,
+        )
+        assertTrue(body.contains("\"birthDate\":\"1992-12-07\""), "body was $body")
+    }
+
+    @Test
+    fun updateMyProfile_omitsNullBirthDate() = runTest {
+        var body = ""
+        val json = testJson.encodeToString(ApiResponse(success = true, data = member))
+        val client = mockClient(json) { req -> body = (req.body as TextContent).text }
+        MemberRepositoryImpl(client).updateMyProfile(
+            phoneNumber = null, profileImageUrl = null, birthDate = null,
+            street = null, houseNumber = null, zipCode = null, city = "Köln",
+        )
+        assertFalse(body.contains("birthDate"), "body was $body")
     }
 }

@@ -111,6 +111,7 @@ class ProfileViewModel(
             memberRepository.updateMyProfile(
                 phoneNumber = current.editPhone.ifBlank { null },
                 profileImageUrl = current.editImageUrl.ifBlank { null },
+                birthDate = null,
                 street = current.editStreet.ifBlank { null },
                 houseNumber = current.editHouseNumber.ifBlank { null },
                 zipCode = current.editZipCode.ifBlank { null },

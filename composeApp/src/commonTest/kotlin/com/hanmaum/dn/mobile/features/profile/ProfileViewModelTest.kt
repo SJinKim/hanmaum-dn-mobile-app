@@ -35,6 +35,7 @@ private class FakeMemberRepository : MemberRepository {
     data class UpdateArgs(
         val phoneNumber: String?,
         val profileImageUrl: String?,
+        val birthDate: String?,
         val street: String?,
         val houseNumber: String?,
         val zipCode: String?,
@@ -48,16 +49,18 @@ private class FakeMemberRepository : MemberRepository {
     override suspend fun updateMyProfile(
         phoneNumber: String?,
         profileImageUrl: String?,
+        birthDate: String?,
         street: String?,
         houseNumber: String?,
         zipCode: String?,
         city: String?,
     ): Result<MemberResponse> {
-        lastUpdate = UpdateArgs(phoneNumber, profileImageUrl, street, houseNumber, zipCode, city)
+        lastUpdate = UpdateArgs(phoneNumber, profileImageUrl, birthDate, street, houseNumber, zipCode, city)
         // Mirror backend PATCH semantics: null keeps the old value.
         profile = profile.copy(
             phoneNumber = phoneNumber ?: profile.phoneNumber,
             profileImageUrl = profileImageUrl ?: profile.profileImageUrl,
+            birthDate = birthDate ?: profile.birthDate,
             street = street ?: profile.street,
             houseNumber = houseNumber ?: profile.houseNumber,
             zipCode = zipCode ?: profile.zipCode,

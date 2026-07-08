@@ -6,11 +6,13 @@ import kotlinx.serialization.Serializable
  * PATCH /members/me body. Wire names are camelCase — the backend is default
  * Jackson (no snake_case strategy); a snake_case key is silently ignored.
  * Null fields are omitted (encodeDefaults=false) and mean "keep old value".
+ * birthDate is the ISO string "YYYY-MM-DD".
  */
 @Serializable
 data class UpdateMyProfileRequest(
     val phoneNumber: String? = null,
     val profileImageUrl: String? = null,
+    val birthDate: String? = null,
     val street: String? = null,
     val houseNumber: String? = null,
     val zipCode: String? = null,

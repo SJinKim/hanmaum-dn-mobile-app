@@ -7,6 +7,7 @@ interface MemberRepository {
     suspend fun updateMyProfile(
         phoneNumber: String?,
         profileImageUrl: String?,
+        birthDate: String?,
         street: String?,
         houseNumber: String?,
         zipCode: String?,
