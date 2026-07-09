@@ -36,7 +36,6 @@ interface AppStrings {
     val profileEdit: String
     val profileLogout: String
     val profileLanguage: String
-    val profileAccountPreferences: String
     val selectLanguage: String
     val profileTheme: String
     val selectTheme: String
@@ -126,6 +125,8 @@ interface AppStrings {
     val labelBirthDate: String
     val labelDivision: String
     val labelGroup: String
+    val labelName: String
+    val labelChurchRole: String
     val lockedFieldHint: String
     val profileSaved: String
 }
@@ -159,7 +160,6 @@ object EnStrings : AppStrings {
     override val profileEdit = "Edit Profile"
     override val profileLogout = "Logout"
     override val profileLanguage = "LANGUAGE"
-    override val profileAccountPreferences = "Account Preferences"
     override val selectLanguage = "Select Language"
     override val profileTheme = "THEME"
     override val selectTheme = "Select Theme"
@@ -233,6 +233,8 @@ object EnStrings : AppStrings {
     override val labelBirthDate = "BIRTH DATE"
     override val labelDivision = "DIVISION"
     override val labelGroup = "GROUP"
+    override val labelName = "NAME"
+    override val labelChurchRole = "CHURCH ROLE"
     override val lockedFieldHint = "Managed by the church office"
     override val profileSaved = "Saved"
 }
@@ -266,7 +268,6 @@ object KoStrings : AppStrings {
     override val profileEdit = "프로필 수정"
     override val profileLogout = "로그아웃"
     override val profileLanguage = "언어"
-    override val profileAccountPreferences = "계정 설정"
     override val selectLanguage = "언어 선택"
     override val profileTheme = "테마"
     override val selectTheme = "테마 선택"
@@ -340,6 +341,8 @@ object KoStrings : AppStrings {
     override val labelBirthDate = "생년월일"
     override val labelDivision = "교구"
     override val labelGroup = "목장"
+    override val labelName = "이름"
+    override val labelChurchRole = "직분"
     override val lockedFieldHint = "교회에서 관리하는 정보입니다"
     override val profileSaved = "저장되었습니다"
 }
@@ -373,7 +376,6 @@ object DeStrings : AppStrings {
     override val profileEdit = "Profil bearbeiten"
     override val profileLogout = "Abmelden"
     override val profileLanguage = "SPRACHE"
-    override val profileAccountPreferences = "Kontoeinstellungen"
     override val selectLanguage = "Sprache auswählen"
     override val profileTheme = "DARSTELLUNG"
     override val selectTheme = "Darstellung wählen"
@@ -447,6 +449,8 @@ object DeStrings : AppStrings {
     override val labelBirthDate = "GEBURTSDATUM"
     override val labelDivision = "BEZIRK"
     override val labelGroup = "GRUPPE"
+    override val labelName = "NAME"
+    override val labelChurchRole = "KIRCHENROLLE"
     override val lockedFieldHint = "Wird vom Gemeindebüro verwaltet"
     override val profileSaved = "Gespeichert"
 }

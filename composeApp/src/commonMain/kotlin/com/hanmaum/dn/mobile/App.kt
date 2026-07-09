@@ -45,6 +45,7 @@ import com.hanmaum.dn.mobile.features.ministry.presentation.detail.MinistryDetai
 import com.hanmaum.dn.mobile.features.ministry.presentation.list.MinistryListScreen
 import com.hanmaum.dn.mobile.features.pending.screen.PendingScreen
 import com.hanmaum.dn.mobile.features.pending.screen.SplashScreen
+import com.hanmaum.dn.mobile.features.profile.presentation.PersonalInfoScreen
 import com.hanmaum.dn.mobile.features.profile.presentation.ProfileScreen
 import com.hanmaum.dn.mobile.features.profile.presentation.SettingsScreen
 import org.koin.compose.KoinContext
@@ -194,35 +195,13 @@ fun App() {
                                     popUpTo(0) { inclusive = true }
                                 }
                             },
-                            currentLocale = locale,
-                            onLocaleChange = { newLocale ->
-                                localeRepo.setLocale(newLocale)
-                                locale = newLocale
-                            },
-                            currentTheme = themeMode,
-                            onThemeChange = { newMode ->
-                                themeRepo.setThemeMode(newMode)
-                                themeMode = newMode
-                            },
-                            biometricEnabled = biometricEnabled,
-                            biometricAvailable = biometric.isAvailable(),
-                            onBiometricToggle = { enable ->
-                                if (enable) {
-                                    // Credentials are captured on the next successful login.
-                                    tokenStorage.setBiometricEnabled(true)
-                                    biometricEnabled = true
-                                } else {
-                                    tokenStorage.setBiometricEnabled(false)
-                                    credentialStore.clear()
-                                    biometricEnabled = false
-                                }
-                            },
-                            keepSignedIn = keepSignedIn,
-                            onKeepSignedInToggle = { enable ->
-                                tokenStorage.setKeepSignedIn(enable)
-                                keepSignedIn = enable
-                            },
+                            onOpenPersonalInfo = { navController.navigate(PersonalInfoRoute) },
+                            onOpenSettings = { navController.navigate(SettingsRoute) },
                         )
+                    }
+
+                    composable<PersonalInfoRoute> {
+                        PersonalInfoScreen(onBack = { navController.popBackStack() })
                     }
 
                     composable<SettingsRoute> {
