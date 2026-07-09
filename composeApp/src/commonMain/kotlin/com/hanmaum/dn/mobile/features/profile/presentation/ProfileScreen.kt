@@ -130,14 +130,6 @@ private fun ProfileHubContent(
             fontWeight = FontWeight.Bold,
             color      = MaterialTheme.colorScheme.onBackground,
         )
-        profile.division?.let {
-            Spacer(Modifier.height(4.dp))
-            Text(
-                it,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
         profile.groupName?.let {
             Spacer(Modifier.height(8.dp))
             Surface(
