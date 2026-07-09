@@ -120,6 +120,14 @@ interface AppStrings {
     val rsvpLater: String
     val rsvpDone: String
     val rsvpAnnouncementCta: String
+    // Settings & personal info screens
+    val settingsTitle: String
+    val personalInfoTitle: String
+    val labelBirthDate: String
+    val labelDivision: String
+    val labelGroup: String
+    val lockedFieldHint: String
+    val profileSaved: String
 }
 
 object EnStrings : AppStrings {
@@ -220,6 +228,13 @@ object EnStrings : AppStrings {
     override val rsvpLater = "Later"
     override val rsvpDone = "Attending"
     override val rsvpAnnouncementCta = "RSVP to this event"
+    override val settingsTitle = "Settings"
+    override val personalInfoTitle = "Personal Info"
+    override val labelBirthDate = "BIRTH DATE"
+    override val labelDivision = "DIVISION"
+    override val labelGroup = "GROUP"
+    override val lockedFieldHint = "Managed by the church office"
+    override val profileSaved = "Saved"
 }
 
 object KoStrings : AppStrings {
@@ -320,6 +335,13 @@ object KoStrings : AppStrings {
     override val rsvpLater = "나중에"
     override val rsvpDone = "참석 완료"
     override val rsvpAnnouncementCta = "행사 참석하기"
+    override val settingsTitle = "설정"
+    override val personalInfoTitle = "개인 정보"
+    override val labelBirthDate = "생년월일"
+    override val labelDivision = "교구"
+    override val labelGroup = "목장"
+    override val lockedFieldHint = "교회에서 관리하는 정보입니다"
+    override val profileSaved = "저장되었습니다"
 }
 
 object DeStrings : AppStrings {
@@ -420,4 +442,11 @@ object DeStrings : AppStrings {
     override val rsvpLater = "Später"
     override val rsvpDone = "Zugesagt"
     override val rsvpAnnouncementCta = "An Veranstaltung teilnehmen"
+    override val settingsTitle = "Einstellungen"
+    override val personalInfoTitle = "Persönliche Daten"
+    override val labelBirthDate = "GEBURTSDATUM"
+    override val labelDivision = "BEZIRK"
+    override val labelGroup = "GRUPPE"
+    override val lockedFieldHint = "Wird vom Gemeindebüro verwaltet"
+    override val profileSaved = "Gespeichert"
 }
