@@ -26,6 +26,10 @@ sealed class ProfileUiState {
                 editHouseNumber != (profile.houseNumber ?: "") ||
                 editZipCode != (profile.zipCode ?: "") ||
                 editCity != (profile.city ?: "")
+
+        /** False for a partial birthdate (e.g. "1992.1") — never silently truncated on save. */
+        val isBirthDateValid: Boolean
+            get() = editBirthDate.isEmpty() || editBirthDate.length == 10
     }
     data class Error(val message: String) : ProfileUiState()
 }

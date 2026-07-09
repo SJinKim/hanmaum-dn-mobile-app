@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -36,6 +37,7 @@ fun BirthdayField(
     onValueChange: (String) -> Unit,
     error: String? = null,
 ) {
+    val strings = LocalStrings.current
     var showPicker by remember { mutableStateOf(false) }
     val pickerState = rememberDatePickerState()
 
@@ -54,10 +56,10 @@ fun BirthdayField(
                         onValueChange("$y.$m.$d")
                     }
                     showPicker = false
-                }) { Text("OK") }
+                }) { Text(strings.confirm) }
             },
             dismissButton = {
-                TextButton(onClick = { showPicker = false }) { Text("Cancel") }
+                TextButton(onClick = { showPicker = false }) { Text(strings.cancel) }
             },
         ) {
             DatePicker(state = pickerState)
@@ -92,7 +94,7 @@ fun BirthdayField(
             IconButton(onClick = { showPicker = true }) {
                 Icon(
                     imageVector        = Icons.Default.CalendarMonth,
-                    contentDescription = "날짜 선택",
+                    contentDescription = strings.selectDate,
                 )
             }
         },

@@ -47,12 +47,6 @@ class ProfileViewModel(
         _uiState.value = current.copy(editBirthDate = value)
     }
 
-    /** Discards in-progress edits, re-seeding every edit field from the loaded profile. */
-    fun resetEdits() {
-        val current = _uiState.value as? ProfileUiState.Success ?: return
-        _uiState.value = ProfileUiState.Success(current.profile)
-    }
-
     fun consumeSaveSuccess() {
         val current = _uiState.value as? ProfileUiState.Success ?: return
         if (current.saveSuccess) _uiState.value = current.copy(saveSuccess = false)

@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -38,6 +38,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.components.BirthdayField
@@ -64,7 +66,7 @@ fun PersonalInfoScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            imageVector        = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector        = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                             contentDescription = strings.back,
                         )
                     }
@@ -206,6 +208,7 @@ private fun PersonalInfoContent(
         BirthdayField(
             value         = state.editBirthDate,
             onValueChange = viewModel::updateBirthDate,
+            error         = if (!state.isBirthDateValid) strings.errorDateIncomplete else null,
         )
 
         Spacer(Modifier.height(16.dp))
@@ -313,10 +316,20 @@ private fun PersonalInfoContent(
 
         Button(
             onClick  = { viewModel.saveProfile() },
-            enabled  = state.isDirty && !state.isSaving,
+            enabled  = state.isDirty && !state.isSaving && state.isBirthDateValid,
             modifier = Modifier.fillMaxWidth().height(50.dp),
             shape    = MaterialTheme.shapes.extraSmall,
-        ) { Text(strings.save, style = MaterialTheme.typography.labelLarge) }
+        ) {
+            if (state.isSaving) {
+                CircularProgressIndicator(
+                    modifier    = Modifier.size(20.dp).semantics { contentDescription = strings.saving },
+                    color       = MaterialTheme.colorScheme.onPrimary,
+                    strokeWidth = 2.dp,
+                )
+            } else {
+                Text(strings.save, style = MaterialTheme.typography.labelLarge)
+            }
+        }
 
         Spacer(Modifier.height(24.dp))
     }

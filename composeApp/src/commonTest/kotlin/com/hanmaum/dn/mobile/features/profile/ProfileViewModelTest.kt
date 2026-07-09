@@ -196,17 +196,6 @@ class ProfileViewModelTest {
     }
 
     @Test
-    fun `reset edits restores loaded values`() = runTest {
-        val viewModel = vm(FakeMemberRepository())
-        viewModel.loadProfile()
-        dispatcher.scheduler.advanceUntilIdle()
-        viewModel.updateHouseNumber("99")
-        viewModel.resetEdits()
-        assertEquals("12", success(viewModel).editHouseNumber)
-        assertEquals(false, success(viewModel).isDirty)
-    }
-
-    @Test
     fun `silent refresh does not clobber a dirty edit`() = runTest {
         val viewModel = vm(FakeMemberRepository())
         viewModel.loadProfile()
@@ -215,5 +204,18 @@ class ProfileViewModelTest {
         viewModel.loadProfile()
         dispatcher.scheduler.advanceUntilIdle()
         assertEquals("+49 111", success(viewModel).editPhone)
+    }
+
+    @Test
+    fun `partial birth date is invalid full or empty birth date is valid`() = runTest {
+        val viewModel = vm(FakeMemberRepository())
+        viewModel.loadProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        viewModel.updateBirthDate("1992.1")
+        assertEquals(false, success(viewModel).isBirthDateValid)
+        viewModel.updateBirthDate("1992.01.07")
+        assertEquals(true, success(viewModel).isBirthDateValid)
+        viewModel.updateBirthDate("")
+        assertEquals(true, success(viewModel).isBirthDateValid)
     }
 }
