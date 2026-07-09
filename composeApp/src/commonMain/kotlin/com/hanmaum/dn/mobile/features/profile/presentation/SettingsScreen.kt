@@ -32,18 +32,30 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.hanmaum.dn.mobile.core.domain.model.ThemeMode
+import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
+import com.hanmaum.dn.mobile.core.geofence.GeofenceManager
+import com.hanmaum.dn.mobile.core.geofence.GeofencePermissionRequest
 import com.hanmaum.dn.mobile.core.i18n.AppLocale
 import com.hanmaum.dn.mobile.core.i18n.AppStrings
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
+import com.hanmaum.dn.mobile.features.geofence.domain.GeofenceCoordinator
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 // This is copied verbatim from ProfileScreen.kt's `ProfileViewContent` (locale row +
 // language picker, theme row + theme picker, Face ID row, keep-signed-in row) for one
 // commit — the profile-side copy is removed in the next task.
+//
+// Contains: locale row + language picker, theme row + theme picker, keep-signed-in
+// row, Face ID row, and location-sharing row (restored here after being dropped in
+// the profile-hub rewrite; this is its permanent home as a setting, not a profile
+// field).
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -195,6 +207,9 @@ fun SettingsScreen(
                 }
             }
 
+            Spacer(Modifier.height(12.dp))
+            LocationSharingCard()
+
             Spacer(Modifier.height(40.dp))
         }
     }
@@ -218,6 +233,80 @@ fun SettingsScreen(
             },
             onDismiss = { showThemePicker = false },
         )
+    }
+}
+
+@Composable
+private fun LocationSharingCard() {
+    val strings = LocalStrings.current
+    val locationPreferences = koinInject<LocationPreferences>()
+    val geofenceManager = koinInject<GeofenceManager>()
+    val geofenceCoordinator = koinInject<GeofenceCoordinator>()
+    val scope = rememberCoroutineScope()
+
+    var enabled by remember {
+        mutableStateOf(locationPreferences.isSharingEnabled() && geofenceManager.isLocationPermissionGranted())
+    }
+    var requestingPermission by remember { mutableStateOf(false) }
+
+    if (requestingPermission) {
+        GeofencePermissionRequest { granted ->
+            requestingPermission = false
+            locationPreferences.setPromptDismissed(true)
+            if (granted) {
+                locationPreferences.setSharingEnabled(true)
+                enabled = true
+                scope.launch { geofenceCoordinator.initialize() }
+            } else {
+                locationPreferences.setSharingEnabled(false)
+                enabled = false
+            }
+        }
+    }
+
+    Card(
+        modifier  = Modifier.fillMaxWidth(),
+        shape     = MaterialTheme.shapes.large,
+        colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Row(
+            modifier              = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment     = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text  = strings.profileLocationSharing,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text  = strings.locationSharingDesc,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.outline,
+                )
+            }
+            Switch(
+                checked         = enabled,
+                onCheckedChange = { wantOn ->
+                    if (wantOn) {
+                        if (geofenceManager.isLocationPermissionGranted()) {
+                            locationPreferences.setSharingEnabled(true)
+                            enabled = true
+                            scope.launch { geofenceCoordinator.initialize() }
+                        } else {
+                            requestingPermission = true
+                        }
+                    } else {
+                        locationPreferences.setSharingEnabled(false)
+                        enabled = false
+                        scope.launch { geofenceCoordinator.stop() }
+                    }
+                },
+            )
+        }
     }
 }
 
