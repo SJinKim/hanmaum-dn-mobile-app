@@ -10,6 +10,8 @@ import kotlinx.serialization.Serializable
 @Serializable object AnnouncementListRoute
 @Serializable data class AnnouncementDetailRoute(val id: String)
 @Serializable object ProfileRoute
+@Serializable object PersonalInfoRoute
+@Serializable object SettingsRoute
 @Serializable object MinistryListRoute
 @Serializable data class MinistryDetailRoute(val publicId: String)
 @Serializable object CommunityRoute

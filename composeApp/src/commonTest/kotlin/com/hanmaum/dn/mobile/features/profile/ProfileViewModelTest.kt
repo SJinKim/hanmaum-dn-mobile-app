@@ -26,15 +26,18 @@ private class FakeMemberRepository : MemberRepository {
         firstName = "Seungjin",
         lastName = "Kim",
         status = MemberStatus.ACTIVE,
+        division = "2교구",
         street = "Musterstraße",
         houseNumber = "12",
         zipCode = "50667",
         city = "Köln",
+        birthDate = "1992-12-07",
     )
 
     data class UpdateArgs(
         val phoneNumber: String?,
         val profileImageUrl: String?,
+        val birthDate: String?,
         val street: String?,
         val houseNumber: String?,
         val zipCode: String?,
@@ -48,16 +51,18 @@ private class FakeMemberRepository : MemberRepository {
     override suspend fun updateMyProfile(
         phoneNumber: String?,
         profileImageUrl: String?,
+        birthDate: String?,
         street: String?,
         houseNumber: String?,
         zipCode: String?,
         city: String?,
     ): Result<MemberResponse> {
-        lastUpdate = UpdateArgs(phoneNumber, profileImageUrl, street, houseNumber, zipCode, city)
+        lastUpdate = UpdateArgs(phoneNumber, profileImageUrl, birthDate, street, houseNumber, zipCode, city)
         // Mirror backend PATCH semantics: null keeps the old value.
         profile = profile.copy(
             phoneNumber = phoneNumber ?: profile.phoneNumber,
             profileImageUrl = profileImageUrl ?: profile.profileImageUrl,
+            birthDate = birthDate ?: profile.birthDate,
             street = street ?: profile.street,
             houseNumber = houseNumber ?: profile.houseNumber,
             zipCode = zipCode ?: profile.zipCode,
@@ -117,7 +122,6 @@ class ProfileViewModelTest {
         val viewModel = vm(FakeMemberRepository())
         viewModel.loadProfile()
         dispatcher.scheduler.advanceUntilIdle()
-        viewModel.startEditing()
         viewModel.updateHouseNumber("12a")
         assertEquals("12a", success(viewModel).editHouseNumber)
     }
@@ -128,7 +132,6 @@ class ProfileViewModelTest {
         val viewModel = vm(repo)
         viewModel.loadProfile()
         dispatcher.scheduler.advanceUntilIdle()
-        viewModel.startEditing()
         viewModel.updateHouseNumber("12a")
         viewModel.saveProfile()
         dispatcher.scheduler.advanceUntilIdle()
@@ -143,20 +146,76 @@ class ProfileViewModelTest {
         val viewModel = vm(repo)
         viewModel.loadProfile()
         dispatcher.scheduler.advanceUntilIdle()
-        viewModel.startEditing()
         viewModel.saveProfile()
         dispatcher.scheduler.advanceUntilIdle()
         assertNull(repo.lastUpdate?.houseNumber)
     }
 
     @Test
-    fun `cancel editing resets house number to profile value`() = runTest {
+    fun `load seeds edit birth date in display format`() = runTest {
         val viewModel = vm(FakeMemberRepository())
         viewModel.loadProfile()
         dispatcher.scheduler.advanceUntilIdle()
-        viewModel.startEditing()
-        viewModel.updateHouseNumber("99")
-        viewModel.cancelEditing()
-        assertEquals("12", success(viewModel).editHouseNumber)
+        assertEquals("1992.12.07", success(viewModel).editBirthDate)
+    }
+
+    @Test
+    fun `state is not dirty after load and dirty after an edit`() = runTest {
+        val viewModel = vm(FakeMemberRepository())
+        viewModel.loadProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        assertEquals(false, success(viewModel).isDirty)
+        viewModel.updatePhone("+49 999")
+        assertEquals(true, success(viewModel).isDirty)
+    }
+
+    @Test
+    fun `save converts birth date to iso format`() = runTest {
+        val repo = FakeMemberRepository()
+        val viewModel = vm(repo)
+        viewModel.loadProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        viewModel.updateBirthDate("1990.01.31")
+        viewModel.saveProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        assertEquals("1990-01-31", repo.lastUpdate?.birthDate)
+    }
+
+    @Test
+    fun `save sets saveSuccess and state is clean again`() = runTest {
+        val viewModel = vm(FakeMemberRepository())
+        viewModel.loadProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        viewModel.updateCity("Bonn")
+        viewModel.saveProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        assertEquals(true, success(viewModel).saveSuccess)
+        assertEquals(false, success(viewModel).isDirty)
+        viewModel.consumeSaveSuccess()
+        assertEquals(false, success(viewModel).saveSuccess)
+    }
+
+    @Test
+    fun `silent refresh does not clobber a dirty edit`() = runTest {
+        val viewModel = vm(FakeMemberRepository())
+        viewModel.loadProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        viewModel.updatePhone("+49 111")
+        viewModel.loadProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        assertEquals("+49 111", success(viewModel).editPhone)
+    }
+
+    @Test
+    fun `partial birth date is invalid full or empty birth date is valid`() = runTest {
+        val viewModel = vm(FakeMemberRepository())
+        viewModel.loadProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        viewModel.updateBirthDate("1992.1")
+        assertEquals(false, success(viewModel).isBirthDateValid)
+        viewModel.updateBirthDate("1992.01.07")
+        assertEquals(true, success(viewModel).isBirthDateValid)
+        viewModel.updateBirthDate("")
+        assertEquals(true, success(viewModel).isBirthDateValid)
     }
 }

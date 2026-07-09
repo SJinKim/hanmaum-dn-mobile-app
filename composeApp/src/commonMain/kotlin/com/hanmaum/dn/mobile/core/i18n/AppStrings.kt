@@ -6,6 +6,7 @@ interface AppStrings {
     val back: String
     val save: String
     val cancel: String
+    val confirm: String
     val saving: String
     val errorOccurred: String
     // Register form validation
@@ -33,10 +34,8 @@ interface AppStrings {
     // Notifications
     val notifications: String
     // Profile screen
-    val profileEdit: String
     val profileLogout: String
     val profileLanguage: String
-    val profileAccountPreferences: String
     val selectLanguage: String
     val profileTheme: String
     val selectTheme: String
@@ -72,7 +71,6 @@ interface AppStrings {
     val labelHouseNumber: String
     val labelZipCode: String
     val labelCity: String
-    val labelPrimaryGroup: String
     val profileImageUrl: String
     // Ministry
     val ministryListTitle: String
@@ -120,6 +118,18 @@ interface AppStrings {
     val rsvpLater: String
     val rsvpDone: String
     val rsvpAnnouncementCta: String
+    // Settings & personal info screens
+    val settingsTitle: String
+    val personalInfoTitle: String
+    val labelBirthDate: String
+    val labelDivision: String
+    val labelGroup: String
+    val labelName: String
+    val labelChurchRole: String
+    val lockedFieldHint: String
+    val profileSaved: String
+    // Date picker (BirthdayField)
+    val selectDate: String
 }
 
 object EnStrings : AppStrings {
@@ -127,6 +137,7 @@ object EnStrings : AppStrings {
     override val back = "Back"
     override val save = "Save"
     override val cancel = "Cancel"
+    override val confirm = "Confirm"
     override val saving = "Saving…"
     override val errorOccurred = "An error occurred"
     override val errorRequired = "This field is required"
@@ -148,10 +159,8 @@ object EnStrings : AppStrings {
     override val navProfile = "Profile"
     override val navAttendance = "Attendance"
     override val notifications = "Notifications"
-    override val profileEdit = "Edit Profile"
     override val profileLogout = "Logout"
     override val profileLanguage = "LANGUAGE"
-    override val profileAccountPreferences = "Account Preferences"
     override val selectLanguage = "Select Language"
     override val profileTheme = "THEME"
     override val selectTheme = "Select Theme"
@@ -182,7 +191,6 @@ object EnStrings : AppStrings {
     override val labelHouseNumber = "HOUSE NO."
     override val labelZipCode = "ZIP CODE"
     override val labelCity = "CITY"
-    override val labelPrimaryGroup = "PRIMARY GROUP"
     override val profileImageUrl = "PROFILE IMAGE URL"
     override val ministryListTitle = "Ministries"
     override val ministryListSubtitle = "Discover the ministries serving our church"
@@ -220,6 +228,16 @@ object EnStrings : AppStrings {
     override val rsvpLater = "Later"
     override val rsvpDone = "Attending"
     override val rsvpAnnouncementCta = "RSVP to this event"
+    override val settingsTitle = "Settings"
+    override val personalInfoTitle = "Personal Info"
+    override val labelBirthDate = "BIRTH DATE"
+    override val labelDivision = "DIVISION"
+    override val labelGroup = "GROUP"
+    override val labelName = "NAME"
+    override val labelChurchRole = "CHURCH ROLE"
+    override val lockedFieldHint = "Managed by the church office"
+    override val profileSaved = "Saved"
+    override val selectDate = "Select date"
 }
 
 object KoStrings : AppStrings {
@@ -227,6 +245,7 @@ object KoStrings : AppStrings {
     override val back = "뒤로"
     override val save = "저장"
     override val cancel = "취소"
+    override val confirm = "확인"
     override val saving = "저장 중"
     override val errorOccurred = "오류가 발생했습니다"
     override val errorRequired = "필수 항목입니다"
@@ -248,10 +267,8 @@ object KoStrings : AppStrings {
     override val navProfile = "프로필"
     override val navAttendance = "출석 체크"
     override val notifications = "알림"
-    override val profileEdit = "프로필 수정"
     override val profileLogout = "로그아웃"
     override val profileLanguage = "언어"
-    override val profileAccountPreferences = "계정 설정"
     override val selectLanguage = "언어 선택"
     override val profileTheme = "테마"
     override val selectTheme = "테마 선택"
@@ -282,7 +299,6 @@ object KoStrings : AppStrings {
     override val labelHouseNumber = "번지"
     override val labelZipCode = "우편번호"
     override val labelCity = "도시"
-    override val labelPrimaryGroup = "소속 그룹"
     override val profileImageUrl = "프로필 사진 URL"
     override val ministryListTitle = "사역"
     override val ministryListSubtitle = "교회의 다양한 사역을 만나보세요"
@@ -320,6 +336,16 @@ object KoStrings : AppStrings {
     override val rsvpLater = "나중에"
     override val rsvpDone = "참석 완료"
     override val rsvpAnnouncementCta = "행사 참석하기"
+    override val settingsTitle = "설정"
+    override val personalInfoTitle = "개인 정보"
+    override val labelBirthDate = "생년월일"
+    override val labelDivision = "교구"
+    override val labelGroup = "목장"
+    override val labelName = "이름"
+    override val labelChurchRole = "직분"
+    override val lockedFieldHint = "교회에서 관리하는 정보입니다"
+    override val profileSaved = "저장되었습니다"
+    override val selectDate = "날짜 선택"
 }
 
 object DeStrings : AppStrings {
@@ -327,6 +353,7 @@ object DeStrings : AppStrings {
     override val back = "Zurück"
     override val save = "Speichern"
     override val cancel = "Abbrechen"
+    override val confirm = "Bestätigen"
     override val saving = "Wird gespeichert…"
     override val errorOccurred = "Ein Fehler ist aufgetreten"
     override val errorRequired = "Dieses Feld ist erforderlich"
@@ -348,10 +375,8 @@ object DeStrings : AppStrings {
     override val navProfile = "Profil"
     override val navAttendance = "Anwesenheit"
     override val notifications = "Benachrichtigungen"
-    override val profileEdit = "Profil bearbeiten"
     override val profileLogout = "Abmelden"
     override val profileLanguage = "SPRACHE"
-    override val profileAccountPreferences = "Kontoeinstellungen"
     override val selectLanguage = "Sprache auswählen"
     override val profileTheme = "DARSTELLUNG"
     override val selectTheme = "Darstellung wählen"
@@ -382,7 +407,6 @@ object DeStrings : AppStrings {
     override val labelHouseNumber = "HAUSNUMMER"
     override val labelZipCode = "POSTLEITZAHL"
     override val labelCity = "STADT"
-    override val labelPrimaryGroup = "HAUPTGRUPPE"
     override val profileImageUrl = "PROFILBILD-URL"
     override val ministryListTitle = "Dienste"
     override val ministryListSubtitle = "Entdecken Sie die Dienste unserer Gemeinde"
@@ -420,4 +444,14 @@ object DeStrings : AppStrings {
     override val rsvpLater = "Später"
     override val rsvpDone = "Zugesagt"
     override val rsvpAnnouncementCta = "An Veranstaltung teilnehmen"
+    override val settingsTitle = "Einstellungen"
+    override val personalInfoTitle = "Persönliche Daten"
+    override val labelBirthDate = "GEBURTSDATUM"
+    override val labelDivision = "BEZIRK"
+    override val labelGroup = "GRUPPE"
+    override val labelName = "NAME"
+    override val labelChurchRole = "KIRCHENROLLE"
+    override val lockedFieldHint = "Wird vom Gemeindebüro verwaltet"
+    override val profileSaved = "Gespeichert"
+    override val selectDate = "Datum wählen"
 }

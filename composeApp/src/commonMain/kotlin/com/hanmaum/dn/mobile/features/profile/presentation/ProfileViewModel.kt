@@ -26,13 +26,13 @@ class ProfileViewModel(
      * Loads (or reloads) the profile. Driven by the screen on every entry so a
      * profile edited elsewhere (e.g. the web app) stays current without a
      * re-login. Refreshes silently when data is already shown, skips entirely
-     * while the user is editing (so an in-progress edit is never clobbered), and
-     * keeps the current data on a transient refresh failure.
+     * while an edit is in progress (so it is never clobbered), and keeps the
+     * current data on a transient refresh failure.
      */
     fun loadProfile() {
         viewModelScope.launch {
             val current = _uiState.value
-            if (current is ProfileUiState.Success && current.isEditing) return@launch
+            if (current is ProfileUiState.Success && current.isDirty) return@launch
             val hadData = current is ProfileUiState.Success
             if (!hadData) _uiState.value = ProfileUiState.Loading
             memberRepository.getMyProfile().fold(
@@ -42,23 +42,14 @@ class ProfileViewModel(
         }
     }
 
-    fun startEditing() {
+    fun updateBirthDate(value: String) {
         val current = _uiState.value as? ProfileUiState.Success ?: return
-        _uiState.value = current.copy(isEditing = true)
+        _uiState.value = current.copy(editBirthDate = value)
     }
 
-    fun cancelEditing() {
+    fun consumeSaveSuccess() {
         val current = _uiState.value as? ProfileUiState.Success ?: return
-        _uiState.value = current.copy(
-            isEditing = false,
-            editPhone = current.profile.phoneNumber ?: "",
-            editImageUrl = current.profile.profileImageUrl ?: "",
-            editStreet = current.profile.street ?: "",
-            editHouseNumber = current.profile.houseNumber ?: "",
-            editZipCode = current.profile.zipCode ?: "",
-            editCity = current.profile.city ?: "",
-            saveError = null,
-        )
+        if (current.saveSuccess) _uiState.value = current.copy(saveSuccess = false)
     }
 
     fun updatePhone(value: String) {
@@ -111,12 +102,13 @@ class ProfileViewModel(
             memberRepository.updateMyProfile(
                 phoneNumber = current.editPhone.ifBlank { null },
                 profileImageUrl = current.editImageUrl.ifBlank { null },
+                birthDate = current.editBirthDate.replace('.', '-').takeIf { it.length == 10 },
                 street = current.editStreet.ifBlank { null },
                 houseNumber = current.editHouseNumber.ifBlank { null },
                 zipCode = current.editZipCode.ifBlank { null },
                 city = current.editCity.ifBlank { null },
             ).fold(
-                onSuccess = { updated -> _uiState.value = ProfileUiState.Success(updated) },
+                onSuccess = { updated -> _uiState.value = ProfileUiState.Success(updated).copy(saveSuccess = true) },
                 onFailure = { err ->
                     _uiState.value = current.copy(isSaving = false, saveError = err.message ?: "저장 실패")
                 },

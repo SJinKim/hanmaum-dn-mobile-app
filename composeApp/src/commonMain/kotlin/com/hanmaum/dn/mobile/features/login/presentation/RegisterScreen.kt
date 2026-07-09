@@ -29,7 +29,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -39,8 +38,6 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,7 +47,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -66,24 +62,20 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.i18n.AppStrings
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
+import com.hanmaum.dn.mobile.core.presentation.components.BirthdayField
 import com.hanmaum.dn.mobile.core.presentation.dismissKeyboardOnTap
 import com.hanmaum.dn.mobile.features.login.domain.model.Countries
 import com.hanmaum.dn.mobile.features.login.domain.model.Country
 import com.hanmaum.dn.mobile.features.login.domain.model.PasswordCriteria
-import kotlin.time.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -563,88 +555,6 @@ private fun SheetOptionRow(
 }
 
 // ── Form field helpers ────────────────────────────────────────────────────────
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun BirthdayField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    error: String? = null,
-) {
-    var showPicker by remember { mutableStateOf(false) }
-    val pickerState = rememberDatePickerState()
-
-    if (showPicker) {
-        DatePickerDialog(
-            onDismissRequest = { showPicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    pickerState.selectedDateMillis?.let { millis ->
-                        val dt = Instant.fromEpochMilliseconds(millis).toLocalDateTime(TimeZone.UTC)
-                        val y = dt.year.toString().padStart(4, '0')
-                        @Suppress("DEPRECATION")
-                        val m = dt.monthNumber.toString().padStart(2, '0')
-                        @Suppress("DEPRECATION")
-                        val d = dt.dayOfMonth.toString().padStart(2, '0')
-                        onValueChange("$y.$m.$d")
-                    }
-                    showPicker = false
-                }) { Text("OK") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showPicker = false }) { Text("Cancel") }
-            },
-        ) {
-            DatePicker(state = pickerState)
-        }
-    }
-
-    // Drive the field with a TextFieldValue so we can keep the caret at the end
-    // after the "." separators are auto-inserted. With a plain String value the
-    // caret offset is preserved across the reformat and lands *before* the digit
-    // just typed (e.g. "1987.|1"), so the next digit is inserted ahead of it and
-    // the month/day digits get transposed ("198712" → "198721").
-    var fieldValue by remember { mutableStateOf(TextFieldValue(value, TextRange(value.length))) }
-    if (fieldValue.text != value) {
-        // External change (e.g. the date picker) — resync, caret at end.
-        fieldValue = TextFieldValue(value, TextRange(value.length))
-    }
-
-    TextField(
-        value = fieldValue,
-        onValueChange = { raw ->
-            val digits = raw.text.filter { it.isDigit() }.take(8)
-            val formatted = when {
-                digits.length <= 4 -> digits
-                digits.length <= 6 -> "${digits.take(4)}.${digits.drop(4)}"
-                else -> "${digits.take(4)}.${digits.drop(4).take(2)}.${digits.drop(6)}"
-            }
-            fieldValue = TextFieldValue(formatted, TextRange(formatted.length))
-            onValueChange(formatted)
-        },
-        placeholder = { Text("2000.01.01") },
-        trailingIcon = {
-            IconButton(onClick = { showPicker = true }) {
-                Icon(
-                    imageVector        = Icons.Default.CalendarMonth,
-                    contentDescription = "날짜 선택",
-                )
-            }
-        },
-        modifier        = Modifier.fillMaxWidth(),
-        singleLine      = true,
-        shape           = MaterialTheme.shapes.small,
-        isError         = error != null,
-        supportingText  = error?.let { msg -> { Text(msg) } },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        colors          = TextFieldDefaults.colors(
-            focusedContainerColor   = MaterialTheme.colorScheme.surfaceVariant,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-            focusedIndicatorColor   = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-        ),
-    )
-}
 
 @Composable
 private fun FieldLabel(text: String) {
