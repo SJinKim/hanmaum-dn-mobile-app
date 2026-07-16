@@ -39,6 +39,7 @@ import com.hanmaum.dn.mobile.features.member.data.repository.MemberRepositoryImp
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import com.hanmaum.dn.mobile.features.notification.data.repository.NotificationRepositoryImpl
 import com.hanmaum.dn.mobile.features.notification.domain.repository.NotificationRepository
+import com.hanmaum.dn.mobile.features.notification.presentation.NotificationListViewModel
 import com.hanmaum.dn.mobile.features.ministry.data.repository.MinistryRepositoryImpl
 import com.hanmaum.dn.mobile.features.ministry.domain.repository.MinistryRepository
 import com.hanmaum.dn.mobile.features.ministry.presentation.detail.MinistryDetailViewModel
@@ -144,4 +145,5 @@ val appModule = module {
 
     // Notification
     single<NotificationRepository> { NotificationRepositoryImpl(get()) }
+    viewModel { NotificationListViewModel(get()) }
 }
