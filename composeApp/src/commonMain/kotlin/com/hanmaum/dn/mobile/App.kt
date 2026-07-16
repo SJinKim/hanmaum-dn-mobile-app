@@ -168,6 +168,7 @@ fun App() {
                             },
                             onViewAllClick = { navController.navigate(AnnouncementListRoute) },
                             onFloorPlanClick = { navController.navigate(FloorPlanRoute) },
+                            onNotificationsClick = { navController.navigate(NotificationListRoute) },
                         )
                     }
 

@@ -83,7 +83,7 @@ val appModule = module {
 
 
     // Home VM
-    viewModel { HomeViewModel(repository = get()) }
+    viewModel { HomeViewModel(repository = get(), notificationRepository = get()) }
 
     // Detail VM
     viewModel { (announcementId: String) ->

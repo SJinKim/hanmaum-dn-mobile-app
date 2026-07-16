@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.announcement.presentation
 
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -41,6 +42,7 @@ fun HomeScreen(
     onAnnouncementClick: (String) -> Unit,
     onViewAllClick: () -> Unit,
     onFloorPlanClick: () -> Unit,
+    onNotificationsClick: () -> Unit,
 ) {
     val viewModel: HomeViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -82,7 +84,12 @@ fun HomeScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = { HomeTopBar() },
+        topBar = {
+            HomeTopBar(
+                unseenCount = state.unseenCount,
+                onNotificationsClick = onNotificationsClick,
+            )
+        },
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             when {
@@ -113,7 +120,7 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HomeTopBar() {
+private fun HomeTopBar(unseenCount: Int, onNotificationsClick: () -> Unit) {
     val strings = LocalStrings.current
     Row(
         modifier = Modifier
@@ -127,12 +134,27 @@ private fun HomeTopBar() {
             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.primary,
         )
-        IconButton(onClick = { /* 알림 기능 추가 예정 */ }) {
-            Icon(
-                imageVector = Icons.Default.Notifications,
-                contentDescription = strings.notifications,
-                tint = MaterialTheme.colorScheme.onSurface,
-            )
+        BadgedBox(
+            badge = {
+                // DESIGN.md: badge appears/disappears with a spring scale, never a bare pop.
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = unseenCount > 0,
+                    enter = androidx.compose.animation.scaleIn(spring(dampingRatio = 0.6f, stiffness = 400f)),
+                    exit = androidx.compose.animation.scaleOut(spring(dampingRatio = 0.6f, stiffness = 400f)),
+                ) {
+                    Badge(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary) {
+                        Text(if (unseenCount > 9) "9+" else unseenCount.toString())
+                    }
+                }
+            },
+        ) {
+            IconButton(onClick = onNotificationsClick) {
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = strings.notifications,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                )
+            }
         }
     }
 }
