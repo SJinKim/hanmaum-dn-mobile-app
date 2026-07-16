@@ -33,6 +33,22 @@ interface AppStrings {
     val navAttendance: String
     // Notifications
     val notifications: String
+    val notificationsTitle: String
+    val notificationsEmpty: String
+    val notificationsReadAll: String
+    val notificationsToday: String
+    val notificationsYesterday: String
+    val notificationsEarlier: String
+    val notificationsError: String
+    val notificationTimeJustNow: String
+    fun notificationTimeMinutesAgo(minutes: Int): String
+    fun notificationTimeHoursAgo(hours: Int): String
+    fun notificationTimeDaysAgo(days: Int): String
+    val pushPrimingTitle: String
+    val pushPrimingBody: String
+    val pushPrimingEnable: String
+    val settingsPushToggle: String
+    val settingsPushPermissionHint: String
     // Profile screen
     val profileLogout: String
     val profileLanguage: String
@@ -159,6 +175,22 @@ object EnStrings : AppStrings {
     override val navProfile = "Profile"
     override val navAttendance = "Attendance"
     override val notifications = "Notifications"
+    override val notificationsTitle = "Notifications"
+    override val notificationsEmpty = "You'll see notifications here when they arrive"
+    override val notificationsReadAll = "Mark all read"
+    override val notificationsToday = "Today"
+    override val notificationsYesterday = "Yesterday"
+    override val notificationsEarlier = "Earlier"
+    override val notificationsError = "Couldn't load notifications"
+    override val notificationTimeJustNow = "just now"
+    override fun notificationTimeMinutesAgo(minutes: Int) = "${minutes}m ago"
+    override fun notificationTimeHoursAgo(hours: Int) = "${hours}h ago"
+    override fun notificationTimeDaysAgo(days: Int) = "${days}d ago"
+    override val pushPrimingTitle = "Don't miss new announcements"
+    override val pushPrimingBody = "We'll notify you when something new is posted"
+    override val pushPrimingEnable = "Turn on notifications"
+    override val settingsPushToggle = "Push notifications"
+    override val settingsPushPermissionHint = "Allow notifications in system settings"
     override val profileLogout = "Logout"
     override val profileLanguage = "LANGUAGE"
     override val selectLanguage = "Select Language"
@@ -267,6 +299,22 @@ object KoStrings : AppStrings {
     override val navProfile = "프로필"
     override val navAttendance = "출석 체크"
     override val notifications = "알림"
+    override val notificationsTitle = "알림"
+    override val notificationsEmpty = "알림이 오면 여기에 표시됩니다"
+    override val notificationsReadAll = "모두 읽음"
+    override val notificationsToday = "오늘"
+    override val notificationsYesterday = "어제"
+    override val notificationsEarlier = "이전"
+    override val notificationsError = "알림을 불러오지 못했습니다"
+    override val notificationTimeJustNow = "방금 전"
+    override fun notificationTimeMinutesAgo(minutes: Int) = "${minutes}분 전"
+    override fun notificationTimeHoursAgo(hours: Int) = "${hours}시간 전"
+    override fun notificationTimeDaysAgo(days: Int) = "${days}일 전"
+    override val pushPrimingTitle = "새 소식을 놓치지 마세요"
+    override val pushPrimingBody = "새로운 공지가 올라오면 알려드릴게요"
+    override val pushPrimingEnable = "알림 켜기"
+    override val settingsPushToggle = "푸시 알림"
+    override val settingsPushPermissionHint = "기기 설정에서 알림을 허용해주세요"
     override val profileLogout = "로그아웃"
     override val profileLanguage = "언어"
     override val selectLanguage = "언어 선택"
@@ -375,6 +423,22 @@ object DeStrings : AppStrings {
     override val navProfile = "Profil"
     override val navAttendance = "Anwesenheit"
     override val notifications = "Benachrichtigungen"
+    override val notificationsTitle = "Mitteilungen"
+    override val notificationsEmpty = "Neue Mitteilungen erscheinen hier"
+    override val notificationsReadAll = "Alle gelesen"
+    override val notificationsToday = "Heute"
+    override val notificationsYesterday = "Gestern"
+    override val notificationsEarlier = "Früher"
+    override val notificationsError = "Mitteilungen konnten nicht geladen werden"
+    override val notificationTimeJustNow = "gerade eben"
+    override fun notificationTimeMinutesAgo(minutes: Int) = "vor ${minutes} Min."
+    override fun notificationTimeHoursAgo(hours: Int) = "vor ${hours} Std."
+    override fun notificationTimeDaysAgo(days: Int) = "vor ${days} Tagen"
+    override val pushPrimingTitle = "Verpassen Sie keine Neuigkeiten"
+    override val pushPrimingBody = "Wir benachrichtigen Sie bei neuen Ankündigungen"
+    override val pushPrimingEnable = "Mitteilungen aktivieren"
+    override val settingsPushToggle = "Push-Mitteilungen"
+    override val settingsPushPermissionHint = "Erlauben Sie Mitteilungen in den Systemeinstellungen"
     override val profileLogout = "Abmelden"
     override val profileLanguage = "SPRACHE"
     override val selectLanguage = "Sprache auswählen"
