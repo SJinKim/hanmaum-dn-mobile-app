@@ -25,7 +25,9 @@ import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
 import com.hanmaum.dn.mobile.core.geofence.GeofenceManager
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.geofence.GeofencePermissionRequest
+import com.hanmaum.dn.mobile.core.notification.NotificationService
 import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
+import com.hanmaum.dn.mobile.core.push.PushPreferences
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.BibleVerseSection
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.HeroBannerSection
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.LatestNewsSection
@@ -53,9 +55,12 @@ fun HomeScreen(
     val geofenceCoordinator: GeofenceCoordinator = koinInject()
     val geofenceManager: GeofenceManager = koinInject()
     val locationPreferences: LocationPreferences = koinInject()
+    val pushPreferences: PushPreferences = koinInject()
+    val notificationService: NotificationService = koinInject()
 
     var showRationale by remember { mutableStateOf(false) }
     var requestingPermission by remember { mutableStateOf(false) }
+    var showPushPriming by remember { mutableStateOf(false) }
 
     // Refresh on every entry to the tab so web-app changes appear without re-login.
     LaunchedEffect(Unit) { viewModel.loadAnnouncements() }
@@ -63,8 +68,12 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         geofenceCoordinator.initialize()
         // Ask for location only once; respect a prior decision (see Profile to change it).
+        // Push priming is deferred to a later entry when the location card is already
+        // showing, so the two rationale cards never stack on top of each other.
         if (!locationPreferences.isPromptDismissed() && !geofenceManager.isLocationPermissionGranted()) {
             showRationale = true
+        } else if (!pushPreferences.isPromptDismissed() && !notificationService.isNotificationPermissionGranted()) {
+            showPushPriming = true
         }
     }
 
@@ -112,6 +121,19 @@ fun HomeScreen(
                     onDismiss = {
                         locationPreferences.setPromptDismissed(true)
                         showRationale = false
+                    },
+                )
+            }
+            if (showPushPriming) {
+                PushPrimingCard(
+                    onEnable = {
+                        // wired to PushManager in the push-plumbing task
+                        pushPreferences.setPromptDismissed(true)
+                        showPushPriming = false
+                    },
+                    onDismiss = {
+                        pushPreferences.setPromptDismissed(true)
+                        showPushPriming = false
                     },
                 )
             }
@@ -235,6 +257,36 @@ private fun GeofenceRationaleCard(onAllow: () -> Unit, onDismiss: () -> Unit) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = onDismiss) { Text(strings.laterButton) }
                 Button(onClick = onAllow) { Text(strings.allowPermission) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PushPrimingCard(onEnable: () -> Unit, onDismiss: () -> Unit) {
+    val strings = LocalStrings.current
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = strings.pushPrimingTitle,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = strings.pushPrimingBody,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = onDismiss) { Text(strings.laterButton) }
+                Button(onClick = onEnable) { Text(strings.pushPrimingEnable) }
             }
         }
     }

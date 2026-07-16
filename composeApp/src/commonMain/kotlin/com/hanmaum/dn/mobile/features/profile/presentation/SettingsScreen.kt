@@ -29,6 +29,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,9 +46,12 @@ import com.hanmaum.dn.mobile.core.geofence.GeofencePermissionRequest
 import com.hanmaum.dn.mobile.core.i18n.AppLocale
 import com.hanmaum.dn.mobile.core.i18n.AppStrings
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
+import com.hanmaum.dn.mobile.core.notification.NotificationService
 import com.hanmaum.dn.mobile.features.geofence.domain.GeofenceCoordinator
+import com.hanmaum.dn.mobile.features.notification.presentation.NotificationSettingsViewModel
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 
 // This is copied verbatim from ProfileScreen.kt's `ProfileViewContent` (locale row +
 // language picker, theme row + theme picker, Face ID row, keep-signed-in row) for one
@@ -210,6 +215,9 @@ fun SettingsScreen(
             Spacer(Modifier.height(12.dp))
             LocationSharingCard()
 
+            Spacer(Modifier.height(12.dp))
+            PushNotificationCard()
+
             Spacer(Modifier.height(40.dp))
         }
     }
@@ -306,6 +314,49 @@ private fun LocationSharingCard() {
                     }
                 },
             )
+        }
+    }
+}
+
+@Composable
+private fun PushNotificationCard() {
+    val strings = LocalStrings.current
+    val settingsVm: NotificationSettingsViewModel = koinViewModel()
+    val pushState by settingsVm.uiState.collectAsState()
+    val notificationService = koinInject<NotificationService>()
+
+    LaunchedEffect(Unit) { settingsVm.load() }
+
+    Card(
+        modifier  = Modifier.fillMaxWidth(),
+        shape     = MaterialTheme.shapes.large,
+        colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier              = Modifier.fillMaxWidth(),
+                verticalAlignment     = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    text  = strings.settingsPushToggle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Switch(
+                    checked         = pushState.pushEnabled,
+                    onCheckedChange = settingsVm::onToggle,
+                )
+            }
+            if (!notificationService.isNotificationPermissionGranted()) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text  = strings.settingsPushPermissionHint,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.outline,
+                )
+            }
         }
     }
 }
