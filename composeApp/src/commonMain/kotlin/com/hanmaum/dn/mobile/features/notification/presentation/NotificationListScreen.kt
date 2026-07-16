@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
@@ -82,13 +83,14 @@ fun NotificationListScreen(
             }
         }
 
+        val error = state.error
         when {
             state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
-            state.error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(state.error!!, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(error, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.height(8.dp))
                     Button(onClick = viewModel::load) { Text(strings.retry) }
                 }
@@ -153,8 +155,9 @@ private fun StaggeredNotificationRow(
         delay(AppMotion.STAGGER_DELAY_MS.toLong() * index.coerceAtMost(5))
         appeared = true
     }
+    val slidePx = with(LocalDensity.current) { 8.dp.toPx() }
     val alpha by animateFloatAsState(if (appeared) 1f else 0f, tween(200), label = "stagger-a")
-    val offsetY by animateFloatAsState(if (appeared) 0f else 8f, AppMotion.listItem, label = "stagger-y")
+    val offsetY by animateFloatAsState(if (appeared) 0f else slidePx, AppMotion.listItem, label = "stagger-y")
 
     NotificationRow(
         notification = notification,
