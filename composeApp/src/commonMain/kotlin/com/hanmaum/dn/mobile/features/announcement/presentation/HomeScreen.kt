@@ -27,6 +27,7 @@ import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.geofence.GeofencePermissionRequest
 import com.hanmaum.dn.mobile.core.notification.NotificationService
 import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
+import com.hanmaum.dn.mobile.core.push.PushManager
 import com.hanmaum.dn.mobile.core.push.PushPreferences
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.BibleVerseSection
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.HeroBannerSection
@@ -56,6 +57,7 @@ fun HomeScreen(
     val geofenceManager: GeofenceManager = koinInject()
     val locationPreferences: LocationPreferences = koinInject()
     val pushPreferences: PushPreferences = koinInject()
+    val pushManager: PushManager = koinInject()
     val notificationService: NotificationService = koinInject()
 
     var showRationale by remember { mutableStateOf(false) }
@@ -136,8 +138,10 @@ fun HomeScreen(
             if (showPushPriming) {
                 PushPrimingCard(
                     onEnable = {
-                        // wired to PushManager in the push-plumbing task
-                        pushPreferences.setPromptDismissed(true)
+                        coroutineScope.launch {
+                            pushManager.requestPermission()
+                            pushPreferences.setPromptDismissed(true)
+                        }
                         showPushPriming = false
                     },
                     onDismiss = {
