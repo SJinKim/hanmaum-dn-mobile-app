@@ -65,15 +65,22 @@ fun HomeScreen(
     // Refresh on every entry to the tab so web-app changes appear without re-login.
     LaunchedEffect(Unit) { viewModel.loadAnnouncements() }
 
+    // Ask for push only once; respect a prior decision (see Settings to change it).
+    // Deferred until the location rationale is resolved so the two cards never stack,
+    // then re-checked whenever the location card goes away within the same visit.
+    val maybeShowPushPriming = {
+        if (!pushPreferences.isPromptDismissed() && !notificationService.isNotificationPermissionGranted()) {
+            showPushPriming = true
+        }
+    }
+
     LaunchedEffect(Unit) {
         geofenceCoordinator.initialize()
         // Ask for location only once; respect a prior decision (see Profile to change it).
-        // Push priming is deferred to a later entry when the location card is already
-        // showing, so the two rationale cards never stack on top of each other.
         if (!locationPreferences.isPromptDismissed() && !geofenceManager.isLocationPermissionGranted()) {
             showRationale = true
-        } else if (!pushPreferences.isPromptDismissed() && !notificationService.isNotificationPermissionGranted()) {
-            showPushPriming = true
+        } else {
+            maybeShowPushPriming()
         }
     }
 
@@ -88,6 +95,7 @@ fun HomeScreen(
                 locationPreferences.setSharingEnabled(true)
                 coroutineScope.launch { geofenceCoordinator.initialize() }
             }
+            maybeShowPushPriming()
         }
     }
 
@@ -121,6 +129,7 @@ fun HomeScreen(
                     onDismiss = {
                         locationPreferences.setPromptDismissed(true)
                         showRationale = false
+                        maybeShowPushPriming()
                     },
                 )
             }
