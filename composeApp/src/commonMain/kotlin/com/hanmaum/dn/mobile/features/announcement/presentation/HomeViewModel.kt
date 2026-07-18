@@ -2,6 +2,8 @@ package com.hanmaum.dn.mobile.features.announcement.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hanmaum.dn.mobile.core.push.PushEventBus
+import com.hanmaum.dn.mobile.core.push.PushManager
 import com.hanmaum.dn.mobile.features.announcement.data.repository.AnnouncementRepositoryImpl
 import com.hanmaum.dn.mobile.features.announcement.domain.model.Announcement
 import com.hanmaum.dn.mobile.features.announcement.domain.repository.AnnouncementRepository
@@ -20,10 +22,31 @@ data class HomeUiState(
 )
 class HomeViewModel(
     private val repository: AnnouncementRepository,
-    private val notificationRepository: NotificationRepository
+    private val notificationRepository: NotificationRepository,
+    private val pushManager: PushManager,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState(isLoading = true))
     val uiState = _uiState.asStateFlow()
+
+    private var tokenRegistered = false
+
+    init {
+        viewModelScope.launch {
+            PushEventBus.tokenRefreshes.collect { token ->
+                notificationRepository.registerDeviceToken(token, pushManager.platform)
+            }
+        }
+    }
+
+    private fun registerTokenIfNeeded() {
+        if (tokenRegistered) return
+        viewModelScope.launch {
+            pushManager.currentToken()?.let { token ->
+                notificationRepository.registerDeviceToken(token, pushManager.platform)
+                    .onSuccess { tokenRegistered = true }
+            }
+        }
+    }
 
     /**
      * Loads (or reloads) announcements. Driven by the screen on every entry so
@@ -33,6 +56,7 @@ class HomeViewModel(
      * with an error.
      */
     fun loadAnnouncements() {
+        registerTokenIfNeeded()
         viewModelScope.launch {
             notificationRepository.getUnseenCount()
                 .onSuccess { count -> _uiState.update { it.copy(unseenCount = count) } }

@@ -170,6 +170,9 @@ fun App() {
                             onViewAllClick = { navController.navigate(AnnouncementListRoute) },
                             onFloorPlanClick = { navController.navigate(FloorPlanRoute) },
                             onNotificationsClick = { navController.navigate(NotificationListRoute) },
+                            onOpenAnnouncementDeepLink = { id ->
+                                navController.navigate(AnnouncementDetailRoute(id = id))
+                            },
                         )
                     }
 

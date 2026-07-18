@@ -3,8 +3,10 @@ package com.hanmaum.dn.mobile.features.profile.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
+import com.hanmaum.dn.mobile.core.push.PushManager
 import com.hanmaum.dn.mobile.core.security.CredentialStore
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
+import com.hanmaum.dn.mobile.features.notification.domain.repository.NotificationRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,6 +16,8 @@ class ProfileViewModel(
     private val memberRepository: MemberRepository,
     private val tokenStorage: TokenStorage,
     private val credentialStore: CredentialStore,
+    private val notificationRepository: NotificationRepository,
+    private val pushManager: PushManager,
 ) : ViewModel() {
 
     private val _loggedOut = MutableStateFlow(false)
@@ -84,6 +88,9 @@ class ProfileViewModel(
 
     fun logout() {
         viewModelScope.launch {
+            // Best-effort: stop push to this device for the signed-out account.
+            // Must run before the token clear or the call goes out unauthenticated.
+            pushManager.currentToken()?.let { notificationRepository.deleteDeviceToken(it) }
             tokenStorage.clear()
             // Explicit logout is an intentional teardown: forget the saved Face ID
             // credentials AND the biometric flag so the next login starts clean.

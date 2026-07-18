@@ -28,7 +28,9 @@ import com.hanmaum.dn.mobile.core.geofence.GeofencePermissionRequest
 import com.hanmaum.dn.mobile.core.notification.NotificationService
 import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
 import com.hanmaum.dn.mobile.core.push.NotificationPermissionRequest
+import com.hanmaum.dn.mobile.core.push.PushEventBus
 import com.hanmaum.dn.mobile.core.push.PushPreferences
+import com.hanmaum.dn.mobile.features.notification.domain.repository.NotificationRepository
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.BibleVerseSection
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.HeroBannerSection
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.LatestNewsSection
@@ -38,14 +40,17 @@ import com.hanmaum.dn.mobile.features.announcement.presentation.components.Weekl
 import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceUiState
 import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceViewModel
 import com.hanmaum.dn.mobile.features.geofence.domain.GeofenceCoordinator
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun HomeScreen(
     onAnnouncementClick: (String) -> Unit,
     onViewAllClick: () -> Unit,
     onFloorPlanClick: () -> Unit,
     onNotificationsClick: () -> Unit,
+    onOpenAnnouncementDeepLink: (String) -> Unit,
 ) {
     val viewModel: HomeViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -66,6 +71,18 @@ fun HomeScreen(
 
     // Refresh on every entry to the tab so web-app changes appear without re-login.
     LaunchedEffect(Unit) { viewModel.loadAnnouncements() }
+
+    // Push taps land here (replay=1 covers taps that arrive before Home is composed).
+    val notificationRepository: NotificationRepository = koinInject()
+    LaunchedEffect(Unit) {
+        PushEventBus.notificationTaps.collect { payload ->
+            if (payload.referenceType == "ANNOUNCEMENT" && payload.referencePublicId != null) {
+                payload.notificationPublicId?.let { notificationRepository.markRead(it) }
+                onOpenAnnouncementDeepLink(payload.referencePublicId)
+            }
+            PushEventBus.consumeTap()
+        }
+    }
 
     // Ask for push only once; respect a prior decision (see Settings to change it).
     // Deferred until the location rationale is resolved so the two cards never stack,

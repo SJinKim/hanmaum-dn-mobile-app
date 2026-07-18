@@ -86,7 +86,7 @@ val appModule = module {
 
 
     // Home VM
-    viewModel { HomeViewModel(repository = get(), notificationRepository = get()) }
+    viewModel { HomeViewModel(repository = get(), notificationRepository = get(), pushManager = get()) }
 
     // Detail VM
     viewModel { (announcementId: String) ->
@@ -109,7 +109,7 @@ val appModule = module {
     viewModel { LoginViewModel(get(), get(), get(), get(), get()) }
 
     // Profile VM
-    viewModel { ProfileViewModel(get(), get(), get()) }
+    viewModel { ProfileViewModel(get(), get(), get(), get(), get()) }
 
     // Ministry
     single<MinistryRepository> { MinistryRepositoryImpl(get()) }

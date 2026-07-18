@@ -2,10 +2,13 @@ package com.hanmaum.dn.mobile.features.profile
 
 import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
+import com.hanmaum.dn.mobile.core.push.PushManager
 import com.hanmaum.dn.mobile.core.security.CredentialStore
 import com.hanmaum.dn.mobile.core.security.SecureStore
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
+import com.hanmaum.dn.mobile.features.notification.domain.model.NotificationPage
+import com.hanmaum.dn.mobile.features.notification.domain.repository.NotificationRepository
 import com.hanmaum.dn.mobile.features.profile.presentation.ProfileUiState
 import com.hanmaum.dn.mobile.features.profile.presentation.ProfileViewModel
 import kotlinx.coroutines.Dispatchers
@@ -95,6 +98,31 @@ private class InMemorySecureStore : SecureStore {
     override fun remove(key: String) { map.remove(key) }
 }
 
+private class FakeNotificationRepository : NotificationRepository {
+    val deletedTokens = mutableListOf<String>()
+
+    override suspend fun getNotifications(page: Int) =
+        Result.success(NotificationPage(emptyList(), hasNext = false))
+    override suspend fun getUnseenCount() = Result.success(0)
+    override suspend fun markAllSeen(): Result<Unit> = Result.success(Unit)
+    override suspend fun markRead(publicId: String): Result<Unit> = Result.success(Unit)
+    override suspend fun markAllRead(): Result<Unit> = Result.success(Unit)
+    override suspend fun getPushEnabled() = Result.success(true)
+    override suspend fun setPushEnabled(enabled: Boolean) = Result.success(Unit)
+    override suspend fun registerDeviceToken(token: String, platform: String): Result<Unit> = Result.success(Unit)
+    override suspend fun deleteDeviceToken(token: String): Result<Unit> {
+        deletedTokens += token
+        return Result.success(Unit)
+    }
+}
+
+private class FakePushManager(private val token: String? = null) : PushManager {
+    override val platform: String = "ANDROID"
+    override suspend fun currentToken(): String? = token
+    override fun isPermissionGranted(): Boolean = true
+    override suspend fun requestPermission(): Boolean = true
+}
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProfileViewModelTest {
 
@@ -103,8 +131,17 @@ class ProfileViewModelTest {
     @BeforeTest fun setup() { Dispatchers.setMain(dispatcher) }
     @AfterTest fun tearDown() { Dispatchers.resetMain() }
 
-    private fun vm(repo: MemberRepository) =
-        ProfileViewModel(repo, FakeTokenStorage(), CredentialStore(InMemorySecureStore()))
+    private fun vm(
+        repo: MemberRepository,
+        notificationRepository: FakeNotificationRepository = FakeNotificationRepository(),
+        pushManager: FakePushManager = FakePushManager(),
+    ) = ProfileViewModel(
+        repo,
+        FakeTokenStorage(),
+        CredentialStore(InMemorySecureStore()),
+        notificationRepository,
+        pushManager,
+    )
 
     private fun success(viewModel: ProfileViewModel) =
         viewModel.uiState.value as ProfileUiState.Success
@@ -217,5 +254,28 @@ class ProfileViewModelTest {
         assertEquals(true, success(viewModel).isBirthDateValid)
         viewModel.updateBirthDate("")
         assertEquals(true, success(viewModel).isBirthDateValid)
+    }
+
+    @Test
+    fun `logout deletes the device token`() = runTest {
+        val notificationRepository = FakeNotificationRepository()
+        val viewModel = vm(
+            FakeMemberRepository(),
+            notificationRepository = notificationRepository,
+            pushManager = FakePushManager(token = "tok1"),
+        )
+        viewModel.logout()
+        dispatcher.scheduler.advanceUntilIdle()
+        assertEquals(listOf("tok1"), notificationRepository.deletedTokens)
+    }
+
+    @Test
+    fun `logout without token still completes`() = runTest {
+        val notificationRepository = FakeNotificationRepository()
+        val viewModel = vm(FakeMemberRepository(), notificationRepository = notificationRepository)
+        viewModel.logout()
+        dispatcher.scheduler.advanceUntilIdle()
+        assertEquals(emptyList(), notificationRepository.deletedTokens)
+        assertEquals(true, viewModel.loggedOut.value)
     }
 }
