@@ -27,7 +27,7 @@ import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.geofence.GeofencePermissionRequest
 import com.hanmaum.dn.mobile.core.notification.NotificationService
 import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
-import com.hanmaum.dn.mobile.core.push.PushManager
+import com.hanmaum.dn.mobile.core.push.NotificationPermissionRequest
 import com.hanmaum.dn.mobile.core.push.PushPreferences
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.BibleVerseSection
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.HeroBannerSection
@@ -57,12 +57,12 @@ fun HomeScreen(
     val geofenceManager: GeofenceManager = koinInject()
     val locationPreferences: LocationPreferences = koinInject()
     val pushPreferences: PushPreferences = koinInject()
-    val pushManager: PushManager = koinInject()
     val notificationService: NotificationService = koinInject()
 
     var showRationale by remember { mutableStateOf(false) }
     var requestingPermission by remember { mutableStateOf(false) }
     var showPushPriming by remember { mutableStateOf(false) }
+    var requestingPushPermission by remember { mutableStateOf(false) }
 
     // Refresh on every entry to the tab so web-app changes appear without re-login.
     LaunchedEffect(Unit) { viewModel.loadAnnouncements() }
@@ -98,6 +98,13 @@ fun HomeScreen(
                 coroutineScope.launch { geofenceCoordinator.initialize() }
             }
             maybeShowPushPriming()
+        }
+    }
+
+    if (requestingPushPermission) {
+        NotificationPermissionRequest { _ ->
+            requestingPushPermission = false
+            pushPreferences.setPromptDismissed(true)
         }
     }
 
@@ -138,10 +145,7 @@ fun HomeScreen(
             if (showPushPriming) {
                 PushPrimingCard(
                     onEnable = {
-                        coroutineScope.launch {
-                            pushManager.requestPermission()
-                            pushPreferences.setPromptDismissed(true)
-                        }
+                        requestingPushPermission = true
                         showPushPriming = false
                     },
                     onDismiss = {
