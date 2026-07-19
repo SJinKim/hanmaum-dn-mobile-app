@@ -12,7 +12,8 @@ password grant). Features: announcements, attendance check-in, event RSVP, calen
 album, ministry directory, floor plan, profile, Face ID login.
 
 **Three-repo project:** this app, `../hanmaum-dn-server` (Spring backend),
-`../hanmaum-dn-web-app` (admin dashboard). Feature tracking lives in `../dn-app/MVP.md`.
+`../hanmaum-dn-web-app` (admin dashboard). Feature tracking lives in
+`../hanmaum-dn-ops/docs/MVP.md` (formerly `../dn-app/MVP.md`).
 Backend contracts are defined by the server repo — when a task says "align to backend
 PR#N", read that PR's actual DTOs before writing mobile DTOs.
 
@@ -271,7 +272,7 @@ Everything above, plus:
 - [ ] ViewModel test with `StandardTestDispatcher` + hand-written fakes (no mocking
       library exists here — don't add one); repository test with Ktor `MockEngine`
 - [ ] Screen passes the UI checklist below
-- [ ] `../dn-app/MVP.md` row updated (status only, never delete rows)
+- [ ] `../hanmaum-dn-ops/docs/MVP.md` row updated (status only, never delete rows)
 - [ ] Non-trivial architecture → spec/plan in `docs/superpowers/specs|plans/YYYY-MM-DD-<name>.md`
 
 ### UI screen (new or redesigned)

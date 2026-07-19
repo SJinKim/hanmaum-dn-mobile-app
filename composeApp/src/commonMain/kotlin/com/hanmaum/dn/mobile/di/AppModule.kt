@@ -12,6 +12,8 @@ import com.hanmaum.dn.mobile.core.domain.repository.ThemeRepository
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.core.security.CredentialStore
 import com.hanmaum.dn.mobile.core.network.createHttpClient
+import com.hanmaum.dn.mobile.core.push.PushPreferences
+import com.hanmaum.dn.mobile.core.push.PushPreferencesImpl
 import com.russhwolf.settings.Settings
 import com.hanmaum.dn.mobile.features.announcement.data.repository.AnnouncementRepositoryImpl
 import com.hanmaum.dn.mobile.features.announcement.domain.repository.AnnouncementRepository
@@ -37,6 +39,10 @@ import com.hanmaum.dn.mobile.features.login.presentation.LoginViewModel
 import com.hanmaum.dn.mobile.features.login.presentation.RegisterViewModel
 import com.hanmaum.dn.mobile.features.member.data.repository.MemberRepositoryImpl
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
+import com.hanmaum.dn.mobile.features.notification.data.repository.NotificationRepositoryImpl
+import com.hanmaum.dn.mobile.features.notification.domain.repository.NotificationRepository
+import com.hanmaum.dn.mobile.features.notification.presentation.NotificationListViewModel
+import com.hanmaum.dn.mobile.features.notification.presentation.NotificationSettingsViewModel
 import com.hanmaum.dn.mobile.features.ministry.data.repository.MinistryRepositoryImpl
 import com.hanmaum.dn.mobile.features.ministry.domain.repository.MinistryRepository
 import com.hanmaum.dn.mobile.features.ministry.presentation.detail.MinistryDetailViewModel
@@ -80,7 +86,7 @@ val appModule = module {
 
 
     // Home VM
-    viewModel { HomeViewModel(repository = get()) }
+    viewModel { HomeViewModel(repository = get(), notificationRepository = get(), pushManager = get()) }
 
     // Detail VM
     viewModel { (announcementId: String) ->
@@ -103,7 +109,7 @@ val appModule = module {
     viewModel { LoginViewModel(get(), get(), get(), get(), get()) }
 
     // Profile VM
-    viewModel { ProfileViewModel(get(), get(), get()) }
+    viewModel { ProfileViewModel(get(), get(), get(), get(), get()) }
 
     // Ministry
     single<MinistryRepository> { MinistryRepositoryImpl(get()) }
@@ -139,4 +145,10 @@ val appModule = module {
     // Calendar
     single<CalendarRepository> { CalendarRepositoryImpl(get()) }
     viewModel { CalendarViewModel(get()) }
+
+    // Notification
+    single<NotificationRepository> { NotificationRepositoryImpl(get()) }
+    single<PushPreferences> { PushPreferencesImpl(Settings()) }
+    viewModel { NotificationListViewModel(get()) }
+    viewModel { NotificationSettingsViewModel(get()) }
 }

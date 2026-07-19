@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.announcement.presentation
 
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -24,7 +25,12 @@ import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
 import com.hanmaum.dn.mobile.core.geofence.GeofenceManager
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.geofence.GeofencePermissionRequest
+import com.hanmaum.dn.mobile.core.notification.NotificationService
 import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
+import com.hanmaum.dn.mobile.core.push.NotificationPermissionRequest
+import com.hanmaum.dn.mobile.core.push.PushEventBus
+import com.hanmaum.dn.mobile.core.push.PushPreferences
+import com.hanmaum.dn.mobile.features.notification.domain.repository.NotificationRepository
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.BibleVerseSection
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.HeroBannerSection
 import com.hanmaum.dn.mobile.features.announcement.presentation.components.LatestNewsSection
@@ -34,13 +40,17 @@ import com.hanmaum.dn.mobile.features.announcement.presentation.components.Weekl
 import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceUiState
 import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceViewModel
 import com.hanmaum.dn.mobile.features.geofence.domain.GeofenceCoordinator
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun HomeScreen(
     onAnnouncementClick: (String) -> Unit,
     onViewAllClick: () -> Unit,
     onFloorPlanClick: () -> Unit,
+    onNotificationsClick: () -> Unit,
+    onOpenAnnouncementDeepLink: (String) -> Unit,
 ) {
     val viewModel: HomeViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -51,18 +61,45 @@ fun HomeScreen(
     val geofenceCoordinator: GeofenceCoordinator = koinInject()
     val geofenceManager: GeofenceManager = koinInject()
     val locationPreferences: LocationPreferences = koinInject()
+    val pushPreferences: PushPreferences = koinInject()
+    val notificationService: NotificationService = koinInject()
 
     var showRationale by remember { mutableStateOf(false) }
     var requestingPermission by remember { mutableStateOf(false) }
+    var showPushPriming by remember { mutableStateOf(false) }
+    var requestingPushPermission by remember { mutableStateOf(false) }
 
     // Refresh on every entry to the tab so web-app changes appear without re-login.
     LaunchedEffect(Unit) { viewModel.loadAnnouncements() }
+
+    // Push taps land here (replay=1 covers taps that arrive before Home is composed).
+    val notificationRepository: NotificationRepository = koinInject()
+    LaunchedEffect(Unit) {
+        PushEventBus.notificationTaps.collect { payload ->
+            if (payload.referenceType == "ANNOUNCEMENT" && payload.referencePublicId != null) {
+                payload.notificationPublicId?.let { notificationRepository.markRead(it) }
+                onOpenAnnouncementDeepLink(payload.referencePublicId)
+            }
+            PushEventBus.consumeTap()
+        }
+    }
+
+    // Ask for push only once; respect a prior decision (see Settings to change it).
+    // Deferred until the location rationale is resolved so the two cards never stack,
+    // then re-checked whenever the location card goes away within the same visit.
+    val maybeShowPushPriming = {
+        if (!pushPreferences.isPromptDismissed() && !notificationService.isNotificationPermissionGranted()) {
+            showPushPriming = true
+        }
+    }
 
     LaunchedEffect(Unit) {
         geofenceCoordinator.initialize()
         // Ask for location only once; respect a prior decision (see Profile to change it).
         if (!locationPreferences.isPromptDismissed() && !geofenceManager.isLocationPermissionGranted()) {
             showRationale = true
+        } else {
+            maybeShowPushPriming()
         }
     }
 
@@ -77,12 +114,25 @@ fun HomeScreen(
                 locationPreferences.setSharingEnabled(true)
                 coroutineScope.launch { geofenceCoordinator.initialize() }
             }
+            maybeShowPushPriming()
+        }
+    }
+
+    if (requestingPushPermission) {
+        NotificationPermissionRequest { _ ->
+            requestingPushPermission = false
+            pushPreferences.setPromptDismissed(true)
         }
     }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = { HomeTopBar() },
+        topBar = {
+            HomeTopBar(
+                unseenCount = state.unseenCount,
+                onNotificationsClick = onNotificationsClick,
+            )
+        },
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             when {
@@ -105,6 +155,19 @@ fun HomeScreen(
                     onDismiss = {
                         locationPreferences.setPromptDismissed(true)
                         showRationale = false
+                        maybeShowPushPriming()
+                    },
+                )
+            }
+            if (showPushPriming) {
+                PushPrimingCard(
+                    onEnable = {
+                        requestingPushPermission = true
+                        showPushPriming = false
+                    },
+                    onDismiss = {
+                        pushPreferences.setPromptDismissed(true)
+                        showPushPriming = false
                     },
                 )
             }
@@ -113,7 +176,7 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HomeTopBar() {
+private fun HomeTopBar(unseenCount: Int, onNotificationsClick: () -> Unit) {
     val strings = LocalStrings.current
     Row(
         modifier = Modifier
@@ -127,12 +190,27 @@ private fun HomeTopBar() {
             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.primary,
         )
-        IconButton(onClick = { /* 알림 기능 추가 예정 */ }) {
-            Icon(
-                imageVector = Icons.Default.Notifications,
-                contentDescription = strings.notifications,
-                tint = MaterialTheme.colorScheme.onSurface,
-            )
+        BadgedBox(
+            badge = {
+                // DESIGN.md: badge appears/disappears with a spring scale, never a bare pop.
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = unseenCount > 0,
+                    enter = androidx.compose.animation.scaleIn(spring(dampingRatio = 0.6f, stiffness = 400f)),
+                    exit = androidx.compose.animation.scaleOut(spring(dampingRatio = 0.6f, stiffness = 400f)),
+                ) {
+                    Badge(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary) {
+                        Text(if (unseenCount > 9) "9+" else unseenCount.toString())
+                    }
+                }
+            },
+        ) {
+            IconButton(onClick = onNotificationsClick) {
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = strings.notifications,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                )
+            }
         }
     }
 }
@@ -213,6 +291,36 @@ private fun GeofenceRationaleCard(onAllow: () -> Unit, onDismiss: () -> Unit) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = onDismiss) { Text(strings.laterButton) }
                 Button(onClick = onAllow) { Text(strings.allowPermission) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PushPrimingCard(onEnable: () -> Unit, onDismiss: () -> Unit) {
+    val strings = LocalStrings.current
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = strings.pushPrimingTitle,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = strings.pushPrimingBody,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = onDismiss) { Text(strings.laterButton) }
+                Button(onClick = onEnable) { Text(strings.pushPrimingEnable) }
             }
         }
     }

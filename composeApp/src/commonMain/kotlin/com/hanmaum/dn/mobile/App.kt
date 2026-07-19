@@ -43,6 +43,7 @@ import com.hanmaum.dn.mobile.features.login.presentation.RegisterScreen
 import com.hanmaum.dn.mobile.features.login.screen.LoginScreen
 import com.hanmaum.dn.mobile.features.ministry.presentation.detail.MinistryDetailScreen
 import com.hanmaum.dn.mobile.features.ministry.presentation.list.MinistryListScreen
+import com.hanmaum.dn.mobile.features.notification.presentation.NotificationListScreen
 import com.hanmaum.dn.mobile.features.pending.screen.PendingScreen
 import com.hanmaum.dn.mobile.features.pending.screen.SplashScreen
 import com.hanmaum.dn.mobile.features.profile.presentation.PersonalInfoScreen
@@ -168,6 +169,10 @@ fun App() {
                             },
                             onViewAllClick = { navController.navigate(AnnouncementListRoute) },
                             onFloorPlanClick = { navController.navigate(FloorPlanRoute) },
+                            onNotificationsClick = { navController.navigate(NotificationListRoute) },
+                            onOpenAnnouncementDeepLink = { id ->
+                                navController.navigate(AnnouncementDetailRoute(id = id))
+                            },
                         )
                     }
 
@@ -185,6 +190,13 @@ fun App() {
                             onItemClick = { id ->
                                 navController.navigate(AnnouncementDetailRoute(id = id))
                             },
+                        )
+                    }
+
+                    composable<NotificationListRoute> {
+                        NotificationListScreen(
+                            onBack = { navController.popBackStack() },
+                            onOpenAnnouncement = { id -> navController.navigate(AnnouncementDetailRoute(id)) },
                         )
                     }
 
