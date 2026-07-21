@@ -1,0 +1,102 @@
+# Release Drafter — STAGING track (develop)
+#
+# Every merge to `develop` updates a DRAFT pre-release titled "ST-Release
+# vX.Y.Z-st". Nothing is tagged or built until you open the draft in the
+# Releases tab and click Publish — publishing creates the `vX.Y.Z-st` tag,
+# which fires the iOS TestFlight (staging) build in distribute.yml.
+#
+# The next version is resolved from PR labels (see version-resolver). The
+# autolabeler auto-applies those labels from Conventional-Commit PR titles, so
+# your normal commit discipline drives the bump with no extra work; a manual
+# major/minor/patch label on a PR overrides it.
+#
+# See RELEASE.md for the full runbook.
+
+name-template: 'ST-Release v$RESOLVED_VERSION-st'
+tag-template: 'v$RESOLVED_VERSION-st'
+
+# Only look at releases cut on this branch when computing the previous version,
+# so the staging line and the prod line stay independent.
+filter-by-commitish: true
+commitish: refs/heads/develop
+
+# Force a clean numeric version — no auto-appended prerelease identifier. The
+# "-st" suffix comes from the templates above, and `prerelease: true` is set on
+# the action step so GitHub flags the release as a pre-release.
+version-template: '$MAJOR.$MINOR.$PATCH'
+
+categories:
+  - title: '🚀 Features'
+    labels: ['feature', 'enhancement', 'minor']
+  - title: '🐛 Fixes'
+    labels: ['fix', 'bug', 'patch']
+  - title: '🧹 Maintenance'
+    labels: ['chore', 'documentation', 'refactor', 'dependencies', 'ci']
+
+# Each line credits the PR author by GitHub login (`@$AUTHOR`). Release notes
+# only ever list merged PRs, and PRs are authored by human GitHub accounts
+# (CLAUDE.md forbids AI authorship; the pipeline's only bot, version-sync, makes
+# commits not PRs), so an AI/tool name can never appear here. `exclude-contributors`
+# is a belt-and-braces guard: any automation login is stripped from author output.
+change-template: '- $TITLE (#$NUMBER) @$AUTHOR'
+change-title-escapes: '\<*_&'
+no-changes-template: '- No user-facing changes since the last staging release.'
+exclude-contributors:
+  - 'github-actions'
+  - 'github-actions[bot]'
+  - 'claude'
+  - 'claude[bot]'
+
+# ── Version resolution ────────────────────────────────────────────────────
+# PRE-1.0 "zerover" guard: we are on the 0.x beta line and 1.0.0 is reserved
+# for the first App Store launch. So EVERY bump — including breaking changes —
+# is intentionally capped at `minor`; nothing here can auto-jump to 1.0.0.
+# Reaching 1.0.0 is a deliberate manual act (publish a `v1.0.0` release by hand).
+#
+# AFTER 1.0.0 ships: move the `major`/`breaking` labels up to a real `major:`
+# key to restore standard SemVer.
+version-resolver:
+  minor:
+    labels:
+      - 'major'      # capped to minor pre-1.0 (see note above)
+      - 'breaking'   # capped to minor pre-1.0
+      - 'minor'
+      - 'feature'
+      - 'enhancement'
+  patch:
+    labels:
+      - 'patch'
+      - 'fix'
+      - 'bug'
+      - 'perf'
+      - 'chore'
+      - 'documentation'
+      - 'refactor'
+      - 'dependencies'
+      - 'ci'
+  default: patch
+
+# ── Autolabeler ───────────────────────────────────────────────────────────
+# Applies bump labels from Conventional-Commit PR titles (this repo mandates
+# `<type>(<scope>): <summary>`). A manual label on the PR still wins.
+autolabeler:
+  - label: 'breaking'
+    title:
+      - '/^\w+(\(.+\))?!:/'          # e.g. "feat(auth)!: drop password grant"
+    body:
+      - '/BREAKING[ -]CHANGE/'
+  - label: 'feature'
+    title:
+      - '/^feat(\(.+\))?:/i'
+  - label: 'fix'
+    title:
+      - '/^(fix|perf)(\(.+\))?:/i'
+  - label: 'chore'
+    title:
+      - '/^(chore|docs|style|refactor|test|ci|build)(\(.+\))?:/i'
+
+template: |
+  ## What's Changed
+  $CHANGES
+
+  **Full Changelog**: https://github.com/$OWNER/$REPO/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION-st
