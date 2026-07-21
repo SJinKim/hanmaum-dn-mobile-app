@@ -1,0 +1,61 @@
+name: Release Drafter
+
+# Dual-track draft-release automation.
+#
+#   PR opened / updated  → autolabel the PR from its Conventional-Commit title
+#                          (feat→feature, fix→fix, `!`/BREAKING→breaking, …).
+#   Merge to develop     → update the STAGING draft  "ST-Release vX.Y.Z-st".
+#   Merge to main        → update the PRODUCTION draft "PROD-Release vX.Y.Z".
+#
+# Drafts accumulate silently — no tag, no build — until a human publishes them
+# in the Releases tab. Publishing a draft creates its tag (which is what
+# distribute.yml listens on). See RELEASE.md.
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    # `synchronize` re-labels when the title/commits change after opening.
+    types: [opened, reopened, synchronize]
+    branches: [develop, main]
+
+permissions:
+  contents: read
+  pull-requests: write   # autolabeler writes labels onto PRs
+
+jobs:
+  # ── STAGING: develop pushes + PRs targeting develop ──────────────────────
+  draft-staging:
+    if: github.ref == 'refs/heads/develop' || github.base_ref == 'develop'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write        # create/update the draft release
+      pull-requests: write   # autolabeler
+    steps:
+      - uses: release-drafter/release-drafter@v6
+        with:
+          config-name: release-drafter-st.yml
+          commitish: refs/heads/develop
+          prerelease: true
+          # On a PR event only autolabel (there is nothing to draft yet); on a
+          # develop push, build/refresh the staging draft.
+          disable-releaser: ${{ github.event_name == 'pull_request' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ── PRODUCTION: main pushes + PRs targeting main ─────────────────────────
+  draft-production:
+    if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: release-drafter/release-drafter@v6
+        with:
+          config-name: release-drafter-prod.yml
+          commitish: refs/heads/main
+          prerelease: false
+          disable-releaser: ${{ github.event_name == 'pull_request' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

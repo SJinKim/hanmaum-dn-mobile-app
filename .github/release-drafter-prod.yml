@@ -1,0 +1,92 @@
+# Release Drafter — PRODUCTION track (main)
+#
+# Every merge to `main` updates a DRAFT release titled "PROD-Release vX.Y.Z".
+# Nothing is tagged until you open the draft in the Releases tab and click
+# Publish — publishing creates the final `vX.Y.Z` tag (no -st suffix) and
+# marks the production release point.
+#
+# Publishing the prod release does NOT auto-submit to the App Store: shipping
+# to the App Store stays the deliberate manual lane in distribute.yml
+# (workflow_dispatch → ios-appstore, gated by the `prod` environment), per the
+# CLAUDE.md prod-lane invariant. The tag is the release marker; you run the
+# App Store lane when you mean to ship.
+#
+# See RELEASE.md for the full runbook.
+
+name-template: 'PROD-Release v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+
+# Only consider prod (main-line) releases when computing the previous version,
+# so the `-st` staging tags never interfere with the prod version math.
+filter-by-commitish: true
+commitish: refs/heads/main
+
+version-template: '$MAJOR.$MINOR.$PATCH'
+
+categories:
+  - title: '🚀 Features'
+    labels: ['feature', 'enhancement', 'minor']
+  - title: '🐛 Fixes'
+    labels: ['fix', 'bug', 'patch']
+  - title: '🧹 Maintenance'
+    labels: ['chore', 'documentation', 'refactor', 'dependencies', 'ci']
+
+# Each line credits the PR author by GitHub login (`@$AUTHOR`). Release notes
+# only ever list merged PRs, and PRs are authored by human GitHub accounts
+# (CLAUDE.md forbids AI authorship; the pipeline's only bot, version-sync, makes
+# commits not PRs), so an AI/tool name can never appear here. `exclude-contributors`
+# is a belt-and-braces guard: any automation login is stripped from author output.
+change-template: '- $TITLE (#$NUMBER) @$AUTHOR'
+change-title-escapes: '\<*_&'
+no-changes-template: '- No user-facing changes since the last production release.'
+exclude-contributors:
+  - 'github-actions'
+  - 'github-actions[bot]'
+  - 'claude'
+  - 'claude[bot]'
+
+# PRE-1.0 "zerover" guard — identical policy to the staging config: breaking
+# changes are capped at `minor` so nothing auto-jumps to the reserved 1.0.0.
+# After 1.0.0 ships, promote `major`/`breaking` to a real `major:` key here too.
+version-resolver:
+  minor:
+    labels:
+      - 'major'
+      - 'breaking'
+      - 'minor'
+      - 'feature'
+      - 'enhancement'
+  patch:
+    labels:
+      - 'patch'
+      - 'fix'
+      - 'bug'
+      - 'perf'
+      - 'chore'
+      - 'documentation'
+      - 'refactor'
+      - 'dependencies'
+      - 'ci'
+  default: patch
+
+autolabeler:
+  - label: 'breaking'
+    title:
+      - '/^\w+(\(.+\))?!:/'
+    body:
+      - '/BREAKING[ -]CHANGE/'
+  - label: 'feature'
+    title:
+      - '/^feat(\(.+\))?:/i'
+  - label: 'fix'
+    title:
+      - '/^(fix|perf)(\(.+\))?:/i'
+  - label: 'chore'
+    title:
+      - '/^(chore|docs|style|refactor|test|ci|build)(\(.+\))?:/i'
+
+template: |
+  ## What's Changed
+  $CHANGES
+
+  **Full Changelog**: https://github.com/$OWNER/$REPO/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
