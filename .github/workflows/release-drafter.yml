@@ -18,6 +18,10 @@ on:
     # `synchronize` re-labels when the title/commits change after opening.
     types: [opened, reopened, synchronize]
     branches: [develop, main]
+  # Manual run: refresh a draft on demand — e.g. to seed the first release, or
+  # after a push was skipped. Dispatched from develop drafts the staging release;
+  # from main, the production release (the job `if`s route by ref).
+  workflow_dispatch:
 
 permissions:
   contents: read
