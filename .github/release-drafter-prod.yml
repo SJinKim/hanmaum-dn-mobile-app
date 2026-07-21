@@ -16,9 +16,11 @@
 name-template: 'PROD-Release v$RESOLVED_VERSION'
 tag-template: 'v$RESOLVED_VERSION'
 
-# Only consider prod (main-line) releases when computing the previous version,
-# so the `-st` staging tags never interfere with the prod version math.
-filter-by-commitish: true
+# Draft against main (target branch for the release + which merged PRs count).
+# `include-pre-releases` defaults to false, so this prod line's version base
+# ignores the `-st` staging pre-releases without needing filter-by-commitish
+# (which was removed — it filtered out baseline/seed releases by exact
+# target_commitish string matching).
 commitish: refs/heads/main
 
 version-template: '$MAJOR.$MINOR.$PATCH'

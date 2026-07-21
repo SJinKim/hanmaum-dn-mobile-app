@@ -41,6 +41,17 @@ jobs:
             echo "Tag '$TAG' did not yield an x.y.z version ('$VERSION') — skipping."
             echo "SKIP=1" >> "$GITHUB_ENV"
           fi
+          # No-downgrade guard: never let a release lower the branch's versionName.
+          # Protects against a baseline/back-dated release (e.g. seeding an older
+          # tag) rewriting a branch that is already on a higher version.
+          CURRENT="$(grep -m1 -oE 'versionName = "[^"]*"' composeApp/build.gradle.kts | sed -E 's/.*"([^"]*)".*/\1/')"
+          if [ -n "$CURRENT" ] && [ "$CURRENT" != "$VERSION" ]; then
+            HIGHER="$(printf '%s\n%s\n' "$CURRENT" "$VERSION" | sort -V | tail -1)"
+            if [ "$HIGHER" != "$VERSION" ]; then
+              echo "Refusing to downgrade versionName $CURRENT -> $VERSION on $BRANCH — skipping."
+              echo "SKIP=1" >> "$GITHUB_ENV"
+            fi
+          fi
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "BRANCH=$BRANCH" >> "$GITHUB_ENV"
 
