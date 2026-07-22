@@ -263,7 +263,7 @@ android {
         versionCode = 1
         // Marketing version tracks the iOS release line (latest tag: v0.5.0). Betas
         // ship on 0.x; 1.0.0 is the first production release. Keep in sync on each tag.
-        versionName = "0.5.0"
+        versionName = "0.6.0"
         buildConfigField("String", "GOOGLE_CALENDAR_ID",      "\"${envProps["GOOGLE_CALENDAR_ID"] ?: ""}\"")
         buildConfigField("String", "GOOGLE_CALENDAR_API_KEY", "\"${envProps["GOOGLE_CALENDAR_API_KEY"] ?: ""}\"")
         buildConfigField("String", "PCLOUD_FOLDER_ENDPOINT",   "\"${envProps["PCLOUD_FOLDER_ENDPOINT"] ?: ""}\"")

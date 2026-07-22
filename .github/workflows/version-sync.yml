@@ -1,10 +1,14 @@
 name: Sync versionName on release publish
 
 # When a draft release is published (staging `vX.Y.Z-st` or prod `vX.Y.Z`),
-# rewrite Android `versionName` in composeApp/build.gradle.kts to the numeric
-# version so the marketing version never drifts from the release line. The
-# commit lands on the release's own branch (develop for -st, main for final)
-# and carries [skip ci] so it does not re-trigger builds or the drafter.
+# sync Android `versionName` in composeApp/build.gradle.kts to the numeric
+# version so the marketing version never drifts from the release line.
+#
+# develop/main have a "changes must go through a pull request" ruleset, so the
+# bot cannot push the bump directly — it opens a PR from a bot branch and
+# enables auto-merge. Because the PR/merge are driven by GITHUB_TOKEN, they do
+# NOT trigger further workflow runs (pr-check, drafter, distribute), so a
+# versionName bump never causes a redundant build.
 #
 # iOS marketing version is derived from the tag at build time (git describe in
 # distribute.yml), so it needs no file edit — this keeps the Android side in step.
@@ -15,6 +19,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   sync-version-name:
@@ -62,15 +67,26 @@ jobs:
           echo "versionName now:"
           grep -n 'versionName = ' composeApp/build.gradle.kts
 
-      - name: Commit back to the release branch
+      - name: Open a PR to sync versionName
         if: env.SKIP != '1'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if git diff --quiet -- composeApp/build.gradle.kts; then
-            echo "versionName already $VERSION — nothing to commit."
+            echo "versionName already $VERSION on $BRANCH — nothing to do."
             exit 0
           fi
+          SYNC_BRANCH="bot/versionname-${VERSION}-${{ github.run_id }}"
           git config user.name  'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -b "$SYNC_BRANCH"
           git add composeApp/build.gradle.kts
-          git commit -m "chore(release): set versionName to $VERSION [skip ci]"
-          git push origin "HEAD:$BRANCH"
+          git commit -m "chore(release): set versionName to $VERSION"
+          git push origin "$SYNC_BRANCH"
+          gh pr create --base "$BRANCH" --head "$SYNC_BRANCH" \
+            --title "chore(release): set versionName to $VERSION" \
+            --body "Automated by version-sync: align Android \`versionName\` with the published release \`${{ github.event.release.tag_name }}\`."
+          # Auto-merge if the repo allows it; otherwise leave the PR for a human.
+          gh pr merge "$SYNC_BRANCH" --squash --auto --delete-branch \
+            || gh pr merge "$SYNC_BRANCH" --squash --delete-branch \
+            || echo "Could not auto-merge — the versionName PR is open for manual merge."
