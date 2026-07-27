@@ -2,6 +2,7 @@ package com.hanmaum.dn.mobile.features.announcement.presentation
 
 import com.hanmaum.dn.mobile.core.push.PushManager
 import com.hanmaum.dn.mobile.features.announcement.domain.model.Announcement
+import com.hanmaum.dn.mobile.features.announcement.domain.model.AnnouncementLookup
 import com.hanmaum.dn.mobile.features.announcement.domain.repository.AnnouncementRepository
 import com.hanmaum.dn.mobile.features.notification.domain.model.NotificationPage
 import com.hanmaum.dn.mobile.features.notification.domain.repository.NotificationRepository
@@ -19,7 +20,7 @@ import kotlin.test.assertTrue
 
 private class FakeAnnouncementRepository : AnnouncementRepository {
     override suspend fun getAnnouncements(): List<Announcement> = emptyList()
-    override suspend fun getAnnouncementById(id: String): Announcement? = null
+    override suspend fun getAnnouncementById(id: String): AnnouncementLookup = AnnouncementLookup.NotFound
 }
 
 private class FakeNotificationRepository(
