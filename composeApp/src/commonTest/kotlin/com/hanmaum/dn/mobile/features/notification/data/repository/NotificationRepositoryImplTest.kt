@@ -121,6 +121,38 @@ class NotificationRepositoryImplTest {
     }
 
     @Test
+    fun `delete sends DELETE to the notification path`() = runTest {
+        var path = ""
+        var method = ""
+        val repo = NotificationRepositoryImpl(
+            mockClient("""{"success":true,"message":null,"data":null}""") { path = it.url.encodedPath; method = it.method.value },
+        )
+        repo.delete("n1").getOrThrow()
+        assertEquals("DELETE", method)
+        assertEquals("/me/notifications/n1", path)
+    }
+
+    @Test
+    fun `delete all sends DELETE to the collection path`() = runTest {
+        var path = ""
+        var method = ""
+        val repo = NotificationRepositoryImpl(
+            mockClient("""{"success":true,"message":null,"data":null}""") { path = it.url.encodedPath; method = it.method.value },
+        )
+        repo.deleteAll().getOrThrow()
+        assertEquals("DELETE", method)
+        assertEquals("/me/notifications", path)
+    }
+
+    @Test
+    fun `delete error status maps to failure`() = runTest {
+        val client = HttpClient(MockEngine { respond("{}", HttpStatusCode.InternalServerError, headersOf(HttpHeaders.ContentType, "application/json")) }) {
+            install(ContentNegotiation) { json(testJson) }
+        }
+        assertTrue(NotificationRepositoryImpl(client).delete("n1").isFailure)
+    }
+
+    @Test
     fun `server error status maps to failure`() = runTest {
         val client = HttpClient(MockEngine { respond("{}", HttpStatusCode.InternalServerError, headersOf(HttpHeaders.ContentType, "application/json")) }) {
             install(ContentNegotiation) { json(testJson) }

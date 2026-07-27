@@ -37,7 +37,10 @@ private class FakeNotificationRepository : NotificationRepository {
     var markAllSeenCalls = 0
     var markReadIds = mutableListOf<String>()
     var markAllReadCalls = 0
+    var deletedIds = mutableListOf<String>()
+    var deleteAllCalls = 0
     var failList = false
+    var failDelete = false
 
     override suspend fun getNotifications(page: Int) =
         if (failList) Result.failure(RuntimeException("boom")) else Result.success(pages.getValue(page))
@@ -45,6 +48,9 @@ private class FakeNotificationRepository : NotificationRepository {
     override suspend fun markAllSeen(): Result<Unit> { markAllSeenCalls++; return Result.success(Unit) }
     override suspend fun markRead(publicId: String): Result<Unit> { markReadIds += publicId; return Result.success(Unit) }
     override suspend fun markAllRead(): Result<Unit> { markAllReadCalls++; return Result.success(Unit) }
+    override suspend fun delete(publicId: String): Result<Unit> =
+        if (failDelete) Result.failure(RuntimeException("boom")) else { deletedIds += publicId; Result.success(Unit) }
+    override suspend fun deleteAll(): Result<Unit> { deleteAllCalls++; return Result.success(Unit) }
     override suspend fun getPushEnabled() = Result.success(true)
     override suspend fun setPushEnabled(enabled: Boolean) = Result.success(Unit)
     override suspend fun registerDeviceToken(token: String, platform: String) = Result.success(Unit)
@@ -107,5 +113,35 @@ class NotificationListViewModelTest {
         val vm = NotificationListViewModel(repo)
         vm.load(); advanceUntilIdle()
         assertTrue(vm.uiState.value.error != null)
+    }
+
+    @Test
+    fun `delete removes the item and calls repository`() = runTest(dispatcher) {
+        val repo = FakeNotificationRepository()
+        val vm = NotificationListViewModel(repo)
+        vm.load(); advanceUntilIdle()
+        vm.delete(vm.uiState.value.items[0]); advanceUntilIdle()
+        assertEquals(1, vm.uiState.value.items.size)
+        assertEquals(listOf("n1"), repo.deletedIds)
+    }
+
+    @Test
+    fun `delete all empties the list and calls repository`() = runTest(dispatcher) {
+        val repo = FakeNotificationRepository()
+        val vm = NotificationListViewModel(repo)
+        vm.load(); advanceUntilIdle()
+        vm.deleteAll(); advanceUntilIdle()
+        assertTrue(vm.uiState.value.items.isEmpty())
+        assertEquals(1, repo.deleteAllCalls)
+    }
+
+    @Test
+    fun `delete failure resyncs from the server`() = runTest(dispatcher) {
+        val repo = FakeNotificationRepository().apply { failDelete = true }
+        val vm = NotificationListViewModel(repo)
+        vm.load(); advanceUntilIdle()
+        vm.delete(vm.uiState.value.items[0]); advanceUntilIdle()
+        // Optimistic removal is rolled back by a reload after the failed delete.
+        assertEquals(2, vm.uiState.value.items.size)
     }
 }
