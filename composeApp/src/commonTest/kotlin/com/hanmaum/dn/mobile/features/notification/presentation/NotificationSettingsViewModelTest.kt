@@ -30,6 +30,8 @@ class NotificationSettingsViewModelTest {
         override suspend fun markAllSeen(): Result<Unit> = Result.success(Unit)
         override suspend fun markRead(publicId: String): Result<Unit> = Result.success(Unit)
         override suspend fun markAllRead(): Result<Unit> = Result.success(Unit)
+        override suspend fun delete(publicId: String): Result<Unit> = Result.success(Unit)
+        override suspend fun deleteAll(): Result<Unit> = Result.success(Unit)
         override suspend fun getPushEnabled() = Result.success(pushEnabled)
         override suspend fun setPushEnabled(enabled: Boolean): Result<Unit> {
             setPushEnabledCalls += enabled

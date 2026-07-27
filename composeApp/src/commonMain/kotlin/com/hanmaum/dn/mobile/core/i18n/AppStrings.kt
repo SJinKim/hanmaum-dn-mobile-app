@@ -36,6 +36,9 @@ interface AppStrings {
     val notificationsTitle: String
     val notificationsEmpty: String
     val notificationsReadAll: String
+    val notificationsDeleteAll: String
+    val notificationsDelete: String
+    val moreOptions: String
     val notificationsToday: String
     val notificationsYesterday: String
     val notificationsEarlier: String
@@ -178,6 +181,9 @@ object EnStrings : AppStrings {
     override val notificationsTitle = "Notifications"
     override val notificationsEmpty = "You'll see notifications here when they arrive"
     override val notificationsReadAll = "Mark all read"
+    override val notificationsDeleteAll = "Delete all"
+    override val notificationsDelete = "Delete"
+    override val moreOptions = "More options"
     override val notificationsToday = "Today"
     override val notificationsYesterday = "Yesterday"
     override val notificationsEarlier = "Earlier"
@@ -302,6 +308,9 @@ object KoStrings : AppStrings {
     override val notificationsTitle = "알림"
     override val notificationsEmpty = "알림이 오면 여기에 표시됩니다"
     override val notificationsReadAll = "모두 읽음"
+    override val notificationsDeleteAll = "모두 삭제"
+    override val notificationsDelete = "삭제"
+    override val moreOptions = "더 보기"
     override val notificationsToday = "오늘"
     override val notificationsYesterday = "어제"
     override val notificationsEarlier = "이전"
@@ -426,6 +435,9 @@ object DeStrings : AppStrings {
     override val notificationsTitle = "Mitteilungen"
     override val notificationsEmpty = "Neue Mitteilungen erscheinen hier"
     override val notificationsReadAll = "Alle gelesen"
+    override val notificationsDeleteAll = "Alle löschen"
+    override val notificationsDelete = "Löschen"
+    override val moreOptions = "Weitere Optionen"
     override val notificationsToday = "Heute"
     override val notificationsYesterday = "Gestern"
     override val notificationsEarlier = "Früher"

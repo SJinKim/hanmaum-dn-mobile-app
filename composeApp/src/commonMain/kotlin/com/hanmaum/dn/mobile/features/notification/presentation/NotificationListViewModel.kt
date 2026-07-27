@@ -79,4 +79,18 @@ class NotificationListViewModel(
         _uiState.update { state -> state.copy(items = state.items.map { it.copy(isRead = true) }) }
         viewModelScope.launch { repository.markAllRead() }
     }
+
+    fun delete(notification: Notification) {
+        _uiState.update { state ->
+            state.copy(items = state.items.filterNot { it.publicId == notification.publicId })
+        }
+        // Optimistic removal; resync from the server if the delete didn't land.
+        viewModelScope.launch { repository.delete(notification.publicId).onFailure { load() } }
+    }
+
+    fun deleteAll() {
+        if (_uiState.value.items.isEmpty()) return
+        _uiState.update { it.copy(items = emptyList()) }
+        viewModelScope.launch { repository.deleteAll().onFailure { load() } }
+    }
 }

@@ -8,6 +8,8 @@ interface NotificationRepository {
     suspend fun markAllSeen(): Result<Unit>
     suspend fun markRead(publicId: String): Result<Unit>
     suspend fun markAllRead(): Result<Unit>
+    suspend fun delete(publicId: String): Result<Unit>
+    suspend fun deleteAll(): Result<Unit>
     suspend fun getPushEnabled(): Result<Boolean>
     suspend fun setPushEnabled(enabled: Boolean): Result<Unit>
     suspend fun registerDeviceToken(token: String, platform: String): Result<Unit>

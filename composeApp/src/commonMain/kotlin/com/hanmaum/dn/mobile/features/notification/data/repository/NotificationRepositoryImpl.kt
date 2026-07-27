@@ -42,6 +42,16 @@ class NotificationRepositoryImpl(
 
     override suspend fun markAllRead(): Result<Unit> = simplePost("me/notifications/read-all")
 
+    override suspend fun delete(publicId: String): Result<Unit> = runCatching {
+        val response = client.delete("me/notifications/$publicId")
+        check(response.status.isSuccess()) { "notification delete failed (${response.status})" }
+    }
+
+    override suspend fun deleteAll(): Result<Unit> = runCatching {
+        val response = client.delete("me/notifications")
+        check(response.status.isSuccess()) { "notifications clear failed (${response.status})" }
+    }
+
     override suspend fun getPushEnabled(): Result<Boolean> = runCatching {
         val response = client.get("me/notification-settings")
         check(response.status.isSuccess()) { "settings load failed (${response.status})" }

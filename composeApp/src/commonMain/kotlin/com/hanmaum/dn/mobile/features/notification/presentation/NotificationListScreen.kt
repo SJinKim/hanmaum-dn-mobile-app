@@ -10,11 +10,14 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
@@ -78,8 +81,36 @@ fun NotificationListScreen(
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f),
             )
-            TextButton(onClick = viewModel::onReadAll, enabled = !state.allRead && state.items.isNotEmpty()) {
-                Text(strings.notificationsReadAll, color = MaterialTheme.colorScheme.primary)
+            Box {
+                var menuOpen by remember { mutableStateOf(false) }
+                IconButton(
+                    onClick = { menuOpen = true },
+                    enabled = state.items.isNotEmpty(),
+                    modifier = Modifier.size(44.dp),
+                ) {
+                    Icon(
+                        Icons.Default.MoreVert,
+                        contentDescription = strings.moreOptions,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                    DropdownMenuItem(
+                        text = { Text(strings.notificationsReadAll) },
+                        enabled = !state.allRead,
+                        onClick = {
+                            menuOpen = false
+                            viewModel.onReadAll()
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(strings.notificationsDeleteAll, color = MaterialTheme.colorScheme.error) },
+                        onClick = {
+                            menuOpen = false
+                            viewModel.deleteAll()
+                        },
+                    )
+                }
             }
         }
 
@@ -126,6 +157,7 @@ fun NotificationListScreen(
                                 index = globalIndex[notification.publicId] ?: 0,
                                 timeText = relativeTime(notification.createdAt),
                                 onClick = { viewModel.onItemClick(notification) },
+                                onDelete = { viewModel.delete(notification) },
                             )
                         }
                     }
@@ -149,7 +181,9 @@ private fun StaggeredNotificationRow(
     index: Int,
     timeText: String,
     onClick: () -> Unit,
+    onDelete: () -> Unit,
 ) {
+    val strings = LocalStrings.current
     var appeared by remember(notification.publicId) { mutableStateOf(false) }
     LaunchedEffect(notification.publicId) {
         delay(AppMotion.STAGGER_DELAY_MS.toLong() * index.coerceAtMost(5))
@@ -159,15 +193,49 @@ private fun StaggeredNotificationRow(
     val alpha by animateFloatAsState(if (appeared) 1f else 0f, tween(200), label = "stagger-a")
     val offsetY by animateFloatAsState(if (appeared) 0f else slidePx, AppMotion.listItem, label = "stagger-y")
 
-    NotificationRow(
-        notification = notification,
-        timeText = timeText,
-        onClick = onClick,
+    // Swipe end-to-start to delete (immediate, no undo). The removal is driven by the
+    // ViewModel dropping the item, so the row leaves composition after confirm.
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.EndToStart) {
+                onDelete()
+                true
+            } else {
+                false
+            }
+        },
+    )
+    SwipeToDismissBox(
+        state = dismissState,
+        enableDismissFromStartToEnd = false,
+        enableDismissFromEndToStart = true,
         modifier = Modifier.graphicsLayer {
             this.alpha = alpha
             translationY = offsetY
         },
-    )
+        backgroundContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(MaterialTheme.colorScheme.errorContainer)
+                    .padding(horizontal = 20.dp),
+                contentAlignment = Alignment.CenterEnd,
+            ) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = strings.notificationsDelete,
+                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                )
+            }
+        },
+    ) {
+        NotificationRow(
+            notification = notification,
+            timeText = timeText,
+            onClick = onClick,
+        )
+    }
 }
 
 @Composable
