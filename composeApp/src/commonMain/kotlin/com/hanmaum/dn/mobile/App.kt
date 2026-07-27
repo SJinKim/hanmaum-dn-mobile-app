@@ -181,6 +181,11 @@ fun App() {
                         AnnouncementDetailScreen(
                             announcementId = route.id,
                             onBackClick    = { navController.popBackStack() },
+                            onGoToList     = {
+                                navController.navigate(AnnouncementListRoute) {
+                                    popUpTo<AnnouncementDetailRoute> { inclusive = true }
+                                }
+                            },
                         )
                     }
 

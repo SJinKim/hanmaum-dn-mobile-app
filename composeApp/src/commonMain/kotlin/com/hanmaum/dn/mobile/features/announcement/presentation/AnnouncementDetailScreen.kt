@@ -17,8 +17,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -37,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
@@ -51,6 +54,7 @@ import org.koin.core.parameter.parametersOf
 fun AnnouncementDetailScreen(
     announcementId: String,
     onBackClick: () -> Unit,
+    onGoToList: () -> Unit,
 ) {
     val viewModel: AnnouncementDetailViewModel = koinViewModel(
         parameters = { parametersOf(announcementId) }
@@ -70,8 +74,12 @@ fun AnnouncementDetailScreen(
             state.isLoading -> {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
-            state.error != null -> {
-                ErrorView(msg = state.error, onRetry = { viewModel.loadAnnouncement() })
+            state.gone -> {
+                AnnouncementUnavailableView(onBackClick = onBackClick, onGoToList = onGoToList)
+            }
+            state.hasError -> {
+                // msg = null → ErrorView shows its localized generic message; retry can help here.
+                ErrorView(msg = null, onRetry = { viewModel.loadAnnouncement() })
             }
             state.announcement != null -> {
                 ArticleContent(
@@ -93,6 +101,66 @@ fun AnnouncementDetailScreen(
                 onAttend = rsvpViewModel::checkIn,
                 onDismiss = { sheetOpen = false },
             )
+        }
+    }
+}
+
+// Shown when a notification's announcement has left the active feed (expired/removed).
+// A graceful terminal state — no doomed retry — that routes the user onward.
+@Composable
+private fun AnnouncementUnavailableView(
+    onBackClick: () -> Unit,
+    onGoToList: () -> Unit,
+) {
+    val strings = LocalStrings.current
+    Column(modifier = Modifier.fillMaxSize()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(horizontal = 4.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton(onClick = onBackClick, modifier = Modifier.size(44.dp)) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                    contentDescription = strings.back,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Info,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(48.dp),
+            )
+            Spacer(Modifier.height(16.dp))
+            Text(
+                text = strings.announcementUnavailableTitle,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = strings.announcementUnavailableBody,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                lineHeight = MaterialTheme.typography.bodyMedium.lineHeight,
+            )
+            Spacer(Modifier.height(24.dp))
+            Button(onClick = onGoToList, shape = MaterialTheme.shapes.extraLarge) {
+                Text(strings.announcementUnavailableAction)
+            }
         }
     }
 }

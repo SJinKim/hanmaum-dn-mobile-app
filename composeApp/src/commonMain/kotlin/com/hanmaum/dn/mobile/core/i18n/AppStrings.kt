@@ -80,6 +80,10 @@ interface AppStrings {
     val sectionThisMonth: String
     val sectionLastMonth: String
     val sectionEarlier: String
+    // Announcement no-longer-available (stale notification deep link)
+    val announcementUnavailableTitle: String
+    val announcementUnavailableBody: String
+    val announcementUnavailableAction: String
     // Info card labels
     val labelEmail: String
     val labelPhone: String
@@ -217,6 +221,9 @@ object EnStrings : AppStrings {
     override val sectionThisMonth = "THIS MONTH"
     override val sectionLastMonth = "LAST MONTH"
     override val sectionEarlier = "EARLIER"
+    override val announcementUnavailableTitle = "This announcement is no longer available"
+    override val announcementUnavailableBody = "It may have expired or been removed."
+    override val announcementUnavailableAction = "See all announcements"
     override val labelEmail = "EMAIL ADDRESS"
     override val labelPhone = "PHONE NUMBER"
     override val labelStreet = "STREET"
@@ -341,6 +348,9 @@ object KoStrings : AppStrings {
     override val sectionThisMonth = "이번 달"
     override val sectionLastMonth = "지난 달"
     override val sectionEarlier = "이전"
+    override val announcementUnavailableTitle = "이 소식은 더 이상 볼 수 없어요"
+    override val announcementUnavailableBody = "게시 기간이 종료되었거나 삭제되었어요."
+    override val announcementUnavailableAction = "소식 전체 보기"
     override val labelEmail = "이메일"
     override val labelPhone = "전화번호"
     override val labelStreet = "주소"
@@ -465,6 +475,9 @@ object DeStrings : AppStrings {
     override val sectionThisMonth = "DIESEN MONAT"
     override val sectionLastMonth = "LETZTEN MONAT"
     override val sectionEarlier = "FRÜHER"
+    override val announcementUnavailableTitle = "Diese Mitteilung ist nicht mehr verfügbar"
+    override val announcementUnavailableBody = "Sie ist möglicherweise abgelaufen oder wurde entfernt."
+    override val announcementUnavailableAction = "Alle Mitteilungen ansehen"
     override val labelEmail = "E-MAIL-ADRESSE"
     override val labelPhone = "TELEFONNUMMER"
     override val labelStreet = "STRASSE"
