@@ -1,6 +1,5 @@
 package com.hanmaum.dn.mobile.features.announcement.presentation
 
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -14,7 +13,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -26,7 +24,9 @@ import com.hanmaum.dn.mobile.core.geofence.GeofenceManager
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.geofence.GeofencePermissionRequest
 import com.hanmaum.dn.mobile.core.notification.NotificationService
+import com.hanmaum.dn.mobile.core.presentation.components.AppScreen
 import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
+import com.hanmaum.dn.mobile.core.presentation.theme.AppMotion
 import com.hanmaum.dn.mobile.core.push.NotificationPermissionRequest
 import com.hanmaum.dn.mobile.core.push.PushEventBus
 import com.hanmaum.dn.mobile.core.push.PushPreferences
@@ -52,6 +52,7 @@ fun HomeScreen(
     onNotificationsClick: () -> Unit,
     onOpenAnnouncementDeepLink: (String) -> Unit,
 ) {
+    val strings = LocalStrings.current
     val viewModel: HomeViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -125,10 +126,10 @@ fun HomeScreen(
         }
     }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            HomeTopBar(
+    AppScreen(
+        title = strings.navHome,
+        actions = {
+            NotificationBellAction(
                 unseenCount = state.unseenCount,
                 onNotificationsClick = onNotificationsClick,
             )
@@ -176,41 +177,28 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HomeTopBar(unseenCount: Int, onNotificationsClick: () -> Unit) {
+private fun NotificationBellAction(unseenCount: Int, onNotificationsClick: () -> Unit) {
     val strings = LocalStrings.current
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = "DN App",
-            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.primary,
-        )
-        BadgedBox(
-            badge = {
-                // DESIGN.md: badge appears/disappears with a spring scale, never a bare pop.
-                androidx.compose.animation.AnimatedVisibility(
-                    visible = unseenCount > 0,
-                    enter = androidx.compose.animation.scaleIn(spring(dampingRatio = 0.6f, stiffness = 400f)),
-                    exit = androidx.compose.animation.scaleOut(spring(dampingRatio = 0.6f, stiffness = 400f)),
-                ) {
-                    Badge(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary) {
-                        Text(if (unseenCount > 9) "9+" else unseenCount.toString())
-                    }
+    BadgedBox(
+        badge = {
+            // DESIGN.md: badge appears/disappears with a spring scale, never a bare pop.
+            androidx.compose.animation.AnimatedVisibility(
+                visible = unseenCount > 0,
+                enter = androidx.compose.animation.scaleIn(AppMotion.press),
+                exit = androidx.compose.animation.scaleOut(AppMotion.press),
+            ) {
+                Badge(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary) {
+                    Text(if (unseenCount > 9) "9+" else unseenCount.toString())
                 }
-            },
-        ) {
-            IconButton(onClick = onNotificationsClick) {
-                Icon(
-                    imageVector = Icons.Default.Notifications,
-                    contentDescription = strings.notifications,
-                    tint = MaterialTheme.colorScheme.onSurface,
-                )
             }
+        },
+    ) {
+        IconButton(onClick = onNotificationsClick) {
+            Icon(
+                imageVector = Icons.Default.Notifications,
+                contentDescription = strings.notifications,
+                tint = MaterialTheme.colorScheme.onSurface,
+            )
         }
     }
 }
