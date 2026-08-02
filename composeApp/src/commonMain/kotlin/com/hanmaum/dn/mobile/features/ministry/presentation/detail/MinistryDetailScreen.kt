@@ -10,12 +10,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -102,11 +101,10 @@ private fun MinistryDetailContent(
                 onClick = onBackClick,
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .statusBarsPadding()
                     .padding(4.dp),
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
                     contentDescription = strings.back,
                     tint = MaterialTheme.colorScheme.onPrimary,
                 )

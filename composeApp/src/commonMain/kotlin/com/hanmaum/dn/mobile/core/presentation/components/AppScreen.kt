@@ -51,6 +51,7 @@ fun AppScreen(
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
+    snackbarHost: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val strings = LocalStrings.current
@@ -66,6 +67,7 @@ fun AppScreen(
         // App.kt already applies statusBarsPadding() around the whole NavHost — re-applying
         // insets here would double them.
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        snackbarHost = snackbarHost,
         topBar = {
             LargeTopAppBar(
                 title = { Text(title) },

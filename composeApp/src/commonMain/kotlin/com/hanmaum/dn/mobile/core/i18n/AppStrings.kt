@@ -107,6 +107,11 @@ interface AppStrings {
     val share: String
     /** Photo count on an album tile; {n} is replaced with the number. */
     val albumPhotoCount: String
+    val attendanceServiceDayOnly: String
+    /** Check-in window; {start} and {end} are replaced with times. */
+    val attendanceWindow: String
+    val attendanceCheckIn: String
+    val attendanceNotInWindow: String
     val ministryAbout: String
     val ministryRequirements: String
     val ministrySchedule: String
@@ -255,6 +260,10 @@ object EnStrings : AppStrings {
     override val churchName = "한마음 교회"
     override val share = "Share"
     override val albumPhotoCount = "{n} photos"
+    override val attendanceServiceDayOnly = "Check-in is only available on a service day"
+    override val attendanceWindow = "Check-in window: {start} – {end}"
+    override val attendanceCheckIn = "Check in"
+    override val attendanceNotInWindow = "Outside check-in hours"
     override val ministryAbout = "About"
     override val ministryRequirements = "Requirements"
     override val ministrySchedule = "Schedule"
@@ -392,6 +401,10 @@ object KoStrings : AppStrings {
     override val churchName = "한마음 교회"
     override val share = "공유"
     override val albumPhotoCount = "{n}장"
+    override val attendanceServiceDayOnly = "출석 체크는 예배 당일에만 가능합니다"
+    override val attendanceWindow = "출석 시간: {start} ~ {end}"
+    override val attendanceCheckIn = "출석 체크"
+    override val attendanceNotInWindow = "출석 시간이 아닙니다"
     override val ministryAbout = "소개"
     override val ministryRequirements = "지원 자격"
     override val ministrySchedule = "일정"
@@ -529,6 +542,10 @@ object DeStrings : AppStrings {
     override val churchName = "한마음 교회"
     override val share = "Teilen"
     override val albumPhotoCount = "{n} Fotos"
+    override val attendanceServiceDayOnly = "Check-in ist nur an einem Gottesdiensttag möglich"
+    override val attendanceWindow = "Check-in-Zeitraum: {start} – {end}"
+    override val attendanceCheckIn = "Einchecken"
+    override val attendanceNotInWindow = "Außerhalb der Check-in-Zeit"
     override val ministryAbout = "Über uns"
     override val ministryRequirements = "Voraussetzungen"
     override val ministrySchedule = "Zeitplan"
