@@ -26,7 +26,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
-import com.hanmaum.dn.mobile.core.presentation.components.AppTopBar
+import com.hanmaum.dn.mobile.core.presentation.components.AppScreen
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -38,6 +38,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
+import com.hanmaum.dn.mobile.core.presentation.theme.AppSpacing
 import com.hanmaum.dn.mobile.features.announcement.domain.model.Announcement
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -46,12 +47,13 @@ fun AnnouncementListScreen(
     onBackClick: () -> Unit,
     onItemClick: (String) -> Unit,
 ) {
+    val strings = LocalStrings.current
     val viewModel: AnnouncementListViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = { AppTopBar() },
+    AppScreen(
+        title = strings.navNews,
+        onBack = onBackClick,
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             when {
@@ -59,7 +61,7 @@ fun AnnouncementListScreen(
                 state.error != null -> ErrorView(msg = state.error, onRetry = { viewModel.loadAll() })
                 state.list.isEmpty() -> {
                     Text(
-                        "소식이 없습니다",
+                        strings.newsEmpty,
                         modifier = Modifier.align(Alignment.Center),
                         style    = MaterialTheme.typography.bodyLarge,
                         color    = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -84,26 +86,9 @@ private fun NewsFeedContent(
     val featured = all.firstOrNull { it.isPinned } ?: all.firstOrNull()
 
     LazyColumn(
-        contentPadding = PaddingValues(bottom = 32.dp),
+        contentPadding = PaddingValues(bottom = AppSpacing.xl),
     ) {
-        // Page header
-        item {
-            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                Text(
-                    text  = "LATEST UPDATES",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.outline,
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text  = "Community Pulse & News",
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
-                Spacer(Modifier.height(20.dp))
-            }
-        }
-
+        // The page header is gone: AppScreen's collapsing large title owns the screen name.
         featured?.let { item ->
             item {
                 FeaturedCard(
@@ -155,9 +140,10 @@ private fun FeaturedCard(
     announcement: Announcement,
     onClick: () -> Unit,
 ) {
+    val strings = LocalStrings.current
     Card(
         onClick   = onClick,
-        modifier  = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+        modifier  = Modifier.fillMaxWidth().padding(horizontal = AppSpacing.md),
         shape     = MaterialTheme.shapes.large,
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
@@ -184,7 +170,7 @@ private fun FeaturedCard(
                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f),
                 ) {
                     Text(
-                        text     = "FEATURED",
+                        text     = strings.newsFeatured,
                         style    = MaterialTheme.typography.labelSmall,
                         color    = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
@@ -214,7 +200,7 @@ private fun FeaturedCard(
                 contentPadding = PaddingValues(0.dp),
             ) {
                 Text(
-                    text  = "READ FULL STORY →",
+                    text  = strings.newsReadFull,
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = MaterialTheme.colorScheme.primary,
                 )
@@ -228,9 +214,10 @@ private fun NewsListItem(
     announcement: Announcement,
     onClick: () -> Unit,
 ) {
+    val strings = LocalStrings.current
     Card(
         onClick   = onClick,
-        modifier  = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+        modifier  = Modifier.fillMaxWidth().padding(horizontal = AppSpacing.md),
         shape     = MaterialTheme.shapes.large,
         colors    = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
@@ -248,7 +235,7 @@ private fun NewsListItem(
                 Spacer(Modifier.width(10.dp))
                 Column {
                     Text(
-                        text  = "한마음 교회",
+                        text  = strings.churchName,
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
@@ -293,7 +280,7 @@ private fun NewsListItem(
                 contentPadding = PaddingValues(0.dp),
             ) {
                 Text(
-                    text  = "DETAILS →",
+                    text  = strings.newsDetails,
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
                     color = MaterialTheme.colorScheme.secondary,
                 )

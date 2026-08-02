@@ -89,6 +89,7 @@ fun AlbumsScreen(
 
 @Composable
 private fun AlbumCard(summary: AlbumSummary, onClick: () -> Unit) {
+    val strings = LocalStrings.current
     Card(
         onClick = onClick,
         shape = MaterialTheme.shapes.large,
@@ -120,7 +121,7 @@ private fun AlbumCard(summary: AlbumSummary, onClick: () -> Unit) {
             )
             if (summary.photoCount != null) {
                 Text(
-                    text = "${summary.photoCount}장",
+                    text = strings.albumPhotoCount.replace("{n}", summary.photoCount.toString()),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

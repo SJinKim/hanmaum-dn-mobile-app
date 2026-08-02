@@ -99,6 +99,14 @@ interface AppStrings {
     val ministryListTitle: String
     val ministryListSubtitle: String
     val ministryListEmpty: String
+    val newsFeatured: String
+    val newsReadFull: String
+    val newsDetails: String
+    val newsEmpty: String
+    val churchName: String
+    val share: String
+    /** Photo count on an album tile; {n} is replaced with the number. */
+    val albumPhotoCount: String
     val ministryAbout: String
     val ministryRequirements: String
     val ministrySchedule: String
@@ -240,6 +248,13 @@ object EnStrings : AppStrings {
     override val ministryListTitle = "Ministries"
     override val ministryListSubtitle = "Discover the ministries serving our church"
     override val ministryListEmpty = "No ministries yet"
+    override val newsFeatured = "FEATURED"
+    override val newsReadFull = "READ FULL STORY →"
+    override val newsDetails = "DETAILS →"
+    override val newsEmpty = "No news yet"
+    override val churchName = "한마음 교회"
+    override val share = "Share"
+    override val albumPhotoCount = "{n} photos"
     override val ministryAbout = "About"
     override val ministryRequirements = "Requirements"
     override val ministrySchedule = "Schedule"
@@ -370,6 +385,13 @@ object KoStrings : AppStrings {
     override val ministryListTitle = "사역"
     override val ministryListSubtitle = "교회의 다양한 사역을 만나보세요"
     override val ministryListEmpty = "등록된 사역이 없습니다"
+    override val newsFeatured = "주요 소식"
+    override val newsReadFull = "전체 보기 →"
+    override val newsDetails = "자세히 보기 →"
+    override val newsEmpty = "소식이 없습니다"
+    override val churchName = "한마음 교회"
+    override val share = "공유"
+    override val albumPhotoCount = "{n}장"
     override val ministryAbout = "소개"
     override val ministryRequirements = "지원 자격"
     override val ministrySchedule = "일정"
@@ -500,6 +522,13 @@ object DeStrings : AppStrings {
     override val ministryListTitle = "Dienste"
     override val ministryListSubtitle = "Entdecken Sie die Dienste unserer Gemeinde"
     override val ministryListEmpty = "Noch keine Dienste"
+    override val newsFeatured = "HERVORGEHOBEN"
+    override val newsReadFull = "GANZE STORY →"
+    override val newsDetails = "DETAILS →"
+    override val newsEmpty = "Noch keine Neuigkeiten"
+    override val churchName = "한마음 교회"
+    override val share = "Teilen"
+    override val albumPhotoCount = "{n} Fotos"
     override val ministryAbout = "Über uns"
     override val ministryRequirements = "Voraussetzungen"
     override val ministrySchedule = "Zeitplan"
