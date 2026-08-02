@@ -11,12 +11,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Share
@@ -117,7 +116,6 @@ private fun AnnouncementUnavailableView(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .statusBarsPadding()
                 .padding(horizontal = 4.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -172,6 +170,7 @@ private fun ArticleContent(
     showRsvpCta: Boolean = false,
     onRsvpClick: () -> Unit = {},
 ) {
+    val strings = LocalStrings.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -211,15 +210,14 @@ private fun ArticleContent(
             Row(
                 modifier              = Modifier
                     .fillMaxWidth()
-                    .statusBarsPadding()
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment     = Alignment.CenterVertically,
             ) {
                 IconButton(onClick = onBackClick) {
                     Icon(
-                        imageVector        = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "뒤로",
+                        imageVector        = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
+                        contentDescription = strings.back,
                         tint               = MaterialTheme.colorScheme.onPrimary,
                     )
                 }
@@ -227,7 +225,7 @@ private fun ArticleContent(
                     IconButton(onClick = { /* stub */ }) {
                         Icon(
                             imageVector        = Icons.Default.Share,
-                            contentDescription = "공유",
+                            contentDescription = strings.share,
                             tint               = MaterialTheme.colorScheme.onPrimary,
                         )
                     }
@@ -250,7 +248,7 @@ private fun ArticleContent(
                 Spacer(Modifier.width(10.dp))
                 Column {
                     Text(
-                        text  = "한마음 교회",
+                        text  = strings.churchName,
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                     )

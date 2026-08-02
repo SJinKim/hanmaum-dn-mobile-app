@@ -10,6 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -133,9 +134,10 @@ private fun PillNavItem(
             label = "pillItemContent_${destination.label}",
         ) { isSelected ->
             if (isSelected) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
+                // Label sits under the icon, the conventional bottom-nav stack.
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
                     modifier = Modifier.padding(horizontal = 4.dp),
                 ) {
                     Icon(
@@ -144,11 +146,12 @@ private fun PillNavItem(
                         tint = PillIconActive,
                         modifier = Modifier.size(18.dp),
                     )
-                    Spacer(Modifier.width(5.dp))
+                    Spacer(Modifier.height(3.dp))
                     Text(
                         text = destination.label,
                         style = MaterialTheme.typography.labelLarge,
                         color = PillIconActive,
+                        maxLines = 1,
                     )
                 }
             } else {

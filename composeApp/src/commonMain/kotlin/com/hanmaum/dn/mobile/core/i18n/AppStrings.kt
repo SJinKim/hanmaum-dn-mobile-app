@@ -99,6 +99,19 @@ interface AppStrings {
     val ministryListTitle: String
     val ministryListSubtitle: String
     val ministryListEmpty: String
+    val newsFeatured: String
+    val newsReadFull: String
+    val newsDetails: String
+    val newsEmpty: String
+    val churchName: String
+    val share: String
+    /** Photo count on an album tile; {n} is replaced with the number. */
+    val albumPhotoCount: String
+    val attendanceServiceDayOnly: String
+    /** Check-in window; {start} and {end} are replaced with times. */
+    val attendanceWindow: String
+    val attendanceCheckIn: String
+    val attendanceNotInWindow: String
     val ministryAbout: String
     val ministryRequirements: String
     val ministrySchedule: String
@@ -240,6 +253,17 @@ object EnStrings : AppStrings {
     override val ministryListTitle = "Ministries"
     override val ministryListSubtitle = "Discover the ministries serving our church"
     override val ministryListEmpty = "No ministries yet"
+    override val newsFeatured = "FEATURED"
+    override val newsReadFull = "READ FULL STORY →"
+    override val newsDetails = "DETAILS →"
+    override val newsEmpty = "No news yet"
+    override val churchName = "한마음 교회"
+    override val share = "Share"
+    override val albumPhotoCount = "{n} photos"
+    override val attendanceServiceDayOnly = "Check-in is only available on a service day"
+    override val attendanceWindow = "Check-in window: {start} – {end}"
+    override val attendanceCheckIn = "Check in"
+    override val attendanceNotInWindow = "Outside check-in hours"
     override val ministryAbout = "About"
     override val ministryRequirements = "Requirements"
     override val ministrySchedule = "Schedule"
@@ -370,6 +394,17 @@ object KoStrings : AppStrings {
     override val ministryListTitle = "사역"
     override val ministryListSubtitle = "교회의 다양한 사역을 만나보세요"
     override val ministryListEmpty = "등록된 사역이 없습니다"
+    override val newsFeatured = "주요 소식"
+    override val newsReadFull = "전체 보기 →"
+    override val newsDetails = "자세히 보기 →"
+    override val newsEmpty = "소식이 없습니다"
+    override val churchName = "한마음 교회"
+    override val share = "공유"
+    override val albumPhotoCount = "{n}장"
+    override val attendanceServiceDayOnly = "출석 체크는 예배 당일에만 가능합니다"
+    override val attendanceWindow = "출석 시간: {start} ~ {end}"
+    override val attendanceCheckIn = "출석 체크"
+    override val attendanceNotInWindow = "출석 시간이 아닙니다"
     override val ministryAbout = "소개"
     override val ministryRequirements = "지원 자격"
     override val ministrySchedule = "일정"
@@ -500,6 +535,17 @@ object DeStrings : AppStrings {
     override val ministryListTitle = "Dienste"
     override val ministryListSubtitle = "Entdecken Sie die Dienste unserer Gemeinde"
     override val ministryListEmpty = "Noch keine Dienste"
+    override val newsFeatured = "HERVORGEHOBEN"
+    override val newsReadFull = "GANZE STORY →"
+    override val newsDetails = "DETAILS →"
+    override val newsEmpty = "Noch keine Neuigkeiten"
+    override val churchName = "한마음 교회"
+    override val share = "Teilen"
+    override val albumPhotoCount = "{n} Fotos"
+    override val attendanceServiceDayOnly = "Check-in ist nur an einem Gottesdiensttag möglich"
+    override val attendanceWindow = "Check-in-Zeitraum: {start} – {end}"
+    override val attendanceCheckIn = "Einchecken"
+    override val attendanceNotInWindow = "Außerhalb der Check-in-Zeit"
     override val ministryAbout = "Über uns"
     override val ministryRequirements = "Voraussetzungen"
     override val ministrySchedule = "Zeitplan"

@@ -28,7 +28,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,7 +42,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
-import com.hanmaum.dn.mobile.core.presentation.components.AppTopBar
+import com.hanmaum.dn.mobile.core.presentation.components.AppScreen
+import com.hanmaum.dn.mobile.core.presentation.theme.AppSpacing
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -65,10 +65,7 @@ fun ProfileScreen(
         if (loggedOut) onLogout()
     }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = { AppTopBar() },
-    ) { padding ->
+    AppScreen(title = strings.navProfile) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             when (val state = uiState) {
                 is ProfileUiState.Loading -> {
@@ -111,7 +108,7 @@ private fun ProfileHubContent(
         modifier            = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = AppSpacing.md),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(Modifier.height(16.dp))
@@ -170,8 +167,6 @@ private fun ProfileHubContent(
             Spacer(Modifier.width(8.dp))
             Text(strings.profileLogout, style = MaterialTheme.typography.labelLarge)
         }
-
-        Spacer(Modifier.height(80.dp)) // pill-nav clearance (space_bottom_nav)
     }
 }
 

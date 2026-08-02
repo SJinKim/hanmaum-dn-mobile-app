@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
+import com.hanmaum.dn.mobile.core.presentation.components.AppScreen
 import com.hanmaum.dn.mobile.core.presentation.theme.AppMotion
 import com.hanmaum.dn.mobile.features.notification.domain.model.Notification
 import com.hanmaum.dn.mobile.features.notification.presentation.components.NotificationRow
@@ -57,30 +58,10 @@ fun NotificationListScreen(
     }
     LaunchedEffect(shouldLoadMore) { if (shouldLoadMore) viewModel.loadMore() }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            IconButton(onClick = onBack, modifier = Modifier.size(44.dp)) {
-                Icon(
-                    Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                    contentDescription = strings.back,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Text(
-                text = strings.notificationsTitle,
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f),
-            )
+    AppScreen(
+        title = strings.notificationsTitle,
+        onBack = onBack,
+        actions = {
             Box {
                 var menuOpen by remember { mutableStateOf(false) }
                 IconButton(
@@ -112,8 +93,13 @@ fun NotificationListScreen(
                     )
                 }
             }
-        }
-
+        },
+    ) { padding ->
+      Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(padding),
+      ) {
         val error = state.error
         when {
             state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -171,6 +157,7 @@ fun NotificationListScreen(
                 }
             }
         }
+      }
     }
 }
 

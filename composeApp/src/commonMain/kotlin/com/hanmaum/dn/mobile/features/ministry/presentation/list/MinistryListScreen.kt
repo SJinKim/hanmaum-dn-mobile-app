@@ -42,7 +42,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
+import com.hanmaum.dn.mobile.core.presentation.components.AppScreen
 import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
+import com.hanmaum.dn.mobile.core.presentation.theme.AppSpacing
 import com.hanmaum.dn.mobile.features.ministry.domain.model.Ministry
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -50,6 +52,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun MinistryListScreen(
     onMinistryClick: (String) -> Unit,
 ) {
+    val strings = LocalStrings.current
     val viewModel: MinistryListViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -57,18 +60,20 @@ fun MinistryListScreen(
     // ministry created from the web app shows up without needing to re-login.
     LaunchedEffect(Unit) { viewModel.loadMinistries() }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-    ) {
-        when (val s = state) {
-            is MinistryListUiState.Loading ->
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            is MinistryListUiState.Error ->
-                ErrorView(msg = s.message, onRetry = { viewModel.loadMinistries() })
-            is MinistryListUiState.Success ->
-                MinistryListContent(ministries = s.ministries, onMinistryClick = onMinistryClick)
+    AppScreen(title = strings.ministryListTitle) { padding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+        ) {
+            when (val s = state) {
+                is MinistryListUiState.Loading ->
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                is MinistryListUiState.Error ->
+                    ErrorView(msg = s.message, onRetry = { viewModel.loadMinistries() })
+                is MinistryListUiState.Success ->
+                    MinistryListContent(ministries = s.ministries, onMinistryClick = onMinistryClick)
+            }
         }
     }
 }
@@ -81,23 +86,23 @@ private fun MinistryListContent(
     val strings = LocalStrings.current
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 24.dp),
+        contentPadding = PaddingValues(
+            start = AppSpacing.md,
+            end = AppSpacing.md,
+            bottom = AppSpacing.lg,
+        ),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        // The screen title is owned by AppScreen's collapsing large title; only the
+        // supporting subtitle stays in the content.
         item {
             Column {
-                Text(
-                    text = strings.ministryListTitle,
-                    style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.ExtraBold),
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
-                Spacer(Modifier.height(4.dp))
                 Text(
                     text = strings.ministryListSubtitle,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(AppSpacing.sm))
             }
         }
 
