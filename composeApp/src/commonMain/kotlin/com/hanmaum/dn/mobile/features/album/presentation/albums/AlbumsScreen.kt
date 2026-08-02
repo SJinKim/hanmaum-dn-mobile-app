@@ -16,6 +16,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
+import com.hanmaum.dn.mobile.core.presentation.components.AppScreen
+import com.hanmaum.dn.mobile.core.presentation.theme.AppSpacing
 import com.hanmaum.dn.mobile.features.album.domain.model.AlbumSummary
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -31,14 +33,7 @@ fun AlbumsScreen(
     // Refresh on every entry to the tab so web-app changes appear without re-login.
     LaunchedEffect(Unit) { viewModel.load() }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(strings.navAlbum) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
-            )
-        },
-    ) { padding ->
+    AppScreen(title = strings.navAlbum) { padding ->
         when (state) {
             AlbumsUiState.Loading -> Box(
                 modifier = Modifier.fillMaxSize().padding(padding),
@@ -74,7 +69,7 @@ fun AlbumsScreen(
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(columns),
                             modifier = Modifier.fillMaxSize().padding(padding),
-                            contentPadding = PaddingValues(12.dp),
+                            contentPadding = PaddingValues(AppSpacing.md),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
