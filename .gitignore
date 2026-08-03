@@ -58,7 +58,6 @@ docs/*
 
 # --- Font download artifacts ---
 composeApp/src/commonMain/Plus_Jakarta_Sans/README.txt
-/tasks/lessons.md
 
 # --- Codex local machine config ---
 .codex/config.toml
@@ -76,6 +75,10 @@ iosApp/fastlane/README.md
 
 # Local CI report scratch artifacts
 ci-report-*.md
+
+# Personal carry-over scratch list. tasks/lessons.md is the shared, tracked
+# memory; this is just a local worklist and is deliberately not shared.
+/TODO.md
 
 # Loose target-design screenshots dropped at designs/ root (personal working
 # files for the feature in progress; curated references live in designs/<set>/)
