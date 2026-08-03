@@ -135,10 +135,17 @@ xcrun simctl launch --console-pty "$SIM" com.hanmaum.dn.mobile.HanmaumDnApp
 xcrun simctl io "$SIM" screenshot /tmp/x.png
 ```
 
-Known baseline: `./gradlew lint` reports **3 pre-existing errors** (geofence
-`MissingPermission` ×2, `CoarseFineLocation` in the manifest) that are already on
-`develop`. They are not your regression; note them in the PR body, don't fix them in
-an unrelated PR.
+Known baseline: **`./gradlew lint` is clean — 0 errors** (46 warnings) as of 2026-08-03
+on AGP 8.13.2. Any error is yours. There is no `lint-baseline.xml` or `lint {}` block
+suppressing anything, and `abortOnError` is at its default (true), so an error fails
+the build. Warnings don't — to see those, read
+`composeApp/build/reports/lint-results-devDebug.xml`.
+
+*History:* this file previously documented 3 permanent geofence errors
+(`MissingPermission` ×2, `CoarseFineLocation`). They are gone — the manifest gained
+`ACCESS_COARSE_LOCATION` in #86, and lint now follows the `checkSelfPermission` +
+`SecurityException` guards in `GeofenceManager.android.kt` /
+`NotificationService.android.kt`. Don't reinstate the exemption.
 
 ### Environment configuration (the five-place rule)
 
@@ -221,9 +228,11 @@ These are ordered by how expensive they've historically been.
     spaces; the iOS test compile is part of done.*
 12. **The `--auto` merge surprise.** Assuming `gh pr merge --auto` waits for checks.
     → *It doesn't here (no required checks). Use the watch-then-merge chain from §5.*
-13. **The pre-existing-lint panic.** "Fixing" the 3 geofence lint errors inside an
-    unrelated PR, or treating them as your regression. → *Baseline is 3; only new
-    errors are yours.*
+13. **The stale-baseline excuse.** Waving off a lint error because this file once
+    said 3 were "pre-existing" (they were fixed incidentally and the doc lagged for
+    weeks — a documented exemption primes you to ignore up to 3 real errors). →
+    *Baseline is 0. Read the generated report, not the prose; when a doc and the
+    tool disagree, the tool wins and you fix the doc in the same PR.*
 14. **The restyle assumption.** User gives target screenshots for an existing feature
     and you reskin the current screens. → *Ask first: refine the existing feature, or
     replace it with a new kind of feature? (This exact misread happened — lessons.md
@@ -256,7 +265,7 @@ list above exists.
 ### Any code change (minimum bar)
 - [ ] `./gradlew :composeApp:testDevDebugUnitTest` passes (output shown)
 - [ ] `grep -rn "TODO" composeApp/src` — no matches
-- [ ] `./gradlew lint` — no NEW errors beyond the 3-error baseline
+- [ ] `./gradlew lint` — 0 errors (it fails the build on any error; baseline is clean)
 - [ ] Touched shared/iOS-relevant code → `iosSimulatorArm64Test` (with `DEVELOPER_DIR`) passes
 - [ ] Diff self-review done: no secrets, no hardcoded URLs (BuildKonfig only), no
       println left behind, no dead code, no drive-by reformatting
