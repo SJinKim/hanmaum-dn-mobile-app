@@ -38,8 +38,10 @@ never run.
 grep -rn "TODO" composeApp/src   # must print nothing
 
 # 3. Lint — there is NO ktlint/spotless/detekt; this is the only lint gate.
-#    Baseline: exactly 3 pre-existing errors (geofence MissingPermission ×2,
-#    CoarseFineLocation). Only NEW errors are yours.
+#    Baseline is 0 errors — any error is yours, and it fails the build
+#    (abortOnError defaults true; there is no lint-baseline.xml). Read the
+#    report, never a remembered number:
+#    grep -c 'severity="Error"' composeApp/build/reports/lint-results-devDebug.xml
 ./gradlew lint
 
 # 4. iOS native tests — xcode-select points at CommandLineTools, so every iOS

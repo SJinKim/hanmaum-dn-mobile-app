@@ -6,7 +6,7 @@ skill — use it; do not fall back to bare task names (`assembleDebug`,
 1. `./gradlew :composeApp:testDevDebugUnitTest` — all tests must pass
 2. `grep -rn "TODO" composeApp/src` must print nothing (CI greps and fails on any match) —
    also check no FIXME introduced in this branch's changed files
-3. `./gradlew lint` — no NEW errors (baseline: 3 pre-existing geofence errors are not yours)
+3. `./gradlew lint` — 0 errors (baseline is clean; any error is yours, and it fails the build)
 4. `./gradlew :composeApp:assembleDevDebug` — debug APK must build
 5. If the branch touches `commonMain`/`iosMain` or anything iOS-reachable:
    `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer ./gradlew :composeApp:iosSimulatorArm64Test`
