@@ -28,8 +28,7 @@ Coil 3, kotlinx-serialization, multiplatform-settings, kotlinx-datetime.
    list the files and ask before touching anything.
 3. `git log --oneline -10` — know what just landed.
 4. Read `designs/dn_app/DESIGN.md` before any UI work.
-5. Never work on `main`. Integration branch is **`develop`** (CONTRIBUTING.md calls
-   it `dev` — the real remote branch is `develop`). Feature work:
+5. Never work on `main`. Integration branch is **`develop`**. Feature work:
    `git checkout develop && git pull --ff-only && git checkout -b feature/<short-name>`.
    Direct commits to `main`/`develop` are blocked by lefthook (`lefthook.yml`;
    one-time setup: `brew install lefthook && lefthook install`).
@@ -135,8 +134,9 @@ xcrun simctl launch --console-pty "$SIM" com.hanmaum.dn.mobile.HanmaumDnApp
 xcrun simctl io "$SIM" screenshot /tmp/x.png
 ```
 
-Known baseline: **`./gradlew lint` is clean — 0 errors** (46 warnings) as of 2026-08-03
-on AGP 8.13.2. Any error is yours. There is no `lint-baseline.xml` or `lint {}` block
+Known baseline: **`./gradlew lint` is clean — 0 errors** (verified 2026-08-19 on
+AGP 8.13.2; warnings drift, so read the count from the report rather than from here).
+Any error is yours. There is no `lint-baseline.xml` or `lint {}` block
 suppressing anything, and `abortOnError` is at its default (true), so an error fails
 the build. Warnings don't — to see those, read
 `composeApp/build/reports/lint-results-devDebug.xml`.
