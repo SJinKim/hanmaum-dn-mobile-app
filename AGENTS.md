@@ -1,6 +1,6 @@
 # AGENTS.md — hanmaum-dn-mobile-app
 
-Repository-level instructions for Codex. Treat this file as the durable source of truth for how to work in this repo. Keep it concise; detailed workflows live under `docs/codex/`, `.codex/commands/`, and `.agents/skills/`.
+Repository-level instructions for Codex, and the only Codex file that is committed. Treat it as the durable source of truth for how to work in this repo, and keep it self-contained: everything Codex must know to verify a change is written out here, not delegated to a file that may not exist on this machine. Shared long-form workflows live under `docs/codex/`.
 
 ## Project Snapshot
 
@@ -136,21 +136,19 @@ If a check cannot be run, say exactly why and what risk remains.
 
 ## Codex Workflow Assets
 
-Use these reusable assets when relevant:
+**Shared** (committed, present in every checkout):
 
 - Playbook: `docs/codex/mobile-engineering-playbook.md`
 - Review checklist: `docs/codex/code-review.md`
-- Prompt/command templates: `.codex/commands/*.md`
-- Team skills: `.agents/skills/*/SKILL.md`
 
-Recommended command templates:
+**Local** (per-machine, git-ignored — may not exist):
 
-- Onboarding: `.codex/commands/onboard.md`
-- Feature work: `.codex/commands/feature.md`
-- Bug fixing: `.codex/commands/bugfix.md`
-- Pre-PR review: `.codex/commands/pr-review.md`
-- Done check: `.codex/commands/done.md`
-- Commit prep: `.codex/commands/commit.md`
+`.codex/commands/*.md` and `.agents/skills/*/SKILL.md` are each developer's own
+prompt templates and skills. Use them when they are present, but never assume
+they are: they are not part of the repo, they are not reviewed, and they can
+drift from this file without anyone noticing. When they disagree with AGENTS.md,
+**AGENTS.md wins** — in particular for the verification commands above, which are
+the ones CI actually enforces.
 
 ## OpenAI/Codex Documentation
 

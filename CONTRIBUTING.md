@@ -62,7 +62,15 @@ This project uses Claude Code. To keep all three developers' Claude behavior con
 | `.claude/skills/*/SKILL.md` | ✅ shared skills |
 | `CLAUDE.md` | ✅ project AI instructions |
 | `CLAUDE.local.md` | 🚫 personal notes |
+| `AGENTS.md` | ✅ project Codex instructions |
+| `.codex/**` / `.agents/**` | 🚫 per-machine Codex assets |
+| `docs/codex/*.md` | ✅ shared Codex playbook + review checklist |
 | `dev-log.md` / `dev-log-*.md` | 🚫 personal journaling |
+
+Claude's assets (`.claude/`) are shared and reviewed; Codex's (`.codex/`, `.agents/`)
+are local to each developer. Only the two entrypoints — `CLAUDE.md` and `AGENTS.md` —
+plus `docs/codex/` are common ground, so anything the whole team must follow belongs
+in one of those, never in a per-machine command file.
 
 ### Editing `CLAUDE.md` or `.claude/commands/`
 

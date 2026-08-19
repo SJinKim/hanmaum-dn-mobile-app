@@ -38,12 +38,12 @@ dev-log-*.md
 .superpowers/
 .lazyweb/
 .run/
-.codex/
-.agents/
-AGENTS.md
-!AGENTS.md
 
-# --- Codex / agent local config (per-machine, never commit) ---
+# --- Codex / agent assets: per-machine, never committed ---
+# AGENTS.md itself IS tracked — it is the shared Codex entrypoint, and it states
+# that the command/skill files below are local and optional. Everything under
+# .codex/ and .agents/ is each developer's own; the shared Codex docs that all
+# three developers rely on live in docs/codex/ (un-ignored below).
 .codex/
 .agents/
 
@@ -59,11 +59,6 @@ docs/*
 # --- Font download artifacts ---
 composeApp/src/commonMain/Plus_Jakarta_Sans/README.txt
 
-# --- Codex local machine config ---
-.codex/config.toml
-.codex/local.toml
-.codex/cache/
-.codex/tmp/
 
 # --- Fastlane / Ruby (local) ---
 iosApp/vendor/
