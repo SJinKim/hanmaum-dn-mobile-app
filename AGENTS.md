@@ -9,7 +9,8 @@ Repository-level instructions for Codex. Treat this file as the durable source o
 - Architecture: feature-first clean architecture with shared KMP domain/data/presentation layers.
 - Auth: Keycloak; tokens stored through `TokenStorage` using multiplatform-settings.
 - Networking: Ktor 3.3.3 through `core/network/NetworkClient.kt` only.
-- DI: Koin 4.0.0 via `di/AppModule.kt`, `DnChurchApp`, and `KoinInit.kt`.
+- DI: Koin 4.1.1 via `di/AppModule.kt`, `DnChurchApp`, and `KoinInit.kt`.
+- Version skew warning: `lifecycle`, `navigation-compose`, and `koin` are ABI-coupled. Bumping one alone compiles on Android but throws `IrLinkageError` at iOS launch. Move them together.
 - Navigation: type-safe `@Serializable` route objects in `core/navigation/Routes.kt`.
 
 ## Start-of-Session Protocol
@@ -70,38 +71,66 @@ All screens must conform to `designs/dn_app/DESIGN.md`.
 
 ## Build, Test, and Verification Commands
 
+Product flavors (`dev`/`st`/`prod`, dimension `env`) make bare Gradle task names
+ambiguous, and every iOS task needs `DEVELOPER_DIR` because `xcode-select` points at
+CommandLineTools. Use exactly these:
+
 ```bash
+# Unit tests (JVM — runs all of commonTest): the default local gate
+./gradlew :composeApp:testDevDebugUnitTest
+
+# Single test class
+./gradlew :composeApp:testDevDebugUnitTest --tests "com.hanmaum.dn.mobile.YourTestClass"
+
 # Android debug APK
-./gradlew :composeApp:assembleDebug
+./gradlew :composeApp:assembleDevDebug
 
-# Full KMP test suite
-./gradlew :composeApp:allTests
+# Lint — the CI formatting/lint gate. There is NO ktlint/spotless/detekt here.
+# Baseline is 0 errors; any error fails the build and is yours. Read the count
+# from the report, never from a doc:
+#   grep -c 'severity="Error"' composeApp/build/reports/lint-results-devDebug.xml
+./gradlew lint
 
-# Android compile sanity check
-./gradlew :composeApp:compileDebugKotlinAndroid --no-daemon
+# TODO gate — CI greps and fails the build on any match
+grep -rn "TODO" composeApp/src   # must print nothing
 
-# iOS simulator tests when shared/platform code can affect iOS
-./gradlew :composeApp:iosSimulatorArm64Test
+# iOS native tests — without DEVELOPER_DIR this dies with xcrun exit 72
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
+  ./gradlew :composeApp:iosSimulatorArm64Test
 
-# Single Android unit test class
-./gradlew :composeApp:testDebugUnitTest --tests "com.hanmaum.dn.mobile.YourTestClass"
+# Swift interop gate — Gradle link tasks never compile the Swift target, so
+# Kotlin signature changes Swift calls break only in the post-merge archive.
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild build \
+  -project iosApp/iosApp.xcodeproj -scheme iosApp -configuration Debug \
+  -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+  CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
 
 # Clean build
 ./gradlew clean
 ```
 
-For iOS app runtime verification, open `/Users/seungjinkim/Documents/Private_Projects/hanmaum-dn-mobile-app/iosApp/iosApp.xcodeproj` in Xcode and run on a simulator/device.
+Never use `allTests`, `assembleDebug`, `testDebugUnitTest`, or
+`compileDebugKotlinAndroid`: the first fails at the iOS native link on a machine
+without full Xcode, and the rest are flavor-ambiguous.
+
+For iOS runtime verification, run `iosApp/iosApp.xcodeproj` on a simulator — either
+from Xcode, or headless via `xcodebuild build` + `xcrun simctl install/launch`, which
+prints Kotlin crash stack traces directly to the console.
 
 ## Definition of Done
 
 Before calling work complete:
 
 1. Add/update tests for behavior changes.
-2. Run the smallest relevant tests first, then `./gradlew :composeApp:allTests` when feasible.
-3. For shared/common code that may affect iOS, run `./gradlew :composeApp:iosSimulatorArm64Test` when feasible.
-4. For Android deliverables, run `./gradlew :composeApp:assembleDebug` or explain why not.
-5. Review the diff for regressions, secrets, auth leakage, hardcoded URLs, TODO/FIXME, dead code, and architecture drift.
-6. Summarize changed files, verification results, and residual risk.
+2. Run the smallest relevant tests first, then `./gradlew :composeApp:testDevDebugUnitTest`.
+3. `grep -rn "TODO" composeApp/src` — must print nothing (CI fails the build on any match).
+4. `./gradlew lint` — 0 errors.
+5. For shared/`commonMain`/iOS-reachable code, run the `iosSimulatorArm64Test` command above with its `DEVELOPER_DIR` prefix. If a Kotlin declaration Swift calls changed, also run the Swift interop gate.
+6. For Android deliverables, run `./gradlew :composeApp:assembleDevDebug` or explain why not.
+7. Review the diff for regressions, secrets, auth leakage, hardcoded URLs, TODO/FIXME, dead code, and architecture drift.
+8. Summarize changed files, verification results, and residual risk.
+
+A compile is not a verification, and a claim of Done without the commands' output is a false claim.
 
 If a check cannot be run, say exactly why and what risk remains.
 
@@ -129,7 +158,8 @@ Always use the OpenAI developer documentation MCP server if work involves OpenAI
 
 ## Git Rules
 
-- Never add `Co-Authored-By:` trailers to commits.
+- Never work on `main` or `develop`. `develop` is the integration branch; branch `feature/<short-name>` from a fresh `develop` and PR back into it. Direct commits to `main`/`develop`/`dev` are blocked by lefthook (`lefthook.yml`).
+- Never add `Co-Authored-By:` trailers to commits, or any other AI/tool identity in authorship, trailers, or committer fields.
 - Do not rebase, reset, discard, or overwrite user work without explicit permission.
 - Commit messages: `<type>(<scope>): <imperative summary max 72 chars>`.
 - Types: `feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `perf`, `revert`.
