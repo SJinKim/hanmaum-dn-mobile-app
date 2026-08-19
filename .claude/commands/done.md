@@ -20,7 +20,7 @@ commands (flavored task names, `DEVELOPER_DIR` prefix for iOS). Then confirm:
 ## Build gates (evidence shown, not claimed)
 - [ ] `./gradlew :composeApp:testDevDebugUnitTest` — all passing
 - [ ] `grep -rn "TODO" composeApp/src` — no matches (CI fails on any)
-- [ ] `./gradlew lint` — no NEW errors beyond the 3-error geofence baseline
+- [ ] `./gradlew lint` — 0 errors (baseline is clean; any error is yours)
 - [ ] Shared/iOS-reachable code:
       `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer ./gradlew :composeApp:iosSimulatorArm64Test`
 - [ ] Android build: `./gradlew :composeApp:assembleDevDebug`
@@ -31,7 +31,7 @@ commands (flavored task names, `DEVELOPER_DIR` prefix for iOS). Then confirm:
 - [ ] Branch is `feature/<name>` rebased on `develop` — no merge commits, never on develop/main
 
 ## After completing a feature slice
-Update `../dn-app/MVP.md`:
+Update `../hanmaum-dn-ops/docs/MVP.md`:
 - Mark the app column ✅ for the affected feature row
 - Never delete entries — status updates only
 - Edit only the affected line

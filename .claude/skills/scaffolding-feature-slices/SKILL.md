@@ -99,7 +99,7 @@ class FooViewModelTest {
 ## Before you claim done
 
 Run the ladder in **verifying-kmp-changes** (REQUIRED SUB-SKILL). Then update
-the feature's row in `../dn-app/MVP.md` (status only, never delete rows).
+the feature's row in `../hanmaum-dn-ops/docs/MVP.md` (status only, never delete rows).
 
 ## Common mistakes
 
