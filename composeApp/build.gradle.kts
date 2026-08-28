@@ -83,6 +83,8 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
+            // BiometricPrompt needs a FragmentActivity host — see MainActivity
+            implementation(libs.androidx.biometric)
 
             implementation(libs.ktor.client.okhttp)
             implementation(libs.koin.android)

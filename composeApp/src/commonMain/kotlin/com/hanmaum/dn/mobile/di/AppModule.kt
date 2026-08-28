@@ -1,5 +1,12 @@
 package com.hanmaum.dn.mobile.di
 
+import com.hanmaum.dn.mobile.core.data.repository.ThemeRepositoryImpl
+import com.hanmaum.dn.mobile.core.domain.repository.ThemeRepository
+import com.hanmaum.dn.mobile.core.security.CredentialStore
+import com.hanmaum.dn.mobile.core.data.repository.AuthPreferencesImpl
+import com.hanmaum.dn.mobile.core.domain.repository.AuthPreferences
+import com.hanmaum.dn.mobile.core.data.repository.LocationPreferencesImpl
+import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
 import com.hanmaum.dn.mobile.core.data.repository.LocaleRepositoryImpl
 import com.hanmaum.dn.mobile.core.data.repository.TokenStorageImpl
 import com.hanmaum.dn.mobile.core.domain.repository.LocaleRepository
@@ -21,6 +28,9 @@ import com.hanmaum.dn.mobile.features.login.data.repository.AuthRepositoryImpl
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
 import com.hanmaum.dn.mobile.features.login.presentation.LoginViewModel
 import com.hanmaum.dn.mobile.features.login.presentation.RegisterViewModel
+import com.hanmaum.dn.mobile.features.notification.data.repository.NotificationRepositoryImpl
+import com.hanmaum.dn.mobile.features.notification.domain.repository.NotificationRepository
+import com.hanmaum.dn.mobile.features.notification.presentation.NotificationsViewModel
 import com.hanmaum.dn.mobile.features.member.data.repository.MemberRepositoryImpl
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import com.hanmaum.dn.mobile.features.ministry.data.repository.MinistryRepositoryImpl
@@ -52,16 +62,22 @@ val appModule = module {
     single<AnnouncementRepository> { AnnouncementRepositoryImpl(get()) }
     single<AuthRepository> { AuthRepositoryImpl(get()) }
     single<MemberRepository> { MemberRepositoryImpl(get()) }
+    single<NotificationRepository> { NotificationRepositoryImpl(get()) }
     single { createHttpClient(get()) } // Client
     single<TokenStorage> { TokenStorageImpl(Settings()) }
     single<LocaleRepository> { LocaleRepositoryImpl(Settings()) }
+    single<ThemeRepository> { ThemeRepositoryImpl(Settings()) }
+    single<AuthPreferences> { AuthPreferencesImpl(Settings()) }
+    single { CredentialStore(get()) }
+    single<LocationPreferences> { LocationPreferencesImpl(Settings()) }
 
     //Splash VM
     viewModel { SplashViewModel(get(), get(), get()) }
 
 
     // Home VM
-    viewModel { HomeViewModel(repository = get()) }
+    viewModel { HomeViewModel(repository = get(), memberRepository = get(), notificationRepository = get()) }
+    viewModel { NotificationsViewModel(repository = get()) }
 
     // Detail VM
     viewModel { (announcementId: String) ->
@@ -81,10 +97,10 @@ val appModule = module {
     viewModel { RegisterViewModel(get(), get()) }
 
     // Login VM
-    viewModel { LoginViewModel(get(), get(), get(), get()) }
+    viewModel { LoginViewModel(get(), get(), get(), get(), get(), get()) }
 
     // Profile VM
-    viewModel { ProfileViewModel(get(), get()) }
+    viewModel { ProfileViewModel(get(), get(), get()) }
 
     // Ministry
     single<MinistryRepository> { MinistryRepositoryImpl(get()) }
@@ -97,7 +113,7 @@ val appModule = module {
 
     // Geofence
     single<ChurchLocationRepository> { ChurchLocationRepositoryImpl(get()) }
-    single { GeofenceCoordinator(get(), get(), get(), get()) }
+    single { GeofenceCoordinator(get(), get(), get(), get(), get()) }
 
     // FloorPlan
     single<FloorPlanRepository> { FloorPlanRepositoryImpl(get()) }

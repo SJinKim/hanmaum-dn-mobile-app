@@ -73,6 +73,38 @@ interface AppStrings {
     val floorPlanTitle: String
     // Ministry
     val ministryRegisterSheet: String
+    // Load failure — shown instead of a raw exception whenever a screen's
+    // data cannot be fetched.
+    val errorTitle: String
+    val errorBody: String
+    val errorRetry: String
+    val errorGoHome: String
+    // Settings
+    val settingsTitle: String
+    val settingsGroupDisplay: String
+    val settingsGroupSignIn: String
+    val settingsGroupPrivacy: String
+    val settingsLanguage: String
+    val settingsTheme: String
+    val settingsThemeSubtitle: String
+    val themeSystem: String
+    val themeLight: String
+    val themeDark: String
+    val settingsKeepSignedIn: String
+    val settingsKeepSignedInDesc: String
+    val settingsBiometric: String
+    val settingsBiometricDesc: String
+    val settingsBiometricUnavailable: String
+    val settingsLocation: String
+    val settingsLocationDesc: String
+    val settingsLocationDenied: String
+    val settingsOn: String
+    val settingsOff: String
+    // Biometric sign-in
+    val biometricPromptTitle: String
+    val biometricPromptSubtitle: String
+    val biometricPromptCancel: String
+    val biometricSignIn: String
 }
 
 object EnStrings : AppStrings {
@@ -131,6 +163,34 @@ object EnStrings : AppStrings {
     override val attendanceLocation = "Location"
     override val floorPlanTitle = "Church Map"
     override val ministryRegisterSheet = "Ministry Registration"
+    override val errorTitle = "We couldn't load this"
+    override val errorBody = "The connection dropped or the server didn't respond.\nPlease try again in a moment."
+    override val errorRetry = "Try again"
+    override val errorGoHome = "Go home"
+    override val settingsTitle = "Settings"
+    override val settingsGroupDisplay = "Display"
+    override val settingsGroupSignIn = "Sign-in"
+    override val settingsGroupPrivacy = "Privacy"
+    override val settingsLanguage = "Language"
+    override val settingsTheme = "Theme"
+    override val settingsThemeSubtitle = "Choose how the app looks"
+    override val themeSystem = "System"
+    override val themeLight = "Light"
+    override val themeDark = "Dark"
+    override val settingsKeepSignedIn = "Keep me signed in"
+    override val settingsKeepSignedInDesc = "Sign in automatically next time"
+    override val settingsBiometric = "Biometric unlock"
+    override val settingsBiometricDesc = "Unlock the saved sign-in with your face or fingerprint"
+    override val settingsBiometricUnavailable = "Not set up on this device"
+    override val settingsLocation = "Share location"
+    override val settingsLocationDesc = "Get an attendance reminder when you arrive at church"
+    override val settingsLocationDenied = "Allow location access in system settings"
+    override val settingsOn = "On"
+    override val settingsOff = "Off"
+    override val biometricPromptTitle = "Sign in"
+    override val biometricPromptSubtitle = "Unlock your saved sign-in"
+    override val biometricPromptCancel = "Use password"
+    override val biometricSignIn = "Sign in with biometrics"
 }
 
 object KoStrings : AppStrings {
@@ -189,6 +249,34 @@ object KoStrings : AppStrings {
     override val attendanceLocation = "위치"
     override val floorPlanTitle = "교회 지도"
     override val ministryRegisterSheet = "부서 신청"
+    override val errorTitle = "내용을 불러오지 못했어요"
+    override val errorBody = "연결이 불안정하거나 서버가 응답하지 않았어요.\n잠시 후 다시 시도해 주세요."
+    override val errorRetry = "다시 시도"
+    override val errorGoHome = "홈으로"
+    override val settingsTitle = "설정"
+    override val settingsGroupDisplay = "표시"
+    override val settingsGroupSignIn = "로그인"
+    override val settingsGroupPrivacy = "개인정보"
+    override val settingsLanguage = "언어"
+    override val settingsTheme = "테마"
+    override val settingsThemeSubtitle = "앱의 화면 모드를 선택하세요"
+    override val themeSystem = "시스템 설정"
+    override val themeLight = "라이트"
+    override val themeDark = "다크"
+    override val settingsKeepSignedIn = "로그인 유지"
+    override val settingsKeepSignedInDesc = "다음에 자동으로 로그인합니다"
+    override val settingsBiometric = "생체 인증 잠금 해제"
+    override val settingsBiometricDesc = "저장된 로그인을 얼굴 또는 지문으로 잠금 해제"
+    override val settingsBiometricUnavailable = "이 기기에 설정되어 있지 않습니다"
+    override val settingsLocation = "위치 공유"
+    override val settingsLocationDesc = "교회에 도착하면 출석을 알려드려요"
+    override val settingsLocationDenied = "시스템 설정에서 위치 접근을 허용해 주세요"
+    override val settingsOn = "켜짐"
+    override val settingsOff = "꺼짐"
+    override val biometricPromptTitle = "로그인"
+    override val biometricPromptSubtitle = "저장된 로그인을 잠금 해제하세요"
+    override val biometricPromptCancel = "비밀번호 사용"
+    override val biometricSignIn = "생체 인증으로 로그인"
 }
 
 object DeStrings : AppStrings {
@@ -247,4 +335,32 @@ object DeStrings : AppStrings {
     override val attendanceLocation = "Standort"
     override val floorPlanTitle = "Kirchenkarte"
     override val ministryRegisterSheet = "Abteilungsanmeldung"
+    override val errorTitle = "Konnte nicht geladen werden"
+    override val errorBody = "Die Verbindung war unterbrochen oder der Server hat nicht geantwortet.\nBitte versuche es gleich noch einmal."
+    override val errorRetry = "Erneut versuchen"
+    override val errorGoHome = "Zur Startseite"
+    override val settingsTitle = "Einstellungen"
+    override val settingsGroupDisplay = "Darstellung"
+    override val settingsGroupSignIn = "Anmeldung"
+    override val settingsGroupPrivacy = "Datenschutz"
+    override val settingsLanguage = "Sprache"
+    override val settingsTheme = "Design"
+    override val settingsThemeSubtitle = "Wähle das Erscheinungsbild der App"
+    override val themeSystem = "Systemeinstellung"
+    override val themeLight = "Hell"
+    override val themeDark = "Dunkel"
+    override val settingsKeepSignedIn = "Angemeldet bleiben"
+    override val settingsKeepSignedInDesc = "Beim nächsten Mal automatisch anmelden"
+    override val settingsBiometric = "Biometrische Entsperrung"
+    override val settingsBiometricDesc = "Gespeicherte Anmeldung per Gesicht oder Fingerabdruck entsperren"
+    override val settingsBiometricUnavailable = "Auf diesem Gerät nicht eingerichtet"
+    override val settingsLocation = "Standort teilen"
+    override val settingsLocationDesc = "Erinnerung an die Anwesenheit, sobald du an der Kirche ankommst"
+    override val settingsLocationDenied = "Standortzugriff in den Systemeinstellungen erlauben"
+    override val settingsOn = "An"
+    override val settingsOff = "Aus"
+    override val biometricPromptTitle = "Anmelden"
+    override val biometricPromptSubtitle = "Gespeicherte Anmeldung entsperren"
+    override val biometricPromptCancel = "Passwort verwenden"
+    override val biometricSignIn = "Mit Biometrie anmelden"
 }
