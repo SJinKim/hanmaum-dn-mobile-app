@@ -4,19 +4,30 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Shapes
 import androidx.compose.ui.unit.dp
 
-// Design spec: "The Luminous Sanctuary"
-// Sharp 90° corners are strictly prohibited — everything must feel soft and approachable.
-//
-//   Buttons / chips / badges → pill (rounded-full)        extraSmall
-//   Inputs / small surfaces  → rounded-md  ≈ 12dp         small
-//   Internal cards           → rounded-lg  ≈ 20dp         medium
-//   Container cards          → rounded-xl  ≈ 24dp         large   (default Card shape)
-//   Hero / feature / sheets  → extra-large  32dp          extraLarge
+/**
+ * Four radii, matching the Figma collection:
+ *
+ *   inner 18  inputs, small tiles
+ *   tile  24  cards inside a list, icon tiles
+ *   card  28  top-level cards, sheets
+ *   pill      anything interactive — buttons, chips, the dock
+ */
+object DnRadius {
+    val inner = 18.dp
+    val tile  = 24.dp
+    val card  = 28.dp
+    val pill  = 999.dp
+}
+
+val DnInnerShape = RoundedCornerShape(DnRadius.inner)
+val DnTileShape  = RoundedCornerShape(DnRadius.tile)
+val DnCardShape  = RoundedCornerShape(DnRadius.card)
+val DnPillShape  = RoundedCornerShape(percent = 50)
 
 val AppShapes = Shapes(
-    extraSmall = RoundedCornerShape(percent = 50), // Pill
-    small      = RoundedCornerShape(12.dp),
-    medium     = RoundedCornerShape(20.dp),
-    large      = RoundedCornerShape(24.dp),
+    extraSmall = DnPillShape,
+    small      = DnInnerShape,
+    medium     = DnTileShape,
+    large      = DnCardShape,
     extraLarge = RoundedCornerShape(32.dp),
 )
