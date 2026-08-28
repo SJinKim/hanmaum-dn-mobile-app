@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
+import com.hanmaum.dn.mobile.core.domain.repository.AuthPreferences
+import com.hanmaum.dn.mobile.core.security.CredentialStore
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.core.network.invalidateBearerCache
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
@@ -20,7 +22,25 @@ class LoginViewModel(
     private val memberRepository: MemberRepository,
     private val tokenStorage: TokenStorage,
     private val httpClient: HttpClient,
+    private val authPreferences: AuthPreferences,
+    private val credentialStore: CredentialStore,
 ) : ViewModel() {
+
+    /**
+     * True when a biometric prompt can stand in for typing the password:
+     * the member asked to stay signed in, switched biometrics on, and a
+     * previous successful login left credentials behind.
+     */
+    fun isAutoLoginArmed(): Boolean =
+        authPreferences.isKeepSignedInEnabled() &&
+            authPreferences.isBiometricEnabled() &&
+            credentialStore.hasCredentials()
+
+    /** Called after the biometric prompt succeeds. */
+    fun loginWithSavedCredentials() {
+        val saved = credentialStore.getCredentials() ?: return
+        onLoginClicked(saved.email, saved.password)
+    }
 
     // 1. UI State: Single Source of Truth
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -56,6 +76,14 @@ class LoginViewModel(
                 val profileResult = memberRepository.getMyProfile()
 
                 profileResult.onSuccess { member ->
+                    // Only a login that actually worked is worth remembering,
+                    // and only if the member asked to stay signed in.
+                    if (authPreferences.isKeepSignedInEnabled()) {
+                        credentialStore.saveCredentials(user, pass)
+                    } else {
+                        credentialStore.clear()
+                    }
+
                     // DECIDE
                     if (member.status == MemberStatus.ACTIVE) {
                         _uiState.update {
@@ -77,6 +105,7 @@ class LoginViewModel(
                     }
                 }.onFailure { e ->
                     tokenStorage.clear()
+                    credentialStore.clear()
                     _uiState.update {
                         it.copy(
                             isLoading = false,

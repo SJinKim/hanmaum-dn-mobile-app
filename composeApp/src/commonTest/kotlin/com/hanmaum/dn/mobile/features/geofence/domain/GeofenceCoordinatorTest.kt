@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.geofence.domain
 
+import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
 import com.hanmaum.dn.mobile.core.geofence.GeofenceManager
 import com.hanmaum.dn.mobile.core.notification.NotificationService
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceDefinition
@@ -38,6 +39,15 @@ private class FakeGeofenceManager(
     override fun stopMonitoring() { isMonitoring = false }
 }
 
+private class FakeLocationPreferences(
+    private var sharing: Boolean = true,
+) : LocationPreferences {
+    override fun isSharingEnabled() = sharing
+    override fun setSharingEnabled(value: Boolean) { sharing = value }
+    override fun isPromptDismissed() = true
+    override fun setPromptDismissed(value: Boolean) = Unit
+}
+
 private class FakeNotificationService : NotificationService {
     var notificationCount = 0
     override fun isNotificationPermissionGranted() = true
@@ -59,11 +69,42 @@ private fun todayName(): String =
 class GeofenceCoordinatorTest {
 
     @Test
+    fun initialize_doesNotRegisterWhenSharingIsOff() = runTest {
+        // The OS permission alone must not start background monitoring — the
+        // member's own switch is the second gate.
+        val fakeGeofence = FakeGeofenceManager(permissionGranted = true)
+        val coordinator = GeofenceCoordinator(
+            FakeChurchLocationRepository(), FakeAttendanceRepository(),
+            fakeGeofence, FakeNotificationService(),
+            FakeLocationPreferences(sharing = false), scope = this
+        )
+
+        coordinator.initialize()
+
+        assertFalse(fakeGeofence.isMonitoring, "Monitoring started although sharing is off")
+    }
+
+    @Test
+    fun disable_stopsMonitoring() = runTest {
+        val fakeGeofence = FakeGeofenceManager(permissionGranted = true)
+        val coordinator = GeofenceCoordinator(
+            FakeChurchLocationRepository(), FakeAttendanceRepository(),
+            fakeGeofence, FakeNotificationService(), FakeLocationPreferences(), scope = this
+        )
+        coordinator.initialize()
+        assertTrue(fakeGeofence.isMonitoring)
+
+        coordinator.disable()
+
+        assertFalse(fakeGeofence.isMonitoring, "Switching the setting off left the geofence running")
+    }
+
+    @Test
     fun initialize_registersGeofenceWhenPermissionGranted() = runTest {
         val fakeGeofence = FakeGeofenceManager(permissionGranted = true)
         val coordinator = GeofenceCoordinator(
             FakeChurchLocationRepository(), FakeAttendanceRepository(),
-            fakeGeofence, FakeNotificationService(), scope = this
+            fakeGeofence, FakeNotificationService(), FakeLocationPreferences(), scope = this
         )
 
         coordinator.initialize()
@@ -76,7 +117,7 @@ class GeofenceCoordinatorTest {
         val fakeGeofence = FakeGeofenceManager(permissionGranted = false)
         val coordinator = GeofenceCoordinator(
             FakeChurchLocationRepository(), FakeAttendanceRepository(),
-            fakeGeofence, FakeNotificationService(), scope = this
+            fakeGeofence, FakeNotificationService(), FakeLocationPreferences(), scope = this
         )
 
         coordinator.initialize()
@@ -89,7 +130,7 @@ class GeofenceCoordinatorTest {
         val fakeGeofence = FakeGeofenceManager()
         val coordinator = GeofenceCoordinator(
             FakeChurchLocationRepository(Result.failure(Exception("network error"))),
-            FakeAttendanceRepository(), fakeGeofence, FakeNotificationService(), scope = this
+            FakeAttendanceRepository(), fakeGeofence, FakeNotificationService(), FakeLocationPreferences(), scope = this
         )
 
         coordinator.initialize() // must not throw
@@ -107,7 +148,7 @@ class GeofenceCoordinatorTest {
         }
         val coordinator = GeofenceCoordinator(
             FakeChurchLocationRepository(), FakeAttendanceRepository(),
-            countingGeofence, FakeNotificationService(), scope = this
+            countingGeofence, FakeNotificationService(), FakeLocationPreferences(), scope = this
         )
 
         coordinator.initialize()
@@ -125,7 +166,7 @@ class GeofenceCoordinatorTest {
         )
         val coordinator = GeofenceCoordinator(
             FakeChurchLocationRepository(), FakeAttendanceRepository(definitions),
-            fakeGeofence, fakeNotification, scope = this
+            fakeGeofence, fakeNotification, FakeLocationPreferences(), scope = this
         )
 
         coordinator.initialize()
@@ -151,7 +192,7 @@ class GeofenceCoordinatorTest {
         )
         val coordinator = GeofenceCoordinator(
             FakeChurchLocationRepository(), FakeAttendanceRepository(definitions),
-            fakeGeofence, fakeNotification, scope = this
+            fakeGeofence, fakeNotification, FakeLocationPreferences(), scope = this
         )
 
         coordinator.initialize()
@@ -167,7 +208,7 @@ class GeofenceCoordinatorTest {
         val fakeGeofence = FakeGeofenceManager()
         val coordinator = GeofenceCoordinator(
             FakeChurchLocationRepository(), FakeAttendanceRepository(emptyList()),
-            fakeGeofence, fakeNotification, scope = this
+            fakeGeofence, fakeNotification, FakeLocationPreferences(), scope = this
         )
 
         coordinator.initialize()

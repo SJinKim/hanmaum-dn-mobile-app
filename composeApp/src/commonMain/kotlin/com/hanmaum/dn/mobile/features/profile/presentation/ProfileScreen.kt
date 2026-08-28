@@ -1,11 +1,11 @@
 package com.hanmaum.dn.mobile.features.profile.presentation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,33 +13,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -49,504 +32,454 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.hanmaum.dn.mobile.core.i18n.AppLocale
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
-import com.hanmaum.dn.mobile.core.presentation.components.AppTopBar
-import com.hanmaum.dn.mobile.core.presentation.theme.SoftPeach
+import com.hanmaum.dn.mobile.core.presentation.components.DnErrorState
+import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
+import com.hanmaum.dn.mobile.core.presentation.components.DnGlows
+import com.hanmaum.dn.mobile.core.presentation.components.DnPrimaryButton
+import com.hanmaum.dn.mobile.core.presentation.components.DnTintedButton
+import com.hanmaum.dn.mobile.core.presentation.components.DnTopBar
+import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
+import com.hanmaum.dn.mobile.core.presentation.theme.DnCardShape
+import com.hanmaum.dn.mobile.core.presentation.theme.DnInnerShape
+import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
+import com.hanmaum.dn.mobile.core.presentation.theme.DnTileShape
+import com.hanmaum.dn.mobile.core.presentation.theme.typography
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
 import org.koin.compose.viewmodel.koinViewModel
 
+/**
+ * 프로필.
+ *
+ * Viewing and editing stay one screen driven by the existing `isEditing`
+ * flag — splitting them would have meant a new route and a second view model
+ * for no behavioural gain. Everything the member configures now lives behind
+ * the 설정 row — theme, language, sign-in and location in one place, instead of
+ * a growing list of toggles wedged between the profile and the logout button.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     onLogout: () -> Unit,
-    currentLocale: AppLocale,
-    onLocaleChange: (AppLocale) -> Unit,
+    onBack: () -> Unit,
+    onSettings: () -> Unit,
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val loggedOut by viewModel.loggedOut.collectAsState()
-    val strings = LocalStrings.current
+    val c = DnTheme.colors
 
-    LaunchedEffect(loggedOut) {
-        if (loggedOut) onLogout()
-    }
+    LaunchedEffect(loggedOut) { if (loggedOut) onLogout() }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = { AppTopBar() },
-    ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+    DnBackground(glows = DnGlows.action()) {
+        Column(Modifier.fillMaxSize().statusBarsPadding()) {
+            val editing = (uiState as? ProfileUiState.Success)?.isEditing == true
+            DnTopBar(
+                title = if (editing) "프로필 수정" else "프로필",
+                onBack = { if (editing) viewModel.cancelEditing() else onBack() },
+                onAction = { },
+            )
+
             when (val state = uiState) {
-                is ProfileUiState.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                is ProfileUiState.Loading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
+                    CircularProgressIndicator(color = c.lime)
                 }
-                is ProfileUiState.Error -> {
-                    Column(
-                        modifier            = Modifier.align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Text(state.message, color = MaterialTheme.colorScheme.error)
-                        Spacer(Modifier.height(8.dp))
-                        Button(onClick = { viewModel.loadProfile() }) { Text(strings.retry) }
-                    }
-                }
+
+                is ProfileUiState.Error ->
+                    DnErrorState(onRetry = viewModel::loadProfile)
+
                 is ProfileUiState.Success -> {
                     if (state.isEditing) {
-                        ProfileEditContent(
-                            state            = state,
-                            onPhoneChange    = { viewModel.updatePhone(it) },
-                            onImageUrlChange = { viewModel.updateImageUrl(it) },
-                            onStreetChange   = { viewModel.updateStreet(it) },
-                            onZipCodeChange  = { viewModel.updateZipCode(it) },
-                            onCityChange     = { viewModel.updateCity(it) },
-                            onSave           = { viewModel.saveProfile() },
-                            onCancel         = { viewModel.cancelEditing() },
-                        )
+                        ProfileEditContent(state = state, viewModel = viewModel)
                     } else {
                         ProfileViewContent(
-                            profile        = state.profile,
-                            currentLocale  = currentLocale,
-                            onEditClick    = { viewModel.startEditing() },
-                            onLogoutClick  = { viewModel.logout() },
-                            onLocaleChange = onLocaleChange,
+                            profile = state.profile,
+                            onEdit = viewModel::startEditing,
+                            onSettings = onSettings,
+                            onLogout = viewModel::logout,
                         )
                     }
                 }
             }
         }
     }
+
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+// ─────────────────────────── view mode ───────────────────────────
+
 @Composable
 private fun ProfileViewContent(
     profile: MemberResponse,
-    currentLocale: AppLocale,
-    onEditClick: () -> Unit,
-    onLogoutClick: () -> Unit,
-    onLocaleChange: (AppLocale) -> Unit,
+    onEdit: () -> Unit,
+    onSettings: () -> Unit,
+    onLogout: () -> Unit,
 ) {
+    val c = DnTheme.colors
     val strings = LocalStrings.current
-    var showLanguagePicker by remember { mutableStateOf(false) }
-
     Column(
-        modifier            = Modifier
+        Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(Modifier.height(16.dp))
-
-        Icon(
-            imageVector        = Icons.Default.AccountCircle,
-            contentDescription = null,
-            modifier           = Modifier.size(100.dp),
-            tint               = MaterialTheme.colorScheme.primary,
-        )
-        Spacer(Modifier.height(12.dp))
-
-        Text(
-            "${profile.lastName} ${profile.firstName}",
-            style      = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            color      = MaterialTheme.colorScheme.onBackground,
-        )
-        profile.churchRole?.let {
-            Spacer(Modifier.height(4.dp))
-            Text(
-                text  = it.uppercase(),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outline,
-            )
-        }
-        Spacer(Modifier.height(16.dp))
-
-        OutlinedButton(
-            onClick        = onEditClick,
-            shape          = MaterialTheme.shapes.extraSmall,
-            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp),
-        ) {
-            Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
-            Spacer(Modifier.width(6.dp))
-            Text(strings.profileEdit, style = MaterialTheme.typography.labelMedium)
-        }
-
-        Spacer(Modifier.height(28.dp))
-
-        profile.email?.let {
-            InfoCard(icon = Icons.Default.Email, label = strings.labelEmail, value = it)
-            Spacer(Modifier.height(12.dp))
-        }
-        profile.phoneNumber?.let {
-            InfoCard(icon = Icons.Default.Phone, label = strings.labelPhone, value = it)
-            Spacer(Modifier.height(12.dp))
-        }
-        profile.street?.let {
-            InfoCard(icon = Icons.Default.Home, label = strings.labelStreet, value = it)
-            Spacer(Modifier.height(12.dp))
-        }
-        profile.zipCode?.let {
-            InfoCard(icon = Icons.Default.Home, label = strings.labelZipCode, value = it)
-            Spacer(Modifier.height(12.dp))
-        }
-        profile.city?.let {
-            InfoCard(icon = Icons.Default.Home, label = strings.labelCity, value = it)
-            Spacer(Modifier.height(12.dp))
-        }
-        profile.groupName?.let {
-            InfoCard(icon = Icons.Default.Group, label = strings.labelPrimaryGroup, value = it)
-            Spacer(Modifier.height(12.dp))
-        }
-
-        Spacer(Modifier.height(8.dp))
-
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text  = strings.profileAccountPreferences,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-        }
-        Spacer(Modifier.height(12.dp))
-        Card(
-            modifier  = Modifier.fillMaxWidth(),
-            onClick   = { showLanguagePicker = true },
-            shape     = MaterialTheme.shapes.large,
-            colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text  = strings.profileLanguage,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.outline,
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text  = currentLocale.nativeName,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-        }
-
-        Spacer(Modifier.height(28.dp))
+        Spacer(Modifier.height(20.dp))
 
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(SoftPeach, MaterialTheme.shapes.large)
-                .padding(24.dp),
+            Modifier
+                .size(92.dp)
+                .clip(RoundedCornerShape(percent = 50))
+                .background(c.surface2)
+                .border(1.5.dp, c.strokeStrong, RoundedCornerShape(percent = 50)),
+            contentAlignment = Alignment.Center,
         ) {
-            Column {
-                Text(
-                    text      = """“Lead with love, serve with grace, and watch the community bloom.”""".trimIndent(),
-                    style     = MaterialTheme.typography.bodyLarge,
-                    color     = MaterialTheme.colorScheme.onBackground,
-                    fontStyle = FontStyle.Italic,
-                )
-                Spacer(Modifier.height(12.dp))
-                Text(
-                    text  = "DN APP CORE VALUES",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                )
+            Icon(DnIcons.User, null, tint = c.textPrimary, modifier = Modifier.size(44.dp))
+        }
+
+        Spacer(Modifier.height(12.dp))
+        Text(
+            "${profile.lastName}${profile.firstName}",
+            style = DnTheme.typography.titleLg,
+            color = c.textPrimary,
+        )
+
+        val role = listOfNotNull(profile.division, profile.churchRole)
+            .filter { it.isNotBlank() }
+            .joinToString(" · ")
+        if (role.isNotBlank()) {
+            Spacer(Modifier.height(6.dp))
+            Box(
+                Modifier
+                    .clip(RoundedCornerShape(percent = 50))
+                    .background(c.limeDim, RoundedCornerShape(percent = 50))
+                    .padding(horizontal = 12.dp, vertical = 5.dp),
+            ) {
+                Text(role, style = DnTheme.typography.label, color = c.limeInk)
             }
         }
 
-        Spacer(Modifier.height(28.dp))
+        Spacer(Modifier.height(22.dp))
 
-        OutlinedButton(
-            onClick  = onLogoutClick,
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-            shape    = MaterialTheme.shapes.extraSmall,
+        // TODO(hanmaum-dn-server#114, #117): attendance summary and joinedAt
+        // are not available yet — the third tile is the one that exists today.
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
-            Text(strings.profileLogout, style = MaterialTheme.typography.labelLarge)
+            StatTile("올해 출석", "–", c.limeInk, Modifier.weight(1f))
+            StatTile("소속 사역", "–", c.blue, Modifier.weight(1f))
+            StatTile("소속 그룹", profile.groupName ?: "–", c.amber, Modifier.weight(1f))
         }
 
-        Spacer(Modifier.height(40.dp))
-    }
+        Spacer(Modifier.height(22.dp))
 
-    if (showLanguagePicker) {
-        LanguagePickerSheet(
-            currentLocale = currentLocale,
-            onSelect      = { locale ->
-                onLocaleChange(locale)
-                showLanguagePicker = false
-            },
-            onDismiss = { showLanguagePicker = false },
-        )
+        MenuRow(DnIcons.User, "프로필 수정", null, onEdit)
+        Spacer(Modifier.height(10.dp))
+        MenuRow(DnIcons.More, strings.settingsTitle, null, onSettings)
+
+        Spacer(Modifier.height(18.dp))
+
+        DnTintedButton("로그아웃", onLogout, Modifier.fillMaxWidth())
+
+        Spacer(Modifier.height(60.dp))
     }
 }
 
 @Composable
-private fun InfoCard(icon: ImageVector, label: String, value: String) {
-    Card(
-        modifier  = Modifier.fillMaxWidth(),
-        shape     = MaterialTheme.shapes.large,
-        colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+private fun StatTile(label: String, value: String, accent: androidx.compose.ui.graphics.Color, modifier: Modifier) {
+    val c = DnTheme.colors
+    Column(
+        modifier
+            .clip(DnTileShape)
+            .background(c.surface, DnTileShape)
+            .border(1.dp, c.strokeSubtle, DnTileShape)
+            .padding(horizontal = 12.dp, vertical = 14.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
-        Row(
-            modifier          = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                imageVector        = icon,
-                contentDescription = null,
-                tint               = MaterialTheme.colorScheme.primary,
-                modifier           = Modifier.size(24.dp),
-            )
-            Spacer(Modifier.width(14.dp))
-            Column {
-                Text(
-                    text  = label,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.outline,
-                )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text  = value,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-        }
+        Text(value, style = DnTheme.typography.stat, color = accent, maxLines = 1)
+        Text(label, style = DnTheme.typography.label, color = c.textTertiary)
     }
 }
+
+@Composable
+private fun MenuRow(icon: ImageVector, label: String, value: String?, onClick: () -> Unit) {
+    val c = DnTheme.colors
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(DnTileShape)
+            .background(c.surface, DnTileShape)
+            .border(1.dp, c.strokeSubtle, DnTileShape)
+            .clickable(onClick = onClick)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        Box(
+            Modifier
+                .size(34.dp)
+                .clip(RoundedCornerShape(13.dp))
+                .background(c.surface2),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(icon, null, tint = c.textSecondary, modifier = Modifier.size(17.dp))
+        }
+        Text(label, style = DnTheme.typography.captionStrong, color = c.textPrimary)
+        Spacer(Modifier.weight(1f))
+        if (value != null) {
+            Text(value, style = DnTheme.typography.caption, color = c.textTertiary)
+        }
+        Icon(DnIcons.ChevronRight, null, tint = c.textTertiary, modifier = Modifier.size(18.dp))
+    }
+}
+
+// ─────────────────────────── edit mode ───────────────────────────
 
 @Composable
 private fun ProfileEditContent(
     state: ProfileUiState.Success,
-    onPhoneChange: (String) -> Unit,
-    onImageUrlChange: (String) -> Unit,
-    onStreetChange: (String) -> Unit,
-    onZipCodeChange: (String) -> Unit,
-    onCityChange: (String) -> Unit,
-    onSave: () -> Unit,
-    onCancel: () -> Unit,
+    viewModel: ProfileViewModel,
 ) {
-    val strings = LocalStrings.current
+    val c = DnTheme.colors
+    val p = state.profile
+
     Column(
-        modifier = Modifier
+        Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(24.dp),
+            .padding(horizontal = 20.dp),
     ) {
-        Text(strings.profileEdit, style = MaterialTheme.typography.titleLarge)
+        Spacer(Modifier.height(20.dp))
+
+        Column(
+            Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Box(
+                Modifier
+                    .size(88.dp)
+                    .clip(RoundedCornerShape(percent = 50))
+                    .background(c.surface2)
+                    .border(1.5.dp, c.strokeStrong, RoundedCornerShape(percent = 50)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(DnIcons.User, null, tint = c.textPrimary, modifier = Modifier.size(42.dp))
+            }
+            // picking from the gallery replaces the old URL field
+            Row(
+                Modifier
+                    .clip(RoundedCornerShape(percent = 50))
+                    .background(c.surface2, RoundedCornerShape(percent = 50))
+                    .border(1.dp, c.strokeSubtle, RoundedCornerShape(percent = 50))
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Icon(DnIcons.Image, null, tint = c.textSecondary, modifier = Modifier.size(15.dp))
+                Text("사진 변경", style = DnTheme.typography.captionStrong, color = c.textSecondary)
+            }
+        }
+
+        Spacer(Modifier.height(40.dp))
+
+        LockedGroup(
+            rows = listOf(
+                "이름" to "${p.lastName}${p.firstName}",
+                "이메일" to (p.email ?: "—"),
+                "부서" to (p.division ?: "—"),
+                "그룹" to (p.groupName ?: "—"),
+                "직분" to (p.churchRole ?: "—"),
+            )
+        )
+
         Spacer(Modifier.height(24.dp))
 
-        Text(
-            text     = strings.labelPhone,
-            style    = MaterialTheme.typography.labelSmall,
-            color    = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 6.dp),
-        )
-        TextField(
-            value         = state.editPhone,
-            onValueChange = onPhoneChange,
-            placeholder   = { Text("+49-0000-0000-000") },
-            modifier      = Modifier.fillMaxWidth(),
-            singleLine    = true,
-            shape         = MaterialTheme.shapes.small,
-            colors        = TextFieldDefaults.colors(
-                focusedContainerColor      = MaterialTheme.colorScheme.surfaceVariant,
-                unfocusedContainerColor    = MaterialTheme.colorScheme.surfaceVariant,
-                focusedIndicatorColor      = Color.Transparent,
-                unfocusedIndicatorColor    = Color.Transparent,
-                focusedPlaceholderColor    = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
-                unfocusedPlaceholderColor  = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
-            ),
-        )
-
+        Text("직접 수정할 수 있는 정보", style = DnTheme.typography.label, color = c.textTertiary)
         Spacer(Modifier.height(16.dp))
-        Text(
-            text     = strings.profileImageUrl,
-            style    = MaterialTheme.typography.labelSmall,
-            color    = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 6.dp),
-        )
-        TextField(
-            value         = state.editImageUrl,
-            onValueChange = onImageUrlChange,
-            placeholder   = { Text("https://...") },
-            modifier      = Modifier.fillMaxWidth(),
-            singleLine    = true,
-            shape         = MaterialTheme.shapes.small,
-            colors        = TextFieldDefaults.colors(
-                focusedContainerColor      = MaterialTheme.colorScheme.surfaceVariant,
-                unfocusedContainerColor    = MaterialTheme.colorScheme.surfaceVariant,
-                focusedIndicatorColor      = Color.Transparent,
-                unfocusedIndicatorColor    = Color.Transparent,
-                focusedPlaceholderColor    = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
-                unfocusedPlaceholderColor  = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
-            ),
-        )
 
+        EditField("전화번호", state.editPhone, viewModel::updatePhone)
         Spacer(Modifier.height(16.dp))
-        Text(
-            text     = strings.labelStreet,
-            style    = MaterialTheme.typography.labelSmall,
-            color    = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 6.dp),
-        )
-        TextField(
-            value         = state.editStreet,
-            onValueChange = onStreetChange,
-            placeholder   = { Text("123 Main St") },
-            modifier      = Modifier.fillMaxWidth(),
-            singleLine    = true,
-            shape         = MaterialTheme.shapes.small,
-            colors        = TextFieldDefaults.colors(
-                focusedContainerColor      = MaterialTheme.colorScheme.surfaceVariant,
-                unfocusedContainerColor    = MaterialTheme.colorScheme.surfaceVariant,
-                focusedIndicatorColor      = Color.Transparent,
-                unfocusedIndicatorColor    = Color.Transparent,
-                focusedPlaceholderColor    = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
-                unfocusedPlaceholderColor  = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
-            ),
-        )
-
+        EditField("도로명", state.editStreet, viewModel::updateStreet)
         Spacer(Modifier.height(16.dp))
-        Text(
-            text     = strings.labelZipCode,
-            style    = MaterialTheme.typography.labelSmall,
-            color    = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 6.dp),
-        )
-        TextField(
-            value         = state.editZipCode,
-            onValueChange = onZipCodeChange,
-            placeholder   = { Text("12345") },
-            modifier      = Modifier.fillMaxWidth(),
-            singleLine    = true,
-            shape         = MaterialTheme.shapes.small,
-            colors        = TextFieldDefaults.colors(
-                focusedContainerColor      = MaterialTheme.colorScheme.surfaceVariant,
-                unfocusedContainerColor    = MaterialTheme.colorScheme.surfaceVariant,
-                focusedIndicatorColor      = Color.Transparent,
-                unfocusedIndicatorColor    = Color.Transparent,
-                focusedPlaceholderColor    = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
-                unfocusedPlaceholderColor  = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
-            ),
-        )
-
+        EditField("우편번호", state.editZipCode, viewModel::updateZipCode)
         Spacer(Modifier.height(16.dp))
-        Text(
-            text     = strings.labelCity,
-            style    = MaterialTheme.typography.labelSmall,
-            color    = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 6.dp),
-        )
-        TextField(
-            value         = state.editCity,
-            onValueChange = onCityChange,
-            placeholder   = { Text("New York") },
-            modifier      = Modifier.fillMaxWidth(),
-            singleLine    = true,
-            shape         = MaterialTheme.shapes.small,
-            colors        = TextFieldDefaults.colors(
-                focusedContainerColor      = MaterialTheme.colorScheme.surfaceVariant,
-                unfocusedContainerColor    = MaterialTheme.colorScheme.surfaceVariant,
-                focusedIndicatorColor      = Color.Transparent,
-                unfocusedIndicatorColor    = Color.Transparent,
-                focusedPlaceholderColor    = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
-                unfocusedPlaceholderColor  = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
-            ),
-        )
+        EditField("도시", state.editCity, viewModel::updateCity)
 
         state.saveError?.let {
-            Spacer(Modifier.height(8.dp))
-            Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            Spacer(Modifier.height(12.dp))
+            Text(it, style = DnTheme.typography.caption, color = c.red)
         }
-        Spacer(Modifier.height(24.dp))
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedButton(
-                onClick  = onCancel,
-                modifier = Modifier.weight(1f).height(50.dp),
-                shape    = MaterialTheme.shapes.extraSmall,
-            ) { Text(strings.cancel, style = MaterialTheme.typography.labelLarge) }
-            Button(
-                onClick  = onSave,
-                modifier = Modifier.weight(1f).height(50.dp),
-                shape    = MaterialTheme.shapes.extraSmall,
-                enabled  = !state.isSaving,
-                colors   = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor   = MaterialTheme.colorScheme.onPrimaryContainer,
-                ),
-            ) {
-                if (state.isSaving) {
-                    CircularProgressIndicator(
-                        modifier    = Modifier.size(18.dp).semantics { contentDescription = strings.saving },
-                        strokeWidth = 2.dp,
-                    )
-                } else {
-                    Text(strings.save)
+        Spacer(Modifier.height(28.dp))
+
+        // two separate actions, not a segmented pair — a toggle look would
+        // suggest switching between them rather than choosing one
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            DnTintedButton("취소", viewModel::cancelEditing, Modifier.weight(1f))
+            DnPrimaryButton(
+                label = if (state.isSaving) "저장 중…" else "저장",
+                onClick = viewModel::saveProfile,
+                enabled = !state.isSaving,
+                modifier = Modifier.weight(1f),
+            )
+        }
+
+        Spacer(Modifier.height(60.dp))
+    }
+}
+
+/**
+ * Fields the church office owns. Three signals together, because one is easy
+ * to miss: a recessed surface, a padlock per row, and muted values.
+ */
+@Composable
+private fun LockedGroup(rows: List<Pair<String, String>>) {
+    val c = DnTheme.colors
+    Column {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(7.dp),
+        ) {
+            Icon(DnIcons.Lock, null, tint = c.textTertiary, modifier = Modifier.size(13.dp))
+            Text("교회에서 관리하는 정보", style = DnTheme.typography.label, color = c.textTertiary)
+        }
+        Spacer(Modifier.height(10.dp))
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .clip(DnTileShape)
+                .background(c.surface2, DnTileShape)
+                .border(1.dp, c.strokeSubtle, DnTileShape)
+                .padding(horizontal = 16.dp),
+        ) {
+            rows.forEachIndexed { i, (label, value) ->
+                Row(
+                    Modifier.fillMaxWidth().padding(vertical = 13.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(label, style = DnTheme.typography.label, color = c.textTertiary)
+                        Text(value, style = DnTheme.typography.captionStrong, color = c.textSecondary)
+                    }
+                    Icon(DnIcons.Lock, null, tint = c.textTertiary, modifier = Modifier.size(15.dp))
+                }
+                if (i < rows.lastIndex) {
+                    Box(Modifier.fillMaxWidth().height(1.dp).background(c.strokeSubtle))
                 }
             }
+        }
+        Spacer(Modifier.height(10.dp))
+        Text(
+            "변경이 필요하면 교회 사무실에 문의해 주세요.",
+            style = DnTheme.typography.caption,
+            color = c.textTertiary,
+        )
+    }
+}
+
+@Composable
+private fun EditField(label: String, value: String, onChange: (String) -> Unit) {
+    val c = DnTheme.colors
+    Column {
+        Text(label, style = DnTheme.typography.label, color = c.textTertiary)
+        Spacer(Modifier.height(7.dp))
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .clip(DnInnerShape)
+                .background(c.surface, DnInnerShape)
+                .border(1.dp, c.strokeStrong, DnInnerShape)
+                .padding(horizontal = 16.dp, vertical = 15.dp),
+        ) {
+            BasicTextField(
+                value = value,
+                onValueChange = onChange,
+                singleLine = true,
+                textStyle = DnTheme.typography.captionStrong.copy(color = c.textPrimary),
+                cursorBrush = SolidColor(c.lime),
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun LanguagePickerSheet(
-    currentLocale: AppLocale,
-    onSelect: (AppLocale) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    val strings = LocalStrings.current
+// ─────────────────────────── sheets ───────────────────────────
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-    ) {
-        Column(modifier = Modifier.padding(horizontal = 24.dp).padding(bottom = 32.dp)) {
-            Text(
-                text  = strings.selectLanguage,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Spacer(Modifier.height(16.dp))
-            AppLocale.entries.forEach { locale ->
-                Row(
-                    modifier              = Modifier
-                        .fillMaxWidth()
-                        .clickable { onSelect(locale) }
-                        .padding(vertical = 14.dp),
-                    verticalAlignment     = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        text  = locale.nativeName,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = if (locale == currentLocale)
-                            MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.onSurface,
+internal data class SheetOption(
+    val label: String,
+    val note: String?,
+    val selected: Boolean,
+    val onSelect: () -> Unit,
+)
+
+@Composable
+internal fun SheetOptions(title: String, subtitle: String?, options: List<SheetOption>) {
+    val c = DnTheme.colors
+    Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 4.dp)) {
+        Text(title, style = DnTheme.typography.title, color = c.textPrimary)
+        if (subtitle != null) {
+            Spacer(Modifier.height(4.dp))
+            Text(subtitle, style = DnTheme.typography.caption, color = c.textSecondary)
+        }
+        Spacer(Modifier.height(16.dp))
+        options.forEach { option ->
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(DnTileShape)
+                    .background(if (option.selected) c.limeDim else c.surface2, DnTileShape)
+                    .border(
+                        1.dp,
+                        if (option.selected) c.lime else c.strokeSubtle,
+                        DnTileShape,
                     )
-                    if (locale == currentLocale) {
-                        Icon(
-                            imageVector        = Icons.Default.Check,
-                            contentDescription = null,
-                            tint               = MaterialTheme.colorScheme.primary,
-                            modifier           = Modifier.size(20.dp),
-                        )
+                    .clickable(onClick = option.onSelect)
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        option.label,
+                        style = DnTheme.typography.captionStrong,
+                        color = if (option.selected) c.limeInk else c.textPrimary,
+                    )
+                    option.note?.let {
+                        Text(it, style = DnTheme.typography.caption, color = c.textTertiary)
                     }
                 }
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                if (option.selected) {
+                    Box(
+                        Modifier
+                            .size(26.dp)
+                            .clip(RoundedCornerShape(percent = 50))
+                            .background(c.lime),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(DnIcons.Check, null, tint = c.onLime, modifier = Modifier.size(15.dp))
+                    }
+                } else {
+                    Box(
+                        Modifier
+                            .size(24.dp)
+                            .clip(RoundedCornerShape(percent = 50))
+                            .border(1.5.dp, c.strokeStrong, RoundedCornerShape(percent = 50))
+                    )
+                }
             }
+            Spacer(Modifier.height(8.dp))
         }
+        Spacer(Modifier.height(26.dp))
     }
 }

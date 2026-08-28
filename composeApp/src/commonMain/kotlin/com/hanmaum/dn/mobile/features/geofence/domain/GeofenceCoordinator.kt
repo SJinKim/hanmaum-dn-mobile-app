@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.geofence.domain
 
+import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
 import com.hanmaum.dn.mobile.core.geofence.GeofenceManager
 import com.hanmaum.dn.mobile.core.notification.NotificationService
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceDefinition
@@ -19,6 +20,7 @@ class GeofenceCoordinator(
     private val attendanceRepository: AttendanceRepository,
     private val geofenceManager: GeofenceManager,
     private val notificationService: NotificationService,
+    private val locationPreferences: LocationPreferences,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob()),
 ) {
     private val initMutex = Mutex()
@@ -26,13 +28,20 @@ class GeofenceCoordinator(
 
     /**
      * Fetches the church location from the server and registers the OS geofence.
-     * No-op if already registered or if location permission is not yet granted.
-     * Call this after login is confirmed (e.g. from SplashViewModel when status == ACTIVE).
+     *
+     * Two gates, not one: the OS must have granted location access, and the
+     * member must have switched location sharing on in Settings. Either one
+     * missing means no monitoring — background location is not something to
+     * start on a permission alone.
+     *
+     * Call after login is confirmed (SplashViewModel when status == ACTIVE) and
+     * whenever the member turns the setting on.
      */
     suspend fun initialize() {
         if (isRegistered) return // fast path — avoids lock on steady state
         initMutex.withLock {
             if (isRegistered) return@withLock // double-check inside lock
+            if (!locationPreferences.isSharingEnabled()) return@withLock
             if (!geofenceManager.isLocationPermissionGranted()) return@withLock
 
             val location = churchLocationRepository.getChurchLocation().getOrElse { error ->
@@ -49,6 +58,12 @@ class GeofenceCoordinator(
      * Called by the platform geofence implementation (BroadcastReceiver on Android,
      * CLLocationManager delegate on iOS) when the user enters the monitored region.
      */
+    /** Turning the setting off must actually stop the OS monitoring. */
+    fun disable() {
+        geofenceManager.stopMonitoring()
+        isRegistered = false
+    }
+
     fun notifyEntry() {
         scope.launch { onGeofenceEntered() }
     }
