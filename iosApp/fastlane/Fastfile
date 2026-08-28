@@ -1,0 +1,115 @@
+require "base64"
+
+default_platform(:ios)
+
+APP_IDENTIFIER = "com.hanmaum.dn.mobile.HanmaumDnApp".freeze
+
+platform :ios do
+  desc "Build the app and upload it to TestFlight (staging beta)"
+  lane :beta do
+    api_key = build_signed_app
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true,
+      distribute_external: false
+    )
+  end
+
+  desc "Build the app and upload it to App Store Connect for production"
+  lane :release do
+    api_key = build_signed_app
+
+    # Upload the production binary to App Store Connect so it can be attached to
+    # an App Store version. The build is NOT auto-submitted for review:
+    #   - metadata + screenshots are managed by hand for the first release, so
+    #     skip_metadata/skip_screenshots avoid deliver trying to sync them;
+    #   - submit_for_review: false leaves the actual "Submit for Review" as a
+    #     manual click in App Store Connect.
+    # force: true skips the HTML metadata-preview confirmation (no TTY on CI).
+    upload_to_app_store(
+      api_key: api_key,
+      skip_metadata: true,
+      skip_screenshots: true,
+      submit_for_review: false,
+      run_precheck_before_submit: false,
+      precheck_include_in_app_purchases: false,
+      force: true
+    )
+  end
+
+  # Shared signing + archive. Returns the App Store Connect API key object so the
+  # caller (beta → TestFlight, release → App Store) can run its own upload step.
+  private_lane :build_signed_app do
+    key_id = ENV.fetch("APP_STORE_CONNECT_API_KEY_ID")
+    issuer_id = ENV.fetch("APP_STORE_CONNECT_API_ISSUER_ID")
+
+    # Decode the base64 .p8 key to a file. Drives both match (cert/profile sync)
+    # and the upload.
+    key_path = File.expand_path("AuthKey_#{key_id}.p8")
+    File.write(key_path, Base64.decode64(ENV.fetch("APP_STORE_CONNECT_API_KEY_BASE64")))
+
+    api_key = app_store_connect_api_key(
+      key_id: key_id,
+      issuer_id: issuer_id,
+      key_filepath: key_path,
+      in_house: false
+    )
+
+    # On CI, create a temporary keychain for match to import the cert into.
+    setup_ci
+
+    # Pull the App Store distribution cert + provisioning profile from the match
+    # storage and install them. readonly: CI never creates or revokes certs —
+    # that is done once locally with `fastlane match appstore`.
+    match(
+      type: "appstore",
+      readonly: true,
+      api_key: api_key
+    )
+
+    # match exports the installed profile's name into this env var.
+    profile_name = ENV.fetch("sigh_#{APP_IDENTIFIER}_appstore_profile-name")
+
+    # Switch the project to manual signing with the match cert/profile so the
+    # archive (not just the export) signs with the persistent Distribution
+    # identity instead of trying to auto-create a Development cert per CI run.
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "iosApp.xcodeproj",
+      team_id: ENV.fetch("TEAM_ID", "GTR8X52BY5"),
+      code_sign_identity: "Apple Distribution",
+      bundle_identifier: APP_IDENTIFIER,
+      profile_name: profile_name,
+      targets: ["iosApp"]
+    )
+
+    # TestFlight / App Store require a unique, monotonic build number per upload.
+    build_number = ENV["BUILD_NUMBER"] || Time.now.strftime("%Y%m%d%H%M")
+
+    # Marketing version (CFBundleShortVersionString). CI resolves this from the
+    # latest release tag; when absent (e.g. a plain local run) fall back to the
+    # value committed in Config.xcconfig by leaving it unset.
+    marketing_version = ENV["MARKETING_VERSION"]
+    xcargs = "CURRENT_PROJECT_VERSION=#{build_number}"
+    xcargs += " MARKETING_VERSION=#{marketing_version}" unless marketing_version.to_s.empty?
+
+    build_app(
+      project: "iosApp.xcodeproj",
+      scheme: "iosApp",
+      configuration: "Release",
+      export_method: "app-store",
+      xcargs: xcargs,
+      export_options: {
+        signingStyle: "manual",
+        provisioningProfiles: {
+          APP_IDENTIFIER => profile_name
+        }
+      },
+      output_directory: "build",
+      output_name: "HanmaumDnApp.ipa",
+      clean: true
+    )
+
+    api_key
+  end
+end

@@ -2,6 +2,7 @@ package com.hanmaum.dn.mobile.features.announcement.data.repository
 
 import com.hanmaum.dn.mobile.core.domain.model.ApiResponse
 import com.hanmaum.dn.mobile.features.announcement.domain.model.Announcement
+import com.hanmaum.dn.mobile.features.announcement.domain.model.AnnouncementLookup
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -13,7 +14,6 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 private val testJson = Json { ignoreUnknownKeys = true }
 
@@ -80,19 +80,31 @@ class AnnouncementRepositoryImplTest {
     }
 
     @Test
-    fun getAnnouncementById_returnsMatchingAnnouncement() = runTest {
+    fun getAnnouncementById_returnsFoundForMatchingAnnouncement() = runTest {
         val client = mockClient(encodeAnnouncements(listOf(announcement1, announcement2)))
         val result = AnnouncementRepositoryImpl(client).getAnnouncementById("2")
 
-        assertEquals(announcement2, result)
+        assertEquals(AnnouncementLookup.Found(announcement2), result)
     }
 
     @Test
-    fun getAnnouncementById_returnsNullWhenNotFound() = runTest {
+    fun getAnnouncementById_returnsNotFoundWhenAbsent() = runTest {
         val client = mockClient(encodeAnnouncements(listOf(announcement1, announcement2)))
         val result = AnnouncementRepositoryImpl(client).getAnnouncementById("nonexistent")
 
-        assertNull(result)
+        assertEquals(AnnouncementLookup.NotFound, result)
+    }
+
+    @Test
+    fun getAnnouncementById_returnsErrorOnNon2xx() = runTest {
+        val client = HttpClient(
+            MockEngine { respond("{}", HttpStatusCode.InternalServerError, headersOf(HttpHeaders.ContentType, "application/json")) },
+        ) {
+            install(ContentNegotiation) { json(testJson) }
+        }
+        val result = AnnouncementRepositoryImpl(client).getAnnouncementById("1")
+
+        assertEquals(AnnouncementLookup.Error, result)
     }
 
     @Test

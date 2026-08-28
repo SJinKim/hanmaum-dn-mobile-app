@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.login.screen
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -20,14 +22,11 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -37,18 +36,30 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hanmaum.dn.mobile.BuildKonfig
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
+import com.hanmaum.dn.mobile.core.platform.rememberUrlLauncher
+import com.hanmaum.dn.mobile.core.presentation.dismissKeyboardOnTap
+import com.hanmaum.dn.mobile.core.security.BiometricResult
+import com.hanmaum.dn.mobile.core.security.rememberBiometricAuthenticator
 import com.hanmaum.dn.mobile.features.login.presentation.LoginViewModel
+import hanmaumdnapp.composeapp.generated.resources.Res
+import hanmaumdnapp.composeapp.generated.resources.logo
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -59,10 +70,37 @@ fun LoginScreen(
 ) {
     val viewModel: LoginViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val strings = LocalStrings.current
 
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+
+    val biometric = rememberBiometricAuthenticator()
+    val openUrl = rememberUrlLauncher()
+    val scope = rememberCoroutineScope()
+    val faceIdAvailable = remember { biometric.isAvailable() }
+    val canFaceIdSignIn = remember { faceIdAvailable && viewModel.canFaceIdSignIn() }
+
+    // Autofills the email/password fields from the saved credentials, then submits.
+    // Caller must have passed a successful biometric check first.
+    fun autofillAndSignIn() {
+        viewModel.savedCredentials()?.let { creds ->
+            username = creds.email
+            password = creds.password
+            viewModel.onLoginClicked(creds.email, creds.password, enableFaceId = faceIdAvailable)
+        }
+    }
+
+    // On entry, if Face ID sign-in is set up, prompt once and autofill+submit.
+    LaunchedEffect(Unit) {
+        if (canFaceIdSignIn) {
+            val result = biometric.authenticate(
+                strings.lockTitle, strings.lockSubtitle, strings.lockUsePassword,
+            )
+            if (result == BiometricResult.SUCCESS) autofillAndSignIn()
+        }
+    }
 
     LaunchedEffect(state.navigateTo) {
         state.navigateTo?.let { route ->
@@ -79,29 +117,19 @@ fun LoginScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .dismissKeyboardOnTap()
+            .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(Modifier.height(64.dp))
 
-        Text(
-            text  = "DN App",
-            style = MaterialTheme.typography.displaySmall,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        Spacer(Modifier.height(6.dp))
-        Text(
-            text  = "Welcome Back",
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        Spacer(Modifier.height(8.dp))
-        Text(
-            text      = "Sign in to stay connected with your community.",
-            style     = MaterialTheme.typography.bodyMedium,
-            color     = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
+        Image(
+            painter            = painterResource(Res.drawable.logo),
+            contentDescription = "Daniel & Nehemia logo",
+            modifier           = Modifier.height(120.dp),
+            colorFilter        = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
         )
 
         Spacer(Modifier.height(32.dp))
@@ -153,11 +181,15 @@ fun LoginScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 TextButton(
-                    onClick         = { /* stub */ },
+                    onClick         = {
+                        val resetUrl = "${BuildKonfig.KEYCLOAK_URL}/realms/${BuildKonfig.KEYCLOAK_REALM}" +
+                            "/login-actions/reset-credentials?client_id=hanmaum-mobile"
+                        openUrl(resetUrl)
+                    },
                     contentPadding  = PaddingValues(0.dp),
                 ) {
                     Text(
-                        text  = "Forgot?",
+                        text  = strings.loginForgotPassword,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                     )
@@ -197,32 +229,12 @@ fun LoginScreen(
             )
         }
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(24.dp))
 
-        // Keep me signed in (stub)
-        Row(
-            modifier          = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Checkbox(
-                checked         = false,
-                onCheckedChange = { /* stub */ },
-                colors          = CheckboxDefaults.colors(
-                    uncheckedColor = MaterialTheme.colorScheme.outline,
-                ),
-            )
-            Text(
-                text  = "Keep me signed in",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-
-        Spacer(Modifier.height(20.dp))
-
-        // Login CTA
+        // Login CTA. "Keep me signed in" and Face ID are on by default — both are
+        // managed from the Profile settings, not shown as login checkboxes.
         Button(
-            onClick  = { viewModel.onLoginClicked(username, password) },
+            onClick  = { viewModel.onLoginClicked(username, password, enableFaceId = faceIdAvailable) },
             enabled  = !state.isLoading,
             modifier = Modifier.fillMaxWidth().height(56.dp),
             shape    = MaterialTheme.shapes.extraSmall,
@@ -242,6 +254,26 @@ fun LoginScreen(
                     "Login to DN App  →",
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                 )
+            }
+        }
+
+        // Manual Face ID sign-in (in case the auto-prompt on entry was cancelled)
+        if (canFaceIdSignIn) {
+            Spacer(Modifier.height(12.dp))
+            OutlinedButton(
+                onClick  = {
+                    scope.launch {
+                        val result = biometric.authenticate(
+                            strings.lockTitle, strings.lockSubtitle, strings.lockUsePassword,
+                        )
+                        if (result == BiometricResult.SUCCESS) autofillAndSignIn()
+                    }
+                },
+                enabled  = !state.isLoading,
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                shape    = MaterialTheme.shapes.extraSmall,
+            ) {
+                Text(strings.loginSignInWithFaceId, style = MaterialTheme.typography.labelLarge)
             }
         }
 
@@ -277,48 +309,6 @@ fun LoginScreen(
                 )
             }
         }
-
         Spacer(Modifier.height(24.dp))
-
-        // Support footer
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape    = MaterialTheme.shapes.large,
-            colors   = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        ) {
-            Row(
-                modifier              = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment     = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Column {
-                    Text(
-                        text  = "SUPPORT",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.outline,
-                    )
-                    Text(
-                        text  = "Need help logging in?",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                }
-                Button(
-                    onClick = { /* stub */ },
-                    shape   = MaterialTheme.shapes.extraSmall,
-                    colors  = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary,
-                        contentColor   = MaterialTheme.colorScheme.onSecondary,
-                    ),
-                ) {
-                    Text("Contact", style = MaterialTheme.typography.labelMedium)
-                }
-            }
-        }
-
-        Spacer(Modifier.height(40.dp))
     }
 }

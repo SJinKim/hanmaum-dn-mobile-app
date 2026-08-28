@@ -10,6 +10,8 @@ import kotlinx.serialization.Serializable
 @Serializable object AnnouncementListRoute
 @Serializable data class AnnouncementDetailRoute(val id: String)
 @Serializable object ProfileRoute
+@Serializable object PersonalInfoRoute
+@Serializable object SettingsRoute
 @Serializable object MinistryListRoute
 @Serializable data class MinistryDetailRoute(val publicId: String)
 @Serializable object CommunityRoute
@@ -19,3 +21,4 @@ import kotlinx.serialization.Serializable
 @Serializable data class AlbumDetailRoute(val pcloudCode: String, val albumName: String)
 @Serializable data class PhotoViewerRoute(val photoUrl: String)
 @Serializable object CalendarRoute
+@Serializable object NotificationListRoute

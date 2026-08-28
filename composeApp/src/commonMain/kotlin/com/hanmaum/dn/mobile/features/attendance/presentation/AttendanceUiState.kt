@@ -9,4 +9,5 @@ data class AttendanceUiState(
     val isCheckedIn: Boolean = false,
     val isCheckingIn: Boolean = false,
     val checkInError: String? = null,
+    val checkedInDate: String? = null,            // ISO date of the recorded check-in (server-confirmed)
 )

@@ -38,11 +38,43 @@ dev-log-*.md
 .superpowers/
 .lazyweb/
 .run/
-AGENTS.md
+
+# --- Codex / agent assets: per-machine, never committed ---
+# AGENTS.md itself IS tracked — it is the shared Codex entrypoint, and it states
+# that the command/skill files below are local and optional. Everything under
+# .codex/ and .agents/ is each developer's own; the shared Codex docs that all
+# three developers rely on live in docs/codex/ (un-ignored below).
+.codex/
+.agents/
 
 # --- Local docs (plans, specs) ---
 docs/
+!docs/
+docs/*
+!docs/codex/
+!docs/codex/**
+!docs/superpowers/
+!docs/superpowers/**
 
 # --- Font download artifacts ---
 composeApp/src/commonMain/Plus_Jakarta_Sans/README.txt
-/tasks/lessons.md
+
+
+# --- Fastlane / Ruby (local) ---
+iosApp/vendor/
+iosApp/.bundle/
+iosApp/Gemfile.lock
+iosApp/fastlane/AuthKey_*.p8
+iosApp/fastlane/report.xml
+iosApp/fastlane/README.md
+
+# Local CI report scratch artifacts
+ci-report-*.md
+
+# Personal carry-over scratch list. tasks/lessons.md is the shared, tracked
+# memory; this is just a local worklist and is deliberately not shared.
+/TODO.md
+
+# Loose target-design screenshots dropped at designs/ root (personal working
+# files for the feature in progress; curated references live in designs/<set>/)
+designs/IMG_*

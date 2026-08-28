@@ -2,13 +2,34 @@ name: Distribute
 
 on:
   push:
-    branches: [develop, main]
+    branches: [develop]
+    tags: ['v*-st']         # publish an "ST-Release" draft → v*-st tag → iOS staging TestFlight
+  # Releases are intentional points, not one-per-commit:
+  #   - develop push                  → Android ST → Firebase (staging)
+  #   - v*-st tag (ST-Release publish) → iOS staging TestFlight
+  #   - v* final tag (PROD-Release)    → marks the prod release; App Store ship
+  #                                      stays the manual ios-appstore lane below
+  #   - manual run (ios-testflight)   → iOS staging TestFlight
+  #   - manual run (ios-appstore)     → iOS prod → App Store Connect (gated by `prod` env approval)
+  #   - manual run (android-prod)     → Android prod → Firebase (gated by `prod` env approval)
+  # Each prod target is its own deliberate manual run — never coupled to a tag or
+  # to each other (Android prod ships on its own track, Play Store later).
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'What to build & distribute'
+        type: choice
+        default: ios-testflight
+        options:
+          - ios-testflight   # staging beta → TestFlight
+          - ios-appstore     # production → App Store Connect
+          - android-prod     # production → Firebase App Distribution
 
 jobs:
   # ── develop → ST ──────────────────────────────────────────────────────────
   distribute-st:
     name: ST → Firebase App Distribution
-    if: github.ref == 'refs/heads/develop'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
 
     steps:
@@ -50,10 +71,15 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleStDebug appDistributionUploadStDebug --no-daemon
 
-  # ── main → Prod ───────────────────────────────────────────────────────────
+  # ── manual (android-prod) → Prod ──────────────────────────────────────────
+  # Android production is its own deliberate, manual release — independent of
+  # tags and of the iOS lanes, since it ships on its own track (Play Store
+  # later). Trigger from Actions → "Distribute" → Run workflow → target
+  # "android-prod". The `prod` environment carries a required-reviewer rule, so
+  # this job waits for a manual approval in the Actions UI before it runs.
   distribute-prod:
     name: Prod → Firebase App Distribution
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && inputs.target == 'android-prod'
     runs-on: ubuntu-latest
     environment: prod
 
@@ -103,3 +129,182 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew assembleProdRelease appDistributionUploadProdRelease --no-daemon
+
+  # ── tag / manual → TestFlight (iOS, staging backend) ──────────────────────
+  # Staging beta build. Fires on a v* tag, or a manual run with target
+  # "ios-testflight" (the default).
+  distribute-testflight:
+    name: iOS → TestFlight
+    # STAGING pre-release tags only (`v*-st`, e.g. v1.4.0-st, cut by publishing
+    # the "ST-Release" draft). The top-level trigger already scopes to `v*-st`,
+    # so a final prod tag (`v1.4.0`) never reaches this workflow; the `-st` check
+    # here is a belt-and-braces guard for the workflow_dispatch path too.
+    if: >-
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, '-st')) ||
+      (github.event_name == 'workflow_dispatch' && inputs.target == 'ios-testflight')
+    # macos-15+ is required to run Xcode 26 (App Store Connect rejects uploads
+    # not built with the iOS 26 SDK).
+    runs-on: macos-15
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0      # full history + tags, so git describe can read the latest tag
+
+      # Marketing version (CFBundleShortVersionString) follows the latest release
+      # tag; the build number (CFBundleVersion) is the always-incrementing run
+      # number. So a tag push ships its own version (v1.2.0 → 1.2.0), and a manual
+      # run reuses the latest tag's version while only the build number climbs —
+      # e.g. 1.2.0 (12) then 1.2.0 (13). Falls back to 1.0.0 before any tag exists.
+      - name: Resolve marketing version
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            LATEST_TAG="$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)"
+            VERSION="${LATEST_TAG#v}"
+          fi
+          # Strip the staging pre-release suffix: the CFBundleShortVersionString
+          # must be a plain x.y.z, so v1.4.0-st ships marketing version 1.4.0.
+          VERSION="${VERSION%-st}"
+          [ -z "$VERSION" ] && VERSION="1.0.0"
+          echo "MARKETING_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "Shipping marketing version $VERSION, build ${{ github.run_number }}"
+
+      - name: Select latest stable Xcode (iOS 26 SDK required by App Store Connect)
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: wrapper
+
+      - name: Set up Ruby & Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: iosApp
+
+      - name: Write .env (buildkonfig fields + iOS staging URLs)
+        env:
+          GOOGLE_CALENDAR_ID: ${{ secrets.GOOGLE_CALENDAR_ID }}
+          GOOGLE_CALENDAR_API_KEY: ${{ secrets.GOOGLE_CALENDAR_API_KEY }}
+          PCLOUD_FOLDER_ENDPOINT: ${{ secrets.PCLOUD_FOLDER_ENDPOINT }}
+          PCLOUD_DOWNLOAD_ENDPOINT: ${{ secrets.PCLOUD_DOWNLOAD_ENDPOINT }}
+        run: |
+          echo "GOOGLE_CALENDAR_ID=${GOOGLE_CALENDAR_ID}" > .env
+          echo "GOOGLE_CALENDAR_API_KEY=${GOOGLE_CALENDAR_API_KEY}" >> .env
+          echo "PCLOUD_FOLDER_ENDPOINT=${PCLOUD_FOLDER_ENDPOINT}" >> .env
+          echo "PCLOUD_DOWNLOAD_ENDPOINT=${PCLOUD_DOWNLOAD_ENDPOINT}" >> .env
+          echo "IOS_BACKEND_URL=https://api.staging.graceops.de" >> .env
+          echo "IOS_KEYCLOAK_URL=https://auth.graceops.de" >> .env
+          echo "IOS_KEYCLOAK_REALM=hanmaum-dn-st" >> .env
+
+      - name: Build & upload to TestFlight
+        working-directory: iosApp
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
+          BUILD_NUMBER: ${{ github.run_number }}
+          MARKETING_VERSION: ${{ env.MARKETING_VERSION }}
+          # match: encrypted git store for the App Store distribution cert + profile.
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          # HTTPS auth for the private certs repo: base64("x-access-token:<PAT>").
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+        run: |
+          chmod +x ../gradlew
+          bundle exec fastlane beta
+
+  # ── manual (ios-appstore) → App Store Connect (iOS, prod backend) ──────────
+  # Production App Store submission. Manual-only: trigger from Actions →
+  # "Distribute" → Run workflow → target "ios-appstore". Builds against the prod
+  # backend, signs with the same match Distribution identity as TestFlight, and
+  # uploads the binary to App Store Connect WITHOUT submitting for review — you
+  # attach it to a version and submit manually. Gated by the `prod` env's
+  # required-reviewer rule.
+  distribute-appstore:
+    name: iOS → App Store Connect (prod)
+    if: github.event_name == 'workflow_dispatch' && inputs.target == 'ios-appstore'
+    runs-on: macos-15
+    environment: prod
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0      # full history + tags, so git describe can read the latest tag
+
+      # Marketing version follows the latest v* tag; tag the commit you intend to
+      # ship before running this. Build number is the incrementing run number.
+      - name: Resolve marketing version
+        run: |
+          LATEST_TAG="$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)"
+          VERSION="${LATEST_TAG#v}"
+          [ -z "$VERSION" ] && VERSION="1.0.0"
+          echo "MARKETING_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "Shipping marketing version $VERSION, build ${{ github.run_number }}"
+
+      - name: Select latest stable Xcode (iOS 26 SDK required by App Store Connect)
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: wrapper
+
+      - name: Set up Ruby & Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: iosApp
+
+      - name: Write .env (buildkonfig fields + iOS prod URLs)
+        env:
+          GOOGLE_CALENDAR_ID: ${{ secrets.GOOGLE_CALENDAR_ID }}
+          GOOGLE_CALENDAR_API_KEY: ${{ secrets.GOOGLE_CALENDAR_API_KEY }}
+          PCLOUD_FOLDER_ENDPOINT: ${{ secrets.PCLOUD_FOLDER_ENDPOINT }}
+          PCLOUD_DOWNLOAD_ENDPOINT: ${{ secrets.PCLOUD_DOWNLOAD_ENDPOINT }}
+        run: |
+          echo "GOOGLE_CALENDAR_ID=${GOOGLE_CALENDAR_ID}" > .env
+          echo "GOOGLE_CALENDAR_API_KEY=${GOOGLE_CALENDAR_API_KEY}" >> .env
+          echo "PCLOUD_FOLDER_ENDPOINT=${PCLOUD_FOLDER_ENDPOINT}" >> .env
+          echo "PCLOUD_DOWNLOAD_ENDPOINT=${PCLOUD_DOWNLOAD_ENDPOINT}" >> .env
+          echo "IOS_BACKEND_URL=https://api.graceops.de" >> .env
+          echo "IOS_KEYCLOAK_URL=https://auth.graceops.de" >> .env
+          echo "IOS_KEYCLOAK_REALM=hanmaum-dn-prod" >> .env
+
+      - name: Build & upload to App Store Connect
+        working-directory: iosApp
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
+          BUILD_NUMBER: ${{ github.run_number }}
+          MARKETING_VERSION: ${{ env.MARKETING_VERSION }}
+          # match: encrypted git store for the App Store distribution cert + profile.
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          # HTTPS auth for the private certs repo: base64("x-access-token:<PAT>").
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+        run: |
+          chmod +x ../gradlew
+          bundle exec fastlane release

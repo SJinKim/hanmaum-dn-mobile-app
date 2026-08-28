@@ -17,10 +17,15 @@ Run this at the beginning of every session.
 
 ## Reminders
 1. Plan before coding on any task with 3+ steps or architectural decisions.
-2. Never mark a task done without running `./gradlew :composeApp:allTests`.
+2. Never mark a task done without running the verification ladder from the
+   `verifying-kmp-changes` skill — it owns the exact gates and flavored task
+   names. Do not use bare `allTests` / `assembleDebug` / `testDebugUnitTest`:
+   flavors make them ambiguous and `allTests` link-fails locally.
 3. KMP-specific: check both Android and iOS targets are considered when changing shared code.
-4. Confirm current branch — if on main, switch to dev before any feature work:
-   git checkout dev && git pull origin dev
+4. Confirm current branch — never work on `main` or `develop`. The integration
+   branch is `develop` (CONTRIBUTING.md still calls it `dev`; that branch does
+   not exist). Start feature work from a fresh `develop`:
+   git checkout develop && git pull --ff-only && git checkout -b feature/<short-name>
 5. If a task is given: read related code BEFORE planning
 
 Only start work after this orientation.

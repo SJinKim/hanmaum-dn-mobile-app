@@ -39,7 +39,9 @@ class MemberRepositoryImpl(
     override suspend fun updateMyProfile(
         phoneNumber: String?,
         profileImageUrl: String?,
+        birthDate: String?,
         street: String?,
+        houseNumber: String?,
         zipCode: String?,
         city: String?,
     ): Result<MemberResponse> {
@@ -49,7 +51,9 @@ class MemberRepositoryImpl(
                 setBody(UpdateMyProfileRequest(
                     phoneNumber = phoneNumber,
                     profileImageUrl = profileImageUrl,
+                    birthDate = birthDate,
                     street = street,
+                    houseNumber = houseNumber,
                     zipCode = zipCode,
                     city = city,
                 ))

@@ -8,7 +8,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
+import com.hanmaum.dn.mobile.core.presentation.components.AppScreen
+import com.hanmaum.dn.mobile.core.presentation.theme.AppSpacing
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,24 +29,9 @@ fun AttendanceScreen(
     val strings = LocalStrings.current
     val state by viewModel.uiState.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(strings.navAttendance) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = strings.back,
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                ),
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.surface,
+    AppScreen(
+        title = strings.navAttendance,
+        onBack = onBackClick,
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -61,7 +47,10 @@ fun AttendanceScreen(
 
                 // State 2: Already checked in
                 state.isCheckedIn -> {
-                    CheckedInContent(serviceLabel = state.definition!!.title)
+                    CheckedInContent(
+                        serviceLabel = state.definition!!.title,
+                        date = state.checkedInDate,
+                    )
                 }
 
                 // State 3: Ready to check in
@@ -85,7 +74,7 @@ private fun NoServiceContent() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.padding(horizontal = 32.dp),
+        modifier = Modifier.padding(horizontal = AppSpacing.xl),
     ) {
         Text(
             text = strings.attendanceNoService,
@@ -93,7 +82,7 @@ private fun NoServiceContent() {
             color = MaterialTheme.colorScheme.onSurface,
         )
         Text(
-            text = "출석 체크는 예배 당일에만 가능합니다",
+            text = strings.attendanceServiceDayOnly,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -101,12 +90,12 @@ private fun NoServiceContent() {
 }
 
 @Composable
-private fun CheckedInContent(serviceLabel: String) {
+private fun CheckedInContent(serviceLabel: String, date: String?) {
     val strings = LocalStrings.current
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(20.dp),
-        modifier = Modifier.padding(horizontal = 32.dp),
+        modifier = Modifier.padding(horizontal = AppSpacing.xl),
     ) {
         Box(
             contentAlignment = Alignment.Center,
@@ -127,11 +116,23 @@ private fun CheckedInContent(serviceLabel: String) {
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface,
         )
-        Text(
-            text = serviceLabel,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                text = serviceLabel,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (date != null) {
+                Text(
+                    text = date,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }
 
@@ -143,10 +144,11 @@ private fun ReadyToCheckInContent(
     checkInError: String?,
     onCheckIn: () -> Unit,
 ) {
+    val strings = LocalStrings.current
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier.padding(horizontal = 32.dp),
+        modifier = Modifier.padding(horizontal = AppSpacing.xl),
     ) {
         Text(
             text = definition.title,
@@ -154,7 +156,9 @@ private fun ReadyToCheckInContent(
             color = MaterialTheme.colorScheme.onSurface,
         )
         Text(
-            text = "출석 시간: ${definition.windowStart.take(5)} ~ ${definition.windowEnd.take(5)}",
+            text = strings.attendanceWindow
+                .replace("{start}", definition.windowStart.take(5))
+                .replace("{end}", definition.windowEnd.take(5)),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -177,7 +181,7 @@ private fun ReadyToCheckInContent(
                 )
             } else {
                 Text(
-                    text = if (isInWindow) "출석 체크" else "출석 시간이 아닙니다",
+                    text = if (isInWindow) strings.attendanceCheckIn else strings.attendanceNotInWindow,
                 )
             }
         }

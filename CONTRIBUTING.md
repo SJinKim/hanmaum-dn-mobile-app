@@ -4,33 +4,34 @@ This repo is part of a three-repo project. Read `CLAUDE.md` and `designs/dn_app/
 
 ## Team size
 
-Up to 3 developers. Every change goes through PR review — no direct pushes to `dev` or `main`.
+Up to 3 developers. Every change goes through PR review — no direct pushes to `develop` or `main`.
 
 ## Branching
 
 - `main` — production. Protected. Only release PRs land here.
-- `dev` — integration branch. All feature work merges here first.
-- `feature/<short-name>` — always branched from `dev`, PR back to `dev`.
+- `develop` — integration branch. All feature work merges here first.
+- `feature/<short-name>` — always branched from `develop`, PR back to `develop`.
 - `hotfix/<short-name>` — only branch allowed to fork from `main`.
 
 Before starting work:
 
 ```bash
-git checkout dev && git pull origin dev
+git checkout develop && git pull --ff-only
 git checkout -b feature/<short-name>
 ```
 
-Never start work on `main`. Never commit directly to `dev`.
+Never start work on `main`. Never commit directly to `develop`. Both are blocked
+by lefthook (`lefthook.yml`); one-time setup: `brew install lefthook && lefthook install`.
 
 ## Pull requests
 
 - One feature per PR. If it's too big to review, split it.
 - Title uses the commit convention: `type(scope): summary`.
 - Description: *why* the change is needed, what was done, how it was tested, screenshots / recordings for UI changes (both Android and iOS when reachable).
-- Link the row in `../dn-app/MVP.md` the PR advances.
+- Link the row in `../hanmaum-dn-ops/docs/MVP.md` the PR advances.
 - Run `/pr-review` before opening the PR — paste the PASS/FAIL output in the description.
 - Require at least one approval before merge. The author does not merge their own PR.
-- Rebase on `dev` before merging — no merge commits.
+- Rebase on `develop` before merging — no merge commits.
 
 ## Commit convention
 
@@ -58,14 +59,22 @@ This project uses Claude Code. To keep all three developers' Claude behavior con
 | `.claude/settings.local.json` | 🚫 per-machine |
 | `.claude/commands/*.md` | ✅ shared workflows |
 | `.claude/agents/*.md` | ✅ shared subagents |
-| `.claude/skills/*.md` | ✅ shared skills |
+| `.claude/skills/*/SKILL.md` | ✅ shared skills |
 | `CLAUDE.md` | ✅ project AI instructions |
 | `CLAUDE.local.md` | 🚫 personal notes |
+| `AGENTS.md` | ✅ project Codex instructions |
+| `.codex/**` / `.agents/**` | 🚫 per-machine Codex assets |
+| `docs/codex/*.md` | ✅ shared Codex playbook + review checklist |
 | `dev-log.md` / `dev-log-*.md` | 🚫 personal journaling |
+
+Claude's assets (`.claude/`) are shared and reviewed; Codex's (`.codex/`, `.agents/`)
+are local to each developer. Only the two entrypoints — `CLAUDE.md` and `AGENTS.md` —
+plus `docs/codex/` are common ground, so anything the whole team must follow belongs
+in one of those, never in a per-machine command file.
 
 ### Editing `CLAUDE.md` or `.claude/commands/`
 
-These files change how everyone's Claude behaves. **PR review is required** — no solo edits that land directly on `dev`. Treat them like code.
+These files change how everyone's Claude behaves. **PR review is required** — no solo edits that land directly on `develop`. Treat them like code.
 
 ### Personal vs. team commands
 

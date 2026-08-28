@@ -1,78 +1,107 @@
 package com.hanmaum.dn.mobile.core.presentation.theme
 
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
-// ── Brand Tokens ─────────────────────────────────────────────────────────────
-// Source: designs/design_md/DESIGN.md — "The Luminous Sanctuary"
+// ── Light Mode Surfaces ───────────────────────────────────────────────────────
+val LightSurface                = Color(0xFFFDF8F4)
+val LightSurfaceContainerLow    = Color(0xFFFAF3ED)
+val LightSurfaceContainer       = Color(0xFFF5EBE0)
+val LightSurfaceContainerLowest = Color(0xFFFFFFFF)
+val LightOnSurface              = Color(0xFF2C1A0E)
+val LightOnSurfaceVariant       = Color(0xFF5A3A28)
+val LightMuted                  = Color(0xFFC4A882)
+val LightOutlineVariant         = Color(0x26C4A882)
 
-// Primary: Coral — energy, passion, primary actions
-val CoralDark        = Color(0xFFAE2F34)
-val CoralLight       = Color(0xFFFF6B6B)
-val OnCoral          = Color(0xFFFFFFFF)
-val OnCoralContainer = Color(0xFF2D3436)  // DeepCharcoal — readable on coral salmon
+// ── Dark Mode Surfaces ────────────────────────────────────────────────────────
+val DarkSurface                 = Color(0xFF1A1208)
+val DarkSurfaceContainerLow     = Color(0xFF120D05)
+val DarkSurfaceContainer        = Color(0xFF221508)
+val DarkSurfaceContainerLowest  = Color(0xFF0D0905)
+val DarkOnSurface               = Color(0xFFF5E6CC)
+val DarkOnSurfaceVariant        = Color(0xFFC4A070)
+val DarkMuted                   = Color(0xFF8A6A3A)
+val DarkOutlineVariant          = Color(0x2E8A6A3A)
 
-// Secondary: Faith Blue — grounding, navigation
-val BlueDark         = Color(0xFF005DB8)
-val BlueLight        = Color(0xFF4C96FE)
-val OnBlue           = Color(0xFFFFFFFF)
-val OnBlueContainer  = Color(0xFF001C3B)
+// ── CI Placeholder — swap when brand colours are confirmed ────────────────────
+val LightPrimary     = Color(0xFFC07A50)
+val LightPrimaryDark = Color(0xFF8A4A28)
+val LightOnPrimary   = Color(0xFFFFFFFF)
 
-// Tertiary: Holy Gold — "Aha!" moments, highlights
-val GoldDark         = Color(0xFF705D00)
-val GoldLight        = Color(0xFFFFE173)
-val OnGold           = Color(0xFFFFFFFF)
-val OnGoldContainer  = Color(0xFF221B00)
+val DarkPrimary      = Color(0xFFA0622A)
+val DarkPrimaryDark  = Color(0xFF6A3A10)
+val DarkOnPrimary    = Color(0xFFFDE8C0)
 
-// Surface hierarchy (tonal layering — no borders)
-val SanctuaryWhite   = Color(0xFFF9F9F9)  // base background — never pure white
-val CardWhite        = Color(0xFFFFFFFF)  // cards on top of SanctuaryWhite
-val SurfaceLow       = Color(0xFFF3F3F3)  // sectioning shift (surface_container_low)
-val SurfaceMid       = Color(0xFFEEEEEE)  // heavier inset
+// ── Floating Pill Nav — always dark-frosted in both light and dark modes ───────
+val PillBackground   = Color(0xDD2C1A0E) // DarkOnSurface @ 87% opacity
+val PillIndicator    = Color(0x30C4A882) // LightMuted @ 19% opacity — active chip
+val PillIconActive   = Color(0xFFC4A882) // LightMuted @ 100% — active icon + label
+val PillIconInactive = Color(0x66C4A882) // LightMuted @ 40% — inactive icon
 
-// Text — warm charcoal (never pure black per design spec)
-val DeepCharcoal     = Color(0xFF2D3436)  // primary text
-val WarmCharcoal     = Color(0xFF584140)  // body text / on_surface_variant
-val MutedGray        = Color(0xFF857371)  // outline / inactive
-
-// Special
-val SoftPeach        = Color(0xFFFFF5E1)  // reading section bg
-
-// Error
+// ── Shared ────────────────────────────────────────────────────────────────────
 val ErrorRed         = Color(0xFFBA1A1A)
 val ErrorContainer   = Color(0xFFFFDAD6)
 val OnError          = Color(0xFFFFFFFF)
 val OnErrorContainer = Color(0xFF410002)
 
-// ── Material3 ColorScheme ─────────────────────────────────────────────────────
-val LuminousSanctuaryColorScheme = lightColorScheme(
-    primary                = CoralDark,
-    onPrimary              = OnCoral,
-    primaryContainer       = CoralLight,
-    onPrimaryContainer     = OnCoralContainer,
-    secondary              = BlueDark,
-    onSecondary            = OnBlue,
-    secondaryContainer     = BlueLight,
-    onSecondaryContainer   = OnBlueContainer,
-    tertiary               = GoldDark,
-    onTertiary             = OnGold,
-    tertiaryContainer      = GoldLight,
-    onTertiaryContainer    = OnGoldContainer,
-    error                  = ErrorRed,
-    onError                = OnError,
-    errorContainer         = ErrorContainer,
-    onErrorContainer       = OnErrorContainer,
-    background             = SanctuaryWhite,
-    onBackground           = DeepCharcoal,
-    surface                = SanctuaryWhite,
-    onSurface              = DeepCharcoal,
-    surfaceVariant         = SurfaceLow,
-    onSurfaceVariant       = WarmCharcoal,
-    outline                = MutedGray,
-    outlineVariant         = Color(0xFFD8C2BF),
-    scrim                  = Color(0xFF000000),
-    inverseSurface         = Color(0xFF362F2E),
-    inverseOnSurface       = SoftPeach,
-    inversePrimary         = Color(0xFFFFB3AE),
-    surfaceTint            = CoralDark,
+// ── Material3 colour schemes ──────────────────────────────────────────────────
+val WarmPremiumLightColorScheme = lightColorScheme(
+    primary              = LightPrimary,
+    onPrimary            = LightOnPrimary,
+    primaryContainer     = LightPrimaryDark,
+    onPrimaryContainer   = LightOnPrimary,
+    secondary            = LightMuted,
+    onSecondary          = LightOnSurface,
+    secondaryContainer   = LightSurfaceContainerLow,
+    onSecondaryContainer = LightOnSurfaceVariant,
+    background           = LightSurface,
+    onBackground         = LightOnSurface,
+    surface              = LightSurface,
+    onSurface            = LightOnSurface,
+    surfaceVariant       = LightSurfaceContainerLow,
+    onSurfaceVariant     = LightOnSurfaceVariant,
+    surfaceContainer            = LightSurfaceContainer,
+    surfaceContainerLow         = LightSurfaceContainerLow,
+    surfaceContainerLowest      = LightSurfaceContainerLowest,
+    outline              = LightMuted,
+    outlineVariant       = LightOutlineVariant,
+    error                = ErrorRed,
+    onError              = OnError,
+    errorContainer       = ErrorContainer,
+    onErrorContainer     = OnErrorContainer,
+    scrim                = Color(0xFF2C1A0E),
+    inverseSurface       = DarkSurface,
+    inverseOnSurface     = DarkOnSurface,
+    inversePrimary       = DarkPrimary,
+)
+
+val WarmPremiumDarkColorScheme = darkColorScheme(
+    primary              = DarkPrimary,
+    onPrimary            = DarkOnPrimary,
+    primaryContainer     = DarkPrimaryDark,
+    onPrimaryContainer   = DarkOnPrimary,
+    secondary            = DarkMuted,
+    onSecondary          = DarkOnSurface,
+    secondaryContainer   = DarkSurfaceContainerLow,
+    onSecondaryContainer = DarkOnSurfaceVariant,
+    background           = DarkSurface,
+    onBackground         = DarkOnSurface,
+    surface              = DarkSurface,
+    onSurface            = DarkOnSurface,
+    surfaceVariant       = DarkSurfaceContainerLow,
+    onSurfaceVariant     = DarkOnSurfaceVariant,
+    surfaceContainer            = DarkSurfaceContainer,
+    surfaceContainerLow         = DarkSurfaceContainerLow,
+    surfaceContainerLowest      = DarkSurfaceContainerLowest,
+    outline              = DarkMuted,
+    outlineVariant       = DarkOutlineVariant,
+    error                = ErrorRed,
+    onError              = OnError,
+    errorContainer       = ErrorContainer,
+    onErrorContainer     = OnErrorContainer,
+    scrim                = Color(0xFF000000),
+    inverseSurface       = LightSurface,
+    inverseOnSurface     = LightOnSurface,
+    inversePrimary       = LightPrimary,
 )

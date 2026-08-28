@@ -21,11 +21,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.hanmaum.dn.mobile.core.presentation.theme.CardWhite
-import com.hanmaum.dn.mobile.core.presentation.theme.CoralDark
-import com.hanmaum.dn.mobile.core.presentation.theme.MutedGray
 import com.hanmaum.dn.mobile.features.announcement.domain.model.Announcement
 import kotlinx.coroutines.delay
+
+private val GradientFadeBlack = Color(0xFF1A0A0A)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -81,7 +80,7 @@ private fun HeroBannerCard(
             .clip(RoundedCornerShape(24.dp))
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(CoralDark, Color(0xFF1A0A0A))
+                    colors = listOf(MaterialTheme.colorScheme.primaryContainer, GradientFadeBlack)
                 )
             )
             .clickable(onClick = onClick)
@@ -91,7 +90,7 @@ private fun HeroBannerCard(
         Text(
             text = "DN App",
             style = MaterialTheme.typography.labelSmall,
-            color = Color.White.copy(alpha = 0.7f),
+            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
             modifier = Modifier.align(Alignment.TopStart),
         )
 
@@ -106,7 +105,7 @@ private fun HeroBannerCard(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = (-0.02).sp,
                 ),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -115,13 +114,13 @@ private fun HeroBannerCard(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50.dp))
-                    .background(Color.White.copy(alpha = 0.2f))
+                    .background(MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f))
                     .padding(horizontal = 12.dp, vertical = 4.dp),
             ) {
                 Text(
                     text = "주일 예배  •  ${announcement.startAt.take(10)}",
                     style = MaterialTheme.typography.labelMedium,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
 
@@ -130,8 +129,8 @@ private fun HeroBannerCard(
                 onClick = onClick,
                 shape = RoundedCornerShape(50.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = CardWhite,
-                    contentColor   = CoralDark,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    contentColor   = MaterialTheme.colorScheme.primaryContainer,
                 ),
                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
             ) {
@@ -161,8 +160,8 @@ private fun HeroBannerIndicators(
                     .size(8.dp)
                     .clip(CircleShape)
                     .background(
-                        if (isSelected) CoralDark
-                        else MutedGray.copy(alpha = 0.4f)
+                        if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                        else Color.Gray.copy(alpha = 0.4f)
                     )
             )
         }
@@ -179,12 +178,12 @@ private fun HeroBannerLoading() {
             .clip(RoundedCornerShape(24.dp))
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(CoralDark, Color(0xFF1A0A0A))
+                    colors = listOf(MaterialTheme.colorScheme.primaryContainer, GradientFadeBlack)
                 )
             ),
         contentAlignment = Alignment.Center,
     ) {
-        CircularProgressIndicator(color = Color.White)
+        CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimaryContainer)
     }
 }
 

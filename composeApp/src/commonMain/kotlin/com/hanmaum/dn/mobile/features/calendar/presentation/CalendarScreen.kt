@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
+import com.hanmaum.dn.mobile.core.presentation.components.AppScreen
+import com.hanmaum.dn.mobile.core.presentation.theme.AppSpacing
 import com.hanmaum.dn.mobile.features.calendar.domain.model.CalendarEvent
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -39,6 +41,9 @@ fun CalendarScreen(viewModel: CalendarViewModel = koinViewModel()) {
     val strings = LocalStrings.current
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
+    // Refresh on every entry to the tab so web-app changes appear without re-login.
+    LaunchedEffect(Unit) { viewModel.refresh() }
+
     if (state.selectedEvent != null) {
         EventDetailSheet(
             event     = state.selectedEvent!!,
@@ -46,14 +51,7 @@ fun CalendarScreen(viewModel: CalendarViewModel = koinViewModel()) {
         )
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(strings.navCalendar) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
-            )
-        },
-    ) { padding ->
+    AppScreen(title = strings.navCalendar) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -94,18 +92,18 @@ private fun ViewModeToggle(
         animationSpec = spring(), label = "listBg",
     )
     val calendarTextColor by animateColorAsState(
-        if (currentMode == ViewMode.CALENDAR) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+        if (currentMode == ViewMode.CALENDAR) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = spring(), label = "calendarText",
     )
     val listTextColor by animateColorAsState(
-        if (currentMode == ViewMode.LIST) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+        if (currentMode == ViewMode.LIST) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = spring(), label = "listText",
     )
 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = AppSpacing.md, vertical = AppSpacing.sm)
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .padding(3.dp),
@@ -151,7 +149,7 @@ private fun CalendarContent(
     val strings = LocalStrings.current
     LazyColumn(
         modifier            = Modifier.fillMaxSize(),
-        contentPadding      = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        contentPadding      = PaddingValues(horizontal = AppSpacing.md, vertical = AppSpacing.sm),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item {
@@ -263,7 +261,7 @@ private fun EventListView(
         LazyColumn(
             state               = listState,
             modifier            = Modifier.fillMaxSize(),
-            contentPadding      = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            contentPadding      = PaddingValues(horizontal = AppSpacing.md, vertical = AppSpacing.sm),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             for (month in 1..12) {

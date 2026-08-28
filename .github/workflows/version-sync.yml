@@ -1,0 +1,92 @@
+name: Sync versionName on release publish
+
+# When a draft release is published (staging `vX.Y.Z-st` or prod `vX.Y.Z`),
+# sync Android `versionName` in composeApp/build.gradle.kts to the numeric
+# version so the marketing version never drifts from the release line.
+#
+# develop/main have a "changes must go through a pull request" ruleset, so the
+# bot cannot push the bump directly — it opens a PR from a bot branch and
+# enables auto-merge. Because the PR/merge are driven by GITHUB_TOKEN, they do
+# NOT trigger further workflow runs (pr-check, drafter, distribute), so a
+# versionName bump never causes a redundant build.
+#
+# iOS marketing version is derived from the tag at build time (git describe in
+# distribute.yml), so it needs no file edit — this keeps the Android side in step.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-version-name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the release's branch
+        uses: actions/checkout@v4
+        with:
+          # `-st` tags come from develop; final tags from main. Derived from the
+          # tag itself so it never depends on the release's target_commitish format.
+          ref: ${{ endsWith(github.event.release.tag_name, '-st') && 'develop' || 'main' }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute numeric version + target branch from tag
+        run: |
+          TAG="${{ github.event.release.tag_name }}"   # v1.4.0-st or v1.4.0
+          case "$TAG" in
+            *-st) BRANCH=develop ;;
+            *)    BRANCH=main ;;
+          esac
+          VERSION="${TAG#v}"                            # 1.4.0-st or 1.4.0
+          VERSION="${VERSION%-st}"                      # 1.4.0
+          if ! printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Tag '$TAG' did not yield an x.y.z version ('$VERSION') — skipping."
+            echo "SKIP=1" >> "$GITHUB_ENV"
+          fi
+          # No-downgrade guard: never let a release lower the branch's versionName.
+          # Protects against a baseline/back-dated release (e.g. seeding an older
+          # tag) rewriting a branch that is already on a higher version.
+          CURRENT="$(grep -m1 -oE 'versionName = "[^"]*"' composeApp/build.gradle.kts | sed -E 's/.*"([^"]*)".*/\1/')"
+          if [ -n "$CURRENT" ] && [ "$CURRENT" != "$VERSION" ]; then
+            HIGHER="$(printf '%s\n%s\n' "$CURRENT" "$VERSION" | sort -V | tail -1)"
+            if [ "$HIGHER" != "$VERSION" ]; then
+              echo "Refusing to downgrade versionName $CURRENT -> $VERSION on $BRANCH — skipping."
+              echo "SKIP=1" >> "$GITHUB_ENV"
+            fi
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "BRANCH=$BRANCH" >> "$GITHUB_ENV"
+
+      - name: Rewrite versionName
+        if: env.SKIP != '1'
+        run: |
+          sed -i -E 's/(versionName = ")[^"]*(")/\1'"$VERSION"'\2/' composeApp/build.gradle.kts
+          echo "versionName now:"
+          grep -n 'versionName = ' composeApp/build.gradle.kts
+
+      - name: Open a PR to sync versionName
+        if: env.SKIP != '1'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git diff --quiet -- composeApp/build.gradle.kts; then
+            echo "versionName already $VERSION on $BRANCH — nothing to do."
+            exit 0
+          fi
+          SYNC_BRANCH="bot/versionname-${VERSION}-${{ github.run_id }}"
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -b "$SYNC_BRANCH"
+          git add composeApp/build.gradle.kts
+          git commit -m "chore(release): set versionName to $VERSION"
+          git push origin "$SYNC_BRANCH"
+          gh pr create --base "$BRANCH" --head "$SYNC_BRANCH" \
+            --title "chore(release): set versionName to $VERSION" \
+            --body "Automated by version-sync: align Android \`versionName\` with the published release \`${{ github.event.release.tag_name }}\`."
+          # Auto-merge if the repo allows it; otherwise leave the PR for a human.
+          gh pr merge "$SYNC_BRANCH" --squash --auto --delete-branch \
+            || gh pr merge "$SYNC_BRANCH" --squash --delete-branch \
+            || echo "Could not auto-merge — the versionName PR is open for manual merge."

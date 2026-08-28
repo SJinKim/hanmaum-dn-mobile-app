@@ -36,12 +36,13 @@ class CalendarViewModelTest {
     )
 
     @Test
-    fun `loads events for current month on init`() = runTest {
+    fun `refresh loads events for current month`() = runTest {
         val repo = object : CalendarRepository {
             override suspend fun getEvents(year: Int, month: Int) = Result.success(listOf(fakeEvent(15)))
             override suspend fun getYearEvents(year: Int) = Result.success(emptyList<CalendarEvent>())
         }
         val vm = CalendarViewModel(repo)
+        vm.refresh()
         dispatcher.scheduler.advanceUntilIdle()
 
         assertEquals(1, vm.uiState.value.events.size)

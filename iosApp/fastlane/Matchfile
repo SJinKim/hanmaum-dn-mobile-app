@@ -1,0 +1,8 @@
+# match stores the App Store distribution cert + provisioning profile in a
+# private, encrypted git repo. The repo URL comes from the MATCH_GIT_URL env so
+# nothing sensitive is committed here.
+git_url(ENV["MATCH_GIT_URL"])
+storage_mode("git")
+
+type("appstore")
+app_identifier(["com.hanmaum.dn.mobile.HanmaumDnApp"])

@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,6 +16,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
+import com.hanmaum.dn.mobile.core.presentation.components.AppScreen
+import com.hanmaum.dn.mobile.core.presentation.theme.AppSpacing
 import com.hanmaum.dn.mobile.features.album.domain.model.AlbumSummary
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -27,14 +30,10 @@ fun AlbumsScreen(
     val strings = LocalStrings.current
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(strings.navAlbum) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
-            )
-        },
-    ) { padding ->
+    // Refresh on every entry to the tab so web-app changes appear without re-login.
+    LaunchedEffect(Unit) { viewModel.load() }
+
+    AppScreen(title = strings.navAlbum) { padding ->
         when (state) {
             AlbumsUiState.Loading -> Box(
                 modifier = Modifier.fillMaxSize().padding(padding),
@@ -70,7 +69,7 @@ fun AlbumsScreen(
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(columns),
                             modifier = Modifier.fillMaxSize().padding(padding),
-                            contentPadding = PaddingValues(12.dp),
+                            contentPadding = PaddingValues(AppSpacing.md),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
@@ -90,6 +89,7 @@ fun AlbumsScreen(
 
 @Composable
 private fun AlbumCard(summary: AlbumSummary, onClick: () -> Unit) {
+    val strings = LocalStrings.current
     Card(
         onClick = onClick,
         shape = MaterialTheme.shapes.large,
@@ -121,7 +121,7 @@ private fun AlbumCard(summary: AlbumSummary, onClick: () -> Unit) {
             )
             if (summary.photoCount != null) {
                 Text(
-                    text = "${summary.photoCount}장",
+                    text = strings.albumPhotoCount.replace("{n}", summary.photoCount.toString()),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

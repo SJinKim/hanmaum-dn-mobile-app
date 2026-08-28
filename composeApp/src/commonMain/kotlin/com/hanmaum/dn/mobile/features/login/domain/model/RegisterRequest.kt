@@ -1,6 +1,5 @@
 package com.hanmaum.dn.mobile.features.login.domain.model
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -19,5 +18,6 @@ data class RegisterRequest(
     val birthDate: String? = null, // Format: YYYY-MM-DD
     val phoneNumber: String? = null,
     val street: String? = null,
-    @SerialName("zip_code") val zipCode: String? = null
+    val houseNumber: String? = null,
+    val zipCode: String? = null
 )

@@ -25,7 +25,15 @@ class CalendarViewModel(private val repository: CalendarRepository) : ViewModel(
     })
     val uiState: StateFlow<CalendarUiState> = _uiState.asStateFlow()
 
-    init { loadCurrentMonth() }
+    /**
+     * Loads (or reloads) the currently-viewed month — and the year list when the
+     * list view is active. Driven by the screen on every entry so events created
+     * in the web app appear without a re-login.
+     */
+    fun refresh() {
+        loadCurrentMonth()
+        if (_uiState.value.viewMode == ViewMode.LIST) loadYearEvents()
+    }
 
     fun selectDay(day: Int) {
         _uiState.update { it.copy(selectedDay = if (it.selectedDay == day) null else day) }
@@ -64,7 +72,8 @@ class CalendarViewModel(private val repository: CalendarRepository) : ViewModel(
 
     private fun loadYearEvents() {
         val year = _uiState.value.todayYear
-        _uiState.update { it.copy(isYearLoading = true) }
+        val hadData = _uiState.value.yearEvents.isNotEmpty()
+        _uiState.update { it.copy(isYearLoading = !hadData) }
         viewModelScope.launch {
             repository.getYearEvents(year).fold(
                 onSuccess = { events ->
@@ -74,7 +83,7 @@ class CalendarViewModel(private val repository: CalendarRepository) : ViewModel(
                 },
                 onFailure = { err ->
                     _uiState.update {
-                        it.copy(isYearLoading = false, error = err.message ?: "연간 일정 로딩 실패")
+                        it.copy(isYearLoading = false, error = if (hadData) it.error else (err.message ?: "연간 일정 로딩 실패"))
                     }
                 },
             )
@@ -83,11 +92,12 @@ class CalendarViewModel(private val repository: CalendarRepository) : ViewModel(
 
     private fun loadCurrentMonth() {
         val (year, month) = _uiState.value.run { year to month }
-        _uiState.update { it.copy(isLoading = true, error = null) }
+        val hadData = _uiState.value.events.isNotEmpty()
+        _uiState.update { it.copy(isLoading = !hadData, error = null) }
         viewModelScope.launch {
             repository.getEvents(year, month).fold(
                 onSuccess = { events -> _uiState.update { it.copy(events = events, isLoading = false) } },
-                onFailure = { err   -> _uiState.update { it.copy(isLoading = false, error = err.message ?: "캘린더 로딩 실패") } },
+                onFailure = { err   -> _uiState.update { it.copy(isLoading = false, error = if (hadData) it.error else (err.message ?: "캘린더 로딩 실패")) } },
             )
         }
     }

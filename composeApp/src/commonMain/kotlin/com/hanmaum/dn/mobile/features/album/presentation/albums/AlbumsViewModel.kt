@@ -23,8 +23,11 @@ class AlbumsViewModel(
     private val _uiState = MutableStateFlow<AlbumsUiState>(AlbumsUiState.Loading)
     val uiState: StateFlow<AlbumsUiState> = _uiState.asStateFlow()
 
-    init { load() }
-
+    /**
+     * Loads (or reloads) the album list. Driven by the screen on every entry so
+     * albums created in the web app appear without a re-login. Shows cached data
+     * immediately and only surfaces an error when there is nothing cached to show.
+     */
     fun load() {
         viewModelScope.launch {
             val cached = cacheRepository.getCachedAlbumList()

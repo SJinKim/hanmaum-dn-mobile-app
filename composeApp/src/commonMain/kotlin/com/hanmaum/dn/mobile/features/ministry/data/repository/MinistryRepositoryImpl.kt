@@ -1,25 +1,18 @@
 package com.hanmaum.dn.mobile.features.ministry.data.repository
 
 import com.hanmaum.dn.mobile.core.domain.model.ApiResponse
-import com.hanmaum.dn.mobile.features.ministry.data.model.CreateRegistrationRequest
+import com.hanmaum.dn.mobile.features.ministry.data.model.ContactResponse
 import com.hanmaum.dn.mobile.features.ministry.data.model.MinistryDetailResponse
 import com.hanmaum.dn.mobile.features.ministry.data.model.MinistrySummaryResponse
-import com.hanmaum.dn.mobile.features.ministry.data.model.RegistrationResponse
+import com.hanmaum.dn.mobile.features.ministry.data.model.ScheduleResponse
+import com.hanmaum.dn.mobile.features.ministry.domain.model.Contact
 import com.hanmaum.dn.mobile.features.ministry.domain.model.Ministry
 import com.hanmaum.dn.mobile.features.ministry.domain.model.MinistryDetail
-import com.hanmaum.dn.mobile.features.ministry.domain.model.MyRegistration
-import com.hanmaum.dn.mobile.features.ministry.domain.model.RegistrationStatus
+import com.hanmaum.dn.mobile.features.ministry.domain.model.Schedule
 import com.hanmaum.dn.mobile.features.ministry.domain.repository.MinistryRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 
 class MinistryRepositoryImpl(
     private val client: HttpClient,
@@ -37,51 +30,37 @@ class MinistryRepositoryImpl(
         body.data?.toDomain() ?: error("Ministry detail data is null")
     }
 
-    override suspend fun getMyRegistration(ministryPublicId: String): Result<MyRegistration?> = runCatching {
-        val response = client.get("ministries/$ministryPublicId/registrations/me")
-        if (response.status == HttpStatusCode.NotFound) return@runCatching null
-        val body = response.body<ApiResponse<RegistrationResponse>>()
-        body.data?.toDomain()
-    }
-
-    override suspend fun register(ministryPublicId: String, note: String?): Result<MyRegistration> = runCatching {
-        val period = kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year.toString()
-        val response = client.post("ministries/$ministryPublicId/registrations") {
-            contentType(ContentType.Application.Json)
-            setBody(CreateRegistrationRequest(period = period, note = note))
-        }
-        val body = response.body<ApiResponse<RegistrationResponse>>()
-        body.data?.toDomain() ?: error("Registration data is null")
-    }
-
     // ─── Mappers ─────────────────────────────────────────────────────────────
 
     private fun MinistrySummaryResponse.toDomain() = Ministry(
         publicId = publicId,
-        name = name,
-        shortDescription = shortDescription,
+        title = title,
+        subtitle = subtitle.orEmpty(),
         imageUrl = imageUrl,
-        leaderName = leaderName,
-        isActive = isActive,
+        contacts = contacts.map { it.toDomain() },
+        isActive = active,
     )
 
     private fun MinistryDetailResponse.toDomain() = MinistryDetail(
         publicId = publicId,
-        name = name,
-        shortDescription = shortDescription,
-        longDescription = longDescription,
+        title = title,
+        subtitle = subtitle.orEmpty(),
+        about = about.orEmpty(),
+        requirements = requirements,
+        schedules = schedules.map { it.toDomain() },
+        contacts = contacts.map { it.toDomain() },
         imageUrl = imageUrl,
-        leaderName = leader?.fullName,
-        isActive = isActive,
+        isActive = active,
     )
 
-    private fun RegistrationResponse.toDomain() = MyRegistration(
-        publicId = publicId,
-        status = when (status) {
-            "APPROVED" -> RegistrationStatus.APPROVED
-            "PENDING" -> RegistrationStatus.PENDING
-            else -> RegistrationStatus.NONE
-        },
-        note = note,
+    private fun ScheduleResponse.toDomain() = Schedule(
+        description = description.orEmpty(),
+        startTime = startTime.orEmpty(),
+        endTime = endTime.orEmpty(),
+    )
+
+    private fun ContactResponse.toDomain() = Contact(
+        role = role.orEmpty(),
+        name = name.orEmpty(),
     )
 }
