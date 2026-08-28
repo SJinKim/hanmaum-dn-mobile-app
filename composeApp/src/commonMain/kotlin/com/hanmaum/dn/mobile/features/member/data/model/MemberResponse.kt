@@ -12,6 +12,10 @@ data class MemberResponse(
     val status: MemberStatus,
     val churchRole: String? = null,
     val groupName: String? = null,
+    // already returned by GET /api/v1/members/me — the client simply never read them
+    val division: String? = null,
+    val houseNumber: String? = null,
+    val birthDate: String? = null,
     val street: String? = null,
     @kotlinx.serialization.SerialName("zip_code") val zipCode: String? = null,
     val city: String? = null,
