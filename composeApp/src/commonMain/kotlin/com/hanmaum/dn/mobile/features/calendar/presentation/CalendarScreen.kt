@@ -1,172 +1,122 @@
 package com.hanmaum.dn.mobile.features.calendar.presentation
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
+import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
+import com.hanmaum.dn.mobile.core.presentation.components.DnGlows
+import com.hanmaum.dn.mobile.core.presentation.components.DnScrollEdge
+import com.hanmaum.dn.mobile.core.presentation.components.DnSegmented
+import com.hanmaum.dn.mobile.core.presentation.components.DnTopBar
+import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
+import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
+import com.hanmaum.dn.mobile.core.presentation.theme.DnTileShape
+import com.hanmaum.dn.mobile.core.presentation.theme.typography
 import com.hanmaum.dn.mobile.features.calendar.domain.model.CalendarEvent
 import org.koin.compose.viewmodel.koinViewModel
 
-
+/**
+ * 캘린더 — month grid with a day agenda, or a flat list for the year.
+ *
+ * Tapping an event opens a sheet rather than a pushed screen: the view model
+ * already models the selection as an overlay (`selectedEvent` /
+ * `dismissEventDetail`), and turning it into a route would have meant
+ * changing navigation, which is out of scope for a UI pass.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalendarScreen(viewModel: CalendarViewModel = koinViewModel()) {
-    val strings = LocalStrings.current
+fun CalendarScreen(onBackClick: () -> Unit) {
+    val viewModel: CalendarViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val strings = LocalStrings.current
+    val c = DnTheme.colors
 
-    if (state.selectedEvent != null) {
-        EventDetailSheet(
-            event     = state.selectedEvent!!,
-            onDismiss = viewModel::dismissEventDetail,
-        )
-    }
+    DnBackground(glows = DnGlows.information()) {
+        Column(Modifier.fillMaxSize().statusBarsPadding()) {
+            DnTopBar(title = strings.navCalendar, onBack = onBackClick, onAction = { })
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(strings.navCalendar) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
+            Spacer(Modifier.height(12.dp))
+            DnSegmented(
+                options = listOf("월간", "목록"),
+                selectedIndex = if (state.viewMode == ViewMode.CALENDAR) 0 else 1,
+                onSelect = { viewModel.switchView(if (it == 0) ViewMode.CALENDAR else ViewMode.LIST) },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
             )
-        },
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-        ) {
-            ViewModeToggle(
-                currentMode  = state.viewMode,
-                onModeChange = viewModel::switchView,
-            )
+            Spacer(Modifier.height(16.dp))
 
-            AnimatedContent(
-                targetState    = state.viewMode,
-                transitionSpec = { fadeIn(spring()) togetherWith fadeOut(spring()) },
-                label          = "calendarViewMode",
-            ) { mode ->
-                when (mode) {
-                    ViewMode.CALENDAR -> CalendarContent(state = state, viewModel = viewModel)
-                    ViewMode.LIST     -> EventListView(state = state, onEventClick = viewModel::selectEvent)
-                }
+            if (state.viewMode == ViewMode.CALENDAR) {
+                MonthView(state = state, viewModel = viewModel)
+            } else {
+                YearListView(state = state, onEventClick = viewModel::selectEvent)
             }
         }
+
+        DnScrollEdge()
     }
-}
 
-@Composable
-private fun ViewModeToggle(
-    currentMode: ViewMode,
-    onModeChange: (ViewMode) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val strings = LocalStrings.current
-    val calendarBg by animateColorAsState(
-        if (currentMode == ViewMode.CALENDAR) MaterialTheme.colorScheme.primary else Color.Transparent,
-        animationSpec = spring(), label = "calendarBg",
-    )
-    val listBg by animateColorAsState(
-        if (currentMode == ViewMode.LIST) MaterialTheme.colorScheme.primary else Color.Transparent,
-        animationSpec = spring(), label = "listBg",
-    )
-    val calendarTextColor by animateColorAsState(
-        if (currentMode == ViewMode.CALENDAR) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
-        animationSpec = spring(), label = "calendarText",
-    )
-    val listTextColor by animateColorAsState(
-        if (currentMode == ViewMode.LIST) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
-        animationSpec = spring(), label = "listText",
-    )
-
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surfaceContainerLow)
-            .padding(3.dp),
-    ) {
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .clip(CircleShape)
-                .background(calendarBg)
-                .clickable { onModeChange(ViewMode.CALENDAR) }
-                .padding(vertical = 8.dp),
-            contentAlignment = Alignment.Center,
+    state.selectedEvent?.let { event ->
+        ModalBottomSheet(
+            onDismissRequest = viewModel::dismissEventDetail,
+            containerColor = c.surface,
         ) {
-            Text(
-                strings.navCalendar,
-                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = calendarTextColor,
-            )
-        }
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .clip(CircleShape)
-                .background(listBg)
-                .clickable { onModeChange(ViewMode.LIST) }
-                .padding(vertical = 8.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                strings.list,
-                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = listTextColor,
-            )
+            EventSheet(event)
         }
     }
 }
 
 @Composable
-private fun CalendarContent(
-    state: CalendarUiState,
-    viewModel: CalendarViewModel,
-) {
+private fun MonthView(state: CalendarUiState, viewModel: CalendarViewModel) {
+    val c = DnTheme.colors
     val strings = LocalStrings.current
+
     LazyColumn(
-        modifier            = Modifier.fillMaxSize(),
-        contentPadding      = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 130.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item {
             Row(
-                verticalAlignment       = Alignment.CenterVertically,
-                horizontalArrangement   = Arrangement.SpaceBetween,
-                modifier                = Modifier.fillMaxWidth(),
+                Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(onClick = viewModel::previousMonth) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, strings.calendarPrevMonth)
-                }
-                Text("${state.year}${strings.yearSuffix} ${strings.months[state.month]}", style = MaterialTheme.typography.titleLarge)
-                IconButton(onClick = viewModel::nextMonth) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, strings.calendarNextMonth)
-                }
+                CircleIconButton(rotate = true, onClick = viewModel::previousMonth)
+                Text(
+                    "${state.year}${strings.yearSuffix} ${strings.months[state.month]}",
+                    style = DnTheme.typography.title,
+                    color = c.textPrimary,
+                )
+                CircleIconButton(rotate = false, onClick = viewModel::nextMonth)
             }
         }
 
@@ -175,289 +125,125 @@ private fun CalendarContent(
                 strings.dayHeaders.forEach { d ->
                     Text(
                         d,
-                        modifier  = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f),
                         textAlign = TextAlign.Center,
-                        style     = MaterialTheme.typography.labelMedium,
-                        color     = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = DnTheme.typography.label,
+                        color = c.textTertiary,
                     )
                 }
             }
         }
 
-        item {
-            MonthGrid(
-                year        = state.year,
-                month       = state.month,
-                events      = state.events,
-                selectedDay = state.selectedDay,
-                onDayClick  = viewModel::selectDay,
-            )
-        }
+        item { MonthGrid(state = state, onDayClick = viewModel::selectDay) }
 
         if (state.isLoading) {
             item {
-                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(modifier = Modifier.padding(8.dp))
+                Box(Modifier.fillMaxWidth().padding(20.dp), Alignment.Center) {
+                    CircularProgressIndicator(color = c.lime)
                 }
             }
         }
 
-        if (state.error != null) {
-            item { Text(state.error.orEmpty(), color = MaterialTheme.colorScheme.error) }
-        }
+        val dayEvents = state.selectedDay?.let { day ->
+            val key = "${state.year}-${pad(state.month)}-${pad(day)}"
+            state.events.filter { it.startDate.startsWith(key) }
+        } ?: state.events
 
-        val displayEvents = if (state.selectedDay != null) {
-            val dayStr = "${state.year}-${state.month.toString().padStart(2, '0')}-${state.selectedDay.toString().padStart(2, '0')}"
-            state.events.filter { it.startDate.startsWith(dayStr) }
-        } else {
-            state.events
-        }
-
-        if (displayEvents.isNotEmpty()) {
-            item {
-                Text(
-                    if (state.selectedDay != null) "${state.selectedDay}일 일정" else strings.calendarEventsThisMonth,
-                    style    = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(top = 8.dp),
-                )
-            }
-            items(displayEvents, key = { it.id }) { event ->
-                EventCard(event = event, onClick = { viewModel.selectEvent(event) })
-            }
-        } else if (!state.isLoading && state.error == null) {
-            item {
-                Text(
-                    if (state.selectedDay != null) strings.calendarNoEventsThisDay else strings.calendarNoEvents,
-                    color    = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style    = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(top = 8.dp),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun EventListView(
-    state: CalendarUiState,
-    onEventClick: (CalendarEvent) -> Unit,
-) {
-    val listState = rememberLazyListState()
-
-    LaunchedEffect(state.yearEventsLoaded) {
-        if (state.yearEventsLoaded) {
-            val targetIndex = computeCurrentMonthIndex(
-                yearEvents   = state.yearEvents,
-                year         = state.todayYear,
-                currentMonth = state.todayMonth,
+        item {
+            Spacer(Modifier.height(8.dp))
+            Text(
+                state.selectedDay?.let { "${it}일 일정" } ?: strings.calendarEventsThisMonth,
+                style = DnTheme.typography.headline,
+                color = c.textPrimary,
             )
-            listState.animateScrollToItem(targetIndex)
         }
-    }
 
-    if (state.isYearLoading) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-        }
-    } else {
-        LazyColumn(
-            state               = listState,
-            modifier            = Modifier.fillMaxSize(),
-            contentPadding      = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            for (month in 1..12) {
-                val monthStr    = month.toString().padStart(2, '0')
-                val monthEvents = state.yearEvents.filter { it.startDate.startsWith("${state.todayYear}-$monthStr") }
-                val isCurrent   = month == state.todayMonth
-
-                item(key = "header_$month") {
-                    MonthSectionHeader(month = month, count = monthEvents.size, isCurrent = isCurrent)
-                }
-
-                if (monthEvents.isEmpty()) {
-                    item(key = "empty_$month") { EmptyMonthCard() }
-                } else {
-                    items(monthEvents, key = { "${month}_${it.id}" }) { event ->
-                        EventListCard(event = event, onClick = { onEventClick(event) })
-                    }
-                }
+        if (dayEvents.isEmpty()) {
+            item {
+                Text(
+                    if (state.selectedDay != null) strings.calendarNoEventsThisDay
+                    else strings.calendarNoEvents,
+                    style = DnTheme.typography.caption,
+                    color = c.textTertiary,
+                )
+            }
+        } else {
+            items(dayEvents, key = { it.id }) { event ->
+                EventRow(event) { viewModel.selectEvent(event) }
             }
         }
     }
 }
 
 @Composable
-private fun MonthSectionHeader(month: Int, count: Int, isCurrent: Boolean) {
-    val strings = LocalStrings.current
-    Row(
-        modifier              = Modifier
-            .fillMaxWidth()
-            .padding(top = 20.dp, bottom = 10.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment     = Alignment.Bottom,
+private fun CircleIconButton(rotate: Boolean, onClick: () -> Unit) {
+    val c = DnTheme.colors
+    Box(
+        Modifier
+            .size(36.dp)
+            .clip(RoundedCornerShape(percent = 50))
+            .background(c.surface2)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
     ) {
-        Text(
-            strings.months[month],
-            style = MaterialTheme.typography.headlineMedium.copy(
-                fontWeight    = FontWeight.ExtraBold,
-                letterSpacing = (-0.02).sp,
-            ),
-            color = if (isCurrent) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.onSurface,
-        )
-        Text(
-            "${count}개",
-            style    = MaterialTheme.typography.labelSmall.copy(
-                fontWeight    = FontWeight.SemiBold,
-                letterSpacing = (0.05).sp,
-            ),
-            color    = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 4.dp),
+        Icon(
+            DnIcons.ChevronRight,
+            null,
+            tint = c.textSecondary,
+            modifier = Modifier.size(18.dp).rotate(if (rotate) 180f else 0f),
         )
     }
 }
 
 @Composable
-private fun EmptyMonthCard() {
-    val strings = LocalStrings.current
-    Card(
-        modifier  = Modifier.fillMaxWidth(),
-        shape     = MaterialTheme.shapes.large,
-        colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
-        elevation = CardDefaults.cardElevation(0.dp),
-    ) {
-        Text(
-            strings.calendarNoEvents,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-            style    = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic),
-            color    = MaterialTheme.colorScheme.outline,
-        )
-    }
-}
+private fun MonthGrid(state: CalendarUiState, onDayClick: (Int) -> Unit) {
+    val c = DnTheme.colors
+    val firstDow = dayOfWeek(state.year, state.month, 1)
+    val days = daysInMonth(state.year, state.month)
+    val rows = (firstDow + days + 6) / 7
 
-@Composable
-private fun EventListCard(event: CalendarEvent, onClick: () -> Unit) {
-    val strings = LocalStrings.current
-    val dayInt  = event.startDate.substring(8, 10).trimStart('0').ifEmpty { "0" }.toInt()
-    val dow     = dayOfWeek(
-        year  = event.startDate.substring(0, 4).toInt(),
-        month = event.startDate.substring(5, 7).toInt(),
-        day   = dayInt,
-    )
-    val timeStr = if (event.isAllDay) strings.calendarAllDay
-                  else event.startDate.substringAfterLast('T').take(5)
-
-    Card(
-        modifier  = Modifier.fillMaxWidth().clickable(onClick = onClick),
-        shape     = MaterialTheme.shapes.large,
-        colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
-        elevation = CardDefaults.cardElevation(0.dp),
-    ) {
-        Row(
-            modifier              = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalAlignment     = Alignment.Top,
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier            = Modifier.width(32.dp),
-            ) {
-                Text(
-                    "$dayInt",
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold),
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                Text(
-                    strings.dayHeaders[dow],
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight    = FontWeight.Bold,
-                        letterSpacing = (0.05).sp,
-                    ),
-                    color = MaterialTheme.colorScheme.outline,
-                )
-            }
-            Column(
-                modifier            = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                Text(
-                    event.title,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Text(
-                    buildString {
-                        append("⏰ $timeStr")
-                        if (event.location != null) append("  ·  📍 ${event.location}")
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun MonthGrid(
-    year: Int,
-    month: Int,
-    events: List<CalendarEvent>,
-    selectedDay: Int?,
-    onDayClick: (Int) -> Unit,
-) {
-    val firstDow    = dayOfWeek(year, month, 1)
-    val daysInMonth = daysInMonth(year, month)
-    val rows        = (firstDow + daysInMonth + 6) / 7
-
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         repeat(rows) { row ->
             Row(Modifier.fillMaxWidth()) {
                 repeat(7) { col ->
-                    val day      = row * 7 + col - firstDow + 1
-                    val valid    = day in 1..daysInMonth
-                    val hasEvent = valid && events.any {
-                        it.startDate.startsWith(
-                            "${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}"
-                        )
+                    val day = row * 7 + col - firstDow + 1
+                    val valid = day in 1..days
+                    val selected = valid && state.selectedDay == day
+                    val hasEvent = valid && state.events.any {
+                        it.startDate.startsWith("${state.year}-${pad(state.month)}-${pad(day)}")
                     }
-                    val isSelected = valid && selectedDay == day
-
                     Box(
-                        modifier = Modifier
+                        Modifier
                             .weight(1f)
                             .aspectRatio(1f)
-                            .clip(CircleShape)
-                            .background(
-                                if (isSelected) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.surface
-                            )
+                            .padding(2.dp)
+                            .clip(RoundedCornerShape(percent = 50))
+                            .background(if (selected) c.lime else androidx.compose.ui.graphics.Color.Transparent)
                             .then(if (valid) Modifier.clickable { onDayClick(day) } else Modifier),
                         contentAlignment = Alignment.Center,
                     ) {
                         if (valid) {
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
+                                verticalArrangement = Arrangement.spacedBy(3.dp),
                             ) {
                                 Text(
                                     "$day",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary
-                                            else MaterialTheme.colorScheme.onSurface,
+                                    style = DnTheme.typography.captionStrong,
+                                    color = if (selected) c.onLime else c.textPrimary,
                                 )
-                                if (hasEvent) {
-                                    Box(
-                                        Modifier
-                                            .size(4.dp)
-                                            .clip(CircleShape)
-                                            .background(
-                                                if (isSelected) MaterialTheme.colorScheme.onPrimary
-                                                else MaterialTheme.colorScheme.primary
-                                            )
-                                    )
-                                }
+                                Box(
+                                    Modifier
+                                        .size(4.dp)
+                                        .clip(RoundedCornerShape(percent = 50))
+                                        .background(
+                                            when {
+                                                !hasEvent -> androidx.compose.ui.graphics.Color.Transparent
+                                                selected -> c.onLime
+                                                else -> c.limeInk
+                                            }
+                                        )
+                                )
                             }
                         }
                     }
@@ -468,77 +254,156 @@ private fun MonthGrid(
 }
 
 @Composable
-private fun EventCard(event: CalendarEvent, onClick: () -> Unit) {
+private fun YearListView(state: CalendarUiState, onEventClick: (CalendarEvent) -> Unit) {
+    val c = DnTheme.colors
     val strings = LocalStrings.current
-    Card(
-        modifier  = Modifier.fillMaxWidth().clickable(onClick = onClick),
-        shape     = MaterialTheme.shapes.large,
-        colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
-        elevation = CardDefaults.cardElevation(0.dp),
+
+    if (state.isYearLoading) {
+        Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator(color = c.lime) }
+        return
+    }
+
+    LazyColumn(
+        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 130.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Column(
-            modifier            = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            Text(event.title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
-            val timeStr = if (event.isAllDay) strings.calendarAllDay
-                          else event.startDate.substringAfterLast('T').take(5)
-            Text(timeStr, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
-            if (event.location != null) {
-                Text(
-                    event.location,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+        for (month in 1..12) {
+            val monthEvents = state.yearEvents.filter {
+                it.startDate.startsWith("${state.todayYear}-${pad(month)}")
+            }
+            item(key = "h$month") {
+                Row(
+                    Modifier.fillMaxWidth().padding(top = 18.dp, bottom = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Bottom,
+                ) {
+                    Text(
+                        strings.months[month],
+                        style = DnTheme.typography.titleLg,
+                        color = if (month == state.todayMonth) c.limeInk else c.textPrimary,
+                    )
+                    Text(
+                        "${monthEvents.size}개",
+                        style = DnTheme.typography.label,
+                        color = c.textTertiary,
+                    )
+                }
+            }
+            if (monthEvents.isEmpty()) {
+                item(key = "e$month") {
+                    Text(
+                        strings.calendarNoEvents,
+                        style = DnTheme.typography.caption,
+                        color = c.textTertiary,
+                    )
+                }
+            } else {
+                items(monthEvents, key = { "${month}_${it.id}" }) { event ->
+                    EventRow(event) { onEventClick(event) }
+                }
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EventDetailSheet(event: CalendarEvent, onDismiss: () -> Unit) {
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+private fun EventRow(event: CalendarEvent, onClick: () -> Unit) {
+    val c = DnTheme.colors
+    val strings = LocalStrings.current
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(DnTileShape)
+            .background(c.surface, DnTileShape)
+            .border(1.dp, c.strokeSubtle, DnTileShape)
+            .clickable(onClick = onClick)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        Box(
+            Modifier
+                .size(width = 3.dp, height = 38.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .background(c.lime)
+        )
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            Text(event.title, style = DnTheme.typography.captionStrong, color = c.textPrimary)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Icon(DnIcons.Clock, null, tint = c.textTertiary, modifier = Modifier.size(13.dp))
+                Text(
+                    if (event.isAllDay) strings.calendarAllDay
+                    else event.startDate.substringAfterLast('T').take(5),
+                    style = DnTheme.typography.caption,
+                    color = c.textTertiary,
+                )
+                event.location?.let {
+                    Icon(DnIcons.MapPin, null, tint = c.textTertiary, modifier = Modifier.size(13.dp))
+                    Text(it, style = DnTheme.typography.caption, color = c.textTertiary)
+                }
+            }
+        }
+        Icon(DnIcons.ChevronRight, null, tint = c.textTertiary, modifier = Modifier.size(18.dp))
+    }
+}
+
+@Composable
+private fun EventSheet(event: CalendarEvent) {
+    val c = DnTheme.colors
+    val strings = LocalStrings.current
+    Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
+        Text(event.title, style = DnTheme.typography.titleLg, color = c.textPrimary)
+        Spacer(Modifier.height(18.dp))
+
         Column(
-            modifier            = Modifier.padding(24.dp).navigationBarsPadding(),
+            Modifier
+                .fillMaxWidth()
+                .clip(DnTileShape)
+                .background(c.blueDim, DnTileShape)
+                .padding(18.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(event.title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-            val timeStr = if (event.isAllDay) event.startDate
-                          else "${event.startDate.substringBefore('T')} ${event.startDate.substringAfterLast('T').take(5)}"
-            Text(timeStr, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
-            if (event.location != null) {
-                Text(
-                    "📍 ${event.location}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            if (!event.description.isNullOrBlank()) {
-                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceContainerLow)
-                Text(
-                    event.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Spacer(Modifier.height(8.dp))
+            SheetFact(
+                DnIcons.Calendar, "일시",
+                if (event.isAllDay) "${event.startDate.take(10)} · ${strings.calendarAllDay}"
+                else "${event.startDate.take(10)} ${event.startDate.substringAfterLast('T').take(5)}",
+            )
+            event.location?.let { SheetFact(DnIcons.MapPin, "장소", it) }
+        }
+
+        if (!event.description.isNullOrBlank()) {
+            Spacer(Modifier.height(18.dp))
+            Text(event.description, style = DnTheme.typography.body, color = c.textSecondary)
+        }
+
+        Spacer(Modifier.height(36.dp))
+    }
+}
+
+@Composable
+private fun SheetFact(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, value: String) {
+    val c = DnTheme.colors
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Box(
+            Modifier.size(32.dp).clip(RoundedCornerShape(12.dp)).background(c.blue),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(icon, null, tint = c.onBlue, modifier = Modifier.size(17.dp))
+        }
+        Column(Modifier.weight(1f)) {
+            Text(label, style = DnTheme.typography.label, color = c.textTertiary)
+            Text(value, style = DnTheme.typography.captionStrong, color = c.textPrimary)
         }
     }
 }
 
-private fun computeCurrentMonthIndex(
-    yearEvents: List<CalendarEvent>,
-    year: Int,
-    currentMonth: Int,
-): Int {
-    var index = 0
-    for (m in 1 until currentMonth) {
-        val count = yearEvents.count { it.startDate.startsWith("$year-${m.toString().padStart(2, '0')}") }
-        index += 1 + maxOf(1, count)
-    }
-    return index
-}
+private fun pad(n: Int) = n.toString().padStart(2, '0')
 
 private fun dayOfWeek(year: Int, month: Int, day: Int): Int {
     val m = if (month < 3) month + 12 else month
@@ -548,7 +413,8 @@ private fun dayOfWeek(year: Int, month: Int, day: Int): Int {
     return (((day + (13 * (m + 1)) / 5 + k + k / 4 + j / 4 - 2 * j) % 7) + 5) % 7
 }
 
-private fun daysInMonth(year: Int, month: Int): Int {
-    val d = intArrayOf(0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
-    return if (month == 2 && (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0))) 29 else d[month]
+private fun daysInMonth(year: Int, month: Int): Int = when (month) {
+    1, 3, 5, 7, 8, 10, 12 -> 31
+    4, 6, 9, 11 -> 30
+    else -> if ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0) 29 else 28
 }

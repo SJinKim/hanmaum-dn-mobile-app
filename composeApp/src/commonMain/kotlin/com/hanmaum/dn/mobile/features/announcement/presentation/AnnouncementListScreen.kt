@@ -1,6 +1,8 @@
 package com.hanmaum.dn.mobile.features.announcement.presentation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,25 +14,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import com.hanmaum.dn.mobile.core.presentation.components.AppTopBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,15 +30,30 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
+import com.hanmaum.dn.mobile.core.presentation.components.DnErrorState
+import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
+import com.hanmaum.dn.mobile.core.presentation.components.DnChip
+import com.hanmaum.dn.mobile.core.presentation.components.DnGlows
+import com.hanmaum.dn.mobile.core.presentation.components.DnImagePlaceholder
+import com.hanmaum.dn.mobile.core.presentation.components.DnScrollEdge
+import com.hanmaum.dn.mobile.core.presentation.components.DnTopBar
+import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
+import com.hanmaum.dn.mobile.core.presentation.theme.DnCardShape
+import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
+import com.hanmaum.dn.mobile.core.presentation.theme.typography
 import com.hanmaum.dn.mobile.features.announcement.domain.model.Announcement
 import org.koin.compose.viewmodel.koinViewModel
 
+/**
+ * 소식 — the announcement list.
+ *
+ * Filtering happens on the category the model already carries, so the chips
+ * need no extra endpoint. The thumbnail is a placeholder until the backend
+ * ships an image (see hanmaum-dn-server#112).
+ */
 @Composable
 fun AnnouncementListScreen(
     onBackClick: () -> Unit,
@@ -55,297 +61,146 @@ fun AnnouncementListScreen(
 ) {
     val viewModel: AnnouncementListViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val c = DnTheme.colors
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = { AppTopBar() },
-    ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-            when {
-                state.isLoading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                state.error != null -> ErrorView(msg = state.error, onRetry = { viewModel.loadAll() })
-                state.list.isEmpty() -> {
-                    Text(
-                        "소식이 없습니다",
-                        modifier = Modifier.align(Alignment.Center),
-                        style    = MaterialTheme.typography.bodyLarge,
-                        color    = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                else -> {
-                    NewsFeedContent(list = state.list, onItemClick = onItemClick)
-                }
-            }
-        }
+    var category by remember { mutableStateOf<String?>(null) }
+
+    val filtered = remember(state.list, category) {
+        category?.let { cat -> state.list.filter { it.category == cat } } ?: state.list
     }
-}
 
-@Composable
-private fun NewsFeedContent(
-    list: List<Announcement>,
-    onItemClick: (String) -> Unit,
-) {
-    var selectedFilter by remember { mutableStateOf("newest") }
+    DnBackground(glows = DnGlows.information()) {
+        Column(Modifier.fillMaxSize().statusBarsPadding()) {
+            DnTopBar(title = "소식", onBack = onBackClick, onAction = { })
 
-    LazyColumn(
-        contentPadding = PaddingValues(bottom = 32.dp),
-    ) {
-        // Page header
-        item {
-            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                Text(
-                    text  = "LATEST UPDATES",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.outline,
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text  = "Community Pulse & News",
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
-                Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(10.dp))
 
-                // Filter chips
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilterChip(
-                        label     = "Newest",
-                        selected  = selectedFilter == "newest",
-                        onClick   = { selectedFilter = "newest" },
-                    )
-                    FilterChip(
-                        label     = "This Month",
-                        selected  = selectedFilter == "month",
-                        onClick   = { selectedFilter = "month" },
-                    )
-                }
-                Spacer(Modifier.height(8.dp))
-
-                // Category chips
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    item { CategoryChip("공지") }
-                    item { CategoryChip("사역") }
-                    item { CategoryChip("행사") }
-                    item { CategoryChip("알림") }
-                }
-                Spacer(Modifier.height(20.dp))
-            }
-        }
-
-        // Featured card (first pinned, or first item)
-        val featured = list.firstOrNull { it.isPinned } ?: list.firstOrNull()
-        featured?.let { item ->
-            item {
-                FeaturedCard(
-                    announcement = item,
-                    onClick      = { onItemClick(item.id) },
-                )
-                Spacer(Modifier.height(24.dp))
-            }
-        }
-
-        // Remaining items (skip featured)
-        val rest = list.filter { it.id != featured?.id }
-        items(rest) { news ->
-            NewsListItem(
-                announcement = news,
-                onClick      = { onItemClick(news.id) },
-            )
-            Spacer(Modifier.height(4.dp))
-        }
-    }
-}
-
-@Composable
-private fun FilterChip(label: String, selected: Boolean, onClick: () -> Unit) {
-    if (selected) {
-        FilledTonalButton(
-            onClick  = onClick,
-            shape    = MaterialTheme.shapes.extraSmall,
-            colors   = ButtonDefaults.filledTonalButtonColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor   = MaterialTheme.colorScheme.onPrimaryContainer,
-            ),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
-        ) {
-            Text(label, style = MaterialTheme.typography.labelMedium)
-        }
-    } else {
-        OutlinedButton(
-            onClick  = onClick,
-            shape    = MaterialTheme.shapes.extraSmall,
-            colors   = ButtonDefaults.outlinedButtonColors(
-                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            ),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
-        ) {
-            Text(label, style = MaterialTheme.typography.labelMedium)
-        }
-    }
-}
-
-@Composable
-private fun CategoryChip(label: String) {
-    Surface(
-        shape = MaterialTheme.shapes.extraSmall,
-        color = MaterialTheme.colorScheme.surfaceVariant,
-    ) {
-        Text(
-            text     = label,
-            style    = MaterialTheme.typography.labelSmall,
-            color    = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-        )
-    }
-}
-
-@Composable
-private fun FeaturedCard(
-    announcement: Announcement,
-    onClick: () -> Unit,
-) {
-    Card(
-        onClick   = onClick,
-        modifier  = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-        shape     = MaterialTheme.shapes.large,
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(220.dp)
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primary,
-                            MaterialTheme.colorScheme.primaryContainer,
-                        )
-                    )
-                ),
-        ) {
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(20.dp),
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Surface(
-                    shape = MaterialTheme.shapes.extraSmall,
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f),
+                item {
+                    DnChip("전체", selected = category == null, onClick = { category = null })
+                }
+                items(CATEGORY_FILTERS) { (code, label) ->
+                    DnChip(label, selected = category == code, onClick = { category = code })
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            when {
+                state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
+                    CircularProgressIndicator(color = c.lime)
+                }
+
+                state.error != null ->
+                    DnErrorState(onRetry = viewModel::loadAll)
+
+                filtered.isEmpty() -> Box(Modifier.fillMaxSize(), Alignment.Center) {
+                    Text("소식이 없습니다", style = DnTheme.typography.body, color = c.textSecondary)
+                }
+
+                else -> LazyColumn(
+                    contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 130.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
+                    items(filtered, key = { it.id }) { item ->
+                        NewsRow(item = item, onClick = { onItemClick(item.id) })
+                    }
+                }
+            }
+        }
+
+        DnScrollEdge()
+    }
+}
+
+private val CATEGORY_FILTERS = listOf(
+    "NOTICE" to "공지",
+    "MINISTRY" to "사역",
+    "EVENT" to "행사",
+)
+
+@Composable
+private fun NewsRow(item: Announcement, onClick: () -> Unit) {
+    val c = DnTheme.colors
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(DnCardShape)
+            .background(c.surface, DnCardShape)
+            .border(1.dp, c.strokeSubtle, DnCardShape)
+            .clickable(onClick = onClick)
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            // TODO(hanmaum-dn-server#112): AnnouncementDto has no imageUrl
+            DnImagePlaceholder(Modifier.size(92.dp), cornerRadius = 20.dp)
+
+            Column(
+                Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    CategoryPill(item)
                     Text(
-                        text     = "FEATURED",
-                        style    = MaterialTheme.typography.labelSmall,
-                        color    = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        item.startAt.take(10),
+                        style = DnTheme.typography.caption,
+                        color = c.textTertiary,
                     )
                 }
-                Spacer(Modifier.height(8.dp))
                 Text(
-                    text     = announcement.title,
-                    style    = MaterialTheme.typography.titleLarge,
-                    color    = MaterialTheme.colorScheme.onPrimary,
+                    item.title,
+                    style = DnTheme.typography.headline,
+                    color = c.textPrimary,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    item.body,
+                    style = DnTheme.typography.caption,
+                    color = c.textSecondary,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
         }
-        Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
-            Text(
-                text     = announcement.body,
-                style    = MaterialTheme.typography.bodyMedium,
-                color    = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Spacer(Modifier.height(12.dp))
-            TextButton(
-                onClick        = onClick,
-                contentPadding = PaddingValues(0.dp),
-            ) {
-                Text(
-                    text  = "READ FULL STORY →",
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
-        }
-    }
-}
 
-@Composable
-private fun NewsListItem(
-    announcement: Announcement,
-    onClick: () -> Unit,
-) {
-    Card(
-        onClick   = onClick,
-        modifier  = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-        shape     = MaterialTheme.shapes.large,
-        colors    = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-    ) {
-        Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector        = Icons.Default.AccountCircle,
-                    contentDescription = null,
-                    modifier           = Modifier.size(36.dp),
-                    tint               = MaterialTheme.colorScheme.primary,
-                )
-                Spacer(Modifier.width(10.dp))
-                Column {
-                    Text(
-                        text  = "한마음 교회",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Text(
-                        text  = announcement.startAt.take(10),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.outline,
-                    )
-                }
-                Spacer(Modifier.weight(1f))
-                Surface(
-                    shape = MaterialTheme.shapes.extraSmall,
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
-                ) {
-                    Text(
-                        text     = announcement.getAnnouncementCategoryName(),
-                        style    = MaterialTheme.typography.labelSmall,
-                        color    = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                    )
-                }
-            }
-            Spacer(Modifier.height(12.dp))
-            Text(
-                text     = announcement.title,
-                style    = MaterialTheme.typography.titleMedium,
-                color    = MaterialTheme.colorScheme.onSurface,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Spacer(Modifier.height(6.dp))
-            Text(
-                text     = announcement.body,
-                style    = MaterialTheme.typography.bodySmall,
-                color    = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Spacer(Modifier.height(12.dp))
-            TextButton(
-                onClick        = onClick,
-                contentPadding = PaddingValues(0.dp),
+        Row(
+            Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Box(
+                Modifier
+                    .size(22.dp)
+                    .clip(RoundedCornerShape(percent = 50))
+                    .background(c.surface3),
+                contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    text  = "DETAILS →",
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-                    color = MaterialTheme.colorScheme.secondary,
-                )
+                Icon(DnIcons.User, null, tint = c.textSecondary, modifier = Modifier.size(13.dp))
+            }
+            Text("한마음 교회", style = DnTheme.typography.caption, color = c.textSecondary)
+
+            Spacer(Modifier.weight(1f))
+
+            Row(
+                Modifier
+                    .clip(RoundedCornerShape(percent = 50))
+                    .background(c.surface2, RoundedCornerShape(percent = 50))
+                    .border(1.dp, c.strokeStrong, RoundedCornerShape(percent = 50))
+                    .clickable(onClick = onClick)
+                    .padding(start = 14.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Text("자세히 보기", style = DnTheme.typography.captionStrong, color = c.textPrimary)
+                Icon(DnIcons.ChevronRight, null, tint = c.textPrimary, modifier = Modifier.size(14.dp))
             }
         }
     }

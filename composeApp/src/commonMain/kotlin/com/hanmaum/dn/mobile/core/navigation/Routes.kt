@@ -19,3 +19,19 @@ import kotlinx.serialization.Serializable
 @Serializable data class AlbumDetailRoute(val pcloudCode: String, val albumName: String)
 @Serializable data class PhotoViewerRoute(val photoUrl: String)
 @Serializable object CalendarRoute
+@Serializable object NotificationsRoute
+@Serializable object SettingsRoute
+
+/**
+ * 양육 and 사역 share one screen with a segmented toggle; the tab decides
+ * which list opens. Two quick-menu chips on Home point at the same route
+ * with different tabs.
+ */
+@Serializable data class ParticipationRoute(val tab: String = TAB_NURTURE) {
+    companion object {
+        const val TAB_NURTURE = "NURTURE"
+        const val TAB_SERVE = "SERVE"
+    }
+}
+
+@Serializable data class NurtureDetailRoute(val publicId: String)

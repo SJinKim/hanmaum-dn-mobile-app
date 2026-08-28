@@ -1,20 +1,17 @@
 package com.hanmaum.dn.mobile.features.ministry.data.model
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/** Wire names differ from the domain names — see [MinistrySummaryResponse]. */
 @Serializable
 data class MinistryDetailResponse(
     val publicId: String,
-    val name: String,
-    val shortDescription: String,
-    val longDescription: String? = null,
+    @SerialName("title") val name: String,
+    @SerialName("subtitle") val shortDescription: String,
+    @SerialName("about") val longDescription: String? = null,
     val imageUrl: String? = null,
-    val leader: LeaderResponse? = null,
-    val isActive: Boolean,
-)
-
-@Serializable
-data class LeaderResponse(
-    val publicId: String,
-    val fullName: String,
+    val contacts: List<MinistryContactResponse> = emptyList(),
+    val requirements: List<String> = emptyList(),
+    @SerialName("active") val isActive: Boolean = true,
 )

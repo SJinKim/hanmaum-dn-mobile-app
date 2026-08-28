@@ -61,7 +61,7 @@ class MinistryRepositoryImpl(
         name = name,
         shortDescription = shortDescription,
         imageUrl = imageUrl,
-        leaderName = leaderName,
+        leaderName = contacts.firstOrNull()?.name,
         isActive = isActive,
     )
 
@@ -71,7 +71,7 @@ class MinistryRepositoryImpl(
         shortDescription = shortDescription,
         longDescription = longDescription,
         imageUrl = imageUrl,
-        leaderName = leader?.fullName,
+        leaderName = contacts.firstOrNull()?.name,
         isActive = isActive,
     )
 
