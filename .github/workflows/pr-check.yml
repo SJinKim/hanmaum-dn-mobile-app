@@ -22,10 +22,14 @@ jobs:
         with:
           gradle-version: wrapper
 
-      - name: Check for TODOs
+      - name: Check for unreferenced TODOs
         run: |
-          if grep -r "TODO" ./composeApp/src; then
-            echo "Found pending TODOs! Clean them up before merging."
+          # A TODO may stay in the code as long as it names where the work is
+          # tracked, e.g. TODO(hanmaum-dn-server#115). Those are deferred on
+          # purpose - a missing endpoint, a later milestone - and must not
+          # block a merge. A bare TODO belongs to nobody and still fails.
+          if grep -rn "TODO" ./composeApp/src | grep -v "TODO("; then
+            echo "Unreferenced TODO found. Write TODO(owner/repo#123) and track it in the project, or remove it."
             exit 1
           fi
 
