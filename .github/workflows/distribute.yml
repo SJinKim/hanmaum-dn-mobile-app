@@ -1,35 +1,27 @@
 name: Distribute
 
+# Every build is a deliberate manual run. No branch push and no tag starts a
+# distribution: the branch stopped deciding the channel when `develop` was
+# retired, and the product flavour (st / prod) carries that instead. Pick the
+# target from Actions → "Distribute" → Run workflow.
 on:
-  push:
-    branches: [develop]
-    tags: ['v*-st']         # publish an "ST-Release" draft → v*-st tag → iOS staging TestFlight
-  # Releases are intentional points, not one-per-commit:
-  #   - develop push                  → Android ST → Firebase (staging)
-  #   - v*-st tag (ST-Release publish) → iOS staging TestFlight
-  #   - v* final tag (PROD-Release)    → marks the prod release; App Store ship
-  #                                      stays the manual ios-appstore lane below
-  #   - manual run (ios-testflight)   → iOS staging TestFlight
-  #   - manual run (ios-appstore)     → iOS prod → App Store Connect (gated by `prod` env approval)
-  #   - manual run (android-prod)     → Android prod → Firebase (gated by `prod` env approval)
-  # Each prod target is its own deliberate manual run — never coupled to a tag or
-  # to each other (Android prod ships on its own track, Play Store later).
   workflow_dispatch:
     inputs:
       target:
         description: 'What to build & distribute'
         type: choice
-        default: ios-testflight
+        default: android-st
         options:
+          - android-st       # staging → Firebase App Distribution
           - ios-testflight   # staging beta → TestFlight
-          - ios-appstore     # production → App Store Connect
           - android-prod     # production → Firebase App Distribution
+          - ios-appstore     # production → App Store Connect
 
 jobs:
-  # ── develop → ST ──────────────────────────────────────────────────────────
+  # ── Android staging ───────────────────────────────────────────────────────
   distribute-st:
     name: ST → Firebase App Distribution
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    if: inputs.target == 'android-st'
     runs-on: ubuntu-latest
 
     steps:
@@ -79,7 +71,7 @@ jobs:
   # this job waits for a manual approval in the Actions UI before it runs.
   distribute-prod:
     name: Prod → Firebase App Distribution
-    if: github.event_name == 'workflow_dispatch' && inputs.target == 'android-prod'
+    if: inputs.target == 'android-prod'
     runs-on: ubuntu-latest
     environment: prod
 
@@ -131,17 +123,10 @@ jobs:
           ./gradlew assembleProdRelease appDistributionUploadProdRelease --no-daemon
 
   # ── tag / manual → TestFlight (iOS, staging backend) ──────────────────────
-  # Staging beta build. Fires on a v* tag, or a manual run with target
-  # "ios-testflight" (the default).
+  # Staging beta build, manual like every other lane.
   distribute-testflight:
     name: iOS → TestFlight
-    # STAGING pre-release tags only (`v*-st`, e.g. v1.4.0-st, cut by publishing
-    # the "ST-Release" draft). The top-level trigger already scopes to `v*-st`,
-    # so a final prod tag (`v1.4.0`) never reaches this workflow; the `-st` check
-    # here is a belt-and-braces guard for the workflow_dispatch path too.
-    if: >-
-      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, '-st')) ||
-      (github.event_name == 'workflow_dispatch' && inputs.target == 'ios-testflight')
+    if: inputs.target == 'ios-testflight'
     # macos-15+ is required to run Xcode 26 (App Store Connect rejects uploads
     # not built with the iOS 26 SDK).
     runs-on: macos-15
@@ -235,7 +220,7 @@ jobs:
   # required-reviewer rule.
   distribute-appstore:
     name: iOS → App Store Connect (prod)
-    if: github.event_name == 'workflow_dispatch' && inputs.target == 'ios-appstore'
+    if: inputs.target == 'ios-appstore'
     runs-on: macos-15
     environment: prod
 

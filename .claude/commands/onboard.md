@@ -22,10 +22,10 @@ Run this at the beginning of every session.
    names. Do not use bare `allTests` / `assembleDebug` / `testDebugUnitTest`:
    flavors make them ambiguous and `allTests` link-fails locally.
 3. KMP-specific: check both Android and iOS targets are considered when changing shared code.
-4. Confirm current branch — never work on `main` or `develop`. The integration
-   branch is `develop` (CONTRIBUTING.md still calls it `dev`; that branch does
-   not exist). Start feature work from a fresh `develop`:
-   git checkout develop && git pull --ff-only && git checkout -b feature/<short-name>
+4. Confirm current branch — never work on `main`, which is now the only
+   long-lived branch (`develop` is retired; CONTRIBUTING.md still calls it
+   `dev`, which never existed). Start feature work from a fresh `main`:
+   git checkout main && git pull --ff-only && git checkout -b feature/<short-name>
 5. If a task is given: read related code BEFORE planning
 
 Only start work after this orientation.

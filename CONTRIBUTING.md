@@ -4,24 +4,27 @@ This repo is part of a three-repo project. Read `CLAUDE.md` and `designs/dn_app/
 
 ## Team size
 
-Up to 3 developers. Every change goes through PR review — no direct pushes to `develop` or `main`.
+Up to 3 developers. Every change goes through PR review — no direct pushes to `main`.
 
 ## Branching
 
-- `main` — production. Protected. Only release PRs land here.
-- `develop` — integration branch. All feature work merges here first.
-- `feature/<short-name>` — always branched from `develop`, PR back to `develop`.
-- `hotfix/<short-name>` — only branch allowed to fork from `main`.
+- `main` — the only long-lived branch. Protected. Everything lands here by PR.
+- `feature/<short-name>` — branched from `main`, PR back to `main`.
+- `hotfix/<short-name>` — same shape; the name only signals urgency.
+
+There is no `develop` any more. The branch used to decide which release channel
+a build went to; the product flavour (`st` / `prod`) does that now, and every
+distribution is a manual run of the "Distribute" workflow.
 
 Before starting work:
 
 ```bash
-git checkout develop && git pull --ff-only
+git checkout main && git pull --ff-only
 git checkout -b feature/<short-name>
 ```
 
-Never start work on `main`. Never commit directly to `develop`. Both are blocked
-by lefthook (`lefthook.yml`); one-time setup: `brew install lefthook && lefthook install`.
+Never commit directly to `main` — blocked by lefthook (`lefthook.yml`);
+one-time setup: `brew install lefthook && lefthook install`.
 
 ## Pull requests
 
@@ -31,7 +34,7 @@ by lefthook (`lefthook.yml`); one-time setup: `brew install lefthook && lefthook
 - Link the row in `../hanmaum-dn-ops/docs/MVP.md` the PR advances.
 - Run `/pr-review` before opening the PR — paste the PASS/FAIL output in the description.
 - Require at least one approval before merge. The author does not merge their own PR.
-- Rebase on `develop` before merging — no merge commits.
+- Rebase on `main` before merging — no merge commits.
 
 ## Commit convention
 
@@ -74,7 +77,7 @@ in one of those, never in a per-machine command file.
 
 ### Editing `CLAUDE.md` or `.claude/commands/`
 
-These files change how everyone's Claude behaves. **PR review is required** — no solo edits that land directly on `develop`. Treat them like code.
+These files change how everyone's Claude behaves. **PR review is required** — no solo edits that land directly on `main`. Treat them like code.
 
 ### Personal vs. team commands
 

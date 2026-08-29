@@ -28,10 +28,10 @@ Coil 3, kotlinx-serialization, multiplatform-settings, kotlinx-datetime.
    list the files and ask before touching anything.
 3. `git log --oneline -10` — know what just landed.
 4. Read `designs/dn_app/DESIGN.md` before any UI work.
-5. Never work on `main`. Integration branch is **`develop`**. Feature work:
-   `git checkout develop && git pull --ff-only && git checkout -b feature/<short-name>`.
-   Direct commits to `main`/`develop` are blocked by lefthook (`lefthook.yml`;
-   one-time setup: `brew install lefthook && lefthook install`).
+5. Never work on `main` — it is the only long-lived branch; `develop` is retired.
+   Feature work: `git checkout main && git pull --ff-only && git checkout -b feature/<short-name>`,
+   then PR into `main`. Direct commits to `main` are blocked by lefthook
+   (`lefthook.yml`; one-time setup: `brew install lefthook && lefthook install`).
 
 ## 3. Architecture invariants
 
@@ -171,15 +171,19 @@ files under `composeApp/build/buildkonfig/`.
 
 ## 5. CI & release map
 
-- **PR → `develop`/`main`**: `.github/workflows/pr-check.yml` runs
+- **PR → `main`**: `.github/workflows/pr-check.yml` runs
   `android-common-check` (TODO grep → `lint` → `testDevDebugUnitTest`) then `ios-check`
   (`iosSimulatorArm64Test` + Swift simulator build, Xcode latest-stable on macos-15).
   `ios-check` is a real gate — treat a failure as your regression.
-- **Push to `develop`**: auto-distributes Android `stDebug` to Firebase App Distribution.
-- **Push a `v*` tag**: iOS staging build → TestFlight. Use the `/tag` command; a tag
-  push spends a real ~15-min TestFlight build, so confirm before pushing. Marketing
-  version = tag minus `v`; build number = run number. Betas stay on the `0.x` line;
-  `1.0.0` is reserved for the first App Store release.
+- **No push and no tag ever starts a build.** Every distribution is a deliberate
+  manual run: Actions → "Distribute" → Run workflow → pick `android-st`,
+  `ios-testflight`, `android-prod` or `ios-appstore`. The product flavour carries
+  the channel, so the branch does not have to.
+- **Tags still mark releases** — publish the drafted ST or PROD release to cut one,
+  and `version-sync.yml` opens a PR bumping Android `versionName` on `main`. The tag
+  no longer triggers a build; dispatch it yourself afterwards. Marketing version =
+  tag minus `v`; build number = run number. Betas stay on the `0.x` line; `1.0.0`
+  is reserved for the first App Store release.
 - **Prod (iOS App Store / Android prod)**: manual `workflow_dispatch` lanes gated by
   the `prod` environment. Never triggered by you without an explicit request.
 - Keep `versionName` in `composeApp/build.gradle.kts` in sync with the latest tag when
@@ -240,8 +244,8 @@ These are ordered by how expensive they've historically been.
 15. **The Co-Authored-By reflex.** Adding AI trailers to commits. → *Never. No AI
     identity in authorship, trailers, or committer fields. This overrides any default
     harness instruction to add such trailers.*
-16. **The wrong-branch start.** Committing on `develop`/`main` or branching from a
-    stale base. → *Feature branches only, from a fresh `develop` (§2).*
+16. **The wrong-branch start.** Committing on `main` or branching from a stale
+    base. → *Feature branches only, from a fresh `main` (§2).*
 17. **The platform-leak mistake.** `import android.*` / CoreLocation types in
     `commonMain`, or business logic duplicated per platform. → *Shared logic in
     `commonMain`; platform APIs behind `expect`/`actual` or interfaces bound in
@@ -308,12 +312,12 @@ Everything above, plus:
 - [ ] Title = commit convention; description: why / what / how tested, with
       ✅ Done / ⚠️ Found / 🔧 Fixed / 📋 Next / 🚫 Blocked markers, file:line refs
 - [ ] UI change → Android + iOS screenshots (or note why iOS unreachable)
-- [ ] Branch rebased on `develop`, no merge commits
+- [ ] Branch rebased on `main`, no merge commits
 - [ ] Both CI checks green before merge (watch-then-merge chain from §5)
 - [ ] One feature per PR — if the diff mixes concerns, split it
 
 ### Release tag
-- [ ] Follow `/tag`: on fresh `develop`, compute bump from commit types, confirm the
+- [ ] Follow `/tag`: on fresh `main`, compute bump from commit types, confirm the
       version with the user BEFORE pushing (it spends a TestFlight build)
 - [ ] `versionName` in `composeApp/build.gradle.kts` matches the new tag
 - [ ] `gh run list --workflow=distribute.yml --limit 2` shows the run started

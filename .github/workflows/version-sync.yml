@@ -4,10 +4,10 @@ name: Sync versionName on release publish
 # sync Android `versionName` in composeApp/build.gradle.kts to the numeric
 # version so the marketing version never drifts from the release line.
 #
-# develop/main have a "changes must go through a pull request" ruleset, so the
+# main has a "changes must go through a pull request" ruleset, so the
 # bot cannot push the bump directly — it opens a PR from a bot branch and
 # enables auto-merge. Because the PR/merge are driven by GITHUB_TOKEN, they do
-# NOT trigger further workflow runs (pr-check, drafter, distribute), so a
+# NOT trigger further workflow runs (pr-check, drafter), so a
 # versionName bump never causes a redundant build.
 #
 # iOS marketing version is derived from the tag at build time (git describe in
@@ -28,18 +28,14 @@ jobs:
       - name: Checkout the release's branch
         uses: actions/checkout@v4
         with:
-          # `-st` tags come from develop; final tags from main. Derived from the
-          # tag itself so it never depends on the release's target_commitish format.
-          ref: ${{ endsWith(github.event.release.tag_name, '-st') && 'develop' || 'main' }}
+          # Both `-st` and final tags come off main now that develop is retired.
+          ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Compute numeric version + target branch from tag
         run: |
           TAG="${{ github.event.release.tag_name }}"   # v1.4.0-st or v1.4.0
-          case "$TAG" in
-            *-st) BRANCH=develop ;;
-            *)    BRANCH=main ;;
-          esac
+          BRANCH=main
           VERSION="${TAG#v}"                            # 1.4.0-st or 1.4.0
           VERSION="${VERSION%-st}"                      # 1.4.0
           if ! printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then

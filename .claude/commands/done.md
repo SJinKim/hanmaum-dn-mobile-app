@@ -28,7 +28,7 @@ commands (flavored task names, `DEVELOPER_DIR` prefix for iOS). Then confirm:
 ## Before commit
 - [ ] Non-trivial architecture → spec/plan updated in `docs/superpowers/`
 - [ ] Commit message: `type(scope): summary` (≤72 chars, imperative, no AI trailers)
-- [ ] Branch is `feature/<name>` rebased on `develop` — no merge commits, never on develop/main
+- [ ] Branch is `feature/<name>` rebased on `main` — no merge commits, never on main
 
 ## After completing a feature slice
 Update `../hanmaum-dn-ops/docs/MVP.md`:
