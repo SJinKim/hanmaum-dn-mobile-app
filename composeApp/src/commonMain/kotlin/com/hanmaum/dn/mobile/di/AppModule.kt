@@ -2,11 +2,14 @@ package com.hanmaum.dn.mobile.di
 
 import com.hanmaum.dn.mobile.core.data.repository.LocaleRepositoryImpl
 import com.hanmaum.dn.mobile.core.data.repository.AttendancePreferencesImpl
+import com.hanmaum.dn.mobile.core.data.repository.AuthPreferencesImpl
 import com.hanmaum.dn.mobile.core.data.repository.LocationPreferencesImpl
 import com.hanmaum.dn.mobile.core.data.repository.ThemeRepositoryImpl
 import com.hanmaum.dn.mobile.core.data.repository.TokenStorageImpl
 import com.hanmaum.dn.mobile.core.domain.repository.LocaleRepository
 import com.hanmaum.dn.mobile.core.domain.repository.AttendancePreferences
+import com.hanmaum.dn.mobile.core.domain.repository.AuthPreferences
+import com.hanmaum.dn.mobile.core.notification.NotificationRouter
 import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
 import com.hanmaum.dn.mobile.core.domain.repository.ThemeRepository
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
@@ -78,6 +81,10 @@ val appModule = module {
     single<LocaleRepository> { LocaleRepositoryImpl(Settings()) }
     single<ThemeRepository> { ThemeRepositoryImpl(Settings()) }
     single<LocationPreferences> { LocationPreferencesImpl(Settings()) }
+    single<AuthPreferences> { AuthPreferencesImpl(Settings()) }
+    // Carries a notification tap from the platform entry point to the NavHost;
+    // a single instance because the tap can arrive before the graph exists.
+    single { NotificationRouter() }
     single<AttendancePreferences> { AttendancePreferencesImpl(Settings()) }
     single { CredentialStore(get()) }
 
@@ -86,7 +93,7 @@ val appModule = module {
 
 
     // Home VM
-    viewModel { HomeViewModel(repository = get(), notificationRepository = get(), pushManager = get()) }
+    viewModel { HomeViewModel(repository = get(), notificationRepository = get(), memberRepository = get(), pushManager = get()) }
 
     // Detail VM
     viewModel { (announcementId: String) ->

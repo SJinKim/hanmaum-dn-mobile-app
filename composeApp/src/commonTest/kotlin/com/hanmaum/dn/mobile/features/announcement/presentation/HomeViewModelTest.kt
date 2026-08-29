@@ -4,6 +4,8 @@ import com.hanmaum.dn.mobile.core.push.PushManager
 import com.hanmaum.dn.mobile.features.announcement.domain.model.Announcement
 import com.hanmaum.dn.mobile.features.announcement.domain.model.AnnouncementLookup
 import com.hanmaum.dn.mobile.features.announcement.domain.repository.AnnouncementRepository
+import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
+import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import com.hanmaum.dn.mobile.features.notification.domain.model.NotificationPage
 import com.hanmaum.dn.mobile.features.notification.domain.repository.NotificationRepository
 import kotlinx.coroutines.Dispatchers
@@ -47,6 +49,21 @@ private class FakeNotificationRepository(
     override suspend fun deleteDeviceToken(token: String): Result<Unit> = Result.success(Unit)
 }
 
+private class FakeMemberRepository : MemberRepository {
+    override suspend fun getMyProfile(): Result<MemberResponse> =
+        Result.failure(UnsupportedOperationException("not needed for these tests"))
+
+    override suspend fun updateMyProfile(
+        phoneNumber: String?,
+        profileImageUrl: String?,
+        birthDate: String?,
+        street: String?,
+        houseNumber: String?,
+        zipCode: String?,
+        city: String?,
+    ): Result<MemberResponse> = Result.failure(UnsupportedOperationException("not needed for these tests"))
+}
+
 private class FakePushManager(private val token: String?) : PushManager {
     override val platform: String = "ANDROID"
     override suspend fun currentToken(): String? = token
@@ -65,6 +82,7 @@ class HomeViewModelTest {
         val vm = HomeViewModel(
             FakeAnnouncementRepository(),
             FakeNotificationRepository(unseen = 5),
+            FakeMemberRepository(),
             FakePushManager(token = null),
         )
         vm.loadAnnouncements(); advanceUntilIdle()
@@ -76,6 +94,7 @@ class HomeViewModelTest {
         val vm = HomeViewModel(
             FakeAnnouncementRepository(),
             FakeNotificationRepository(failCount = true),
+            FakeMemberRepository(),
             FakePushManager(token = null),
         )
         vm.loadAnnouncements(); advanceUntilIdle()
@@ -85,7 +104,7 @@ class HomeViewModelTest {
     @Test
     fun `registers device token on load when available`() = runTest(dispatcher) {
         val repo = FakeNotificationRepository()
-        val vm = HomeViewModel(FakeAnnouncementRepository(), repo, FakePushManager(token = "tok1"))
+        val vm = HomeViewModel(FakeAnnouncementRepository(), repo, FakeMemberRepository(), FakePushManager(token = "tok1"))
         vm.loadAnnouncements(); advanceUntilIdle()
         assertEquals(listOf("tok1" to "ANDROID"), repo.registeredTokens)
     }
@@ -93,7 +112,7 @@ class HomeViewModelTest {
     @Test
     fun `null token skips registration`() = runTest(dispatcher) {
         val repo = FakeNotificationRepository()
-        val vm = HomeViewModel(FakeAnnouncementRepository(), repo, FakePushManager(token = null))
+        val vm = HomeViewModel(FakeAnnouncementRepository(), repo, FakeMemberRepository(), FakePushManager(token = null))
         vm.loadAnnouncements(); advanceUntilIdle()
         assertTrue(repo.registeredTokens.isEmpty())
     }
@@ -101,7 +120,7 @@ class HomeViewModelTest {
     @Test
     fun `token registers only once per process`() = runTest(dispatcher) {
         val repo = FakeNotificationRepository()
-        val vm = HomeViewModel(FakeAnnouncementRepository(), repo, FakePushManager(token = "tok1"))
+        val vm = HomeViewModel(FakeAnnouncementRepository(), repo, FakeMemberRepository(), FakePushManager(token = "tok1"))
         vm.loadAnnouncements(); advanceUntilIdle()
         vm.loadAnnouncements(); advanceUntilIdle()
         assertEquals(1, repo.registeredTokens.size)

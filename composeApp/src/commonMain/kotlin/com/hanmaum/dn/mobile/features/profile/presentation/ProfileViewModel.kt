@@ -46,6 +46,23 @@ class ProfileViewModel(
         }
     }
 
+    fun startEditing() {
+        val current = _uiState.value as? ProfileUiState.Success ?: return
+        _uiState.value = current.copy(isEditing = true, saveError = null)
+    }
+
+    /**
+     * Leaves edit mode and throws away the draft.
+     *
+     * The edit fields are reset from the loaded profile rather than merely
+     * hidden — otherwise re-entering edit mode would show the abandoned draft
+     * as if it had been saved.
+     */
+    fun cancelEditing() {
+        val current = _uiState.value as? ProfileUiState.Success ?: return
+        _uiState.value = ProfileUiState.Success(profile = current.profile)
+    }
+
     fun updateBirthDate(value: String) {
         val current = _uiState.value as? ProfileUiState.Success ?: return
         _uiState.value = current.copy(editBirthDate = value)

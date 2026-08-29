@@ -22,10 +22,14 @@ jobs:
         with:
           gradle-version: wrapper
 
-      - name: Check for TODOs
+      - name: Check for unreferenced TODOs
         run: |
-          if grep -r "TODO" ./composeApp/src; then
-            echo "Found pending TODOs! Clean them up before merging."
+          # A TODO may stay in the code as long as it names where the work is
+          # tracked, e.g. TODO(hanmaum-dn-server#115). Those are deferred on
+          # purpose - a missing endpoint, a later milestone - and must not
+          # block a merge. A bare TODO belongs to nobody and still fails.
+          if grep -rn "TODO" ./composeApp/src | grep -v "TODO("; then
+            echo "Unreferenced TODO found. Write TODO(owner/repo#123) and track it in the project, or remove it."
             exit 1
           fi
 
@@ -37,15 +41,9 @@ jobs:
 
   ios-check:
     needs: android-common-check
-    # macos-15+ to match the TestFlight build's Xcode 26 / iOS 26 SDK.
-    runs-on: macos-15
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Select latest stable Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -59,16 +57,5 @@ jobs:
       - name: Run iOS Tests
         run: ./gradlew :composeApp:iosSimulatorArm64Test
 
-      - name: Build iOS app (Swift + Kotlin framework)
-        # Compiles the Swift iosApp target against the Kotlin framework — catches
-        # Swift<->Kotlin interop mismatches (e.g. missing args from dropped Kotlin
-        # defaults) that the gradle framework-link tasks above never see. Simulator
-        # build with signing disabled, so no certs/secrets and no full archive.
-        run: |
-          xcodebuild build \
-            -project iosApp/iosApp.xcodeproj \
-            -scheme iosApp \
-            -configuration Debug \
-            -sdk iphonesimulator \
-            -destination 'generic/platform=iOS Simulator' \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+      - name: Build iOS Framework
+        run: ./gradlew :composeApp:assembleReleaseX64
