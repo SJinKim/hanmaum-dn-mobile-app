@@ -5,8 +5,8 @@
 #
 # Mirrors the CI gates that fail PRs anyway (pr-check.yml), so failures surface
 # in seconds locally instead of ~8 minutes in Actions — and enforces the
-# branching rule: nothing is committed directly to the integration or release
-# branches; work goes feature branch → PR → merge into develop.
+# branching rule: nothing is committed directly to the release branch;
+# work goes feature branch → PR → merge into main.
 
 pre-commit:
   parallel: false
@@ -17,7 +17,7 @@ pre-commit:
         case "$branch" in
           main|develop|dev)
             echo "✋ Direct commits to '$branch' are not allowed."
-            echo "   git switch -c feature/<short-name>   # then PR into develop"
+            echo "   git switch -c feature/<short-name>   # then PR into main"
             exit 1
             ;;
         esac

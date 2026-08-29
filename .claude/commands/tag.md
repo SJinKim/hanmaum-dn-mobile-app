@@ -20,10 +20,10 @@ If no argument is given, infer the bump from the commits since the last tag
 > not constrain the App Store version (no released App Store version exists yet).
 
 ## Steps
-1. **Be on the mainline.** Tag the merged commit on `develop`, never a feature branch:
+1. **Be on the mainline.** Tag the merged commit on `main`, never a feature branch:
    ```bash
    git fetch origin --tags --prune
-   git checkout develop && git pull --ff-only origin develop
+   git checkout main && git pull --ff-only origin main
    ```
 2. **Find the latest semver tag** (ignore suffixed tags like `-prototype`):
    ```bash
@@ -32,7 +32,7 @@ If no argument is given, infer the bump from the commits since the last tag
    ```
 3. **Compute the next tag** per the bump rules above. Confirm the computed value
    with the user before pushing (a tag push spends a real TestFlight build).
-4. **Create an annotated tag on `develop` HEAD and push:**
+4. **Create an annotated tag on `main` HEAD and push:**
    ```bash
    git tag -a "$NEXT" -m "$NEXT — <one-line summary of what ships>"
    git push origin "$NEXT"
