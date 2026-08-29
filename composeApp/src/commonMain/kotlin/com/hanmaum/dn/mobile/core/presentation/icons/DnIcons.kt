@@ -185,6 +185,14 @@ object DnIcons {
         )
     }
 
+    val X: ImageVector by lazy {
+        stroked(
+            "X",
+            "M 7 7 L 17 17",
+        "M 17 7 L 7 17",
+        )
+    }
+
     val Book: ImageVector by lazy {
         stroked(
             "Book",

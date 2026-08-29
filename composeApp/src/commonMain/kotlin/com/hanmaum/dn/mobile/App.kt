@@ -36,6 +36,8 @@ import com.hanmaum.dn.mobile.core.notification.NotificationDestination
 import com.hanmaum.dn.mobile.core.notification.NotificationRouter
 import com.hanmaum.dn.mobile.core.presentation.components.BottomNavBar
 import com.hanmaum.dn.mobile.features.events.presentation.EventRsvpHost
+import com.hanmaum.dn.mobile.features.events.presentation.RsvpScreen
+import com.hanmaum.dn.mobile.core.navigation.RsvpRoute
 import com.hanmaum.dn.mobile.core.presentation.theme.AppTheme
 import com.hanmaum.dn.mobile.features.notification.presentation.NotificationListScreen
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementDetailScreen
@@ -101,6 +103,10 @@ fun App() {
                         NotificationDestination.Attendance -> {
                             notificationRouter.consume()
                             navController.navigate(AttendanceRoute) { launchSingleTop = true }
+                        }
+                        NotificationDestination.Rsvp -> {
+                            notificationRouter.consume()
+                            navController.navigate(RsvpRoute) { launchSingleTop = true }
                         }
                     }
                 }
@@ -324,7 +330,14 @@ fun App() {
                     }
 
                     composable<AttendanceRoute> {
-                        AttendanceScreen(onBackClick = { navController.popBackStack() })
+                        AttendanceScreen(
+                            onBackClick = { navController.popBackStack() },
+                            onRsvpClick = { navController.navigate(RsvpRoute) },
+                        )
+                    }
+
+                    composable<RsvpRoute> {
+                        RsvpScreen(onBackClick = { navController.popBackStack() })
                     }
 
                     composable<AlbumsRoute> {
