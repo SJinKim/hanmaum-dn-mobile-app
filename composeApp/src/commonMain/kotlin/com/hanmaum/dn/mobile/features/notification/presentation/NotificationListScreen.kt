@@ -23,7 +23,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
-import com.hanmaum.dn.mobile.core.presentation.components.AppScreen
 import com.hanmaum.dn.mobile.core.presentation.theme.AppMotion
 import com.hanmaum.dn.mobile.features.notification.domain.model.Notification
 import com.hanmaum.dn.mobile.features.notification.presentation.components.NotificationRow
@@ -35,6 +34,15 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.foundation.layout.statusBarsPadding
+import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
+import com.hanmaum.dn.mobile.core.presentation.components.DnErrorState
+import com.hanmaum.dn.mobile.core.presentation.components.DnGlows
+import com.hanmaum.dn.mobile.core.presentation.components.DnTopBar
+import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
+import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
+import com.hanmaum.dn.mobile.core.presentation.theme.DnTileShape
+import com.hanmaum.dn.mobile.core.presentation.theme.typography
 
 @Composable
 fun NotificationListScreen(
@@ -58,60 +66,50 @@ fun NotificationListScreen(
     }
     LaunchedEffect(shouldLoadMore) { if (shouldLoadMore) viewModel.loadMore() }
 
-    AppScreen(
-        title = strings.notificationsTitle,
-        onBack = onBack,
-        actions = {
-            Box {
-                var menuOpen by remember { mutableStateOf(false) }
-                IconButton(
-                    onClick = { menuOpen = true },
-                    enabled = state.items.isNotEmpty(),
-                    modifier = Modifier.size(44.dp),
-                ) {
-                    Icon(
-                        Icons.Default.MoreVert,
-                        contentDescription = strings.moreOptions,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                    DropdownMenuItem(
-                        text = { Text(strings.notificationsReadAll) },
-                        enabled = !state.allRead,
-                        onClick = {
-                            menuOpen = false
-                            viewModel.onReadAll()
-                        },
-                    )
-                    DropdownMenuItem(
-                        text = { Text(strings.notificationsDeleteAll, color = MaterialTheme.colorScheme.error) },
-                        onClick = {
-                            menuOpen = false
-                            viewModel.deleteAll()
-                        },
-                    )
-                }
+    var menuOpen by remember { mutableStateOf(false) }
+    val c = DnTheme.colors
+
+    DnBackground(glows = DnGlows.information()) {
+      Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        // The overflow menu anchors to the bar, so both live in one Box.
+        Box {
+            DnTopBar(
+                title = strings.notificationsTitle,
+                onBack = onBack,
+                actionIcon = DnIcons.More,
+                actionDescription = strings.moreOptions,
+                onAction = if (state.items.isNotEmpty()) ({ menuOpen = true }) else null,
+            )
+            DropdownMenu(
+                expanded = menuOpen,
+                onDismissRequest = { menuOpen = false },
+                modifier = Modifier.align(Alignment.TopEnd),
+            ) {
+                DropdownMenuItem(
+                    text = { Text(strings.notificationsReadAll, color = c.textPrimary) },
+                    enabled = !state.allRead,
+                    onClick = {
+                        menuOpen = false
+                        viewModel.onReadAll()
+                    },
+                )
+                DropdownMenuItem(
+                    text = { Text(strings.notificationsDeleteAll, color = c.red) },
+                    onClick = {
+                        menuOpen = false
+                        viewModel.deleteAll()
+                    },
+                )
             }
-        },
-    ) { padding ->
-      Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(padding),
-      ) {
+        }
+      Column(modifier = Modifier.fillMaxSize()) {
         val error = state.error
         when {
             state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                CircularProgressIndicator(color = c.lime)
             }
-            error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(error, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(Modifier.height(8.dp))
-                    Button(onClick = viewModel::load) { Text(strings.retry) }
-                }
-            }
+            error != null -> DnErrorState(onRetry = viewModel::load)
+
             state.items.isEmpty() -> EmptyNotifications()
             else -> {
                 val dayGroups = remember(state.items) { groupByDay(state.items) }
@@ -132,8 +130,8 @@ fun NotificationListScreen(
                                     DayBucket.YESTERDAY -> strings.notificationsYesterday
                                     DayBucket.EARLIER -> strings.notificationsEarlier
                                 },
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.outline,
+                                style = DnTheme.typography.label,
+                                color = c.textTertiary,
                                 modifier = Modifier.padding(top = 16.dp, bottom = 4.dp),
                             )
                         }
@@ -150,13 +148,14 @@ fun NotificationListScreen(
                     if (state.isLoadingMore) {
                         item(key = "loading-more") {
                             Box(Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                                CircularProgressIndicator(color = c.lime, modifier = Modifier.size(24.dp))
                             }
                         }
                     }
                 }
             }
         }
+      }
       }
     }
 }
@@ -204,15 +203,15 @@ private fun StaggeredNotificationRow(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clip(MaterialTheme.shapes.medium)
-                    .background(MaterialTheme.colorScheme.errorContainer)
+                    .clip(DnTileShape)
+                    .background(DnTheme.colors.redDim)
                     .padding(horizontal = 20.dp),
                 contentAlignment = Alignment.CenterEnd,
             ) {
                 Icon(
-                    Icons.Default.Delete,
+                    DnIcons.Trash,
                     contentDescription = strings.notificationsDelete,
-                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                    tint = DnTheme.colors.red,
                 )
             }
         },
@@ -228,26 +227,20 @@ private fun StaggeredNotificationRow(
 @Composable
 private fun EmptyNotifications() {
     val strings = LocalStrings.current
+    val c = DnTheme.colors
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Box(
-                modifier = Modifier
-                    .size(72.dp)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), CircleShape),
+                modifier = Modifier.size(72.dp).clip(CircleShape).background(c.blueDim),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(
-                    Icons.Default.Notifications,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(32.dp),
-                )
+                Icon(DnIcons.Bell, contentDescription = null, tint = c.blue, modifier = Modifier.size(32.dp))
             }
             Spacer(Modifier.height(16.dp))
             Text(
                 text = strings.notificationsEmpty,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = DnTheme.typography.captionStrong,
+                color = c.textSecondary,
                 textAlign = TextAlign.Center,
             )
         }
