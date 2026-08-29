@@ -2,66 +2,61 @@ package com.hanmaum.dn.mobile.features.login.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.hanmaum.dn.mobile.BuildKonfig
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
+import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
+import com.hanmaum.dn.mobile.core.presentation.components.DnGlow
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
-import com.hanmaum.dn.mobile.core.platform.rememberUrlLauncher
-import com.hanmaum.dn.mobile.core.presentation.dismissKeyboardOnTap
 import com.hanmaum.dn.mobile.core.security.BiometricResult
 import com.hanmaum.dn.mobile.core.security.rememberBiometricAuthenticator
+import com.hanmaum.dn.mobile.core.presentation.components.DnTintedButton
+import com.hanmaum.dn.mobile.core.presentation.components.DnPrimaryButton
+import com.hanmaum.dn.mobile.core.presentation.components.DnTextField
+import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
+import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
+import com.hanmaum.dn.mobile.core.presentation.theme.typography
 import com.hanmaum.dn.mobile.features.login.presentation.LoginViewModel
 import hanmaumdnapp.composeapp.generated.resources.Res
 import hanmaumdnapp.composeapp.generated.resources.logo
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
+/** Sign in. No back button — there is nothing behind this screen. */
 @Composable
 fun LoginScreen(
     onNavigateToHome: () -> Unit,
@@ -70,245 +65,149 @@ fun LoginScreen(
 ) {
     val viewModel: LoginViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val strings = LocalStrings.current
+    val c = DnTheme.colors
 
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
 
-    val biometric = rememberBiometricAuthenticator()
-    val openUrl = rememberUrlLauncher()
-    val scope = rememberCoroutineScope()
-    val faceIdAvailable = remember { biometric.isAvailable() }
-    val canFaceIdSignIn = remember { faceIdAvailable && viewModel.canFaceIdSignIn() }
+    val strings = LocalStrings.current
+    val biometrics = rememberBiometricAuthenticator()
+    // Armed once per screen: the settings and the stored credentials cannot
+    // change while this screen is up, and re-reading them on every recomposition
+    // would re-trigger the prompt.
+    val autoLoginArmed = remember { viewModel.canFaceIdSignIn() && biometrics.isAvailable() }
+    var promptRunning by remember { mutableStateOf(false) }
 
-    // Autofills the email/password fields from the saved credentials, then submits.
-    // Caller must have passed a successful biometric check first.
-    fun autofillAndSignIn() {
-        viewModel.savedCredentials()?.let { creds ->
-            username = creds.email
-            password = creds.password
-            viewModel.onLoginClicked(creds.email, creds.password, enableFaceId = faceIdAvailable)
+    suspend fun runBiometricPrompt() {
+        if (promptRunning) return
+        promptRunning = true
+        val result = biometrics.authenticate(
+            title = strings.lockTitle,
+            subtitle = strings.lockSubtitle,
+            cancelLabel = strings.lockUsePassword,
+        )
+        promptRunning = false
+        // Cancelling is a choice, not a failure — fall back to the form quietly
+        // and leave the button so it can be retried.
+        if (result == BiometricResult.SUCCESS) {
+            // main's ViewModel hands back the credentials and lets the caller
+            // submit them, rather than owning the whole autologin itself.
+            viewModel.savedCredentials()?.let { viewModel.onLoginClicked(it.email, it.password) }
         }
     }
 
-    // On entry, if Face ID sign-in is set up, prompt once and autofill+submit.
-    LaunchedEffect(Unit) {
-        if (canFaceIdSignIn) {
-            val result = biometric.authenticate(
-                strings.lockTitle, strings.lockSubtitle, strings.lockUsePassword,
-            )
-            if (result == BiometricResult.SUCCESS) autofillAndSignIn()
-        }
+    // Offer the prompt as the screen opens, so the common case is one glance.
+    LaunchedEffect(autoLoginArmed) {
+        if (autoLoginArmed) runBiometricPrompt()
     }
 
     LaunchedEffect(state.navigateTo) {
         state.navigateTo?.let { route ->
             when (route) {
-                NavRoute.Home            -> onNavigateToHome()
+                NavRoute.Home -> onNavigateToHome()
                 NavRoute.PendingApproval -> onNavigateToPending()
-                else                     -> {}
+                else -> Unit
             }
             viewModel.onNavigationHandled()
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .dismissKeyboardOnTap()
-            .imePadding()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 28.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Spacer(Modifier.height(64.dp))
+    DnBackground(glows = listOf(DnGlow(c.lime, 0.5f, 0.05f, 1.2f, 0.14f))) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .statusBarsPadding()
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Spacer(Modifier.height(56.dp))
 
-        Image(
-            painter            = painterResource(Res.drawable.logo),
-            contentDescription = "Daniel & Nehemia logo",
-            modifier           = Modifier.height(120.dp),
-            colorFilter        = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-        )
-
-        Spacer(Modifier.height(32.dp))
-
-        // Email field
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text     = "EMAIL ADDRESS",
-                style    = MaterialTheme.typography.labelSmall,
-                color    = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 6.dp),
+            Image(
+                painter = painterResource(Res.drawable.logo),
+                contentDescription = "한마음 D+N",
+                contentScale = ContentScale.Fit,
+                colorFilter = ColorFilter.tint(c.textPrimary),
+                modifier = Modifier.width(140.dp),
             )
-            TextField(
-                value         = username,
+
+            Spacer(Modifier.height(22.dp))
+            Text(
+                "다시 만나서 반가워요",
+                style = DnTheme.typography.titleLg,
+                color = c.textPrimary,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "한마음 D+N 계정으로 로그인하세요",
+                style = DnTheme.typography.body,
+                color = c.textSecondary,
+                textAlign = TextAlign.Center,
+            )
+
+            Spacer(Modifier.height(36.dp))
+
+            DnTextField(
+                label = "이메일",
+                value = username,
                 onValueChange = { username = it },
-                placeholder   = { Text("hello@community.com") },
-                leadingIcon   = {
-                    Icon(
-                        imageVector     = Icons.Default.Email,
-                        contentDescription = null,
-                        tint            = MaterialTheme.colorScheme.outline,
-                    )
-                },
-                modifier   = Modifier.fillMaxWidth(),
-                singleLine = true,
-                shape      = MaterialTheme.shapes.small,
-                colors     = TextFieldDefaults.colors(
-                    focusedContainerColor   = MaterialTheme.colorScheme.surfaceVariant,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    focusedIndicatorColor   = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedLeadingIconColor = MaterialTheme.colorScheme.primary,
-                ),
+                placeholder = "hello@hanmaum.de",
+                leading = DnIcons.Mail,
+                keyboardType = KeyboardType.Email,
+                modifier = Modifier.fillMaxWidth(),
             )
-        }
+            Spacer(Modifier.height(16.dp))
+            DnTextField(
+                label = "비밀번호",
+                value = password,
+                onValueChange = { password = it },
+                placeholder = "••••••••",
+                leading = DnIcons.Lock,
+                trailing = DnIcons.Eye,
+                isPassword = true,
+                keyboardType = KeyboardType.Password,
+                modifier = Modifier.fillMaxWidth(),
+            )
 
-        Spacer(Modifier.height(16.dp))
+            state.error?.let {
+                Spacer(Modifier.height(12.dp))
+                Text(it, style = DnTheme.typography.caption, color = c.red)
+            }
 
-        // Password field
-        Column(modifier = Modifier.fillMaxWidth()) {
+            Spacer(Modifier.height(20.dp))
+            DnPrimaryButton(
+                label = if (state.isLoading) "로그인 중…" else "로그인",
+                onClick = { viewModel.onLoginClicked(username, password) },
+                enabled = !state.isLoading,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            if (autoLoginArmed) {
+                Spacer(Modifier.height(10.dp))
+                val scope = rememberCoroutineScope()
+                DnTintedButton(
+                    label = strings.loginSignInWithFaceId,
+                    onClick = { scope.launch { runBiometricPrompt() } },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
+            Spacer(Modifier.height(26.dp))
             Row(
-                modifier              = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment     = Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
+                Text("아직 계정이 없으신가요?", style = DnTheme.typography.caption, color = c.textSecondary)
                 Text(
-                    text  = "PASSWORD",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                TextButton(
-                    onClick         = {
-                        val resetUrl = "${BuildKonfig.KEYCLOAK_URL}/realms/${BuildKonfig.KEYCLOAK_REALM}" +
-                            "/login-actions/reset-credentials?client_id=hanmaum-mobile"
-                        openUrl(resetUrl)
-                    },
-                    contentPadding  = PaddingValues(0.dp),
-                ) {
-                    Text(
-                        text  = strings.loginForgotPassword,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-            }
-            TextField(
-                value                = password,
-                onValueChange        = { password = it },
-                placeholder          = { Text("••••••••") },
-                leadingIcon          = {
-                    Icon(
-                        imageVector        = Icons.Default.Lock,
-                        contentDescription = null,
-                        tint               = MaterialTheme.colorScheme.outline,
-                    )
-                },
-                trailingIcon = {
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(
-                            imageVector        = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                            contentDescription = if (passwordVisible) "Hide password" else "Show password",
-                            tint               = MaterialTheme.colorScheme.outline,
-                        )
-                    }
-                },
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                modifier             = Modifier.fillMaxWidth(),
-                singleLine           = true,
-                shape                = MaterialTheme.shapes.small,
-                colors               = TextFieldDefaults.colors(
-                    focusedContainerColor   = MaterialTheme.colorScheme.surfaceVariant,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    focusedIndicatorColor   = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedLeadingIconColor = MaterialTheme.colorScheme.primary,
-                ),
-            )
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        // Login CTA. "Keep me signed in" and Face ID are on by default — both are
-        // managed from the Profile settings, not shown as login checkboxes.
-        Button(
-            onClick  = { viewModel.onLoginClicked(username, password, enableFaceId = faceIdAvailable) },
-            enabled  = !state.isLoading,
-            modifier = Modifier.fillMaxWidth().height(56.dp),
-            shape    = MaterialTheme.shapes.extraSmall,
-            colors   = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor   = MaterialTheme.colorScheme.onPrimaryContainer,
-            ),
-        ) {
-            if (state.isLoading) {
-                CircularProgressIndicator(
-                    modifier    = Modifier.size(22.dp),
-                    color       = MaterialTheme.colorScheme.onPrimaryContainer,
-                    strokeWidth = 2.dp,
-                )
-            } else {
-                Text(
-                    "Login to DN App  →",
-                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                    "회원가입",
+                    style = DnTheme.typography.captionStrong,
+                    color = c.limeInk,
+                    modifier = Modifier.clickable(onClick = onRegisterClick),
                 )
             }
-        }
 
-        // Manual Face ID sign-in (in case the auto-prompt on entry was cancelled)
-        if (canFaceIdSignIn) {
-            Spacer(Modifier.height(12.dp))
-            OutlinedButton(
-                onClick  = {
-                    scope.launch {
-                        val result = biometric.authenticate(
-                            strings.lockTitle, strings.lockSubtitle, strings.lockUsePassword,
-                        )
-                        if (result == BiometricResult.SUCCESS) autofillAndSignIn()
-                    }
-                },
-                enabled  = !state.isLoading,
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape    = MaterialTheme.shapes.extraSmall,
-            ) {
-                Text(strings.loginSignInWithFaceId, style = MaterialTheme.typography.labelLarge)
-            }
+            Spacer(Modifier.height(60.dp))
         }
-
-        state.error?.let { errorMsg ->
-            Spacer(Modifier.height(12.dp))
-            Text(
-                text  = errorMsg,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-            )
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        // Register link
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment     = Alignment.CenterVertically,
-        ) {
-            Text(
-                text  = "New to the collective?  ",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            TextButton(
-                onClick        = onRegisterClick,
-                contentPadding = PaddingValues(0.dp),
-            ) {
-                Text(
-                    text  = "Join the Community",
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
-        }
-        Spacer(Modifier.height(24.dp))
     }
 }
