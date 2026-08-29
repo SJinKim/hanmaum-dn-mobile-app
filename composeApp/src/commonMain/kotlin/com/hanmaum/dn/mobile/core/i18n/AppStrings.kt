@@ -12,6 +12,8 @@ interface AppStrings {
     val settingsGroupDisplay: String
     val settingsGroupSignIn: String
     val settingsGroupPrivacy: String
+    val settingsGroupNotifications: String
+    val settingsPushDesc: String
     val settingsThemeSubtitle: String
     val settingsLocationDenied: String
     val errorTitle: String
@@ -188,6 +190,8 @@ object EnStrings : AppStrings {
     override val settingsGroupDisplay = "Display"
     override val settingsGroupSignIn = "Sign-in"
     override val settingsGroupPrivacy = "Privacy"
+    override val settingsGroupNotifications = "Notifications"
+    override val settingsPushDesc = "Announcements, events and attendance reminders"
     override val settingsThemeSubtitle = "Choose how the app looks"
     override val settingsLocationDenied = "Allow location access in system settings"
     override val errorTitle = "Something went wrong"
@@ -338,6 +342,8 @@ object KoStrings : AppStrings {
     override val settingsGroupDisplay = "표시"
     override val settingsGroupSignIn = "로그인"
     override val settingsGroupPrivacy = "개인정보"
+    override val settingsGroupNotifications = "알림"
+    override val settingsPushDesc = "공지, 행사, 출석 알림을 받습니다"
     override val settingsThemeSubtitle = "앱의 화면 모드를 선택하세요"
     override val settingsLocationDenied = "시스템 설정에서 위치 접근을 허용해 주세요"
     override val errorTitle = "문제가 발생했습니다"
@@ -488,6 +494,8 @@ object DeStrings : AppStrings {
     override val settingsGroupDisplay = "Darstellung"
     override val settingsGroupSignIn = "Anmeldung"
     override val settingsGroupPrivacy = "Datenschutz"
+    override val settingsGroupNotifications = "Benachrichtigungen"
+    override val settingsPushDesc = "Ankündigungen, Termine und Anwesenheits-Erinnerungen"
     override val settingsThemeSubtitle = "Wähle das Erscheinungsbild der App"
     override val settingsLocationDenied = "Standortzugriff in den Systemeinstellungen erlauben"
     override val errorTitle = "Etwas ist schiefgelaufen"

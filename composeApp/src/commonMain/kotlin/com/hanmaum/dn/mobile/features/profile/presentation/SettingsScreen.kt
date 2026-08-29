@@ -48,6 +48,12 @@ import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
 import com.hanmaum.dn.mobile.core.presentation.theme.DnCardShape
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
 import com.hanmaum.dn.mobile.core.presentation.theme.typography
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import com.hanmaum.dn.mobile.core.notification.NotificationService
+import com.hanmaum.dn.mobile.features.notification.presentation.NotificationSettingsViewModel
+import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Everything the member decides for themselves, in one place.
@@ -137,6 +143,10 @@ fun SettingsScreen(
                         enabled = biometricAvailable && keepSignedIn,
                         onChange = onBiometricChange,
                     )
+                }
+
+                SettingsGroup(strings.settingsGroupNotifications) {
+                    PushSwitchRow()
                 }
 
                 SettingsGroup(strings.settingsGroupPrivacy) {
@@ -297,4 +307,31 @@ private fun DnSwitch(checked: Boolean, enabled: Boolean, onChange: () -> Unit) {
                 .background(if (checked && enabled) c.onLime else c.textTertiary),
         )
     }
+}
+
+/**
+ * The push opt-out, carried over from the pre-redesign settings screen.
+ *
+ * Its own composable because it owns a ViewModel the rest of the screen has no
+ * use for. When the OS permission is missing the toggle stays visible but the
+ * description says why flipping it will not help — hiding the row instead
+ * would leave a member who denied the prompt with no explanation.
+ */
+@Composable
+private fun PushSwitchRow() {
+    val strings = LocalStrings.current
+    val settingsVm: NotificationSettingsViewModel = koinViewModel()
+    val pushState by settingsVm.uiState.collectAsState()
+    val notificationService = koinInject<NotificationService>()
+    val permitted = remember { notificationService.isNotificationPermissionGranted() }
+
+    LaunchedEffect(Unit) { settingsVm.load() }
+
+    SwitchRow(
+        label = strings.settingsPushToggle,
+        description = if (permitted) strings.settingsPushDesc else strings.settingsPushPermissionHint,
+        checked = pushState.pushEnabled,
+        onChange = settingsVm::onToggle,
+        enabled = permitted,
+    )
 }
