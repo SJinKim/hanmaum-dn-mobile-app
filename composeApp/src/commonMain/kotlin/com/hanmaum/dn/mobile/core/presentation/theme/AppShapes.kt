@@ -4,15 +4,30 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Shapes
 import androidx.compose.ui.unit.dp
 
-// Design spec §4 — Shape & Corner Radius
-// shape_small   → 6dp   inputs, chips, badges
-// shape_medium  → 14dp  list cards, modals
-// shape_large   → 20dp  hero cards, bottom sheets
-// shape_full    → ∞     buttons, pill nav, avatars
+/**
+ * Four radii, matching the Figma collection:
+ *
+ *   inner 18  inputs, small tiles
+ *   tile  24  cards inside a list, icon tiles
+ *   card  28  top-level cards, sheets
+ *   pill      anything interactive — buttons, chips, the dock
+ */
+object DnRadius {
+    val inner = 18.dp
+    val tile  = 24.dp
+    val card  = 28.dp
+    val pill  = 999.dp
+}
+
+val DnInnerShape = RoundedCornerShape(DnRadius.inner)
+val DnTileShape  = RoundedCornerShape(DnRadius.tile)
+val DnCardShape  = RoundedCornerShape(DnRadius.card)
+val DnPillShape  = RoundedCornerShape(percent = 50)
+
 val AppShapes = Shapes(
-    extraSmall = RoundedCornerShape(percent = 50), // pill / shape_full
-    small      = RoundedCornerShape(6.dp),         // shape_small
-    medium     = RoundedCornerShape(14.dp),        // shape_medium
-    large      = RoundedCornerShape(20.dp),        // shape_large
-    extraLarge = RoundedCornerShape(20.dp),        // also shape_large for sheets
+    extraSmall = DnPillShape,
+    small      = DnInnerShape,
+    medium     = DnTileShape,
+    large      = DnCardShape,
+    extraLarge = RoundedCornerShape(32.dp),
 )

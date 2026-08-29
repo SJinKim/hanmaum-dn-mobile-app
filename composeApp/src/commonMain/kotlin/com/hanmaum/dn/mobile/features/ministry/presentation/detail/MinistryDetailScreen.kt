@@ -1,6 +1,7 @@
 package com.hanmaum.dn.mobile.features.ministry.presentation.detail
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,35 +11,38 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
-import com.hanmaum.dn.mobile.core.i18n.LocalStrings
-import com.hanmaum.dn.mobile.core.presentation.components.ErrorView
-import com.hanmaum.dn.mobile.features.ministry.domain.model.Contact
-import com.hanmaum.dn.mobile.features.ministry.domain.model.MinistryDetail
-import com.hanmaum.dn.mobile.features.ministry.domain.model.Schedule
+import com.hanmaum.dn.mobile.core.presentation.components.DnErrorState
+import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
+import com.hanmaum.dn.mobile.core.presentation.components.DnGlows
+import com.hanmaum.dn.mobile.core.presentation.components.DnPrimaryButton
+import com.hanmaum.dn.mobile.core.presentation.components.DnTopBar
+import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
+import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
+import com.hanmaum.dn.mobile.core.presentation.theme.DnTileShape
+import com.hanmaum.dn.mobile.core.presentation.theme.typography
+import com.hanmaum.dn.mobile.features.ministry.domain.model.RegistrationStatus
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
+/**
+ * 사역 detail. The registration button reads 신청하기, matching the 양육 page —
+ * the two pages are the same promise, so they use the same word.
+ */
 @Composable
 fun MinistryDetailScreen(
     publicId: String,
@@ -46,216 +50,105 @@ fun MinistryDetailScreen(
 ) {
     val viewModel: MinistryDetailViewModel = koinViewModel(parameters = { parametersOf(publicId) })
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val c = DnTheme.colors
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-    ) {
-        when (val s = state) {
-            is MinistryDetailUiState.Loading ->
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            is MinistryDetailUiState.Error ->
-                ErrorView(msg = s.message, onRetry = { viewModel.load() })
-            is MinistryDetailUiState.Success ->
-                MinistryDetailContent(detail = s.detail, onBackClick = onBackClick)
-        }
-    }
-}
+    DnBackground(glows = DnGlows.action()) {
+        Column(Modifier.fillMaxSize().statusBarsPadding()) {
+            DnTopBar(title = "사역", onBack = onBackClick, onAction = { })
 
-@Composable
-private fun MinistryDetailContent(
-    detail: MinistryDetail,
-    onBackClick: () -> Unit,
-) {
-    val strings = LocalStrings.current
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
-    ) {
-        // Hero: ministry image when present, gradient fallback otherwise
-        Box(modifier = Modifier.fillMaxWidth().height(140.dp)) {
-            if (detail.imageUrl != null) {
-                AsyncImage(
-                    model = detail.imageUrl,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            } else {
-                Box(
-                    modifier = Modifier
+            when (val s = state) {
+                is MinistryDetailUiState.Loading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
+                    CircularProgressIndicator(color = c.lime)
+                }
+
+                is MinistryDetailUiState.Error ->
+                    DnErrorState(onRetry = viewModel::load)
+
+                is MinistryDetailUiState.Success -> Column(
+                    Modifier
                         .fillMaxSize()
-                        .background(
-                            Brush.linearGradient(
-                                listOf(
-                                    MaterialTheme.colorScheme.primary,
-                                    MaterialTheme.colorScheme.primaryContainer,
-                                )
-                            )
-                        ),
-                )
-            }
-            IconButton(
-                onClick = onBackClick,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(4.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
-                    contentDescription = strings.back,
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                )
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 20.dp),
+                ) {
+                    Spacer(Modifier.height(18.dp))
+
+                    DetailHero(
+                        icon = DnIcons.Users,
+                        container = c.limeDim,
+                        ink = c.limeInk,
+                        eyebrow = "함께 섬기는 자리",
+                        name = s.detail.name,
+                    )
+
+                    Spacer(Modifier.height(14.dp))
+                    Text(
+                        s.detail.shortDescription,
+                        style = DnTheme.typography.body,
+                        color = c.textSecondary,
+                    )
+
+                    Spacer(Modifier.height(20.dp))
+                    // MinistryDto also carries schedules and contacts; the client
+                    // model does not map them yet, so only the leader is shown.
+                    DetailFacts(
+                        rows = listOf(
+                            Triple(DnIcons.User, "리더", s.detail.leaderName ?: "미정"),
+                            Triple(DnIcons.Users, "상태", if (s.detail.isActive) "모집 중" else "모집 마감"),
+                        )
+                    )
+
+                    Spacer(Modifier.height(22.dp))
+                    DetailSection(
+                        title = "우리의 마음",
+                        body = s.detail.longDescription ?: s.detail.shortDescription,
+                    )
+
+                    Spacer(Modifier.height(28.dp))
+
+                    when (s.registrationStatus) {
+                        RegistrationStatus.NONE -> DnPrimaryButton(
+                            label = "신청하기",
+                            leading = DnIcons.UserCheck,
+                            onClick = viewModel::openSheet,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+
+                        RegistrationStatus.PENDING -> StatusPill("신청 완료 · 승인 대기", c.amberDim, c.amber)
+                        RegistrationStatus.APPROVED -> StatusPill("이미 함께하고 있습니다", c.limeDim, c.limeInk)
+                    }
+
+                    Spacer(Modifier.height(60.dp))
+                }
             }
         }
+    }
 
-        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-            Spacer(Modifier.height(18.dp))
-            Text(
-                text = detail.title,
-                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-            if (detail.subtitle.isNotBlank()) {
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    text = detail.subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-
-            if (detail.about.isNotBlank()) {
-                Section(title = strings.ministryAbout) {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        detail.about.split("\n").map { it.trim() }.filter { it.isNotEmpty() }
-                            .forEach { para ->
-                                Text(
-                                    text = para,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                    }
-                }
-            }
-
-            if (detail.requirements.isNotEmpty()) {
-                Section(title = strings.ministryRequirements) {
-                    Column {
-                        detail.requirements.forEachIndexed { index, req ->
-                            if (index > 0) HairlineSpacer()
-                            Text(
-                                text = req,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.padding(vertical = 9.dp),
-                            )
-                        }
-                    }
-                }
-            }
-
-            if (detail.schedules.isNotEmpty()) {
-                Section(title = strings.ministrySchedule) {
-                    Column {
-                        detail.schedules.forEachIndexed { index, schedule ->
-                            if (index > 0) HairlineSpacer()
-                            ScheduleRow(schedule)
-                        }
-                    }
-                }
-            }
-
-            if (detail.contacts.isNotEmpty()) {
-                Section(title = strings.ministryContact) {
-                    Column {
-                        detail.contacts.forEachIndexed { index, contact ->
-                            if (index > 0) HairlineSpacer()
-                            ContactRow(contact)
-                        }
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(32.dp))
-        }
+    val success = state as? MinistryDetailUiState.Success
+    if (success?.showSheet == true) {
+        RegistrationSheet(
+            note = success.noteInput,
+            isLoading = success.isRegistering,
+            error = success.registerError,
+            onNoteChange = viewModel::updateNote,
+            onConfirm = viewModel::register,
+            onDismiss = viewModel::closeSheet,
+        )
     }
 }
 
 @Composable
-private fun Section(title: String, content: @Composable () -> Unit) {
-    Spacer(Modifier.height(22.dp))
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-        color = MaterialTheme.colorScheme.onBackground,
-    )
-    Spacer(Modifier.height(10.dp))
-    Surface(
-        shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) { content() }
-    }
-}
-
-@Composable
-private fun HairlineSpacer() {
-    Box(
-        modifier = Modifier
+private fun StatusPill(label: String, container: androidx.compose.ui.graphics.Color, ink: androidx.compose.ui.graphics.Color) {
+    Row(
+        Modifier
             .fillMaxWidth()
-            .height(1.dp)
-            .background(MaterialTheme.colorScheme.outlineVariant),
-    )
-}
-
-@Composable
-private fun ScheduleRow(schedule: Schedule) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 11.dp),
+            .clip(DnTileShape)
+            .background(container, DnTileShape)
+            .padding(vertical = 16.dp),
+        horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            text = schedule.description,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f),
-        )
-        Spacer(Modifier.width(12.dp))
-        Surface(
-            shape = MaterialTheme.shapes.extraLarge,
-            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-        ) {
-            Text(
-                text = "${schedule.startTime}–${schedule.endTime}",
-                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(horizontal = 11.dp, vertical = 5.dp),
-            )
-        }
-    }
-}
-
-@Composable
-private fun ContactRow(contact: Contact) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 11.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = contact.role,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.outline,
-        )
-        Text(
-            text = contact.name,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
+        Icon(DnIcons.Check, null, tint = ink, modifier = Modifier.size(18.dp))
+        Spacer(Modifier.size(8.dp))
+        Text(label, style = DnTheme.typography.bodyStrong, color = ink)
     }
 }
