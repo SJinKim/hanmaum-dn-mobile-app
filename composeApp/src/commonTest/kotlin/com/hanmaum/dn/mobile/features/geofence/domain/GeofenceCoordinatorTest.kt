@@ -46,12 +46,13 @@ private class FakeLocationPreferences(
     override fun setSharingEnabled(value: Boolean) { sharing = value }
     override fun isPromptDismissed() = true
     override fun setPromptDismissed(value: Boolean) = Unit
+    override fun clear() { sharing = false }
 }
 
 private class FakeNotificationService : NotificationService {
     var notificationCount = 0
-    override fun isNotificationPermissionGranted() = true
-    override fun showAttendanceNotification() { notificationCount++ }
+    override suspend fun isNotificationPermissionGranted() = true
+    override suspend fun showAttendanceNotification() { notificationCount++ }
 }
 
 private class FakeAttendanceRepository(

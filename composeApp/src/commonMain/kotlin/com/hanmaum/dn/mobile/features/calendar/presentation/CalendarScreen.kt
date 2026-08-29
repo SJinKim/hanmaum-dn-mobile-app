@@ -36,6 +36,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlows
+import com.hanmaum.dn.mobile.core.presentation.components.DnDock
 import com.hanmaum.dn.mobile.core.presentation.components.DnScrollEdge
 import com.hanmaum.dn.mobile.core.presentation.components.DnSegmented
 import com.hanmaum.dn.mobile.core.presentation.components.DnTopBar
@@ -101,7 +102,7 @@ private fun MonthView(state: CalendarUiState, viewModel: CalendarViewModel) {
     val strings = LocalStrings.current
 
     LazyColumn(
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 130.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = DnDock.contentInset()),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item {
@@ -264,7 +265,7 @@ private fun YearListView(state: CalendarUiState, onEventClick: (CalendarEvent) -
     }
 
     LazyColumn(
-        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 130.dp),
+        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = DnDock.contentInset()),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         for (month in 1..12) {

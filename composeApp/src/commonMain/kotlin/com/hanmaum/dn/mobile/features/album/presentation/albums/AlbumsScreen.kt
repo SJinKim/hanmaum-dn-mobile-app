@@ -34,6 +34,7 @@ import com.hanmaum.dn.mobile.core.presentation.components.DnErrorState
 import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlows
 import com.hanmaum.dn.mobile.core.presentation.components.DnImagePlaceholder
+import com.hanmaum.dn.mobile.core.presentation.components.DnDock
 import com.hanmaum.dn.mobile.core.presentation.components.DnScrollEdge
 import com.hanmaum.dn.mobile.core.presentation.components.DnTopBar
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
@@ -76,7 +77,7 @@ fun AlbumsScreen(
                 } else {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
-                        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 130.dp),
+                        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 12.dp, bottom = DnDock.contentInset()),
                         horizontalArrangement = Arrangement.spacedBy(14.dp),
                         verticalArrangement = Arrangement.spacedBy(14.dp),
                     ) {

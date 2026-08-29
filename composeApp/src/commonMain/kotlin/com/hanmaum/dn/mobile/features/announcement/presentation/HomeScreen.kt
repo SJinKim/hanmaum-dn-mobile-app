@@ -38,6 +38,7 @@ import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlassIconButton
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlows
 import com.hanmaum.dn.mobile.core.presentation.components.DnImagePlaceholder
+import com.hanmaum.dn.mobile.core.presentation.components.DnDock
 import com.hanmaum.dn.mobile.core.presentation.components.DnScrollEdge
 import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
 import com.hanmaum.dn.mobile.core.presentation.theme.DnCardShape
@@ -163,7 +164,7 @@ fun HomeScreen(
             )
 
             // room for the floating dock plus its scroll edge
-            Spacer(Modifier.height(120.dp))
+            Spacer(Modifier.height(DnDock.contentInset(extra = 22.dp)))
         }
 
         DnScrollEdge()

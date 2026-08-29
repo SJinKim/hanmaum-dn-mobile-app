@@ -6,7 +6,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -26,6 +31,31 @@ import com.hanmaum.dn.mobile.core.presentation.glass.GlassLevel
 import com.hanmaum.dn.mobile.core.presentation.glass.dnGlass
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
 import com.hanmaum.dn.mobile.core.presentation.theme.typography
+
+/**
+ * The dock's geometry, in one place so screens can reserve exactly the space
+ * it occupies instead of guessing at a magic number.
+ */
+object DnDock {
+    /** Height of the pill itself. */
+    val Height = 76.dp
+
+    /** Gap between the pill and the bottom of the safe area. */
+    val Gap = 22.dp
+
+    /**
+     * Space a scrolling screen must leave below its last item.
+     *
+     * Includes the platform navigation-bar inset, because the dock sits above
+     * it: on a device with a home indicator or a three-button bar the dock is
+     * pushed further up the screen, and a fixed reservation left the last row
+     * of content underneath it.
+     */
+    @Composable
+    fun contentInset(extra: Dp = 32.dp): Dp =
+        Height + Gap + extra +
+            WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+}
 
 /**
  * Floating dock: a rounded bar that hovers over the content rather than
@@ -48,8 +78,12 @@ fun BottomNavBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            // The dock owns its own bottom spacing so it can sit above the
+            // system navigation bar rather than underneath it.
+            .navigationBarsPadding()
+            .padding(bottom = DnDock.Gap)
             .padding(horizontal = 20.dp)
-            .height(76.dp)
+            .height(DnDock.Height)
             .clip(RoundedCornerShape(34.dp))
             .dnGlass(shape = RoundedCornerShape(34.dp), level = GlassLevel.Strong)
             .padding(horizontal = 8.dp),

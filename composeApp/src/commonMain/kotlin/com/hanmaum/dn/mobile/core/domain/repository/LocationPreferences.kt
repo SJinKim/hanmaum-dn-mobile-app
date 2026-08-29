@@ -12,4 +12,10 @@ interface LocationPreferences {
     /** Whether the Home rationale prompt has already been shown and answered. */
     fun isPromptDismissed(): Boolean
     fun setPromptDismissed(value: Boolean)
+
+    /**
+     * Drops both decisions. The consent belongs to the member who gave it, so
+     * it must not survive into the next session on a shared device.
+     */
+    fun clear()
 }

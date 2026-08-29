@@ -38,6 +38,7 @@ import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
 import com.hanmaum.dn.mobile.core.presentation.components.DnChip
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlows
 import com.hanmaum.dn.mobile.core.presentation.components.DnImagePlaceholder
+import com.hanmaum.dn.mobile.core.presentation.components.DnDock
 import com.hanmaum.dn.mobile.core.presentation.components.DnScrollEdge
 import com.hanmaum.dn.mobile.core.presentation.components.DnTopBar
 import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
@@ -102,7 +103,7 @@ fun AnnouncementListScreen(
                 }
 
                 else -> LazyColumn(
-                    contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 130.dp),
+                    contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = DnDock.contentInset()),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     items(filtered, key = { it.id }) { item ->

@@ -13,6 +13,11 @@ class LocationPreferencesImpl(private val settings: Settings) : LocationPreferen
 
     override fun setPromptDismissed(value: Boolean) = settings.putBoolean(KEY_DISMISSED, value)
 
+    override fun clear() {
+        settings.remove(KEY_ENABLED)
+        settings.remove(KEY_DISMISSED)
+    }
+
     private companion object {
         const val KEY_ENABLED = "location_sharing_enabled"
         const val KEY_DISMISSED = "location_prompt_dismissed"

@@ -11,5 +11,5 @@ import org.koin.dsl.module
 actual val platformModule = module {
     single<SecureStore> { IosSecureStore() }
     single<GeofenceManager> { IosGeofenceManager() }
-    single<NotificationService> { IosNotificationService() }
+    single<NotificationService> { IosNotificationService(get()) }
 }

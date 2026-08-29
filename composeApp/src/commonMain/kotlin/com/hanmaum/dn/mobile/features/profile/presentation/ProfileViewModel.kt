@@ -2,8 +2,7 @@ package com.hanmaum.dn.mobile.features.profile.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
-import com.hanmaum.dn.mobile.core.security.CredentialStore
+import com.hanmaum.dn.mobile.core.session.SessionCleaner
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,8 +11,7 @@ import kotlinx.coroutines.launch
 
 class ProfileViewModel(
     private val memberRepository: MemberRepository,
-    private val tokenStorage: TokenStorage,
-    private val credentialStore: CredentialStore,
+    private val sessionCleaner: SessionCleaner,
 ) : ViewModel() {
 
     private val _loggedOut = MutableStateFlow(false)
@@ -81,10 +79,7 @@ class ProfileViewModel(
 
     fun logout() {
         viewModelScope.launch {
-            tokenStorage.clear()
-            // Signing out must also drop the saved credentials — otherwise the
-            // next person at this device could biometric-unlock back in.
-            credentialStore.clear()
+            sessionCleaner.clear()
             _loggedOut.value = true
         }
     }

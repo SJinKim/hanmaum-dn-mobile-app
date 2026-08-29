@@ -12,6 +12,8 @@ import com.hanmaum.dn.mobile.core.data.repository.TokenStorageImpl
 import com.hanmaum.dn.mobile.core.domain.repository.LocaleRepository
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.core.network.createHttpClient
+import com.hanmaum.dn.mobile.core.notification.NotificationRouter
+import com.hanmaum.dn.mobile.core.session.SessionCleaner
 import com.russhwolf.settings.Settings
 import com.hanmaum.dn.mobile.features.announcement.data.repository.AnnouncementRepositoryImpl
 import com.hanmaum.dn.mobile.features.announcement.domain.repository.AnnouncementRepository
@@ -70,9 +72,11 @@ val appModule = module {
     single<AuthPreferences> { AuthPreferencesImpl(Settings()) }
     single { CredentialStore(get()) }
     single<LocationPreferences> { LocationPreferencesImpl(Settings()) }
+    single { NotificationRouter() }
+    single { SessionCleaner(get(), get(), get(), get(), get()) }
 
     //Splash VM
-    viewModel { SplashViewModel(get(), get(), get()) }
+    viewModel { SplashViewModel(get(), get(), get(), get()) }
 
 
     // Home VM
@@ -100,7 +104,7 @@ val appModule = module {
     viewModel { LoginViewModel(get(), get(), get(), get(), get(), get()) }
 
     // Profile VM
-    viewModel { ProfileViewModel(get(), get(), get()) }
+    viewModel { ProfileViewModel(get(), get()) }
 
     // Ministry
     single<MinistryRepository> { MinistryRepositoryImpl(get()) }

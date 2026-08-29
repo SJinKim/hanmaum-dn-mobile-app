@@ -16,11 +16,15 @@ import com.hanmaum.dn.mobile.MainActivity
 private const val CHANNEL_ID = "attendance_channel"
 private const val NOTIFICATION_ID = 1001
 
+/** Read back by MainActivity to route the tap through [NotificationRouter]. */
+const val EXTRA_DESTINATION = "com.hanmaum.dn.mobile.NOTIFICATION_DESTINATION"
+const val DESTINATION_ATTENDANCE = "attendance"
+
 class AndroidNotificationService(private val context: Context) : NotificationService {
 
     init { createChannel() }
 
-    override fun isNotificationPermissionGranted(): Boolean {
+    override suspend fun isNotificationPermissionGranted(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
                     PackageManager.PERMISSION_GRANTED
@@ -29,11 +33,15 @@ class AndroidNotificationService(private val context: Context) : NotificationSer
         }
     }
 
-    override fun showAttendanceNotification() {
+    override suspend fun showAttendanceNotification() {
         if (!isNotificationPermissionGranted()) return
 
+        // SINGLE_TOP, not CLEAR_TASK: the app is usually already running when
+        // the geofence fires, and clearing the task threw away the user's back
+        // stack. The extra tells MainActivity where the tap wants to go.
         val tapIntent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            putExtra(EXTRA_DESTINATION, DESTINATION_ATTENDANCE)
         }
         val pendingIntent = PendingIntent.getActivity(
             context, 0, tapIntent,

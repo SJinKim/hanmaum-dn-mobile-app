@@ -32,6 +32,8 @@ import com.hanmaum.dn.mobile.core.i18n.EnStrings
 import com.hanmaum.dn.mobile.core.i18n.KoStrings
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.navigation.*
+import com.hanmaum.dn.mobile.core.notification.NotificationDestination
+import com.hanmaum.dn.mobile.core.notification.NotificationRouter
 import com.hanmaum.dn.mobile.core.presentation.components.BottomNavBar
 import com.hanmaum.dn.mobile.core.presentation.theme.AppTheme
 import com.hanmaum.dn.mobile.features.notification.presentation.NotificationsScreen
@@ -85,6 +87,22 @@ fun App() {
 
             val showBottomBar = TopLevelDestination.all.any { dest ->
                 currentDestination?.hasRoute(dest.routeClass) == true
+            }
+
+            // A notification tap has to be handled here rather than inside a
+            // screen: it arrives whatever the member was last looking at, and a
+            // collector inside HomeScreen only runs while Home is composed.
+            val notificationRouter = koinInject<NotificationRouter>()
+            LaunchedEffect(navController) {
+                notificationRouter.pending.collect { destination ->
+                    when (destination) {
+                        null -> Unit
+                        NotificationDestination.Attendance -> {
+                            notificationRouter.consume()
+                            navController.navigate(AttendanceRoute) { launchSingleTop = true }
+                        }
+                    }
+                }
             }
 
             // The dock floats over the content instead of taking a strip at the
@@ -339,9 +357,7 @@ fun App() {
                                 restoreState = true
                             }
                         },
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(bottom = 22.dp),
+                        modifier = Modifier.align(Alignment.BottomCenter),
                     )
                 }
             }

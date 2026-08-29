@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
+import com.hanmaum.dn.mobile.core.session.SessionCleaner
 import com.hanmaum.dn.mobile.features.geofence.domain.GeofenceCoordinator
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +16,7 @@ class SplashViewModel(
     private val tokenStorage: TokenStorage,
     private val memberRepository: MemberRepository,
     private val geofenceCoordinator: GeofenceCoordinator,
+    private val sessionCleaner: SessionCleaner,
 ) : ViewModel() {
 
     private val _navigateTo = MutableStateFlow<NavRoute?>(null)
@@ -52,7 +54,10 @@ class SplashViewModel(
 
     private fun handleAuthError() {
         viewModelScope.launch {
-            tokenStorage.clear()
+            // A rejected/deleted account is a session ending, same as a logout:
+            // it must not leave its consent or its geofence behind for whoever
+            // signs in next.
+            sessionCleaner.clear()
             _navigateTo.value = NavRoute.Login
         }
     }
