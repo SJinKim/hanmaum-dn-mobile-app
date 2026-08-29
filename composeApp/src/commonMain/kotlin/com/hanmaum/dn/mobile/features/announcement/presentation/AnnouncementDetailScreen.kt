@@ -39,6 +39,13 @@ import com.hanmaum.dn.mobile.core.presentation.theme.DnTileShape
 import com.hanmaum.dn.mobile.core.presentation.theme.typography
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import androidx.compose.foundation.clickable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.hanmaum.dn.mobile.features.events.presentation.EventRsvpViewModel
+import com.hanmaum.dn.mobile.features.events.presentation.components.EventRsvpSheet
 
 /**
  * 소식 detail.
@@ -56,6 +63,16 @@ fun AnnouncementDetailScreen(
         parameters = { parametersOf(announcementId) }
     )
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Own RSVP ViewModel: this screen is not a top-level destination, so the
+    // global EventRsvpHost is not mounted over it. The sheet opens only when
+    // the member taps the CTA, never on its own.
+    val rsvpViewModel: EventRsvpViewModel = koinViewModel()
+    val rsvpState by rsvpViewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) { rsvpViewModel.refresh() }
+    val matchingRsvp = rsvpState.events.firstOrNull { it.announcementId == announcementId }
+    var rsvpSheetOpen by remember { mutableStateOf(false) }
+
     val c = DnTheme.colors
 
     DnBackground(glows = DnGlows.information()) {
@@ -66,6 +83,12 @@ fun AnnouncementDetailScreen(
                 state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
                     CircularProgressIndicator(color = c.lime)
                 }
+
+                // Reached from a notification whose announcement has since
+                // expired or been removed. Retrying cannot bring it back, so
+                // the only offer is a way onward.
+                state.gone ->
+                    DnErrorState(onGoHome = onBackClick)
 
                 state.hasError ->
                     DnErrorState(onRetry = viewModel::loadAnnouncement)
@@ -119,6 +142,27 @@ fun AnnouncementDetailScreen(
                             )
                         )
 
+                        // Only for an EVENT announcement whose RSVP window is
+                        // open right now — otherwise the button would promise
+                        // something the server would refuse.
+                        if (item.category == "EVENT" && matchingRsvp != null) {
+                            Spacer(Modifier.height(20.dp))
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clip(DnCardShape)
+                                    .background(c.limeDim, DnCardShape)
+                                    .border(1.dp, c.lime.copy(alpha = 0.45f), DnCardShape)
+                                    .clickable { rsvpSheetOpen = true }
+                                    .padding(horizontal = 18.dp, vertical = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            ) {
+                                Icon(DnIcons.UserCheck, null, tint = c.limeInk, modifier = Modifier.size(20.dp))
+                                Text("참석 여부 알리기", style = DnTheme.typography.bodyStrong, color = c.limeInk)
+                            }
+                        }
+
                         Spacer(Modifier.height(24.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             listOf("#${item.getAnnouncementCategoryName()}", "#한마음", "#소식").forEach { tag ->
@@ -138,6 +182,17 @@ fun AnnouncementDetailScreen(
                     }
                 }
             }
+        }
+
+        if (rsvpSheetOpen && matchingRsvp != null) {
+            EventRsvpSheet(
+                events = listOf(matchingRsvp),
+                checkingInId = rsvpState.checkingInId,
+                checkedInIds = rsvpState.checkedInIds,
+                rowErrors = rsvpState.rowErrors,
+                onAttend = rsvpViewModel::checkIn,
+                onDismiss = { rsvpSheetOpen = false },
+            )
         }
     }
 }

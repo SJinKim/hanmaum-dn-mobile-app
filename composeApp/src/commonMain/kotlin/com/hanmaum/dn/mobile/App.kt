@@ -35,6 +35,7 @@ import com.hanmaum.dn.mobile.core.navigation.*
 import com.hanmaum.dn.mobile.core.notification.NotificationDestination
 import com.hanmaum.dn.mobile.core.notification.NotificationRouter
 import com.hanmaum.dn.mobile.core.presentation.components.BottomNavBar
+import com.hanmaum.dn.mobile.features.events.presentation.EventRsvpHost
 import com.hanmaum.dn.mobile.core.presentation.theme.AppTheme
 import com.hanmaum.dn.mobile.features.notification.presentation.NotificationListScreen
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementDetailScreen
@@ -365,6 +366,10 @@ fun App() {
                         },
                         modifier = Modifier.align(Alignment.BottomCenter),
                     )
+
+                    // Sits over the whole graph, not inside a screen: the sheet
+                    // has to be able to appear whatever the member is looking at.
+                    EventRsvpHost()
                 }
             }
             }
