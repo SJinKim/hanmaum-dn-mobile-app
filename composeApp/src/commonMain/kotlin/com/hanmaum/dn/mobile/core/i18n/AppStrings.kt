@@ -9,6 +9,15 @@ interface AppStrings {
     val confirm: String
     val saving: String
     val errorOccurred: String
+    val settingsGroupDisplay: String
+    val settingsGroupSignIn: String
+    val settingsGroupPrivacy: String
+    val settingsThemeSubtitle: String
+    val settingsLocationDenied: String
+    val errorTitle: String
+    val errorBody: String
+    val errorRetry: String
+    val errorGoHome: String
     // Register form validation
     val errorRequired: String
     val errorInvalidEmail: String
@@ -176,6 +185,15 @@ object EnStrings : AppStrings {
     override val confirm = "Confirm"
     override val saving = "Saving…"
     override val errorOccurred = "An error occurred"
+    override val settingsGroupDisplay = "Display"
+    override val settingsGroupSignIn = "Sign-in"
+    override val settingsGroupPrivacy = "Privacy"
+    override val settingsThemeSubtitle = "Choose how the app looks"
+    override val settingsLocationDenied = "Allow location access in system settings"
+    override val errorTitle = "Something went wrong"
+    override val errorBody = "The page could not be loaded. Check your connection and try again."
+    override val errorRetry = "Try again"
+    override val errorGoHome = "Go to home"
     override val errorRequired = "This field is required"
     override val errorInvalidEmail = "Please enter a valid email address"
     override val errorPasswordRequirements = "Password doesn't meet the requirements"
@@ -317,6 +335,15 @@ object KoStrings : AppStrings {
     override val confirm = "확인"
     override val saving = "저장 중"
     override val errorOccurred = "오류가 발생했습니다"
+    override val settingsGroupDisplay = "표시"
+    override val settingsGroupSignIn = "로그인"
+    override val settingsGroupPrivacy = "개인정보"
+    override val settingsThemeSubtitle = "앱의 화면 모드를 선택하세요"
+    override val settingsLocationDenied = "시스템 설정에서 위치 접근을 허용해 주세요"
+    override val errorTitle = "문제가 발생했습니다"
+    override val errorBody = "페이지를 불러오지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요."
+    override val errorRetry = "다시 시도"
+    override val errorGoHome = "홈으로"
     override val errorRequired = "필수 항목입니다"
     override val errorInvalidEmail = "올바른 이메일을 입력해주세요"
     override val errorPasswordRequirements = "비밀번호 조건을 충족하지 않습니다"
@@ -458,6 +485,15 @@ object DeStrings : AppStrings {
     override val confirm = "Bestätigen"
     override val saving = "Wird gespeichert…"
     override val errorOccurred = "Ein Fehler ist aufgetreten"
+    override val settingsGroupDisplay = "Darstellung"
+    override val settingsGroupSignIn = "Anmeldung"
+    override val settingsGroupPrivacy = "Datenschutz"
+    override val settingsThemeSubtitle = "Wähle das Erscheinungsbild der App"
+    override val settingsLocationDenied = "Standortzugriff in den Systemeinstellungen erlauben"
+    override val errorTitle = "Etwas ist schiefgelaufen"
+    override val errorBody = "Die Seite konnte nicht geladen werden. Prüfe die Verbindung und versuche es erneut."
+    override val errorRetry = "Erneut versuchen"
+    override val errorGoHome = "Zur Startseite"
     override val errorRequired = "Dieses Feld ist erforderlich"
     override val errorInvalidEmail = "Bitte geben Sie eine gültige E-Mail-Adresse ein"
     override val errorPasswordRequirements = "Passwort erfüllt die Anforderungen nicht"

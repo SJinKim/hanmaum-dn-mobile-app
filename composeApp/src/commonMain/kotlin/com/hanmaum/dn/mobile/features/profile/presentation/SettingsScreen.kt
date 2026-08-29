@@ -113,25 +113,25 @@ fun SettingsScreen(
                 Spacer(Modifier.height(4.dp))
 
                 SettingsGroup(strings.settingsGroupDisplay) {
-                    ValueRow(strings.settingsTheme, themeLabel) { showThemeSheet = true }
+                    ValueRow(strings.profileTheme, themeLabel) { showThemeSheet = true }
                     RowDivider()
-                    ValueRow(strings.settingsLanguage, currentLocale.nativeName) { showLanguageSheet = true }
+                    ValueRow(strings.profileLanguage, currentLocale.nativeName) { showLanguageSheet = true }
                 }
 
                 SettingsGroup(strings.settingsGroupSignIn) {
                     SwitchRow(
-                        label = strings.settingsKeepSignedIn,
-                        description = strings.settingsKeepSignedInDesc,
+                        label = strings.profileKeepSignedIn,
+                        description = strings.keepSignedInDesc,
                         checked = keepSignedIn,
                         onChange = onKeepSignedInChange,
                     )
                     RowDivider()
                     SwitchRow(
-                        label = strings.settingsBiometric,
+                        label = strings.profileFaceIdLogin,
                         // Unlocking a session only means something when one is kept.
                         description = when {
-                            !biometricAvailable -> strings.settingsBiometricUnavailable
-                            else -> strings.settingsBiometricDesc
+                            !biometricAvailable -> strings.appLockUnavailable
+                            else -> strings.faceIdLoginDesc
                         },
                         checked = biometricEnabled && keepSignedIn,
                         enabled = biometricAvailable && keepSignedIn,
@@ -141,11 +141,11 @@ fun SettingsScreen(
 
                 SettingsGroup(strings.settingsGroupPrivacy) {
                     SwitchRow(
-                        label = strings.settingsLocation,
+                        label = strings.profileLocationSharing,
                         description = if (locationRefused && !locationEnabled) {
                             strings.settingsLocationDenied
                         } else {
-                            strings.settingsLocationDesc
+                            strings.locationSharingDesc
                         },
                         checked = locationEnabled,
                         onChange = { want ->
@@ -167,7 +167,7 @@ fun SettingsScreen(
     if (showThemeSheet) {
         ModalBottomSheet(onDismissRequest = { showThemeSheet = false }, containerColor = c.surface) {
             SheetOptions(
-                title = strings.settingsTheme,
+                title = strings.profileTheme,
                 subtitle = strings.settingsThemeSubtitle,
                 options = listOf(
                     ThemeMode.SYSTEM to strings.themeSystem,
@@ -186,7 +186,7 @@ fun SettingsScreen(
     if (showLanguageSheet) {
         ModalBottomSheet(onDismissRequest = { showLanguageSheet = false }, containerColor = c.surface) {
             SheetOptions(
-                title = strings.settingsLanguage,
+                title = strings.profileLanguage,
                 subtitle = null,
                 options = AppLocale.entries.map { locale ->
                     SheetOption(locale.nativeName, locale.name, locale == currentLocale) {

@@ -13,6 +13,11 @@ sealed class ProfileUiState {
         val editHouseNumber: String = profile.houseNumber ?: "",
         val editZipCode: String = profile.zipCode ?: "",
         val editCity: String = profile.city ?: "",
+        /**
+         * The redesigned profile edits in place instead of pushing a separate
+         * screen, so the same state carries both modes.
+         */
+        val isEditing: Boolean = false,
         val isSaving: Boolean = false,
         val saveError: String? = null,
         val saveSuccess: Boolean = false,

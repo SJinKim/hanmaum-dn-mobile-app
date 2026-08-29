@@ -22,6 +22,8 @@ import com.hanmaum.dn.mobile.core.presentation.components.DnGlows
 import com.hanmaum.dn.mobile.core.presentation.components.DnPrimaryButton
 import com.hanmaum.dn.mobile.core.presentation.components.DnTextField
 import com.hanmaum.dn.mobile.core.presentation.components.DnTopBar
+import com.hanmaum.dn.mobile.core.i18n.AppStrings
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
 import com.hanmaum.dn.mobile.core.presentation.theme.typography
@@ -39,6 +41,7 @@ fun RegisterScreen(
 ) {
     val viewModel: RegisterViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val strings = LocalStrings.current
     val c = DnTheme.colors
 
     LaunchedEffect(state.navigateTo) {
@@ -71,13 +74,16 @@ fun RegisterScreen(
 
                 DnTextField("성", state.lastName, viewModel::onLastNameChange,
                     Modifier.fillMaxWidth(), placeholder = "성")
+                FieldError(strings.messageFor(state.lastNameError))
                 Spacer(Modifier.height(16.dp))
                 DnTextField("이름", state.firstName, viewModel::onFirstNameChange,
                     Modifier.fillMaxWidth(), placeholder = "이름")
+                FieldError(strings.messageFor(state.firstNameError))
                 Spacer(Modifier.height(16.dp))
                 DnTextField("이메일", state.email, viewModel::onEmailChange,
                     Modifier.fillMaxWidth(), placeholder = "hello@hanmaum.de",
                     leading = DnIcons.Mail, keyboardType = KeyboardType.Email)
+                FieldError(strings.messageFor(state.emailError))
                 Spacer(Modifier.height(16.dp))
                 DnTextField("전화번호", state.phoneNumber, viewModel::onPhoneChange,
                     Modifier.fillMaxWidth(), placeholder = "+49 …", keyboardType = KeyboardType.Phone)
@@ -86,27 +92,39 @@ fun RegisterScreen(
                     Modifier.fillMaxWidth(), placeholder = "••••••••",
                     leading = DnIcons.Lock, trailing = DnIcons.Eye,
                     isPassword = true, keyboardType = KeyboardType.Password)
+                FieldError(strings.messageFor(state.passwordError))
                 Spacer(Modifier.height(16.dp))
                 DnTextField("생년월일", state.birthDate, viewModel::onBirthDateChange,
                     Modifier.fillMaxWidth(), placeholder = "2000.01.01",
                     trailing = DnIcons.Calendar, keyboardType = KeyboardType.Number)
-                state.birthDateError?.let {
-                    Spacer(Modifier.height(6.dp))
-                    Text(it, style = DnTheme.typography.caption, color = c.red)
-                }
+                FieldError(strings.messageFor(state.birthDateError))
                 Spacer(Modifier.height(16.dp))
                 DnTextField("도로명", state.street, viewModel::onStreetChange,
                     Modifier.fillMaxWidth(), placeholder = "Musterstraße 12")
+                FieldError(strings.messageFor(state.streetError))
                 Spacer(Modifier.height(16.dp))
                 DnTextField("우편번호", state.zipCode, viewModel::onZipChange,
                     Modifier.fillMaxWidth(), placeholder = "40210", keyboardType = KeyboardType.Number)
+                FieldError(strings.messageFor(state.zipCodeError))
                 Spacer(Modifier.height(16.dp))
                 DnTextField("도시", state.city, viewModel::onCityChange,
                     Modifier.fillMaxWidth(), placeholder = "Düsseldorf")
 
-                state.error?.let {
+                FieldError(strings.messageFor(state.cityError))
+                state.bannerError?.let { banner ->
+                    // RegisteredPleaseLogin is a success that needs one more
+                    // step, not a failure — it must not read as red.
+                    val isPositive = banner is RegisterBanner.RegisteredPleaseLogin
                     Spacer(Modifier.height(12.dp))
-                    Text(it, style = DnTheme.typography.caption, color = c.red)
+                    Text(
+                        when (banner) {
+                            is RegisterBanner.ServerMessage -> banner.text
+                            RegisterBanner.Generic -> strings.registerFailed
+                            RegisterBanner.RegisteredPleaseLogin -> strings.registerSuccessLogin
+                        },
+                        style = DnTheme.typography.caption,
+                        color = if (isPositive) c.limeInk else c.red,
+                    )
                 }
 
                 Spacer(Modifier.height(26.dp))
@@ -121,4 +139,31 @@ fun RegisterScreen(
             }
         }
     }
+}
+
+/**
+ * One field's validation message, or nothing at all.
+ *
+ * A composable rather than an inline `let` so every field renders the same
+ * way — the redesign originally showed a message only for the birth date,
+ * which quietly dropped the other seven the ViewModel already produces.
+ */
+@Composable
+private fun FieldError(message: String?) {
+    if (message == null) return
+    Spacer(Modifier.height(6.dp))
+    Text(message, style = DnTheme.typography.caption, color = DnTheme.colors.red)
+}
+
+/** Resolves a language-independent field error to localized text. */
+private fun AppStrings.messageFor(error: RegisterFieldError?): String? = when (error) {
+    RegisterFieldError.REQUIRED -> errorRequired
+    RegisterFieldError.INVALID_EMAIL -> errorInvalidEmail
+    RegisterFieldError.PASSWORD_REQUIREMENTS -> errorPasswordRequirements
+    RegisterFieldError.DATE_INCOMPLETE -> errorDateIncomplete
+    RegisterFieldError.DATE_INVALID -> errorDateInvalid
+    RegisterFieldError.INVALID_POSTCODE -> errorInvalidPostcode
+    RegisterFieldError.INVALID_CITY -> errorInvalidCity
+    RegisterFieldError.INVALID_HOUSE_NUMBER -> errorInvalidHouseNumber
+    null -> null
 }

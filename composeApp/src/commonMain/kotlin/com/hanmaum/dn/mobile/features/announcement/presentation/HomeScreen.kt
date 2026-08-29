@@ -98,7 +98,7 @@ fun HomeScreen(
                 memberName = state.memberName,
                 onProfileClick = onProfileClick,
                 onNotificationsClick = onNotificationsClick,
-                unseenCount = state.unseenNotifications,
+                unseenCount = state.unseenCount,
             )
 
             Spacer(Modifier.height(14.dp))

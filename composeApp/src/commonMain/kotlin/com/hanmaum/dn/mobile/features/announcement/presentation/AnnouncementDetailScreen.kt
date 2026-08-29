@@ -67,7 +67,7 @@ fun AnnouncementDetailScreen(
                     CircularProgressIndicator(color = c.lime)
                 }
 
-                state.error != null ->
+                state.hasError ->
                     DnErrorState(onRetry = viewModel::loadAnnouncement)
 
                 state.announcement != null -> {

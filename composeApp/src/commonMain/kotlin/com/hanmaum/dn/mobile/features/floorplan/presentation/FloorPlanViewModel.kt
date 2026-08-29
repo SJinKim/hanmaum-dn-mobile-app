@@ -20,7 +20,7 @@ class FloorPlanViewModel(
         loadFloors()
     }
 
-    private fun loadFloors() {
+    fun loadFloors() {
         viewModelScope.launch {
             try {
                 val floors = repository.getFloors()
