@@ -38,6 +38,7 @@ distilled cost of those days — check it before forming any new theory.
 | Upload `Validation failed (409) ... must be built with the iOS 26 SDK` | Runner's Xcode too old | `runs-on: macos-15` + `setup-xcode latest-stable` — keep ios-check on the same |
 | `Failed to build cache ... getBackStackEntry ... [inline] is not found` | Xcode 26 toolchain crashes the K/N static-cache builder on navigation-compose | `kotlin.native.cacheKind.ios*=none` in `gradle.properties` (already set — don't remove) |
 | iOS launches then crashes: `IrLinkageError ... $stable ... backing field` | lifecycle / navigation-compose / koin compiled against different lifecycle lines | Align all three (check the candidate's `.module` on Maven); reproduce on the local simulator, not TestFlight |
+| `Cannot locate tasks that match ':composeApp:assembleReleaseX64'` in ios-check | A whole workflow file was copied from another branch to pick up one rule, replacing a tuned job with an older broken one | Copy the *hunk*, never the file. The job needs `macos-15`, `setup-xcode latest-stable`, and the `xcodebuild` Swift-interop step |
 | `ios-check` red, `android-common-check` green | Real iOS regression — the gate has been trustworthy since the stub fix | Reproduce locally with `DEVELOPER_DIR=... :composeApp:iosSimulatorArm64Test` + the xcodebuild interop build |
 
 ## Theories that already wasted days — do not revisit
