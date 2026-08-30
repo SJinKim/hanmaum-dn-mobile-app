@@ -74,6 +74,13 @@ fun ProfileScreen(
     val loggedOut by viewModel.loggedOut.collectAsState()
     val c = DnTheme.colors
 
+    // Without this the screen sits on ProfileUiState.Loading for ever: nothing
+    // else asks the ViewModel to load, and it has no init that would. Keyed on
+    // Unit rather than on a lifecycle event because loadProfile() refreshes
+    // silently when data is already there — it is cheap to repeat and stale
+    // data (a profile edited in the web app) is the thing being avoided.
+    LaunchedEffect(Unit) { viewModel.loadProfile() }
+
     LaunchedEffect(loggedOut) { if (loggedOut) onLogout() }
 
     DnBackground(glows = DnGlows.action()) {
