@@ -27,14 +27,17 @@ fun EventRsvpHost(viewModel: EventRsvpViewModel = koinViewModel()) {
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    if (state.visible) {
+    // The soonest unanswered event, and only that one. Stacking every open
+    // invitation into one sheet turns a question into a wall; the rest wait on
+    // the RSVP screen, which is exactly what "나중에" leads to.
+    val next = state.pending.firstOrNull { it.myStatus == null }
+    if (state.visible && next != null) {
         EventRsvpSheet(
-            events = state.events,
-            checkingInId = state.checkingInId,
-            checkedInIds = state.checkedInIds,
-            rowErrors = state.rowErrors,
-            onAttend = viewModel::checkIn,
-            onDismiss = viewModel::dismissAll,
+            event = next,
+            isResponding = state.respondingTo == next.publicId,
+            errorMessage = state.rowErrors[next.publicId],
+            onRespond = { status -> viewModel.respond(next.publicId, status) },
+            onDismiss = viewModel::dismissSheet,
         )
     }
 }

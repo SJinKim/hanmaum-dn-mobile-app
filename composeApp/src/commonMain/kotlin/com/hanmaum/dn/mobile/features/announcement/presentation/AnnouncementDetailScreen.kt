@@ -186,11 +186,10 @@ fun AnnouncementDetailScreen(
 
         if (rsvpSheetOpen && matchingRsvp != null) {
             EventRsvpSheet(
-                events = listOf(matchingRsvp),
-                checkingInId = rsvpState.checkingInId,
-                checkedInIds = rsvpState.checkedInIds,
-                rowErrors = rsvpState.rowErrors,
-                onAttend = rsvpViewModel::checkIn,
+                event = matchingRsvp,
+                isResponding = rsvpState.respondingTo == matchingRsvp.publicId,
+                errorMessage = rsvpState.rowErrors[matchingRsvp.publicId],
+                onRespond = { status -> rsvpViewModel.respond(matchingRsvp.publicId, status) },
                 onDismiss = { rsvpSheetOpen = false },
             )
         }

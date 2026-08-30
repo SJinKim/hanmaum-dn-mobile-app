@@ -35,6 +35,9 @@ import com.hanmaum.dn.mobile.core.presentation.theme.DnTileShape
 import com.hanmaum.dn.mobile.core.presentation.theme.typography
 import com.hanmaum.dn.mobile.features.attendance.presentation.components.SlideToCheckIn
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.foundation.clickable
+import androidx.compose.runtime.LaunchedEffect
+import com.hanmaum.dn.mobile.features.events.presentation.EventRsvpViewModel
 
 /**
  * 출석 체크.
@@ -46,9 +49,13 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun AttendanceScreen(
     onBackClick: () -> Unit,
+    onRsvpClick: () -> Unit,
     viewModel: AttendanceViewModel = koinViewModel(),
+    rsvpViewModel: EventRsvpViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
+    val rsvpState by rsvpViewModel.uiState.collectAsState()
+    LaunchedEffect(Unit) { rsvpViewModel.refresh() }
     val c = DnTheme.colors
 
     DnBackground(glows = DnGlows.action()) {
@@ -120,6 +127,44 @@ fun AttendanceScreen(
                 }
 
                 Spacer(Modifier.height(20.dp))
+
+                // The way back to an invitation that was put off. Hidden when
+                // nothing is open, so the screen does not carry a dead row.
+                if (rsvpState.pendingCount > 0) {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(DnTileShape)
+                            .background(c.surface, DnTileShape)
+                            .border(1.dp, c.amber.copy(alpha = 0.45f), DnTileShape)
+                            .clickable(onClick = onRsvpClick)
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Box(
+                            Modifier.size(36.dp).clip(RoundedCornerShape(13.dp)).background(c.amberDim),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(DnIcons.Calendar, null, tint = c.amber, modifier = Modifier.size(19.dp))
+                        }
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(
+                                "응답하지 않은 행사 ${rsvpState.pendingCount}건",
+                                style = DnTheme.typography.captionStrong,
+                                color = c.textPrimary,
+                            )
+                            Text(
+                                "참석 여부를 알려주세요",
+                                style = DnTheme.typography.caption,
+                                color = c.textTertiary,
+                            )
+                        }
+                        Icon(DnIcons.ChevronRight, null, tint = c.textTertiary, modifier = Modifier.size(20.dp))
+                    }
+
+                    Spacer(Modifier.height(20.dp))
+                }
 
                 // TODO(hanmaum-dn-server#114): no per-member attendance summary
                 Row(

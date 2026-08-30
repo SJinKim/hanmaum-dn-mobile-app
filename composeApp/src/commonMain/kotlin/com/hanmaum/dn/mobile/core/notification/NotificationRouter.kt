@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /** Where a tapped notification wants to take the user. */
-enum class NotificationDestination { Attendance }
+enum class NotificationDestination { Attendance, Rsvp }
 
 /**
  * Carries a notification tap from the platform entry point (Android's Activity

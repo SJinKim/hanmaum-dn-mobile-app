@@ -14,6 +14,10 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import com.hanmaum.dn.mobile.features.events.data.model.SetRsvpResponseDto
+import com.hanmaum.dn.mobile.features.events.domain.model.RespondResult
+import com.hanmaum.dn.mobile.features.events.domain.model.RsvpStatus
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -81,5 +85,102 @@ class EventRsvpRepositoryImplTest {
     fun checkIn_400_returnsWindowClosed() = runTest {
         val result = EventRsvpRepositoryImpl(mockClient("{}", HttpStatusCode.BadRequest)).checkIn("e1")
         assertEquals(CheckInResult.WindowClosed, result)
+    }
+
+    @Test
+    fun getActiveRsvps_carriesTheMembersOwnStatus() = runTest {
+        val payload = testJson.encodeToString(
+            ApiResponse(
+                success = true,
+                data = listOf(
+                    EventRsvpResponse(
+                        "e1", "여름 수련회",
+                        "2026-08-20T09:00:00+09:00", "2026-08-30T23:59:00+09:00",
+                        announcementId = null,
+                        myStatus = "MAYBE",
+                        respondedAt = "2026-08-24T10:00:00+09:00",
+                    ),
+                    EventRsvpResponse(
+                        "e2", "가을 체육대회",
+                        "2026-08-20T09:00:00+09:00", "2026-09-05T23:59:00+09:00",
+                        announcementId = null,
+                    ),
+                ),
+            ),
+        )
+        val list = EventRsvpRepositoryImpl(mockClient(payload)).getActiveRsvps().getOrThrow()
+
+        assertEquals(RsvpStatus.MAYBE, list[0].myStatus)
+        assertNotNull(list[0].respondedAt)
+        assertTrue(list[0].isPending)
+        assertNull(list[1].myStatus)
+        assertTrue(list[1].isPending)
+    }
+
+    @Test
+    fun getActiveRsvps_dropsAnEntryWithAnUnparseableWindow() = runTest {
+        val payload = testJson.encodeToString(
+            ApiResponse(
+                success = true,
+                data = listOf(
+                    EventRsvpResponse("bad", "깨진 행사", "not-a-date", "also-not-a-date", null),
+                    EventRsvpResponse("ok", "여름 수련회", "2026-08-20T09:00:00+09:00", "2026-08-30T23:59:00+09:00", null),
+                ),
+            ),
+        )
+        val list = EventRsvpRepositoryImpl(mockClient(payload)).getActiveRsvps().getOrThrow()
+
+        // One malformed row must not blank the whole screen.
+        assertEquals(listOf("ok"), list.map { it.publicId })
+    }
+
+    @Test
+    fun getActiveRsvps_readsAnUnknownStatusAsUnanswered() = runTest {
+        val payload = testJson.encodeToString(
+            ApiResponse(
+                success = true,
+                data = listOf(
+                    EventRsvpResponse(
+                        "e1", "여름 수련회",
+                        "2026-08-20T09:00:00+09:00", "2026-08-30T23:59:00+09:00",
+                        announcementId = null,
+                        myStatus = "WAITLISTED",
+                    ),
+                ),
+            ),
+        )
+        val list = EventRsvpRepositoryImpl(mockClient(payload)).getActiveRsvps().getOrThrow()
+
+        assertNull(list[0].myStatus)
+    }
+
+    @Test
+    fun respond_200_returnsTheConfirmedStatus() = runTest {
+        val payload = testJson.encodeToString(
+            ApiResponse(
+                success = true,
+                data = SetRsvpResponseDto("e1", "여름 수련회", "NOT_GOING", "2026-08-24T10:00:00+09:00"),
+            ),
+        )
+        val result = EventRsvpRepositoryImpl(mockClient(payload)).respond("e1", RsvpStatus.NOT_GOING)
+
+        assertTrue(result is RespondResult.Success)
+        assertEquals(RsvpStatus.NOT_GOING, (result as RespondResult.Success).status)
+    }
+
+    @Test
+    fun respond_400_returnsWindowClosed() = runTest {
+        val result = EventRsvpRepositoryImpl(mockClient("{}", HttpStatusCode.BadRequest))
+            .respond("e1", RsvpStatus.GOING)
+
+        assertTrue(result is RespondResult.WindowClosed)
+    }
+
+    @Test
+    fun respond_500_returnsFailed() = runTest {
+        val result = EventRsvpRepositoryImpl(mockClient("{}", HttpStatusCode.InternalServerError))
+            .respond("e1", RsvpStatus.GOING)
+
+        assertTrue(result is RespondResult.Failed)
     }
 }
