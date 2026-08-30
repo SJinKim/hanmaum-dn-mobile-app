@@ -153,3 +153,19 @@ Der Fehler blieb zwei PRs lang unbemerkt, weil `ios-check` nur bei geändertem i
 Dasselbe Muster hat in derselben Session dreimal Funktionen verschwinden lassen
 (EventRsvpHost, RSVP-CTA, Push-Toggle) — ein fehlender Aufruf und eine ersetzte
 Konfiguration erzeugen beide keinen Compile-Fehler.
+
+## Ein OOM heißt nicht, dass der Prozess mehr Speicher braucht
+
+**2026-08-30.** Der TestFlight-Archivlauf starb mit `Compilation failed: Java heap space`
+beim Linken des Kotlin/Native-Frameworks. Der Reflex — dem Compiler mehr Heap geben — wäre
+falsch gewesen: `gradle.properties` forderte 4 GB Gradle plus 3 GB Kotlin-Daemon an, also
+exakt die 7 GB, die ein `macos-15-arm64`-Runner insgesamt hat. Am Kotlin-Daemon
+hochzudrehen hätte es verschlimmert.
+
+Bewiesen hat das eine lokale Reproduktion: derselbe Task, auf dasselbe 4-GB-Limit
+festgenagelt, lief in 6m39s durch. Der Bedarf lag also unter der Grenze — es war
+Verdrängung, nicht Appetit.
+
+**Regel:** bei OOM in CI zuerst prüfen, ob die konfigurierten Grenzen zusammen überhaupt
+auf die Maschine passen, und den Bedarf lokal mit demselben `-Xmx` messen. Ein 15-Minuten-
+Archivlauf ist der teuerste Ort, um eine Vermutung zu testen.

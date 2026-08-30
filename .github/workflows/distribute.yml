@@ -207,6 +207,19 @@ jobs:
           MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
           # HTTPS auth for the private certs repo: base64("x-access-token:<PAT>").
           MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+          # The archive links the Kotlin/Native framework for a real device, with
+          # the K/N cache off (see gradle.properties) — so the whole program is
+          # held in memory at once. gradle.properties asks for 4G + 3G of heap,
+          # which is the entire 7G of a macos-15-arm64 runner; the linker then
+          # dies with "Compilation failed: Java heap space". The task itself fits
+          # in well under 4G (verified locally at that ceiling), so this is
+          # contention, not appetite: give Gradle more room and shrink the
+          # Kotlin/JVM daemon, which is idle by the time the framework links.
+          # CI only — local machines are larger and keep gradle.properties.
+          GRADLE_OPTS: >-
+            -Dorg.gradle.jvmargs=-Xmx5120M
+            -Dkotlin.daemon.jvmargs=-Xmx1536M
+            -Dfile.encoding=UTF-8
         run: |
           chmod +x ../gradlew
           bundle exec fastlane beta
@@ -290,6 +303,19 @@ jobs:
           MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
           # HTTPS auth for the private certs repo: base64("x-access-token:<PAT>").
           MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+          # The archive links the Kotlin/Native framework for a real device, with
+          # the K/N cache off (see gradle.properties) — so the whole program is
+          # held in memory at once. gradle.properties asks for 4G + 3G of heap,
+          # which is the entire 7G of a macos-15-arm64 runner; the linker then
+          # dies with "Compilation failed: Java heap space". The task itself fits
+          # in well under 4G (verified locally at that ceiling), so this is
+          # contention, not appetite: give Gradle more room and shrink the
+          # Kotlin/JVM daemon, which is idle by the time the framework links.
+          # CI only — local machines are larger and keep gradle.properties.
+          GRADLE_OPTS: >-
+            -Dorg.gradle.jvmargs=-Xmx5120M
+            -Dkotlin.daemon.jvmargs=-Xmx1536M
+            -Dfile.encoding=UTF-8
         run: |
           chmod +x ../gradlew
           bundle exec fastlane release
