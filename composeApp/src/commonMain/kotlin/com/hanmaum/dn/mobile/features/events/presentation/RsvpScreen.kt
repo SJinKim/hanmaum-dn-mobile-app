@@ -21,6 +21,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,6 +56,12 @@ fun RsvpScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val c = DnTheme.colors
+
+    // This screen holds its own ViewModel instance — the ones in EventRsvpHost
+    // and the 출석 체크 banner are scoped elsewhere and never touch it. Without
+    // this the state stays at its initial isLoading = true and the spinner
+    // never stops.
+    LaunchedEffect(Unit) { viewModel.refresh() }
 
     DnBackground(glows = DnGlows.action()) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
