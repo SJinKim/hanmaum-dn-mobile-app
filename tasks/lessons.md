@@ -136,3 +136,20 @@ When the user provides target screenshots for an existing feature area, do not a
   1. Retiring or changing a documented rule is a **repo-wide grep**, not an edit to the file where you noticed it. Before claiming it retired: `grep -rn "<distinctive phrase>" CLAUDE.md AGENTS.md CONTRIBUTING.md tasks/ .claude/ docs/` — agent instructions live in at least five places here (`CLAUDE.md`, `.claude/commands/*.md`, `.claude/skills/*/SKILL.md`, `CONTRIBUTING.md`, `tasks/lessons.md`) and they duplicate each other freely.
   2. **Duplication is the root cause.** Four files each carried their own copy of the verification gates, so all four drifted independently. Where a rule must appear in more than one file, the secondary copies should *point at* the owner (e.g. "run the ladder in `verifying-kmp-changes`") instead of restating it. A restated rule is a rule that will go stale.
   3. **Never write a bare number into a doc.** Baselines and counts drift; the tool is authoritative. State the gate ("0 errors — any error is yours") and the command that reads the real value (`grep -c 'severity="Error"' composeApp/build/reports/lint-results-devDebug.xml`), not a figure a future session will quote back as fact.
+
+## Ein ganzes File kopieren, um eine Zeile zu bekommen
+
+**2026-08-30.** `ios-check` scheiterte mit `Cannot locate tasks that match
+':composeApp:assembleReleaseX64'`. Ursache war kein iOS-Problem: beim Portieren des
+v2-Redesigns wurde `pr-check.yml` komplett von `screen-makover` geholt, nur um die
+gelockerte TODO-Regel mitzunehmen. Damit fiel die gepflegte Fassung des iOS-Jobs weg —
+`macos-15` wurde zu `macos-latest`, die Xcode-Auswahl verschwand, der Swift-Interop-Build
+wurde durch eine Gradle-Task ersetzt, die es nicht gibt.
+
+Der Fehler blieb zwei PRs lang unbemerkt, weil `ios-check` nur bei geändertem iOS-Code
+überhaupt scharf wird — und weil lokal alles grün war.
+
+**Regel:** beim Übernehmen aus einem anderen Branch den *Hunk* nehmen, nie die Datei.
+Dasselbe Muster hat in derselben Session dreimal Funktionen verschwinden lassen
+(EventRsvpHost, RSVP-CTA, Push-Toggle) — ein fehlender Aufruf und eine ersetzte
+Konfiguration erzeugen beide keinen Compile-Fehler.
