@@ -193,6 +193,17 @@ object DnIcons {
         )
     }
 
+    val Trash: ImageVector by lazy {
+        stroked(
+            "Trash",
+            "M 4.5 6.5 L 19.5 6.5",
+        "M 9.5 6.5 L 9.5 4.6 C 9.5 4 10 3.5 10.6 3.5 L 13.4 3.5 C 14 3.5 14.5 4 14.5 4.6 L 14.5 6.5",
+        "M 6.7 6.5 L 7.5 18.6 C 7.55 19.4 8.2 20.1 9.1 20.1 L 14.9 20.1 C 15.8 20.1 16.45 19.4 16.5 18.6 L 17.3 6.5",
+        "M 10.2 10.4 L 10.2 16.3",
+        "M 13.8 10.4 L 13.8 16.3",
+        )
+    }
+
     val Book: ImageVector by lazy {
         stroked(
             "Book",
