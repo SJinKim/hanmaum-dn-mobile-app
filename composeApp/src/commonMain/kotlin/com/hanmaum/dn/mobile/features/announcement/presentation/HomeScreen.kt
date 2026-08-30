@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
@@ -74,6 +75,15 @@ fun HomeScreen(
 ) {
     val viewModel: HomeViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Nothing else asks for the content: the ViewModel's init only wires up the
+    // push-token collector. Without this, banners, announcements and the
+    // greeting name all stay empty for ever.
+    //
+    // On entry rather than on resume, which is the split loadUnseenCount()
+    // documents: the badge is cheap and goes stale the moment the notification
+    // list opens, the whole list is neither.
+    LaunchedEffect(Unit) { viewModel.loadAnnouncements() }
 
     // The badge is cleared server-side the moment the list opens, so it has to
     // be re-read on the way back — otherwise Home keeps showing a stale count.
