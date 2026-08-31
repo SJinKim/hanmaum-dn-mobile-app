@@ -36,6 +36,8 @@ import com.hanmaum.dn.mobile.core.notification.NotificationDestination
 import com.hanmaum.dn.mobile.core.notification.NotificationRouter
 import com.hanmaum.dn.mobile.core.presentation.components.BottomNavBar
 import com.hanmaum.dn.mobile.features.events.presentation.EventRsvpHost
+import com.hanmaum.dn.mobile.features.pending.screen.RejectedScreen
+import com.hanmaum.dn.mobile.core.navigation.RejectedRoute
 import com.hanmaum.dn.mobile.features.events.presentation.RsvpScreen
 import com.hanmaum.dn.mobile.core.navigation.RsvpRoute
 import com.hanmaum.dn.mobile.core.presentation.theme.AppTheme
@@ -128,9 +130,14 @@ fun App() {
                                     NavRoute.Home            -> HomeRoute
                                     NavRoute.Login           -> LoginRoute
                                     NavRoute.PendingApproval -> PendingRoute
+                                    NavRoute.Rejected        -> RejectedRoute
                                 }
                                 navController.navigate(targetRoute) {
-                                    popUpTo<SplashRoute> { inclusive = true }
+                                    if (route == NavRoute.Rejected) {
+                                        popUpTo(0) { inclusive = true }
+                                    } else {
+                                        popUpTo<SplashRoute> { inclusive = true }
+                                    }
                                 }
                             }
                         )
@@ -146,6 +153,13 @@ fun App() {
                             onNavigateToPending = {
                                 navController.navigate(PendingRoute) {
                                     popUpTo<LoginRoute> { inclusive = true }
+                                }
+                            },
+                            onNavigateToRejected = {
+                                // popUpTo(0): the whole back stack goes, so there is
+                                // nothing behind this screen to return to.
+                                navController.navigate(RejectedRoute) {
+                                    popUpTo(0) { inclusive = true }
                                 }
                             },
                             onRegisterClick = { navController.navigate(RegisterRoute) },
@@ -164,6 +178,10 @@ fun App() {
                         )
                     }
 
+                    // No back handler and no way out: the screen is the end of the
+                    // road for a refused member, by design.
+                    composable<RejectedRoute> { RejectedScreen() }
+
                     composable<PendingRoute> {
                         PendingScreen(
                             onNavigateToHome = {
@@ -173,6 +191,13 @@ fun App() {
                             },
                             onNavigateToLogin = {
                                 navController.navigate(LoginRoute) {
+                                    popUpTo(0) { inclusive = true }
+                                }
+                            },
+                            onNavigateToRejected = {
+                                // popUpTo(0): the whole back stack goes, so there is
+                                // nothing behind this screen to return to.
+                                navController.navigate(RejectedRoute) {
                                     popUpTo(0) { inclusive = true }
                                 }
                             },

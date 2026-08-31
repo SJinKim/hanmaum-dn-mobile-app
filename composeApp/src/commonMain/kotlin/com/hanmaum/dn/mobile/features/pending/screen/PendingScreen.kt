@@ -44,6 +44,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun PendingScreen(
     onNavigateToHome: () -> Unit,
     onNavigateToLogin: () -> Unit,
+    onNavigateToRejected: () -> Unit,
 ) {
     val viewModel: PendingViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -56,6 +57,7 @@ fun PendingScreen(
             when (route) {
                 NavRoute.Home -> onNavigateToHome()
                 NavRoute.Login -> onNavigateToLogin()
+                NavRoute.Rejected -> onNavigateToRejected()
                 else -> Unit
             }
             viewModel.onNavigationHandled()

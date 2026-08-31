@@ -141,6 +141,9 @@ interface AppStrings {
     val yearSuffix: String
     // Pending screen
     val pendingTitle: String
+    val rejectedTitle: String
+    val rejectedBody: String
+    val rejectedContactLabel: String
     val pendingBody: String
     // Calendar navigation & labels
     val calendarPrevMonth: String
@@ -299,6 +302,9 @@ object EnStrings : AppStrings {
         "July", "August", "September", "October", "November", "December")
     override val yearSuffix = ""
     override val pendingTitle = "Pending Approval"
+    override val rejectedTitle = "Registration Not Approved"
+    override val rejectedBody = "You are not registered as part of the Hanmaum D+N congregation.\nPlease contact us at the address below."
+    override val rejectedContactLabel = "Contact"
     override val pendingBody = "Your registration has been submitted. An admin will review your application soon."
     override val calendarPrevMonth = "Previous month"
     override val calendarNextMonth = "Next month"
@@ -451,6 +457,9 @@ object KoStrings : AppStrings {
         "7월", "8월", "9월", "10월", "11월", "12월")
     override val yearSuffix = "년"
     override val pendingTitle = "가입 대기 중"
+    override val rejectedTitle = "가입이 승인되지 않았습니다"
+    override val rejectedBody = "한마음 D+N 소속으로 등록되지 않았습니다.\n문의는 아래 주소로 부탁드립니다."
+    override val rejectedContactLabel = "문의"
     override val pendingBody = "가입 신청이 완료되었습니다.\n관리자가 곧 신청을 검토할 예정입니다."
     override val calendarPrevMonth = "이전 달"
     override val calendarNextMonth = "다음 달"
@@ -603,6 +612,9 @@ object DeStrings : AppStrings {
         "Juli", "August", "September", "Oktober", "November", "Dezember")
     override val yearSuffix = ""
     override val pendingTitle = "Genehmigung ausstehend"
+    override val rejectedTitle = "Anmeldung nicht genehmigt"
+    override val rejectedBody = "Sie sind nicht als Mitglied der Gemeinde Hanmaum D+N eingetragen.\nBei Fragen wenden Sie sich bitte an die untenstehende Adresse."
+    override val rejectedContactLabel = "Kontakt"
     override val pendingBody = "Ihre Anmeldung wurde eingereicht. Ein Administrator wird Ihre Anfrage in Kürze prüfen."
     override val calendarPrevMonth = "Vorheriger Monat"
     override val calendarNextMonth = "Nächster Monat"

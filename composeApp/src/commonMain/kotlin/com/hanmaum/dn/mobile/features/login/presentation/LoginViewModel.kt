@@ -78,24 +78,25 @@ class LoginViewModel(
                         credentialStore.saveCredentials(user, pass)
                         tokenStorage.setBiometricEnabled(true)
                     }
-                    // DECIDE
-                    if (member.status == MemberStatus.ACTIVE) {
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                statusMessage = "인증 완료!",
-                                isSuccess = true,
-                                navigateTo = NavRoute.Home
-                            )
-                        }
-                    } else {
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                isSuccess = true,
-                                navigateTo = NavRoute.PendingApproval
-                            )
-                        }
+                    // Route by status. Sending every non-active member to the
+                    // pending screen used to tell a refused applicant to wait for
+                    // an approval that was never coming.
+                    val destination = when (member.status) {
+                        MemberStatus.ACTIVE -> NavRoute.Home
+                        MemberStatus.REJECTED -> NavRoute.Rejected
+                        // INACTIVE / DELETED / UNKNOWN still land here. That is not
+                        // right either — they are not waiting for anything — but
+                        // what they should see is its own question, and guessing at
+                        // it would repeat the mistake this change is fixing.
+                        else -> NavRoute.PendingApproval
+                    }
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            statusMessage = if (destination == NavRoute.Home) "인증 완료!" else it.statusMessage,
+                            isSuccess = true,
+                            navigateTo = destination
+                        )
                     }
                 }.onFailure { e ->
                     tokenStorage.clear()

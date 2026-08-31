@@ -26,10 +26,16 @@ class PendingViewModel(
             val result = memberRepository.getMyProfile()
 
             result.onSuccess { member ->
-                if (member.status == MemberStatus.ACTIVE) {
-                    _uiState.update { it.copy(isLoading = false, navigateTo = NavRoute.Home) }
-                } else {
-                    _uiState.update { it.copy(isLoading = false, message = "아직 준비중입니다. 기다려주세요.") }
+                // Someone can be sitting on this screen at the moment the decision
+                // is made. Without the REJECTED branch the button would keep
+                // answering "please wait" for ever.
+                when (member.status) {
+                    MemberStatus.ACTIVE ->
+                        _uiState.update { it.copy(isLoading = false, navigateTo = NavRoute.Home) }
+                    MemberStatus.REJECTED ->
+                        _uiState.update { it.copy(isLoading = false, navigateTo = NavRoute.Rejected) }
+                    else ->
+                        _uiState.update { it.copy(isLoading = false, message = "아직 준비중입니다. 기다려주세요.") }
                 }
             }.onFailure {
                 _uiState.update { it.copy(isLoading = false, message = "인증을 실패하였습니다. 로그인 다시 시도해주세요.") }
