@@ -187,7 +187,7 @@ private fun ProfileViewContent(
 
         MenuRow(DnIcons.User, "프로필 수정", null, onEdit)
         Spacer(Modifier.height(10.dp))
-        MenuRow(DnIcons.More, strings.settingsTitle, null, onSettings)
+        MenuRow(DnIcons.Settings, strings.settingsTitle, null, onSettings)
 
         Spacer(Modifier.height(18.dp))
 
