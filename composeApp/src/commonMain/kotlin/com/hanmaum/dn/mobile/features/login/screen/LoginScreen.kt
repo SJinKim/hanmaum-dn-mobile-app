@@ -61,6 +61,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun LoginScreen(
     onNavigateToHome: () -> Unit,
     onNavigateToPending: () -> Unit,
+    onNavigateToRejected: () -> Unit,
     onRegisterClick: () -> Unit,
 ) {
     val viewModel: LoginViewModel = koinViewModel()
@@ -106,6 +107,7 @@ fun LoginScreen(
             when (route) {
                 NavRoute.Home -> onNavigateToHome()
                 NavRoute.PendingApproval -> onNavigateToPending()
+                NavRoute.Rejected -> onNavigateToRejected()
                 else -> Unit
             }
             viewModel.onNavigationHandled()

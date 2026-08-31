@@ -50,8 +50,14 @@ class SplashViewModel(
                             _navigateTo.value = NavRoute.Home
                         }
                         MemberStatus.PENDING -> _navigateTo.value = NavRoute.PendingApproval
-                        // REJECTED / DELETED: the account is no longer valid, so this
-                        // is an intentional teardown — forget the saved Face ID setup.
+                        // Refused. The session is deliberately kept: clearing it would
+                        // drop the member at the login screen, where they could simply
+                        // register again — and they would never see why they were
+                        // turned away.
+                        MemberStatus.REJECTED -> _navigateTo.value = NavRoute.Rejected
+                        // DELETED / INACTIVE / UNKNOWN: the account is no longer valid,
+                        // so this is an intentional teardown — forget the saved Face ID
+                        // setup too.
                         else -> handleAuthError(forgetBiometric = true)
                     }
                 }
