@@ -47,7 +47,7 @@ fun NurtureDetailScreen(
 
     DnBackground(glows = DnGlows.information()) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
-            DnTopBar(title = "양육", onBack = onBackClick, onAction = { })
+            DnTopBar(title = "양육", onBack = onBackClick)
 
             Column(
                 Modifier

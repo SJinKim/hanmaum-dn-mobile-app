@@ -72,7 +72,7 @@ fun AnnouncementListScreen(
 
     DnBackground(glows = DnGlows.information()) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
-            DnTopBar(title = "소식", onBack = onBackClick, onAction = { })
+            DnTopBar(title = "소식", onBack = onBackClick)
 
             Spacer(Modifier.height(10.dp))
 

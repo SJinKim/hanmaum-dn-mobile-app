@@ -60,7 +60,7 @@ fun AlbumsScreen(
 
     DnBackground(glows = DnGlows.information()) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
-            DnTopBar(title = strings.navAlbum, onBack = onBackClick, onAction = { })
+            DnTopBar(title = strings.navAlbum, onBack = onBackClick)
 
             when (val s = state) {
                 AlbumsUiState.Loading -> Box(Modifier.fillMaxSize(), Alignment.Center) {

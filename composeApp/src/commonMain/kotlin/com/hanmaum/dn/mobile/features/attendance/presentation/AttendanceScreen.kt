@@ -60,7 +60,7 @@ fun AttendanceScreen(
 
     DnBackground(glows = DnGlows.action()) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
-            DnTopBar(title = "출석 체크", onBack = onBackClick, onAction = { })
+            DnTopBar(title = "출석 체크", onBack = onBackClick)
 
             Column(
                 Modifier
