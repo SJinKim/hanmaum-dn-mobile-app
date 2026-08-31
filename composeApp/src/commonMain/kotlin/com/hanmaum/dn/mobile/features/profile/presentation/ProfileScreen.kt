@@ -89,7 +89,6 @@ fun ProfileScreen(
             DnTopBar(
                 title = if (editing) "프로필 수정" else "프로필",
                 onBack = { if (editing) viewModel.cancelEditing() else onBack() },
-                onAction = { },
             )
 
             when (val state = uiState) {

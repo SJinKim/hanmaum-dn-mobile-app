@@ -107,7 +107,7 @@ fun SettingsScreen(
 
     DnBackground(glows = DnGlows.information()) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
-            DnTopBar(title = strings.settingsTitle, onBack = onBack, onAction = { })
+            DnTopBar(title = strings.settingsTitle, onBack = onBack)
 
             Column(
                 Modifier

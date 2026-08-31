@@ -74,7 +74,6 @@ fun ParticipationScreen(
             DnTopBar(
                 title = if (tab == 0) "양육" else "사역",
                 onBack = onBackClick,
-                onAction = { },
             )
 
             Spacer(Modifier.height(14.dp))

@@ -54,7 +54,7 @@ fun AlbumDetailScreen(
 
     DnBackground(glows = DnGlows.information()) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
-            DnTopBar(title = albumName, onBack = onBackClick, onAction = { })
+            DnTopBar(title = albumName, onBack = onBackClick)
 
             when (val s = state) {
                 AlbumDetailUiState.Loading -> Box(Modifier.fillMaxSize(), Alignment.Center) {

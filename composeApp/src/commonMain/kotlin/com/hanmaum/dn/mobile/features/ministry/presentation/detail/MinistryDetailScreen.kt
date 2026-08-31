@@ -54,7 +54,7 @@ fun MinistryDetailScreen(
 
     DnBackground(glows = DnGlows.action()) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
-            DnTopBar(title = "사역", onBack = onBackClick, onAction = { })
+            DnTopBar(title = "사역", onBack = onBackClick)
 
             when (val s = state) {
                 is MinistryDetailUiState.Loading -> Box(Modifier.fillMaxSize(), Alignment.Center) {

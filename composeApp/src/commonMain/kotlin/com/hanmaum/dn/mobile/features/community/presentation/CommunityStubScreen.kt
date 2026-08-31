@@ -39,7 +39,7 @@ fun CommunityStubScreen(onBackClick: () -> Unit) {
     val c = DnTheme.colors
     DnBackground(glows = DnGlows.information()) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
-            DnTopBar(title = "커뮤니티", onBack = onBackClick, onAction = { })
+            DnTopBar(title = "커뮤니티", onBack = onBackClick)
 
             Column(
                 Modifier.fillMaxSize().padding(horizontal = 40.dp),

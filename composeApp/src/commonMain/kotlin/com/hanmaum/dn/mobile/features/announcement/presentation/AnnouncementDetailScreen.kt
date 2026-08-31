@@ -77,7 +77,7 @@ fun AnnouncementDetailScreen(
 
     DnBackground(glows = DnGlows.information()) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
-            DnTopBar(title = "소식", onBack = onBackClick, onAction = { })
+            DnTopBar(title = "소식", onBack = onBackClick)
 
             when {
                 state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {

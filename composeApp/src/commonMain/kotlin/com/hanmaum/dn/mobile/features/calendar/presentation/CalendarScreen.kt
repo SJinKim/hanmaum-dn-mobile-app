@@ -65,7 +65,7 @@ fun CalendarScreen(onBackClick: () -> Unit) {
 
     DnBackground(glows = DnGlows.information()) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
-            DnTopBar(title = strings.navCalendar, onBack = onBackClick, onAction = { })
+            DnTopBar(title = strings.navCalendar, onBack = onBackClick)
 
             Spacer(Modifier.height(12.dp))
             DnSegmented(

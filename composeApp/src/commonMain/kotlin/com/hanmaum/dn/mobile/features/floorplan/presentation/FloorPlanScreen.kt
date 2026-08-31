@@ -75,7 +75,6 @@ fun FloorPlanScreen(onBackClick: () -> Unit) {
                 onBack = onBackClick,
                 actionIcon = DnIcons.ListBulleted,
                 actionDescription = strings.list,
-                onAction = { },
             )
 
             when (val state = uiState) {
