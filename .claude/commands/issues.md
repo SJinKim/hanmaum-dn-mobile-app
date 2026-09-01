@@ -115,6 +115,33 @@ gh api graphql -f query='
 
 Eine Karte in **Done** mit leerem PR-Feld ist ein Fund, kein Rauschen.
 
+## Done ohne PR — das Feld *Remarks* füllen
+
+Manche Karten sind zu Recht ohne PR fertig: beiläufig in einem fremden PR
+mitrepariert, per Commit direkt erledigt, oder als hinfällig geschlossen.
+Ein leeres PR-Feld sieht dann aus wie derselbe Verlinkungsfehler von oben.
+
+Deshalb: **jede Done-Karte ohne verlinkten PR bekommt einen Eintrag im
+Board-Feld `Remarks`** — die Feststellung, dass keiner existiert, *und der
+Grund*. Ohne Grund ist der Eintrag wertlos; er soll die nächste Person davon
+abhalten, den Fall noch einmal zu untersuchen.
+
+```bash
+ITEM=$(gh project item-list 6 --owner SJinKim --format json --limit 100 \
+  --jq '.items[] | select(.content.number == <n>) | .id')
+
+gh project item-edit --id "$ITEM" \
+  --project-id PVT_kwHOA-OC0c4Bh0dZ \
+  --field-id PVTF_lAHOA-OC0c4Bh0dZzhhDgFc \
+  --text "No PR: <Grund>."
+```
+
+Beispiel — #104: *„No PR: the relaxed TODO gate that resolves this landed
+incidentally inside #106 (v2 redesign import), which was not opened for this
+issue — linking it would misattribute that PR."* Einen fremden PR
+nachträglich mit `Closes` zu versehen, nur damit die Spalte gefüllt ist, wäre
+die falsche Reparatur: der Link behauptet dann eine Absicht, die es nie gab.
+
 ## Code zum Issue finden
 
 Nicht `grep` über das ganze Repo. Der Graph beantwortet „wo lebt das" in
