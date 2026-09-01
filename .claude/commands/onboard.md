@@ -86,8 +86,12 @@ even for a one-line fix; that issue body is where the "why" survives.
 ## E. Close it out
 
 Run the ladder from `verifying-kmp-changes` — it decides which gates this
-change actually needs — and show the output. Then `/commit`, open the PR with
-`closes #<n>`, move the card to **In Review**.
+change actually needs — and show the output. Then `/commit` and open the PR.
+
+The PR body **must** carry `Closes #<n>` — English keyword, always. It is what
+creates the issue↔PR link that fills the board's *Linked pull requests*
+column; a German „Behebt #n" links nothing and closes nothing. Verify the link
+landed (`/issues` has the query), then move the card to **In Review**.
 
 Merge on green, never on hope: `--auto` does not wait here.
 
