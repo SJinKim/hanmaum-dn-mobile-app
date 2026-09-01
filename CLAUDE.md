@@ -396,18 +396,45 @@ Setup on a new machine (`graphify-out/` is gitignored, so it is per-clone):
 
 ```bash
 brew install pipx && pipx install graphifyy
+pipx inject graphifyy "graphifyy[sql]"      # .sql needs tree_sitter_sql (the server has 46)
 graphify install --platform claude          # user-scope skill, does not touch this repo
 graphify extract . --code-only              # AST only; --code-only keeps it free
 graphify cluster-only . --no-label
 graphify hook install                       # background rebuild after each commit
 ```
 
-Two caveats. `--code-only` skips the 63 docs and 26 images on purpose, so the
+Three caveats. `--code-only` skips the 63 docs and 26 images on purpose, so the
 graph knows the code and not the specs — a question about a spec still means
-reading the spec. And `graphify hook install` writes `.git/hooks/post-commit`
+reading the spec. `graphify hook install` writes `.git/hooks/post-commit`
 directly, while lefthook owns `pre-commit`, `commit-msg` and `pre-push`; the
 two do not currently collide, but `graphify hook status` settles it after any
-`lefthook install`.
+`lefthook install`. And the graph indexes *declarations and calls*, never string
+literals — no URL path is a node, so it cannot tell you which mobile call site a
+changed server endpoint breaks. That question belongs to the server's
+`openapi.yaml` (springdoc), not here.
+
+### Searching across the three repos
+
+`hanmaum-dn-server` and `hanmaum-dn-web-app` have their own graphs, merged into
+`~/.graphify/global-graph.json` (outside every repo). Refresh with
+`dn-graph-sync` (~4s, incremental) — the post-commit hooks keep each repo's own
+graph current but never touch the global one, so it is a snapshot.
+
+```bash
+graphify explain "EventRsvpRepositoryImpl" --graph ~/.graphify/global-graph.json
+```
+
+Measured reductions: 19.3x mobile alone, 11.7x server, 5.8x web-app, **30.9x
+against the merged graph** (303k tokens naive → ~9.8k per query) — the ratio
+grows with corpus size, so the merged graph is the one to ask.
+
+Drive it with `explain` / `affected` / `god-nodes` on a symbol name. `query`
+with a natural-language sentence is noisy: it seeds on fuzzy matches and walks
+two hops, so "rsvp response handling" returns member-subsystem nodes. A name
+that exists in two repos (`MemberStatus`) makes `affected` report *no unique
+node match* — fall back to that repo's own graph. Nothing links the repos to
+each other: cross-repo edges need an identical namespace *and* name, and these
+codebases share no types (`com.hanmaum.dn.mobile.*` vs `com.hanmaum.dn.app.*`).
 
 - Plan mode for any task with 3+ steps or an architectural decision. Specs go to
   `docs/superpowers/specs/`, plans to `docs/superpowers/plans/` (dated filenames;
