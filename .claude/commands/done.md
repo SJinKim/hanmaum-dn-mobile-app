@@ -19,7 +19,8 @@ commands (flavored task names, `DEVELOPER_DIR` prefix for iOS). Then confirm:
 
 ## Build gates (evidence shown, not claimed)
 - [ ] `./gradlew :composeApp:testDevDebugUnitTest` — all passing
-- [ ] `grep -rn "TODO" composeApp/src` — no matches (CI fails on any)
+- [ ] `grep -rn "TODO" composeApp/src | grep -v "TODO("` — no matches
+      (a `TODO(hanmaum-dn-server#115)` naming its tracking issue is allowed)
 - [ ] `./gradlew lint` — 0 errors (baseline is clean; any error is yours)
 - [ ] Shared/iOS-reachable code:
       `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer ./gradlew :composeApp:iosSimulatorArm64Test`

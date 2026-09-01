@@ -78,3 +78,8 @@ ci-report-*.md
 # Loose target-design screenshots dropped at designs/ root (personal working
 # files for the feature in progress; curated references live in designs/<set>/)
 designs/IMG_*
+
+# graphify knowledge graph. Rebuilt locally from source by the post-commit
+# hook (`graphify hook install`), so it is a derived artifact, not shared
+# state — graph.json is multi-MB and would churn on every commit.
+graphify-out/

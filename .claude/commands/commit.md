@@ -14,7 +14,8 @@ the single source of truth for which gates apply and the exact commands. The
 minimum for any change:
 
 1. `./gradlew :composeApp:testDevDebugUnitTest`
-2. `grep -rn "TODO" composeApp/src` — must print nothing (CI fails on any match)
+2. `grep -rn "TODO" composeApp/src | grep -v "TODO("` — must print nothing
+   (CI fails on an unreferenced TODO only; `TODO(hanmaum-dn-server#115)` is allowed)
 3. `./gradlew lint` — 0 errors
 4. `./gradlew :composeApp:assembleDevDebug`
 5. Touched `commonMain`/`iosMain`? Add the iOS gates from the skill

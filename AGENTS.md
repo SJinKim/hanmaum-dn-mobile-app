@@ -91,8 +91,9 @@ CommandLineTools. Use exactly these:
 #   grep -c 'severity="Error"' composeApp/build/reports/lint-results-devDebug.xml
 ./gradlew lint
 
-# TODO gate — CI greps and fails the build on any match
-grep -rn "TODO" composeApp/src   # must print nothing
+# TODO gate — CI fails on an UNREFERENCED TODO only; a TODO naming its tracking
+# issue, e.g. TODO(hanmaum-dn-server#115), is allowed and must not be deleted.
+grep -rn "TODO" composeApp/src | grep -v "TODO("   # must print nothing
 
 # iOS native tests — without DEVELOPER_DIR this dies with xcrun exit 72
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
@@ -123,7 +124,8 @@ Before calling work complete:
 
 1. Add/update tests for behavior changes.
 2. Run the smallest relevant tests first, then `./gradlew :composeApp:testDevDebugUnitTest`.
-3. `grep -rn "TODO" composeApp/src` — must print nothing (CI fails the build on any match).
+3. `grep -rn "TODO" composeApp/src | grep -v "TODO("` — must print nothing. CI fails
+   on an unreferenced TODO only; `TODO(hanmaum-dn-server#115)` is allowed and stays.
 4. `./gradlew lint` — 0 errors.
 5. For shared/`commonMain`/iOS-reachable code, run the `iosSimulatorArm64Test` command above with its `DEVELOPER_DIR` prefix. If a Kotlin declaration Swift calls changed, also run the Swift interop gate.
 6. For Android deliverables, run `./gradlew :composeApp:assembleDevDebug` or explain why not.
