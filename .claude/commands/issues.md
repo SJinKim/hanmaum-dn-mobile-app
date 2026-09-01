@@ -58,12 +58,62 @@ gh project item-edit --id "$ITEM" \
 ## Wann welcher Status
 
 Aus `feedback_project_board_status`: Der Status wird selbst gepflegt, nicht
-liegen gelassen.
+liegen gelassen. Jeder dieser drei Schritte ist Pflicht, nicht Kür — ein
+Board, das hinterherhinkt, ist schlimmer als keins.
 
 - **In Progress** — sobald der Feature-Branch für das Issue steht
-- **In Review** — sobald der PR offen ist
-- **Done** — der Merge schließt das Issue via `closes #n` automatisch; den
-  Board-Status trotzdem prüfen, GitHub zieht ihn nicht immer nach
+- **In Review** — sobald der PR offen ist, **und der PR ist mit dem Issue
+  verlinkt** (siehe unten)
+- **Done** — nach dem Merge. Prüfen statt annehmen: GitHub zieht den
+  Board-Status nicht zuverlässig nach, und ein Issue ohne gültiges
+  Closing-Keyword schließt sich gar nicht
+
+## PR mit Issue verlinken — das Keyword muss englisch sein
+
+Der PR-Body **muss** `Closes #<n>` enthalten (oder `Fixes` / `Resolves`).
+Das ist kein Stil, sondern der Mechanismus: GitHub erzeugt daraus den
+Development-Link, und **nur** daraus speist sich die Board-Spalte
+*Linked pull requests*. Ohne den Link schließt sich das Issue beim Merge
+nicht, und die Karte zeigt keinen PR.
+
+**Deutsche Keywords funktionieren nicht.** Sieben PRs schrieben „Behebt #n";
+GitHub parst das nicht, also blieben sieben Issues offen und sieben Karten
+ohne PR — die gesamte Board-Drift vom 2026-09-01 hatte diese eine Ursache.
+Issues und PRs werden auf Englisch geschrieben.
+
+Nachträglich reparierbar: den Body eines auch schon gemergten PR editieren
+und das Keyword eintragen — GitHub baut den Link rückwirkend auf. Das Issue
+schließt sich dann nicht mehr von selbst, das bleibt Handarbeit.
+
+Nach dem Öffnen des PR verifizieren, dass der Link wirklich steht:
+
+```bash
+gh api graphql -f query='
+{ repository(owner:"SJinKim", name:"hanmaum-dn-mobile-app") {
+    issue(number:<n>) {
+      state
+      closedByPullRequestsReferences(first:5, includeClosedPrs:true) { nodes { number } }
+    } } }'
+```
+
+Leere `nodes` heißt: das Keyword fehlt oder ist nicht englisch.
+
+Board-Spalte für alle Karten auf einmal prüfen — Status und verlinkter PR
+nebeneinander:
+
+```bash
+gh api graphql -f query='
+{ user(login:"SJinKim") { projectV2(number:6) {
+    items(first:100) { nodes {
+      content { ... on Issue { number state } }
+      fieldValues(first:20) { nodes { __typename
+        ... on ProjectV2ItemFieldSingleSelectValue { name }
+        ... on ProjectV2ItemFieldPullRequestValue { pullRequests(first:5){nodes{number}} }
+      } } } } } } }' --jq '.data.user.projectV2.items.nodes[] | select(.content.number != null) |
+  "\(.content.number)\t\(.content.state)\t\([.fieldValues.nodes[]|select(.__typename=="ProjectV2ItemFieldSingleSelectValue")|.name]|join(""))\t\([.fieldValues.nodes[]|select(.__typename=="ProjectV2ItemFieldPullRequestValue")|.pullRequests.nodes[].number]|join(","))"'
+```
+
+Eine Karte in **Done** mit leerem PR-Feld ist ein Fund, kein Rauschen.
 
 ## Code zum Issue finden
 

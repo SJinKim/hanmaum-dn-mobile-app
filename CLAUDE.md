@@ -320,6 +320,8 @@ Everything above, plus:
 ### PR
 - [ ] Title = commit convention; description: why / what / how tested, with
       ✅ Done / ⚠️ Found / 🔧 Fixed / 📋 Next / 🚫 Blocked markers, file:line refs
+- [ ] Body carries `Closes #<n>` — English keyword only; it is what links the PR
+      to the issue and fills the board's Linked-PR column (`/issues`)
 - [ ] UI change → Android + iOS screenshots (or note why iOS unreachable)
 - [ ] Branch rebased on `main`, no merge commits
 - [ ] Both CI checks green before merge (watch-then-merge chain from §5)
