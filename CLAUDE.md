@@ -23,6 +23,10 @@ Coil 3, kotlinx-serialization, multiplatform-settings, kotlinx-datetime.
 
 ## 2. Session start (non-negotiable)
 
+Run `/onboard` — it owns the session-start flow. Work is pulled from the
+**DN-Mobile-App** board (project `6`), one card at a time; nothing is tracked
+in local task files. The steps below are the reading list that flow assumes.
+
 1. Read `tasks/lessons.md` — every entry is a real mistake that already cost hours.
 2. `git status --short --branch` — if the tree is dirty with work you didn't make,
    list the files and ask before touching anything.
