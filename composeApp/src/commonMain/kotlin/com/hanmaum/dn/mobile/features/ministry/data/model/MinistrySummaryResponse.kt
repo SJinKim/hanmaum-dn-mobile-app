@@ -9,10 +9,15 @@ import kotlinx.serialization.Serializable
  * title/subtitle. The Kotlin names stay aligned with the domain model;
  * @SerialName carries the wire names.
  *
- * isActive is NOT renamed: the server sends isActive, verified by
- * MinistryWireContractTest (hanmaum-dn-server#130). It deliberately has no
- * default — a default turns a future wire-name drift into a silent true
- * instead of a failing test (#129).
+ * isActive is NOT renamed. It once looked renamed because springdoc read the
+ * Java getter and wrote "active" into openapi.yaml while Jackson serialized
+ * "isActive" — so a client modelled from the spec never bound. The server
+ * pinned all 19 is-prefixed booleans with an explicit @get:JsonProperty in
+ * hanmaum-dn-server#138, and BooleanWireNameTest holds them there, so spec
+ * and wire now agree.
+ *
+ * No default here on purpose: the default is what turned that mismatch into a
+ * silent true instead of a failing test (#129).
  */
 @Serializable
 data class MinistrySummaryResponse(

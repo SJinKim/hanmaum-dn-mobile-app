@@ -33,8 +33,10 @@ private fun mockClient(responseJson: String): HttpClient = HttpClient(MockEngine
 }
 
 /**
- * The wire name is isActive, verified against MinistryWireContractTest in
- * hanmaum-dn-server#130. The mobile DTOs used to read @SerialName("active")
+ * The wire name is isActive, pinned server-side by an explicit
+ * @get:JsonProperty in hanmaum-dn-server#138 after springdoc had documented
+ * it as "active" while Jackson served "isActive". The mobile DTOs read
+ * @SerialName("active") — correctly derived from a spec that was wrong —
  * with a default of true, so a deactivated 사역 arrived as active and nothing
  * failed: ignoreUnknownKeys dropped the real key and the default filled the
  * gap. The list view hid it because the server filters on ?active=true; the
