@@ -169,3 +169,24 @@ Verdrängung, nicht Appetit.
 **Regel:** bei OOM in CI zuerst prüfen, ob die konfigurierten Grenzen zusammen überhaupt
 auf die Maschine passen, und den Bedarf lokal mit demselben `-Xmx` messen. Ein 15-Minuten-
 Archivlauf ist der teuerste Ort, um eine Vermutung zu testen.
+
+## Ein dokumentiertes Gate ist nicht das Gate
+
+**2026-09-01.** CLAUDE.md, AGENTS.md, `/commit`, `/done`, `/pr-review` und der
+Skill `verifying-kmp-changes` dokumentierten den TODO-Gate an acht Stellen als
+`grep -rn "TODO" composeApp/src` — „darf nichts ausgeben". Ausgeführt meldete er
+neun Treffer und damit FAIL. Der Gate in `pr-check.yml` ist aber
+`grep -rn "TODO" ./composeApp/src | grep -v "TODO("`: ein TODO, das sein Ticket
+nennt (`TODO(hanmaum-dn-server#115)`), ist ausdrücklich erlaubt und bewusst
+stehen gelassen worden. Alle neun hatten diese Form.
+
+Die Doku war damit schlimmer als keine: Wer ihr folgt, hat genau zwei Auswege —
+neun absichtlich getrackte TODOs löschen, um den Gate „grün" zu bekommen, oder
+lernen, dass der TODO-Gate immer rot ist und man ihn ignorieren darf. Beides
+richtet Schaden an, und das zweite untergräbt jeden anderen Gate gleich mit.
+
+**Regel:** Ein Gate wird aus dem Workflow gelesen, der ihn ausführt, nicht aus
+der Prosa, die ihn beschreibt. Widersprechen sich Werkzeug und Doku, gewinnt das
+Werkzeug und die Doku wird im selben PR korrigiert — an *allen* Stellen, denn
+dieselbe Zeile stand hier sechsfach kopiert herum. Das ist Regel 13 aus
+CLAUDE.md, angewandt auf den TODO-Gate statt auf die Lint-Baseline.

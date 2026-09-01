@@ -34,8 +34,11 @@ never run.
 # 1. Unit tests — flavored name, never testDebugUnitTest
 ./gradlew :composeApp:testDevDebugUnitTest
 
-# 2. TODO gate — CI greps and fails the whole build on any match
-grep -rn "TODO" composeApp/src   # must print nothing
+# 2. TODO gate — CI fails on an UNREFERENCED TODO only. One that names its
+#    tracking issue, e.g. TODO(hanmaum-dn-server#115), is deliberate and stays.
+#    This is the exact grep from pr-check.yml — never "fix" it by deleting a
+#    referenced TODO.
+grep -rn "TODO" composeApp/src | grep -v "TODO("   # must print nothing
 
 # 3. Lint — there is NO ktlint/spotless/detekt; this is the only lint gate.
 #    Baseline is 0 errors — any error is yours, and it fails the build

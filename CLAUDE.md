@@ -107,8 +107,10 @@ Product flavors (`dev`/`st`/`prod`, dimension `env`) make bare task names wrong.
 # Lint (the CI formatting/lint gate — there is NO ktlint/spotless/detekt here)
 ./gradlew lint
 
-# TODO gate (CI fails the build on any match)
-grep -rn "TODO" composeApp/src && echo "FAIL: remove TODOs"
+# TODO gate. CI fails only on an UNREFERENCED TODO — one that names where the
+# work is tracked, e.g. TODO(hanmaum-dn-server#115), is deliberate and stays.
+# This is the exact grep from pr-check.yml; it must print nothing.
+grep -rn "TODO" composeApp/src | grep -v "TODO("
 
 # iOS: xcode-select points at CommandLineTools; full Xcode lives at /Applications/Xcode.app.
 # Prefix iOS tasks with DEVELOPER_DIR or the native link fails (xcrun exit 72):
@@ -213,8 +215,10 @@ These are ordered by how expensive they've historically been.
    `Authorization` header leaves for foreign hosts.*
 5. **The five-place miss.** Adding a config field in `buildkonfig` only (see §4).
    → *Walk all five places, then verify the generated actuals.*
-6. **The TODO landmine.** Leaving `TODO` anywhere in `composeApp/src` — CI greps and
-   fails. → *Write the code or file an issue; never commit the word TODO there.*
+6. **The TODO landmine.** Leaving a *bare* `TODO` in `composeApp/src` — CI greps and
+   fails. → *Either write the code, or file the issue and name it in the comment:
+   `TODO(hanmaum-dn-server#115)`. CI filters the referenced form out, so a tracked
+   TODO is allowed — never delete one to "fix" the gate.*
 7. **The hardcoded-string mistake.** Korean text inline in a composable. → *Every
    user-visible string goes through `LocalStrings` with all three translations.*
 8. **The design-token mistake.** `Color(0xFF...)`, `RoundedCornerShape(8.dp)`, a 1px
@@ -268,7 +272,8 @@ list above exists.
 
 ### Any code change (minimum bar)
 - [ ] `./gradlew :composeApp:testDevDebugUnitTest` passes (output shown)
-- [ ] `grep -rn "TODO" composeApp/src` — no matches
+- [ ] `grep -rn "TODO" composeApp/src | grep -v "TODO("` — no matches
+      (a `TODO(hanmaum-dn-server#115)` naming its tracking issue is allowed)
 - [ ] `./gradlew lint` — 0 errors (it fails the build on any error; baseline is clean)
 - [ ] Touched shared/iOS-relevant code → `iosSimulatorArm64Test` (with `DEVELOPER_DIR`) passes
 - [ ] Diff self-review done: no secrets, no hardcoded URLs (BuildKonfig only), no
@@ -364,7 +369,45 @@ what is known vs. suspected, the single question whose answer unblocks you.
 - `verifying-kmp-changes` — before claiming anything is done/committing/PR-ing.
 - `debugging-ci-failures` — the moment a GitHub Actions job or archive fails.
 
-Commands: `/onboard` (session start), `/commit`, `/pr-review`, `/done`, `/tag`.
+Commands: `/onboard` (session start), `/commit`, `/pr-review`, `/done`, `/tag`,
+`/issues` (issue + project-board upkeep).
+
+### Finding code: ask the graph before you grep
+
+`graphify` indexes the 251 Kotlin files into a local knowledge graph — pure
+tree-sitter AST, no LLM, no API key, ~4s for a full rebuild. Measured on this
+repo: **19.3x fewer tokens per question** than reading the files (116k tokens
+naive vs ~6k per query). A `post-commit` hook rebuilds it in the background, so
+it is current without anyone remembering to run it.
+
+```bash
+graphify god-nodes --top 12         # architectural hubs — start here on a new area
+graphify query "how does X work" --budget 1500
+graphify affected "ApiResponse"     # blast radius before you change a shared type
+graphify explain "TokenStorage"     # one symbol and its neighbours
+graphify path "LoginViewModel" "TokenStorage"
+```
+
+Reach for a broad `grep -r` / `Glob` sweep only when the graph came up empty.
+Opening one known file directly is still the right move — the graph replaces
+*searching*, not *reading*.
+
+Setup on a new machine (`graphify-out/` is gitignored, so it is per-clone):
+
+```bash
+brew install pipx && pipx install graphifyy
+graphify install --platform claude          # user-scope skill, does not touch this repo
+graphify extract . --code-only              # AST only; --code-only keeps it free
+graphify cluster-only . --no-label
+graphify hook install                       # background rebuild after each commit
+```
+
+Two caveats. `--code-only` skips the 63 docs and 26 images on purpose, so the
+graph knows the code and not the specs — a question about a spec still means
+reading the spec. And `graphify hook install` writes `.git/hooks/post-commit`
+directly, while lefthook owns `pre-commit`, `commit-msg` and `pre-push`; the
+two do not currently collide, but `graphify hook status` settles it after any
+`lefthook install`.
 
 - Plan mode for any task with 3+ steps or an architectural decision. Specs go to
   `docs/superpowers/specs/`, plans to `docs/superpowers/plans/` (dated filenames;
