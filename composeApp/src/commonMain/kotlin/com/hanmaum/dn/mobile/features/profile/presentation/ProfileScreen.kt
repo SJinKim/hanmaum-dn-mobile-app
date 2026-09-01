@@ -51,6 +51,10 @@ import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTileShape
 import com.hanmaum.dn.mobile.core.presentation.theme.typography
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
+import com.hanmaum.dn.mobile.features.member.domain.membershipDuration
+import kotlin.time.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -172,15 +176,33 @@ private fun ProfileViewContent(
 
         Spacer(Modifier.height(22.dp))
 
-        // TODO(hanmaum-dn-server#114, #117): attendance summary and joinedAt
-        // are not available yet — the third tile is the one that exists today.
+        // Two rows of two so the new metric joins the set instead of evicting
+        // one. Real data on top, still-empty tiles below.
+        val today = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
+        val together = remember(profile.registrationDate, today) {
+            membershipDuration(profile.registrationDate, today)
+        }
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            StatTile(
+                label = strings.profileTimeTogether,
+                value = together?.let { strings.profileTimeTogetherValue(it.years, it.months) } ?: "–",
+                accent = c.blue,
+                modifier = Modifier.weight(1f),
+            )
+            StatTile("소속 그룹", profile.groupName ?: "–", c.amber, Modifier.weight(1f))
+        }
+        Spacer(Modifier.height(10.dp))
+        // TODO(#110): no per-member attendance summary or ministry count in the
+        // client yet — the endpoints exist, consuming them is its own card.
         Row(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             StatTile("올해 출석", "–", c.limeInk, Modifier.weight(1f))
             StatTile("소속 사역", "–", c.blue, Modifier.weight(1f))
-            StatTile("소속 그룹", profile.groupName ?: "–", c.amber, Modifier.weight(1f))
         }
 
         Spacer(Modifier.height(22.dp))

@@ -20,4 +20,11 @@ data class MemberResponse(
     val phoneNumber: String? = null,
     val profileImageUrl: String? = null,
     val birthDate: String? = null,
+    /**
+     * ISO date the member joined, feeding the profile's "함께한 시간" tile.
+     * Nullable because it is nullable on the server too (an older record may
+     * have none) — unlike the ministry isActive case (#129), the null here is
+     * real data rather than a default papering over a wire-name mismatch.
+     */
+    val registrationDate: String? = null,
 )
