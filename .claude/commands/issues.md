@@ -96,7 +96,10 @@ gh api graphql -f query='
     } } }'
 ```
 
-Leere `nodes` heißt: das Keyword fehlt oder ist nicht englisch.
+Leere `nodes` heißt: das Keyword fehlt oder ist nicht englisch — **aber erst
+ein paar Sekunden warten.** Die Verknüpfung ist eventually consistent;
+unmittelbar nach `gh pr create` liefert die Query zuverlässig leer und
+verleitet dazu, einen intakten PR zu "reparieren".
 
 Board-Spalte für alle Karten auf einmal prüfen — Status und verlinkter PR
 nebeneinander:
