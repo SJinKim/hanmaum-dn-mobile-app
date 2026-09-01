@@ -13,5 +13,5 @@ data class MinistryDetailResponse(
     val imageUrl: String? = null,
     val contacts: List<MinistryContactResponse> = emptyList(),
     val requirements: List<String> = emptyList(),
-    @SerialName("active") val isActive: Boolean = true,
+    val isActive: Boolean,
 )
