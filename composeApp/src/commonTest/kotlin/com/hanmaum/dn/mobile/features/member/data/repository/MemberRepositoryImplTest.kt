@@ -129,6 +129,18 @@ class MemberRepositoryImplTest {
     }
 
     @Test
+    fun getMyProfile_mapsRegistrationDate() = runTest {
+        // Feeds the profile's "함께한 시간" tile (#114). The server sends it as
+        // an ISO date under exactly this name — MemberResponse.registrationDate.
+        val json = """
+            {"success":true,"data":{"publicId":"u1","firstName":"Seungjin","lastName":"Kim",
+             "status":"ACTIVE","registrationDate":"2022-03-02"}}
+        """.trimIndent()
+        val p = MemberRepositoryImpl(mockClient(json)).getMyProfile().getOrThrow()
+        assertEquals("2022-03-02", p.registrationDate)
+    }
+
+    @Test
     fun getMyProfile_toleratesOldBackendWithoutNewFields() = runTest {
         val json = """
             {"success":true,"data":{"publicId":"u1","firstName":"Seungjin","lastName":"Kim","status":"ACTIVE"}}
@@ -136,6 +148,7 @@ class MemberRepositoryImplTest {
         val p = MemberRepositoryImpl(mockClient(json)).getMyProfile().getOrThrow()
         assertEquals(null, p.division)
         assertEquals(null, p.birthDate)
+        assertEquals(null, p.registrationDate)
     }
 
     @Test

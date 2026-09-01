@@ -65,6 +65,14 @@ interface AppStrings {
     val settingsPushPermissionHint: String
     // Profile screen
     val profileLogout: String
+    val profileTimeTogether: String
+
+    /**
+     * The "함께한 시간" tile value. Takes years and months rather than a
+     * pre-formatted string because the three languages break differently:
+     * Korean concatenates units, German abbreviates them.
+     */
+    fun profileTimeTogetherValue(years: Int, months: Int): String
     val profileLanguage: String
     val selectLanguage: String
     val profileTheme: String
@@ -240,6 +248,13 @@ object EnStrings : AppStrings {
     override val settingsPushToggle = "Push notifications"
     override val settingsPushPermissionHint = "Allow notifications in system settings"
     override val profileLogout = "Logout"
+    override val profileTimeTogether = "Time together"
+    override fun profileTimeTogetherValue(years: Int, months: Int) = when {
+        years > 0 && months > 0 -> "${years}y ${months}m"
+        years > 0 -> "${years}y"
+        months > 0 -> "${months}m"
+        else -> "New"
+    }
     override val profileLanguage = "LANGUAGE"
     override val selectLanguage = "Select Language"
     override val profileTheme = "THEME"
@@ -395,6 +410,13 @@ object KoStrings : AppStrings {
     override val settingsPushToggle = "푸시 알림"
     override val settingsPushPermissionHint = "기기 설정에서 알림을 허용해주세요"
     override val profileLogout = "로그아웃"
+    override val profileTimeTogether = "함께한 시간"
+    override fun profileTimeTogetherValue(years: Int, months: Int) = when {
+        years > 0 && months > 0 -> "${years}년 ${months}개월"
+        years > 0 -> "${years}년"
+        months > 0 -> "${months}개월"
+        else -> "새 가족"
+    }
     override val profileLanguage = "언어"
     override val selectLanguage = "언어 선택"
     override val profileTheme = "테마"
@@ -550,6 +572,13 @@ object DeStrings : AppStrings {
     override val settingsPushToggle = "Push-Mitteilungen"
     override val settingsPushPermissionHint = "Erlauben Sie Mitteilungen in den Systemeinstellungen"
     override val profileLogout = "Abmelden"
+    override val profileTimeTogether = "Gemeinsame Zeit"
+    override fun profileTimeTogetherValue(years: Int, months: Int) = when {
+        years > 0 && months > 0 -> "${years} J. ${months} Mon."
+        years > 0 -> "${years} J."
+        months > 0 -> "${months} Mon."
+        else -> "Neu"
+    }
     override val profileLanguage = "SPRACHE"
     override val selectLanguage = "Sprache auswählen"
     override val profileTheme = "DARSTELLUNG"

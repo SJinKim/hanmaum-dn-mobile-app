@@ -73,4 +73,35 @@ class AppStringsTest {
             assertTrue(locale.nativeName.isNotBlank(), "nativeName blank for $locale")
         }
     }
+
+    @Test
+    fun `time together renders all four branches in every language`() {
+        // The profile tile (#114) is the visible output of membershipDuration.
+        // Each language breaks the units differently so each gets its own row.
+        listOf(EnStrings, KoStrings, DeStrings).forEach { s ->
+            assertTrue(s.profileTimeTogether.isNotBlank())
+            listOf(
+                s.profileTimeTogetherValue(4, 6),  // years and months
+                s.profileTimeTogetherValue(4, 0),  // exact anniversary
+                s.profileTimeTogetherValue(0, 8),  // first year
+                s.profileTimeTogetherValue(0, 0),  // brand new member
+            ).forEach { assertTrue(it.isNotBlank()) }
+        }
+    }
+
+    @Test
+    fun `time together drops the month part on an exact anniversary`() {
+        assertEquals("4년", KoStrings.profileTimeTogetherValue(4, 0))
+        assertEquals("4y", EnStrings.profileTimeTogetherValue(4, 0))
+        assertEquals("4 J.", DeStrings.profileTimeTogetherValue(4, 0))
+    }
+
+    @Test
+    fun `time together says something other than zero for a new member`() {
+        // "0개월" would read as an error; a fresh member gets a word instead.
+        listOf(EnStrings, KoStrings, DeStrings).forEach { s ->
+            val v = s.profileTimeTogetherValue(0, 0)
+            assertTrue(!v.contains("0"), "expected no zero in \"$v\"")
+        }
+    }
 }
