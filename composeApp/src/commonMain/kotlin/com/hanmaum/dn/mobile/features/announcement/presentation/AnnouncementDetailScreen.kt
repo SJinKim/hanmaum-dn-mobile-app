@@ -136,7 +136,8 @@ fun AnnouncementDetailScreen(
                         KeyFacts(
                             rows = listOf(
                                 Triple(DnIcons.Calendar, "일시", formatRange(item.startAt, item.endAt)),
-                                // TODO(hanmaum-dn-server#112): no location on AnnouncementDto
+                                // TODO(#111): AnnouncementDto carries location now;
+                                // this row is still placeholder text.
                                 Triple(DnIcons.MapPin, "장소", "Lorem ipsum dolor"),
                                 Triple(DnIcons.Clock, "문의", "교회 사무실"),
                             )

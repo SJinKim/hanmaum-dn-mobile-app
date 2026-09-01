@@ -318,7 +318,8 @@ private fun NewsCarousel(
                     .padding(14.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                // TODO(hanmaum-dn-server#112): AnnouncementDto has no imageUrl
+                // TODO(#111): AnnouncementDto carries imageUrl now; the client
+                // does not map or render it yet.
                 DnImagePlaceholder(
                     Modifier
                         .fillMaxWidth()
@@ -443,7 +444,8 @@ private fun HomeTiles(
                 Text("이번 달 출석", style = DnTheme.typography.caption, color = c.textSecondary)
                 Icon(DnIcons.UserCheck, null, tint = c.limeInk, modifier = Modifier.size(16.dp))
             }
-            // TODO(hanmaum-dn-server#114): no per-member attendance summary yet
+            // TODO(#110): monthAttended / monthTotal come from
+            // /api/v1/me/attendance/summary; the client does not read it yet.
             Row(verticalAlignment = Alignment.Bottom) {
                 Text("–", style = DnTheme.typography.stat, color = c.textPrimary)
                 Spacer(Modifier.width(4.dp))

@@ -134,9 +134,9 @@ fun ParticipationScreen(
                     }
                 }
             } else {
-                // TODO(hanmaum-dn-server#113): /api/v1/trainings returns only
-                // publicId, name and sortOrder — not enough for this list.
-                // Placeholder rows until the endpoint carries the course data.
+                // TODO(#113): /api/v1/trainings now carries description, startDate,
+                // durationWeeks and openForRegistration — enough for this list.
+                // Placeholder rows until the client reads them.
                 LazyColumn(
                     contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 60.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),

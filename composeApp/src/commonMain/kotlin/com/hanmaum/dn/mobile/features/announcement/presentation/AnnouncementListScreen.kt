@@ -137,7 +137,8 @@ private fun NewsRow(item: Announcement, onClick: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            // TODO(hanmaum-dn-server#112): AnnouncementDto has no imageUrl
+            // TODO(#111): AnnouncementDto carries imageUrl now; the client
+            // does not map or render it yet.
             DnImagePlaceholder(Modifier.size(92.dp), cornerRadius = 20.dp)
 
             Column(
