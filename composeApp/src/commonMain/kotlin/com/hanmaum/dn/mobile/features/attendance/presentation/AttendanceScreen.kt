@@ -166,7 +166,9 @@ fun AttendanceScreen(
                     Spacer(Modifier.height(20.dp))
                 }
 
-                // TODO(hanmaum-dn-server#114): no per-member attendance summary
+                // TODO(#110): /api/v1/me/attendance/summary ships monthAttended,
+                // yearAttended and rate — exactly these three tiles. The client
+                // does not read it yet; placeholders until it does.
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
