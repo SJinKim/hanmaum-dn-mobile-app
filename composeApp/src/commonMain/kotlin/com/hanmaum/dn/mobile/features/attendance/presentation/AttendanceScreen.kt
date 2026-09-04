@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -57,6 +58,7 @@ fun AttendanceScreen(
     val rsvpState by rsvpViewModel.uiState.collectAsState()
     LaunchedEffect(Unit) { rsvpViewModel.refresh() }
     val c = DnTheme.colors
+    val strings = com.hanmaum.dn.mobile.core.i18n.LocalStrings.current
 
     DnBackground(glows = DnGlows.action()) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
@@ -166,29 +168,32 @@ fun AttendanceScreen(
                     Spacer(Modifier.height(20.dp))
                 }
 
-                // TODO(#110): /api/v1/me/attendance/summary ships monthAttended,
-                // yearAttended and rate — exactly these three tiles. The client
-                // does not read it yet; placeholders until it does.
+                // The dash is not decoration: it means the summary has not
+                // arrived. A zero would claim the member attended nothing.
+                val summary = state.summary
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    listOf("이번 달" to c.limeInk, "올해" to c.blue, "출석률" to c.amber)
-                        .forEach { (label, accent) ->
-                            Column(
-                                Modifier
-                                    .weight(1f)
-                                    .clip(DnTileShape)
-                                    .background(c.surface, DnTileShape)
-                                    .border(1.dp, c.strokeSubtle, DnTileShape)
-                                    .padding(vertical = 14.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(3.dp),
-                            ) {
-                                Text("–", style = DnTheme.typography.stat, color = accent)
-                                Text(label, style = DnTheme.typography.label, color = c.textTertiary)
-                            }
+                    listOf(
+                        Triple("이번 달", c.limeInk, summary?.let { "${it.monthAttended}" }),
+                        Triple("올해", c.blue, summary?.let { "${it.yearAttended}" }),
+                        Triple("출석률", c.amber, summary?.let { "${it.ratePercent}%" }),
+                    ).forEach { (label, accent, value) ->
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .clip(DnTileShape)
+                                .background(c.surface, DnTileShape)
+                                .border(1.dp, c.strokeSubtle, DnTileShape)
+                                .padding(vertical = 14.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(3.dp),
+                        ) {
+                            Text(value ?: "–", style = DnTheme.typography.stat, color = accent)
+                            Text(label, style = DnTheme.typography.label, color = c.textTertiary)
                         }
+                    }
                 }
 
                 Spacer(Modifier.height(22.dp))
@@ -201,25 +206,73 @@ fun AttendanceScreen(
                         .clip(DnTileShape)
                         .background(c.surface, DnTileShape)
                         .border(1.dp, c.strokeSubtle, DnTileShape)
-                        .padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                        .padding(vertical = 6.dp),
                 ) {
-                    Icon(DnIcons.Clock, null, tint = c.textTertiary, modifier = Modifier.size(22.dp))
-                    Text(
-                        "출석 기록은 아직 제공되지 않습니다",
-                        style = DnTheme.typography.captionStrong,
-                        color = c.textSecondary,
-                    )
-                    Text(
-                        "서버에 개인 출석 내역 엔드포인트가 준비되면 여기에 표시됩니다.",
-                        style = DnTheme.typography.caption,
-                        color = c.textTertiary,
-                    )
+                    if (state.history.isEmpty()) {
+                        // Only claim "nothing recorded" once the call actually
+                        // came back — an empty list and a failed request must
+                        // not look the same.
+                        Column(
+                            Modifier.fillMaxWidth().padding(14.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                        ) {
+                            Icon(DnIcons.Clock, null, tint = c.textTertiary, modifier = Modifier.size(22.dp))
+                            Text(
+                                if (state.historyLoaded) strings.attendanceNoRecords else "…",
+                                style = DnTheme.typography.captionStrong,
+                                color = c.textSecondary,
+                            )
+                        }
+                    } else {
+                        state.history.forEach { entry ->
+                            Row(
+                                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 11.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(
+                                    imageVector = if (entry.checkedIn) DnIcons.Check else DnIcons.X,
+                                    contentDescription = null,
+                                    tint = if (entry.checkedIn) c.lime else c.textTertiary,
+                                    modifier = Modifier.size(16.dp),
+                                )
+                                Spacer(Modifier.width(12.dp))
+                                Column(Modifier.weight(1f)) {
+                                    Text(
+                                        entry.definitionTitle,
+                                        style = DnTheme.typography.captionStrong,
+                                        color = c.textPrimary,
+                                    )
+                                    Text(
+                                        formatEntryDate(entry.date),
+                                        style = DnTheme.typography.caption,
+                                        color = c.textTertiary,
+                                    )
+                                }
+                                Text(
+                                    if (entry.checkedIn) strings.attendancePresent else strings.attendanceAbsent,
+                                    style = DnTheme.typography.label,
+                                    color = if (entry.checkedIn) c.lime else c.textTertiary,
+                                )
+                            }
+                        }
+                    }
                 }
 
                 Spacer(Modifier.height(60.dp))
             }
         }
     }
+}
+
+/**
+ * "2026-09-03" as "9월 3일". Falls back to the raw value rather than throwing:
+ * a date the server sends in an unexpected shape should degrade to something
+ * readable, not take the screen down.
+ */
+private fun formatEntryDate(iso: String): String = try {
+    val d = kotlinx.datetime.LocalDate.parse(iso)
+    "${d.month.ordinal + 1}월 ${d.day}일"
+} catch (_: IllegalArgumentException) {
+    iso
 }

@@ -55,6 +55,8 @@ import com.hanmaum.dn.mobile.features.member.domain.membershipDuration
 import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceSummary
+import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -74,6 +76,10 @@ fun ProfileScreen(
     onSettings: () -> Unit,
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
+    // The same AttendanceViewModel Home already uses, so the 올해 출석 figure
+    // costs no request of its own here.
+    val attendanceViewModel: AttendanceViewModel = koinViewModel()
+    val attendance by attendanceViewModel.uiState.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
     val loggedOut by viewModel.loggedOut.collectAsState()
     val c = DnTheme.colors
@@ -109,6 +115,7 @@ fun ProfileScreen(
                     } else {
                         ProfileViewContent(
                             profile = state.profile,
+                            summary = attendance.summary,
                             onEdit = viewModel::startEditing,
                             onSettings = onSettings,
                             onLogout = viewModel::logout,
@@ -126,6 +133,7 @@ fun ProfileScreen(
 @Composable
 private fun ProfileViewContent(
     profile: MemberResponse,
+    summary: AttendanceSummary?,
     onEdit: () -> Unit,
     onSettings: () -> Unit,
     onLogout: () -> Unit,
@@ -195,13 +203,19 @@ private fun ProfileViewContent(
             StatTile("소속 그룹", profile.groupName ?: "–", c.amber, Modifier.weight(1f))
         }
         Spacer(Modifier.height(10.dp))
-        // TODO(#110): no per-member attendance summary or ministry count in the
-        // client yet — the endpoints exist, consuming them is its own card.
+        // TODO(#160): the ministry count still has no client-side source;
+        // GET /api/v1/members/{publicId}/ministries exists but nothing reads it.
         Row(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            StatTile("올해 출석", "–", c.limeInk, Modifier.weight(1f))
+            // Dash, not zero, while the summary is unloaded or failed.
+            StatTile(
+                "올해 출석",
+                summary?.yearAttended?.toString() ?: "–",
+                c.limeInk,
+                Modifier.weight(1f),
+            )
             StatTile("소속 사역", "–", c.blue, Modifier.weight(1f))
         }
 

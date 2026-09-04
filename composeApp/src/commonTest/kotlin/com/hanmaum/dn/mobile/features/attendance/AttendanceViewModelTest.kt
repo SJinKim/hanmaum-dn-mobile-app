@@ -2,6 +2,9 @@ package com.hanmaum.dn.mobile.features.attendance
 
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceCheckIn
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceDefinition
+import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceEntry
+import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceHistory
+import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceSummary
 import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -15,6 +18,7 @@ import kotlinx.datetime.toLocalDateTime
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -150,5 +154,80 @@ class AttendanceViewModelTest {
         advanceUntilIdle()
 
         assertFalse(viewModel.uiState.value.isCheckedIn)
+    }
+
+    // ── summary and history (#110) ────────────────────────────────────────
+
+    @Test
+    fun loadFillsTheSummaryTiles() = runTest {
+        fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
+        fakeRepo.summaryResult = Result.success(
+            AttendanceSummary(monthAttended = 3, monthTotal = 4, yearAttended = 30, yearToDateTotal = 36, rate = 0.8333),
+        )
+        val vm = AttendanceViewModel(fakeRepo, fakePrefs)
+        advanceUntilIdle()
+
+        val s = assertNotNull(vm.uiState.value.summary)
+        assertEquals(3, s.monthAttended)
+        assertEquals(30, s.yearAttended)
+        assertEquals(83, s.ratePercent)
+    }
+
+    @Test
+    fun loadFillsTheHistoryNewestFirst() = runTest {
+        fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
+        fakeRepo.historyResult = Result.success(
+            AttendanceHistory(
+                from = "2026-06-06", to = "2026-09-04",
+                entries = listOf(
+                    AttendanceEntry("d1", "주일예배", "2026-09-03", checkedIn = false),
+                    AttendanceEntry("d1", "주일예배", "2026-08-31", checkedIn = true),
+                ),
+            ),
+        )
+        val vm = AttendanceViewModel(fakeRepo, fakePrefs)
+        advanceUntilIdle()
+
+        assertEquals(2, vm.uiState.value.history.size)
+        assertEquals("2026-09-03", vm.uiState.value.history.first().date)
+        assertTrue(vm.uiState.value.historyLoaded)
+    }
+
+    @Test
+    fun anEmptyHistoryIsStillMarkedLoaded() = runTest {
+        // The screen may only say "nothing recorded" once the call came back.
+        fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
+        fakeRepo.historyResult = Result.success(AttendanceHistory("2026-06-06", "2026-09-04", emptyList()))
+        val vm = AttendanceViewModel(fakeRepo, fakePrefs)
+        advanceUntilIdle()
+
+        assertTrue(vm.uiState.value.history.isEmpty())
+        assertTrue(vm.uiState.value.historyLoaded)
+    }
+
+    @Test
+    fun aFailedHistoryIsNotMarkedLoaded() = runTest {
+        // Otherwise a network failure would read as "you never attended".
+        fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
+        fakeRepo.historyResult = Result.failure(IllegalStateException("offline"))
+        val vm = AttendanceViewModel(fakeRepo, fakePrefs)
+        advanceUntilIdle()
+
+        assertTrue(vm.uiState.value.history.isEmpty())
+        assertFalse(vm.uiState.value.historyLoaded)
+    }
+
+    @Test
+    fun aFailedSummaryLeavesTheSliderUsable() = runTest {
+        // The counters are decoration next to the check-in itself; losing them
+        // must not cost the user the ability to check in.
+        fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
+        fakeRepo.summaryResult = Result.failure(IllegalStateException("boom"))
+        val vm = AttendanceViewModel(fakeRepo, fakePrefs)
+        advanceUntilIdle()
+
+        assertNull(vm.uiState.value.summary)
+        assertNotNull(vm.uiState.value.definition)
+        assertTrue(vm.uiState.value.isInWindow)
     }
 }

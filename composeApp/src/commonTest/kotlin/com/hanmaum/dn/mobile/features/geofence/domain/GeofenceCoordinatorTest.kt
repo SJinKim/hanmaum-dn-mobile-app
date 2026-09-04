@@ -5,6 +5,8 @@ import com.hanmaum.dn.mobile.core.geofence.GeofenceManager
 import com.hanmaum.dn.mobile.core.notification.NotificationService
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceCheckIn
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceDefinition
+import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceHistory
+import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceSummary
 import com.hanmaum.dn.mobile.features.attendance.domain.repository.AttendanceRepository
 import com.hanmaum.dn.mobile.features.geofence.domain.model.ChurchLocation
 import com.hanmaum.dn.mobile.features.geofence.domain.repository.ChurchLocationRepository
@@ -52,6 +54,13 @@ private class FakeAttendanceRepository(
     override suspend fun getActiveDefinitions() = Result.success(definitions)
     override suspend fun checkIn() = Result.success(
         AttendanceCheckIn(definitionPublicId = "def", definitionTitle = "Service", attendanceDate = "2026-06-15"),
+    )
+    // The coordinator never reads these; they exist to satisfy the interface.
+    override suspend fun getMySummary() = Result.success(
+        AttendanceSummary(monthAttended = 0, monthTotal = 0, yearAttended = 0, yearToDateTotal = 0, rate = 0.0),
+    )
+    override suspend fun getMyHistory() = Result.success(
+        AttendanceHistory(from = "2026-06-06", to = "2026-09-04", entries = emptyList()),
     )
 }
 
