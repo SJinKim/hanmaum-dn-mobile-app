@@ -319,9 +319,35 @@ fun DnTextField(
         ) {
             leading?.let { Icon(it, null, tint = c.textTertiary, modifier = Modifier.size(18.dp)) }
             Box(Modifier.weight(1f)) {
+                // Driven by a TextFieldValue rather than a raw String so that a
+                // caller which reformats what it is handed — the birth date
+                // inserts the dots — keeps the caret at the end. With a String
+                // the old caret offset survives the reformat and lands *before*
+                // the digit just typed, so the next one is inserted ahead of it
+                // and the digits transpose ("198712" becomes "198721").
+                // For a field that does not transform its input this is inert:
+                // the texts match, nothing resyncs, and mid-string edits keep
+                // the caret exactly where the user put it.
+                var field by androidx.compose.runtime.remember {
+                    androidx.compose.runtime.mutableStateOf(
+                        androidx.compose.ui.text.input.TextFieldValue(
+                            text = value,
+                            selection = androidx.compose.ui.text.TextRange(value.length),
+                        ),
+                    )
+                }
+                if (field.text != value) {
+                    field = androidx.compose.ui.text.input.TextFieldValue(
+                        text = value,
+                        selection = androidx.compose.ui.text.TextRange(value.length),
+                    )
+                }
                 androidx.compose.foundation.text.BasicTextField(
-                    value = value,
-                    onValueChange = onValueChange,
+                    value = field,
+                    onValueChange = {
+                        field = it
+                        onValueChange(it.text)
+                    },
                     singleLine = true,
                     textStyle = DnTheme.typography.captionStrong.copy(color = c.textPrimary),
                     cursorBrush = androidx.compose.ui.graphics.SolidColor(c.lime),
