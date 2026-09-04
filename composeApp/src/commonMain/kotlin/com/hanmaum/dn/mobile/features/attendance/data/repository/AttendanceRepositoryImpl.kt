@@ -43,10 +43,14 @@ class AttendanceRepositoryImpl(
         body.data?.toDomain() ?: error("attendance summary response missing data")
     }
 
-    override suspend fun getMyHistory(): Result<AttendanceHistory> = runCatching {
-        // No range: the server defaults to the last 90 days up to today and
-        // echoes back what it used.
-        val response = client.get("me/attendance")
+    override suspend fun getMyHistory(from: String?, to: String?): Result<AttendanceHistory> = runCatching {
+        // Without a range the server defaults to the last 90 days up to today
+        // and echoes back what it used.
+        val query = listOfNotNull(
+            from?.let { "from=$it" },
+            to?.let { "to=$it" },
+        ).joinToString("&")
+        val response = client.get(if (query.isEmpty()) "me/attendance" else "me/attendance?$query")
         val body = response.body<ApiResponse<AttendanceHistoryResponse>>()
         body.data?.toDomain() ?: error("attendance history response missing data")
     }
@@ -72,6 +76,7 @@ class AttendanceRepositoryImpl(
         definitionTitle    = definitionTitle,
         date               = date,
         checkedIn          = checkedIn,
+        checkedInAt        = checkedInAt,
     )
 
     private fun AttendanceCheckInResponse.toDomain() = AttendanceCheckIn(
