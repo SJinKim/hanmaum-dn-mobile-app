@@ -35,6 +35,15 @@ interface AppStrings {
     val attendancePresent: String
     val attendanceAbsent: String
     val attendanceNoRecords: String
+    // Attendance history calendar (#164)
+    val attendanceHistoryTitle: String
+    val attendanceViewAll: String
+    val attendanceDayServices: String
+    val attendanceCount: String
+    val attendanceNoneThisDay: String
+    val attendanceLoadFailed: String
+    val attendanceRetry: String
+    val attendanceCheckedInAt: String
     // Register form — chrome, field labels and the password checklist
     val registerTitle: String
     val registerHeadline: String
@@ -250,6 +259,15 @@ object EnStrings : AppStrings {
     override val attendancePresent = "Attended"
     override val attendanceAbsent = "Missed"
     override val attendanceNoRecords = "No attendance recorded yet"
+    // Attendance history calendar (#164)
+    override val attendanceHistoryTitle = "Attendance record"
+    override val attendanceViewAll = "View all"
+    override val attendanceDayServices = "Services on {month} {day}"
+    override val attendanceCount = "{n}"
+    override val attendanceNoneThisDay = "No attendance on this day"
+    override val attendanceLoadFailed = "Could not load your attendance record"
+    override val attendanceRetry = "Retry"
+    override val attendanceCheckedInAt = "Attended at {time}"
     // Register form — chrome, field labels and the password checklist
     override val registerTitle = "Sign up"
     override val registerHeadline = "Let's begin together"
@@ -439,6 +457,15 @@ object KoStrings : AppStrings {
     override val attendancePresent = "출석"
     override val attendanceAbsent = "미출석"
     override val attendanceNoRecords = "아직 출석 기록이 없습니다"
+    // Attendance history calendar (#164)
+    override val attendanceHistoryTitle = "출석 확인"
+    override val attendanceViewAll = "전체 보기"
+    override val attendanceDayServices = "{month} {day}일 예배"
+    override val attendanceCount = "{n}건"
+    override val attendanceNoneThisDay = "이 날은 출석 기록이 없습니다"
+    override val attendanceLoadFailed = "출석 기록을 불러오지 못했습니다"
+    override val attendanceRetry = "다시 시도"
+    override val attendanceCheckedInAt = "{time} 출석"
     // Register form — chrome, field labels and the password checklist
     override val registerTitle = "회원가입"
     override val registerHeadline = "함께 시작해요"
@@ -628,6 +655,15 @@ object DeStrings : AppStrings {
     override val attendancePresent = "Anwesend"
     override val attendanceAbsent = "Gefehlt"
     override val attendanceNoRecords = "Noch keine Anwesenheit erfasst"
+    // Attendance history calendar (#164)
+    override val attendanceHistoryTitle = "Anwesenheit"
+    override val attendanceViewAll = "Alle anzeigen"
+    override val attendanceDayServices = "Gottesdienste am {day}. {month}"
+    override val attendanceCount = "{n}"
+    override val attendanceNoneThisDay = "An diesem Tag keine Anwesenheit"
+    override val attendanceLoadFailed = "Anwesenheit konnte nicht geladen werden"
+    override val attendanceRetry = "Erneut versuchen"
+    override val attendanceCheckedInAt = "Anwesend um {time}"
     // Register form — chrome, field labels and the password checklist
     override val registerTitle = "Registrieren"
     override val registerHeadline = "Schön, dass du da bist"

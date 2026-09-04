@@ -28,6 +28,7 @@ import com.hanmaum.dn.mobile.core.domain.repository.EventRsvpPreferences
 import com.hanmaum.dn.mobile.features.attendance.data.repository.AttendanceRepositoryImpl
 import com.hanmaum.dn.mobile.features.attendance.domain.repository.AttendanceRepository
 import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceViewModel
+import com.hanmaum.dn.mobile.features.attendance.presentation.history.AttendanceHistoryViewModel
 import com.hanmaum.dn.mobile.features.events.data.repository.EventRsvpRepositoryImpl
 import com.hanmaum.dn.mobile.features.events.domain.repository.EventRsvpRepository
 import com.hanmaum.dn.mobile.features.events.presentation.EventRsvpViewModel
@@ -126,6 +127,7 @@ val appModule = module {
     // Attendance
     single<AttendanceRepository> { AttendanceRepositoryImpl(get()) }
     viewModel { AttendanceViewModel(get(), get()) }
+    viewModel { AttendanceHistoryViewModel(get()) }
 
     // Event RSVP
     single<EventRsvpRepository> { EventRsvpRepositoryImpl(get()) }

@@ -51,6 +51,7 @@ import com.hanmaum.dn.mobile.features.album.presentation.albums.AlbumsScreen
 import com.hanmaum.dn.mobile.features.calendar.presentation.CalendarScreen
 import com.hanmaum.dn.mobile.features.community.presentation.CommunityStubScreen
 import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceScreen
+import com.hanmaum.dn.mobile.features.attendance.presentation.history.AttendanceHistoryScreen
 import com.hanmaum.dn.mobile.features.floorplan.presentation.FloorPlanScreen
 import com.hanmaum.dn.mobile.features.login.presentation.RegisterScreen
 import com.hanmaum.dn.mobile.features.login.screen.LoginScreen
@@ -358,7 +359,11 @@ fun App() {
                         AttendanceScreen(
                             onBackClick = { navController.popBackStack() },
                             onRsvpClick = { navController.navigate(RsvpRoute) },
+                            onHistoryClick = { navController.navigate(AttendanceHistoryRoute) },
                         )
+                    }
+                    composable<AttendanceHistoryRoute> {
+                        AttendanceHistoryScreen(onBackClick = { navController.popBackStack() })
                     }
 
                     composable<RsvpRoute> {

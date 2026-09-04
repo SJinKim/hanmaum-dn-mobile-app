@@ -22,5 +22,10 @@ class FakeAttendanceRepository : AttendanceRepository {
     override suspend fun getActiveDefinitions(): Result<List<AttendanceDefinition>> = definitionsResult
     override suspend fun checkIn(): Result<AttendanceCheckIn> = checkInResult
     override suspend fun getMySummary(): Result<AttendanceSummary> = summaryResult
-    override suspend fun getMyHistory(): Result<AttendanceHistory> = historyResult
+    var lastHistoryFrom: String? = null
+    var lastHistoryTo: String? = null
+    override suspend fun getMyHistory(from: String?, to: String?): Result<AttendanceHistory> {
+        lastHistoryFrom = from; lastHistoryTo = to
+        return historyResult
+    }
 }

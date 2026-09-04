@@ -59,7 +59,7 @@ private class FakeAttendanceRepository(
     override suspend fun getMySummary() = Result.success(
         AttendanceSummary(monthAttended = 0, monthTotal = 0, yearAttended = 0, yearToDateTotal = 0, rate = 0.0),
     )
-    override suspend fun getMyHistory() = Result.success(
+    override suspend fun getMyHistory(from: String?, to: String?) = Result.success(
         AttendanceHistory(from = "2026-06-06", to = "2026-09-04", entries = emptyList()),
     )
 }

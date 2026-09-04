@@ -142,6 +142,35 @@ class AttendanceRepositoryImplTest {
     }
 
     @Test
+    fun historyPassesTheRangeAsQueryParameters() = runTest {
+        // The server caps a span at 366 days, so the calendar asks for a year
+        // in one call instead of one request per month.
+        var url = ""
+        val client = mockClient(historyJson) { url = it.url.toString() }
+        AttendanceRepositoryImpl(client).getMyHistory(from = "2025-09-01", to = "2026-09-05")
+        assertTrue(url.contains("from=2025-09-01"), "url was $url")
+        assertTrue(url.contains("to=2026-09-05"), "url was $url")
+    }
+
+    @Test
+    fun historyOmitsTheRangeWhenNoneIsGiven() = runTest {
+        // Then the server applies its own 90-day default.
+        var url = ""
+        val client = mockClient(historyJson) { url = it.url.toString() }
+        AttendanceRepositoryImpl(client).getMyHistory()
+        assertFalse(url.contains("from="), "url was $url")
+        assertFalse(url.contains("to="), "url was $url")
+    }
+
+    @Test
+    fun historyKeepsTheCheckInTime() = runTest {
+        // #164 shows it in the list; #110 had dropped the field.
+        val h = AttendanceRepositoryImpl(mockClient(historyJson)).getMyHistory().getOrThrow()
+        assertEquals("2026-08-31T09:12:00Z", h.entries.single { it.date == "2026-08-31" }.checkedInAt)
+        assertEquals(null, h.entries.single { it.date == "2026-09-03" }.checkedInAt)
+    }
+
+    @Test
     fun historyCallsTheMemberScopedPath() = runTest {
         var path = ""
         val client = mockClient(historyJson) { path = it.url.encodedPath }

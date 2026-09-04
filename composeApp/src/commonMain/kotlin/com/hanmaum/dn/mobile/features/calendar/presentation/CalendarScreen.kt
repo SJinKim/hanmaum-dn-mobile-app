@@ -40,6 +40,10 @@ import com.hanmaum.dn.mobile.core.presentation.components.DnDock
 import com.hanmaum.dn.mobile.core.presentation.components.DnScrollEdge
 import com.hanmaum.dn.mobile.core.presentation.components.DnSegmented
 import com.hanmaum.dn.mobile.core.presentation.components.DnTopBar
+import com.hanmaum.dn.mobile.core.presentation.components.DnMonthGrid
+import com.hanmaum.dn.mobile.core.presentation.components.DnMonthNav
+import com.hanmaum.dn.mobile.core.presentation.components.DnWeekdayHeader
+import com.hanmaum.dn.mobile.core.presentation.components.pad2
 import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTileShape
@@ -106,36 +110,31 @@ private fun MonthView(state: CalendarUiState, viewModel: CalendarViewModel) {
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item {
-            Row(
-                Modifier.fillMaxWidth().padding(horizontal = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                CircleIconButton(rotate = true, onClick = viewModel::previousMonth)
-                Text(
-                    "${state.year}${strings.yearSuffix} ${strings.months[state.month]}",
-                    style = DnTheme.typography.title,
-                    color = c.textPrimary,
-                )
-                CircleIconButton(rotate = false, onClick = viewModel::nextMonth)
-            }
+            DnMonthNav(
+                year = state.year,
+                month = state.month,
+                onPrevious = viewModel::previousMonth,
+                onNext = viewModel::nextMonth,
+            )
         }
 
         item {
-            Row(Modifier.fillMaxWidth()) {
-                strings.dayHeaders.forEach { d ->
-                    Text(
-                        d,
-                        modifier = Modifier.weight(1f),
-                        textAlign = TextAlign.Center,
-                        style = DnTheme.typography.label,
-                        color = c.textTertiary,
-                    )
-                }
-            }
+            DnWeekdayHeader()
         }
 
-        item { MonthGrid(state = state, onDayClick = viewModel::selectDay) }
+        item {
+            DnMonthGrid(
+                year = state.year,
+                month = state.month,
+                selectedDay = state.selectedDay,
+                markedDays = state.events.mapNotNullTo(mutableSetOf()) { event ->
+                    val prefix = "${state.year}-${pad2(state.month)}-"
+                    event.startDate.takeIf { it.startsWith(prefix) }
+                        ?.substring(prefix.length, prefix.length + 2)?.toIntOrNull()
+                },
+                onDayClick = viewModel::selectDay,
+            )
+        }
 
         if (state.isLoading) {
             item {
@@ -146,7 +145,7 @@ private fun MonthView(state: CalendarUiState, viewModel: CalendarViewModel) {
         }
 
         val dayEvents = state.selectedDay?.let { day ->
-            val key = "${state.year}-${pad(state.month)}-${pad(day)}"
+            val key = "${state.year}-${pad2(state.month)}-${pad2(day)}"
             state.events.filter { it.startDate.startsWith(key) }
         } ?: state.events
 
@@ -177,84 +176,6 @@ private fun MonthView(state: CalendarUiState, viewModel: CalendarViewModel) {
 }
 
 @Composable
-private fun CircleIconButton(rotate: Boolean, onClick: () -> Unit) {
-    val c = DnTheme.colors
-    Box(
-        Modifier
-            .size(36.dp)
-            .clip(RoundedCornerShape(percent = 50))
-            .background(c.surface2)
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(
-            DnIcons.ChevronRight,
-            null,
-            tint = c.textSecondary,
-            modifier = Modifier.size(18.dp).rotate(if (rotate) 180f else 0f),
-        )
-    }
-}
-
-@Composable
-private fun MonthGrid(state: CalendarUiState, onDayClick: (Int) -> Unit) {
-    val c = DnTheme.colors
-    val firstDow = dayOfWeek(state.year, state.month, 1)
-    val days = daysInMonth(state.year, state.month)
-    val rows = (firstDow + days + 6) / 7
-
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        repeat(rows) { row ->
-            Row(Modifier.fillMaxWidth()) {
-                repeat(7) { col ->
-                    val day = row * 7 + col - firstDow + 1
-                    val valid = day in 1..days
-                    val selected = valid && state.selectedDay == day
-                    val hasEvent = valid && state.events.any {
-                        it.startDate.startsWith("${state.year}-${pad(state.month)}-${pad(day)}")
-                    }
-                    Box(
-                        Modifier
-                            .weight(1f)
-                            .aspectRatio(1f)
-                            .padding(2.dp)
-                            .clip(RoundedCornerShape(percent = 50))
-                            .background(if (selected) c.lime else androidx.compose.ui.graphics.Color.Transparent)
-                            .then(if (valid) Modifier.clickable { onDayClick(day) } else Modifier),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        if (valid) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(3.dp),
-                            ) {
-                                Text(
-                                    "$day",
-                                    style = DnTheme.typography.captionStrong,
-                                    color = if (selected) c.onLime else c.textPrimary,
-                                )
-                                Box(
-                                    Modifier
-                                        .size(4.dp)
-                                        .clip(RoundedCornerShape(percent = 50))
-                                        .background(
-                                            when {
-                                                !hasEvent -> androidx.compose.ui.graphics.Color.Transparent
-                                                selected -> c.onLime
-                                                else -> c.limeInk
-                                            }
-                                        )
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
 private fun YearListView(state: CalendarUiState, onEventClick: (CalendarEvent) -> Unit) {
     val c = DnTheme.colors
     val strings = LocalStrings.current
@@ -270,7 +191,7 @@ private fun YearListView(state: CalendarUiState, onEventClick: (CalendarEvent) -
     ) {
         for (month in 1..12) {
             val monthEvents = state.yearEvents.filter {
-                it.startDate.startsWith("${state.todayYear}-${pad(month)}")
+                it.startDate.startsWith("${state.todayYear}-${pad2(month)}")
             }
             item(key = "h$month") {
                 Row(
@@ -404,18 +325,3 @@ private fun SheetFact(icon: androidx.compose.ui.graphics.vector.ImageVector, lab
     }
 }
 
-private fun pad(n: Int) = n.toString().padStart(2, '0')
-
-private fun dayOfWeek(year: Int, month: Int, day: Int): Int {
-    val m = if (month < 3) month + 12 else month
-    val y = if (month < 3) year - 1 else year
-    val k = y % 100
-    val j = y / 100
-    return (((day + (13 * (m + 1)) / 5 + k + k / 4 + j / 4 - 2 * j) % 7) + 5) % 7
-}
-
-private fun daysInMonth(year: Int, month: Int): Int = when (month) {
-    1, 3, 5, 7, 8, 10, 12 -> 31
-    4, 6, 9, 11 -> 30
-    else -> if ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0) 29 else 28
-}

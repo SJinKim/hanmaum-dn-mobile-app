@@ -28,6 +28,11 @@ data class AttendanceEntry(
     /** ISO date, "2026-09-04". */
     val date: String,
     val checkedIn: Boolean,
+    /**
+     * ISO instant of the check-in, null for a missed occurrence. The history
+     * list shows it as a time; #164 needs it, the tiles never did.
+     */
+    val checkedInAt: String? = null,
 )
 
 /** The 최근 출석 list over the range the server resolved. */

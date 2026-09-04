@@ -15,8 +15,12 @@ interface AttendanceRepository {
     suspend fun getMySummary(): Result<AttendanceSummary>
 
     /**
-     * The caller's own recent occurrences, newest first. The server resolves the
-     * range itself when none is given: `to` is today, `from` 90 days earlier.
+     * The caller's own occurrences, newest first.
+     *
+     * With no range the server uses its own: `to` is today, `from` 90 days
+     * earlier. Pass ISO dates to widen it — the server caps `to` at today and
+     * rejects spans over 366 days with a 400, so a calendar asks for a year and
+     * filters the months itself rather than requesting one month at a time.
      */
-    suspend fun getMyHistory(): Result<AttendanceHistory>
+    suspend fun getMyHistory(from: String? = null, to: String? = null): Result<AttendanceHistory>
 }

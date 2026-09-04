@@ -51,6 +51,7 @@ import com.hanmaum.dn.mobile.features.events.presentation.EventRsvpViewModel
 fun AttendanceScreen(
     onBackClick: () -> Unit,
     onRsvpClick: () -> Unit,
+    onHistoryClick: () -> Unit,
     viewModel: AttendanceViewModel = koinViewModel(),
     rsvpViewModel: EventRsvpViewModel = koinViewModel(),
 ) {
@@ -197,7 +198,24 @@ fun AttendanceScreen(
                 }
 
                 Spacer(Modifier.height(22.dp))
-                Text("최근 출석", style = DnTheme.typography.headline, color = c.textPrimary)
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text("최근 출석", style = DnTheme.typography.headline, color = c.textPrimary)
+                    // Always offered, including on an empty record: the full
+                    // view is where a member goes to look, not only to scroll.
+                    Text(
+                        strings.attendanceViewAll,
+                        style = DnTheme.typography.captionStrong,
+                        color = c.limeInk,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable(onClick = onHistoryClick)
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                    )
+                }
                 Spacer(Modifier.height(12.dp))
 
                 Column(
@@ -225,7 +243,10 @@ fun AttendanceScreen(
                             )
                         }
                     } else {
-                        state.history.forEach { entry ->
+                        // Five newest. The repository already sorts by date
+                        // descending, so this is a preview of the top, not an
+                        // arbitrary slice of an unsorted response.
+                        state.history.take(RECENT_LIMIT).forEach { entry ->
                             Row(
                                 Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 11.dp),
                                 verticalAlignment = Alignment.CenterVertically,
@@ -276,3 +297,6 @@ private fun formatEntryDate(iso: String): String = try {
 } catch (_: IllegalArgumentException) {
     iso
 }
+
+/** How many entries 최근 출석 previews before pointing at 출석 확인 (#164). */
+private const val RECENT_LIMIT = 5
