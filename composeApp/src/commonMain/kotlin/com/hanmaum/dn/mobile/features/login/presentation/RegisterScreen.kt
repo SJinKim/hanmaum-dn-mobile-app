@@ -25,6 +25,7 @@ import com.hanmaum.dn.mobile.core.presentation.components.DnTopBar
 import com.hanmaum.dn.mobile.core.i18n.AppStrings
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
+import com.hanmaum.dn.mobile.features.login.presentation.components.BirthdayPickerField
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
 import com.hanmaum.dn.mobile.core.presentation.theme.typography
 import org.koin.compose.viewmodel.koinViewModel
@@ -94,9 +95,8 @@ fun RegisterScreen(
                     isPassword = true, keyboardType = KeyboardType.Password)
                 FieldError(strings.messageFor(state.passwordError))
                 Spacer(Modifier.height(16.dp))
-                DnTextField("생년월일", state.birthDate, viewModel::onBirthDateChange,
-                    Modifier.fillMaxWidth(), placeholder = "2000.01.01",
-                    trailing = DnIcons.Calendar, keyboardType = KeyboardType.Number)
+                BirthdayPickerField("생년월일", state.birthDate, viewModel::onBirthDateChange,
+                    Modifier.fillMaxWidth(), placeholder = "2000.01.01")
                 FieldError(strings.messageFor(state.birthDateError))
                 Spacer(Modifier.height(16.dp))
                 DnTextField("도로명", state.street, viewModel::onStreetChange,
