@@ -31,6 +31,29 @@ interface AppStrings {
     val errorInvalidHouseNumber: String
     val registerFailed: String
     val registerSuccessLogin: String
+    // Register form — chrome, field labels and the password checklist
+    val registerTitle: String
+    val registerHeadline: String
+    val registerSubtitle: String
+    val registerRequiredLegend: String
+    val registerMissingRequired: String
+    val registerSubmit: String
+    val registerSubmitting: String
+    val fieldLastName: String
+    val fieldFirstName: String
+    val fieldEmail: String
+    val fieldPhone: String
+    val fieldPassword: String
+    val fieldBirthDate: String
+    val fieldStreet: String
+    val fieldHouseNumber: String
+    val fieldZipCode: String
+    val fieldCity: String
+    val passwordRuleLength: String
+    val passwordRuleCase: String
+    val passwordRuleDigit: String
+    val passwordRuleSpecial: String
+    val passwordRuleNotEmail: String
     // Notification permission dialog (HomeScreen)
     val laterButton: String
     val allowPermission: String
@@ -219,6 +242,29 @@ object EnStrings : AppStrings {
     override val errorInvalidHouseNumber = "Enter a valid house number (e.g. 5, 12a)"
     override val registerFailed = "Registration failed. Please try again."
     override val registerSuccessLogin = "Registration successful. Please log in."
+    // Register form — chrome, field labels and the password checklist
+    override val registerTitle = "Sign up"
+    override val registerHeadline = "Let's begin together"
+    override val registerSubtitle = "After you apply, a leader reviews your request before you can use the app."
+    override val registerRequiredLegend = "* marks a required field"
+    override val registerMissingRequired = "Please fill in every required field"
+    override val registerSubmit = "Apply"
+    override val registerSubmitting = "Submitting…"
+    override val fieldLastName = "Last name"
+    override val fieldFirstName = "First name"
+    override val fieldEmail = "Email"
+    override val fieldPhone = "Phone"
+    override val fieldPassword = "Password"
+    override val fieldBirthDate = "Date of birth"
+    override val fieldStreet = "Street"
+    override val fieldHouseNumber = "No."
+    override val fieldZipCode = "Postcode"
+    override val fieldCity = "City"
+    override val passwordRuleLength = "At least 8 characters"
+    override val passwordRuleCase = "Upper and lower case"
+    override val passwordRuleDigit = "A digit"
+    override val passwordRuleSpecial = "A special character"
+    override val passwordRuleNotEmail = "Different from your email"
     override val laterButton = "Later"
     override val allowPermission = "Allow"
     override val navHome = "Home"
@@ -381,6 +427,29 @@ object KoStrings : AppStrings {
     override val errorInvalidHouseNumber = "올바른 번지수를 입력해주세요 (예: 5, 12a)"
     override val registerFailed = "회원가입에 실패했습니다. 다시 시도해주세요."
     override val registerSuccessLogin = "등록 성공했습니다. 로그인 해주세요."
+    // Register form — chrome, field labels and the password checklist
+    override val registerTitle = "회원가입"
+    override val registerHeadline = "함께 시작해요"
+    override val registerSubtitle = "가입 신청 후 담당자의 승인을 거쳐 이용하실 수 있습니다."
+    override val registerRequiredLegend = "* 표시는 필수 항목입니다"
+    override val registerMissingRequired = "필수 항목을 모두 입력해 주세요"
+    override val registerSubmit = "가입 신청하기"
+    override val registerSubmitting = "신청 중…"
+    override val fieldLastName = "성"
+    override val fieldFirstName = "이름"
+    override val fieldEmail = "이메일"
+    override val fieldPhone = "전화번호"
+    override val fieldPassword = "비밀번호"
+    override val fieldBirthDate = "생년월일"
+    override val fieldStreet = "도로명"
+    override val fieldHouseNumber = "번지"
+    override val fieldZipCode = "우편번호"
+    override val fieldCity = "도시"
+    override val passwordRuleLength = "8자 이상"
+    override val passwordRuleCase = "대문자와 소문자 포함"
+    override val passwordRuleDigit = "숫자 포함"
+    override val passwordRuleSpecial = "특수문자 포함"
+    override val passwordRuleNotEmail = "이메일 주소와 다름"
     override val laterButton = "나중에"
     override val allowPermission = "권한 허용"
     override val navHome = "홈"
@@ -543,6 +612,29 @@ object DeStrings : AppStrings {
     override val errorInvalidHouseNumber = "Bitte gültige Hausnummer angeben (z. B. 5, 12a)"
     override val registerFailed = "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut."
     override val registerSuccessLogin = "Registrierung erfolgreich. Bitte melden Sie sich an."
+    // Register form — chrome, field labels and the password checklist
+    override val registerTitle = "Registrieren"
+    override val registerHeadline = "Schön, dass du da bist"
+    override val registerSubtitle = "Nach der Anmeldung prüft ein Verantwortlicher deine Anfrage, bevor du die App nutzen kannst."
+    override val registerRequiredLegend = "* kennzeichnet ein Pflichtfeld"
+    override val registerMissingRequired = "Bitte fülle alle Pflichtfelder aus"
+    override val registerSubmit = "Anmeldung absenden"
+    override val registerSubmitting = "Wird gesendet…"
+    override val fieldLastName = "Nachname"
+    override val fieldFirstName = "Vorname"
+    override val fieldEmail = "E-Mail"
+    override val fieldPhone = "Telefon"
+    override val fieldPassword = "Passwort"
+    override val fieldBirthDate = "Geburtsdatum"
+    override val fieldStreet = "Straße"
+    override val fieldHouseNumber = "Nr."
+    override val fieldZipCode = "PLZ"
+    override val fieldCity = "Ort"
+    override val passwordRuleLength = "Mindestens 8 Zeichen"
+    override val passwordRuleCase = "Groß- und Kleinbuchstaben"
+    override val passwordRuleDigit = "Eine Ziffer"
+    override val passwordRuleSpecial = "Ein Sonderzeichen"
+    override val passwordRuleNotEmail = "Nicht die E-Mail-Adresse"
     override val laterButton = "Später"
     override val allowPermission = "Erlauben"
     override val navHome = "Start"

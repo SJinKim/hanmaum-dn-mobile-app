@@ -299,6 +299,11 @@ fun DnTextField(
     isPassword: Boolean = false,
     keyboardType: androidx.compose.ui.text.input.KeyboardType =
         androidx.compose.ui.text.input.KeyboardType.Text,
+    isError: Boolean = false,
+    imeAction: androidx.compose.ui.text.input.ImeAction =
+        androidx.compose.ui.text.input.ImeAction.Next,
+    keyboardActions: androidx.compose.foundation.text.KeyboardActions =
+        androidx.compose.foundation.text.KeyboardActions.Default,
 ) {
     val c = DnTheme.colors
     // A password field owns its own reveal state: every caller wants the same
@@ -312,7 +317,14 @@ fun DnTextField(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(18.dp))
                 .background(c.surface2, RoundedCornerShape(18.dp))
-                .border(1.dp, c.strokeSubtle, RoundedCornerShape(18.dp))
+                // The red outline is what you notice without reading. The
+                // message underneath says what to do about it, and the two
+                // always appear together — colour alone is not a signal.
+                .border(
+                    width = if (isError) 1.5.dp else 1.dp,
+                    color = if (isError) c.red else c.strokeSubtle,
+                    shape = RoundedCornerShape(18.dp),
+                )
                 .padding(horizontal = 16.dp, vertical = 15.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -358,7 +370,9 @@ fun DnTextField(
                     },
                     keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                         keyboardType = keyboardType,
+                        imeAction = imeAction,
                     ),
+                    keyboardActions = keyboardActions,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 if (value.isEmpty() && placeholder != null) {

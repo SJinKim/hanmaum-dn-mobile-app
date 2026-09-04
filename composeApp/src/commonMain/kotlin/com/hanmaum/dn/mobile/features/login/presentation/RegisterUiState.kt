@@ -35,6 +35,12 @@ sealed interface RegisterBanner {
     data object Generic : RegisterBanner
     /** Registered, but auto-login failed — UI prompts the user to log in. */
     data object RegisteredPleaseLogin : RegisterBanner
+    /**
+     * Submit was blocked by local validation. Says at the top of the form why
+     * nothing happened, because the offending field may be scrolled out of
+     * sight — the per-field messages alone left the button looking dead.
+     */
+    data object MissingRequired : RegisterBanner
 }
 
 data class RegisterUiState(
