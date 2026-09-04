@@ -176,7 +176,7 @@ class RegisterViewModel(
                     streetError = streetError,
                     houseNumberError = houseNumberError,
                     focusTarget = focusTarget,
-                    bannerError = null,
+                    bannerError = RegisterBanner.MissingRequired,
                 )
             }
             return
