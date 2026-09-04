@@ -47,6 +47,29 @@ class AttendanceViewModel(
                 onFailure = { err -> println("[AttendanceViewModel] Failed to load definitions: ${err.message}") },
             )
         }
+        loadStats()
+    }
+
+    /**
+     * The counters and the recent list. Deliberately its own coroutine rather
+     * than chained onto the definitions call: neither needs the other, and a
+     * failing summary must not cost the user the check-in slider.
+     */
+    private fun loadStats() {
+        viewModelScope.launch {
+            repository.getMySummary().fold(
+                onSuccess = { summary -> _uiState.update { it.copy(summary = summary) } },
+                onFailure = { err -> println("[AttendanceViewModel] Failed to load summary: ${err.message}") },
+            )
+        }
+        viewModelScope.launch {
+            repository.getMyHistory().fold(
+                onSuccess = { history ->
+                    _uiState.update { it.copy(history = history.entries, historyLoaded = true) }
+                },
+                onFailure = { err -> println("[AttendanceViewModel] Failed to load history: ${err.message}") },
+            )
+        }
     }
 
     fun checkIn() {

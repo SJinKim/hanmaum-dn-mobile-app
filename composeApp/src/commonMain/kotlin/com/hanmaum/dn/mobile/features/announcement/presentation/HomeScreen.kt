@@ -48,6 +48,7 @@ import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTileShape
 import com.hanmaum.dn.mobile.core.presentation.theme.typography
 import com.hanmaum.dn.mobile.features.announcement.domain.model.Announcement
+import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceSummary
 import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceViewModel
 import com.hanmaum.dn.mobile.features.attendance.presentation.components.SlideToCheckIn
 import org.koin.compose.viewmodel.koinViewModel
@@ -148,6 +149,9 @@ fun HomeScreen(
                 serviceTime = attendance.definition?.let { def ->
                     "${dayLabel(def.dayOfWeek)} ${def.windowStart.take(5)}"
                 },
+                // Same AttendanceViewModel that drives the check-in slider above,
+                // so the tile costs no second request.
+                summary = attendance.summary,
                 onAttendanceClick = onAttendanceClick,
             )
 
@@ -386,6 +390,7 @@ internal fun CategoryPill(item: Announcement) {
 private fun HomeTiles(
     serviceTitle: String?,
     serviceTime: String?,
+    summary: AttendanceSummary?,
     onAttendanceClick: () -> Unit,
 ) {
     val c = DnTheme.colors
@@ -444,12 +449,20 @@ private fun HomeTiles(
                 Text("이번 달 출석", style = DnTheme.typography.caption, color = c.textSecondary)
                 Icon(DnIcons.UserCheck, null, tint = c.limeInk, modifier = Modifier.size(16.dp))
             }
-            // TODO(#110): monthAttended / monthTotal come from
-            // /api/v1/me/attendance/summary; the client does not read it yet.
             Row(verticalAlignment = Alignment.Bottom) {
-                Text("–", style = DnTheme.typography.stat, color = c.textPrimary)
+                // Dash while the summary is still in flight or failed — a zero
+                // would read as "attended nothing this month".
+                Text(
+                    summary?.monthAttended?.toString() ?: "–",
+                    style = DnTheme.typography.stat,
+                    color = c.textPrimary,
+                )
                 Spacer(Modifier.width(4.dp))
-                Text("/ –", style = DnTheme.typography.body, color = c.textTertiary)
+                Text(
+                    "/ ${summary?.monthTotal?.toString() ?: "–"}",
+                    style = DnTheme.typography.body,
+                    color = c.textTertiary,
+                )
             }
             Box(
                 Modifier

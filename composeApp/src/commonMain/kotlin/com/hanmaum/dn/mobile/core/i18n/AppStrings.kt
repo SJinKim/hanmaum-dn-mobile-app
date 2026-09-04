@@ -31,6 +31,10 @@ interface AppStrings {
     val errorInvalidHouseNumber: String
     val registerFailed: String
     val registerSuccessLogin: String
+    // Attendance history list (#110)
+    val attendancePresent: String
+    val attendanceAbsent: String
+    val attendanceNoRecords: String
     // Register form — chrome, field labels and the password checklist
     val registerTitle: String
     val registerHeadline: String
@@ -242,6 +246,10 @@ object EnStrings : AppStrings {
     override val errorInvalidHouseNumber = "Enter a valid house number (e.g. 5, 12a)"
     override val registerFailed = "Registration failed. Please try again."
     override val registerSuccessLogin = "Registration successful. Please log in."
+    // Attendance history list (#110)
+    override val attendancePresent = "Attended"
+    override val attendanceAbsent = "Missed"
+    override val attendanceNoRecords = "No attendance recorded yet"
     // Register form — chrome, field labels and the password checklist
     override val registerTitle = "Sign up"
     override val registerHeadline = "Let's begin together"
@@ -427,6 +435,10 @@ object KoStrings : AppStrings {
     override val errorInvalidHouseNumber = "올바른 번지수를 입력해주세요 (예: 5, 12a)"
     override val registerFailed = "회원가입에 실패했습니다. 다시 시도해주세요."
     override val registerSuccessLogin = "등록 성공했습니다. 로그인 해주세요."
+    // Attendance history list (#110)
+    override val attendancePresent = "출석"
+    override val attendanceAbsent = "미출석"
+    override val attendanceNoRecords = "아직 출석 기록이 없습니다"
     // Register form — chrome, field labels and the password checklist
     override val registerTitle = "회원가입"
     override val registerHeadline = "함께 시작해요"
@@ -612,6 +624,10 @@ object DeStrings : AppStrings {
     override val errorInvalidHouseNumber = "Bitte gültige Hausnummer angeben (z. B. 5, 12a)"
     override val registerFailed = "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut."
     override val registerSuccessLogin = "Registrierung erfolgreich. Bitte melden Sie sich an."
+    // Attendance history list (#110)
+    override val attendancePresent = "Anwesend"
+    override val attendanceAbsent = "Gefehlt"
+    override val attendanceNoRecords = "Noch keine Anwesenheit erfasst"
     // Register form — chrome, field labels and the password checklist
     override val registerTitle = "Registrieren"
     override val registerHeadline = "Schön, dass du da bist"
