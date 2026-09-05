@@ -2,7 +2,9 @@ package com.hanmaum.dn.mobile.features.login.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
+import com.hanmaum.dn.mobile.core.network.invalidateBearerCache
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.features.login.domain.model.Countries
 import com.hanmaum.dn.mobile.features.login.domain.model.PasswordPolicy
@@ -12,6 +14,8 @@ import com.hanmaum.dn.mobile.features.login.domain.model.RegisterRequest
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterValidation
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
 import com.hanmaum.dn.mobile.features.login.domain.repository.CityLookupRepository
+import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
+import io.ktor.client.HttpClient
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,6 +27,8 @@ class RegisterViewModel(
     private val authRepository: AuthRepository,
     private val tokenStorage: TokenStorage,
     private val cityLookupRepository: CityLookupRepository,
+    private val memberRepository: MemberRepository,
+    private val httpClient: HttpClient,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterUiState())
@@ -221,21 +227,58 @@ class RegisterViewModel(
         }
     }
 
+    /**
+     * Signs the new member in straight away so registration ends on the screen
+     * that tells them what happens next, not on a form asking them to log in
+     * again with credentials they just typed.
+     *
+     * Keycloak accepts this: the server creates the user enabled and with a
+     * permanent password, and the PENDING status lives in our own database
+     * rather than in Keycloak.
+     */
     private fun performAutoLogin(email: String, pass: String) {
         viewModelScope.launch {
             try {
-                // Dein existierender Login Code
                 val tokenResponse = authRepository.login(email, pass)
 
                 tokenStorage.saveAccessToken(tokenResponse.accessToken)
                 tokenStorage.saveRefreshToken(tokenResponse.refreshToken)
+                // The login screen sets this too; without it the session does
+                // not survive the next app start.
+                tokenStorage.setKeepSignedIn(true)
 
-                // Login erfolgreich -> Success State setzen
-                // (Token müsste eigentlich gespeichert werden, hier vereinfacht)
-                _uiState.update { it.copy(isLoading = false, isSuccess = true, navigateTo = NavRoute.PendingApproval) }
+                // Ktor's BearerAuthProvider caches tokens. Without dropping that
+                // cache the very next authed call — the profile fetch below —
+                // replays whatever was held before these were written.
+                httpClient.invalidateBearerCache()
 
+                // Same routing as the login screen. A fresh registration is
+                // PENDING, but re-registering on an existing account is not, and
+                // a hardcoded destination would send that member to a screen
+                // telling them to wait for an approval they already have.
+                val destination = memberRepository.getMyProfile().fold(
+                    onSuccess = { member ->
+                        when (member.status) {
+                            MemberStatus.ACTIVE -> NavRoute.Home
+                            MemberStatus.REJECTED -> NavRoute.Rejected
+                            else -> NavRoute.PendingApproval
+                        }
+                    },
+                    // The token is valid and the account exists — only the
+                    // profile call failed. A fresh registration is pending, so
+                    // send them there rather than back to the login form.
+                    onFailure = { NavRoute.PendingApproval },
+                )
+
+                _uiState.update {
+                    it.copy(isLoading = false, isSuccess = true, navigateTo = destination)
+                }
             } catch (e: Exception) {
-                // Registriert ja, aber Login fehlgeschlagen
+                // Registration itself succeeded, so this is a fallback, not a
+                // failure — but it used to be silent, which is why nobody could
+                // say why the pending screen never appeared (#168). The message
+                // carries the status and reason; it never carries the password.
+                println("[RegisterViewModel] auto-login after registration failed: ${e.message}")
                 _uiState.update {
                     it.copy(
                         isLoading = false,

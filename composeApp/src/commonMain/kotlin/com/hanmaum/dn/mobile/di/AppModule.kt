@@ -111,7 +111,7 @@ val appModule = module {
     viewModel { AnnouncementListViewModel(get()) }
 
     // Register VM
-    viewModel { RegisterViewModel(get(), get(), get()) }
+    viewModel { RegisterViewModel(get(), get(), get(), get(), get()) }
 
     // Login VM
     viewModel { LoginViewModel(get(), get(), get(), get(), get()) }
