@@ -39,6 +39,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.LaunchedEffect
 import com.hanmaum.dn.mobile.features.events.presentation.EventRsvpViewModel
+import com.hanmaum.dn.mobile.features.events.presentation.RsvpEntryState
 
 /**
  * 출석 체크.
@@ -131,38 +132,54 @@ fun AttendanceScreen(
 
                 Spacer(Modifier.height(20.dp))
 
-                // The way back to an invitation that was put off. Hidden when
-                // nothing is open, so the screen does not carry a dead row.
-                if (rsvpState.pendingCount > 0) {
+                // The way to 행사 참석. Always present: a finished task must not
+                // take the route to its own area with it (#163). Only the
+                // contents change — open work, or a done state that is still a
+                // link and still says so.
+                run {
+                    val entry = RsvpEntryState.of(rsvpState.pendingCount)
+                    val open = entry is RsvpEntryState.Open
+                    // Glyph as well as colour: the done state must not rely on
+                    // green alone to be understood.
+                    val glyph = if (open) DnIcons.Calendar else DnIcons.Check
+                    val accent = if (open) c.amber else c.limeInk
+                    val accentDim = if (open) c.amberDim else c.limeDim
                     Row(
                         Modifier
                             .fillMaxWidth()
                             .clip(DnTileShape)
                             .background(c.surface, DnTileShape)
-                            .border(1.dp, c.amber.copy(alpha = 0.45f), DnTileShape)
+                            .border(1.dp, accent.copy(alpha = 0.45f), DnTileShape)
                             .clickable(onClick = onRsvpClick)
                             .padding(horizontal = 16.dp, vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         Box(
-                            Modifier.size(36.dp).clip(RoundedCornerShape(13.dp)).background(c.amberDim),
+                            Modifier.size(36.dp).clip(RoundedCornerShape(13.dp)).background(accentDim),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Icon(DnIcons.Calendar, null, tint = c.amber, modifier = Modifier.size(19.dp))
+                            Icon(glyph, null, tint = accent, modifier = Modifier.size(19.dp))
                         }
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             Text(
-                                "응답하지 않은 행사 ${rsvpState.pendingCount}건",
+                                if (open) {
+                                    strings.rsvpPendingCount
+                                        .replace("{n}", (entry as RsvpEntryState.Open).count.toString())
+                                } else {
+                                    strings.rsvpAllAnswered
+                                },
                                 style = DnTheme.typography.captionStrong,
                                 color = c.textPrimary,
                             )
                             Text(
-                                "참석 여부를 알려주세요",
+                                if (open) strings.rsvpPendingHint else strings.rsvpAllAnsweredHint,
                                 style = DnTheme.typography.caption,
                                 color = c.textTertiary,
                             )
                         }
+                        // The chevron is what keeps the done state reading as a
+                        // way onward rather than as a disabled status badge.
                         Icon(DnIcons.ChevronRight, null, tint = c.textTertiary, modifier = Modifier.size(20.dp))
                     }
 
