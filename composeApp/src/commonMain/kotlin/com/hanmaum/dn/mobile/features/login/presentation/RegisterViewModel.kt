@@ -6,6 +6,7 @@ import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.network.invalidateBearerCache
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
+import com.hanmaum.dn.mobile.features.login.domain.model.BirthDateInput
 import com.hanmaum.dn.mobile.features.login.domain.model.Countries
 import com.hanmaum.dn.mobile.features.login.domain.model.PasswordPolicy
 import com.hanmaum.dn.mobile.features.login.domain.model.PhoneNumber
@@ -117,6 +118,13 @@ class RegisterViewModel(
     fun onHouseNumberChange(v: String) = _uiState.update { it.copy(houseNumber = v, houseNumberError = null, bannerError = null) }
 
     fun register() {
+        // Someone can type the date and hit the button without ever leaving the
+        // field, so the normalisation that usually happens on focus loss has to
+        // happen here too (#166).
+        val normalisedBirthDate = BirthDateInput.normalise(_uiState.value.birthDate)
+        if (normalisedBirthDate != _uiState.value.birthDate) {
+            _uiState.update { it.copy(birthDate = normalisedBirthDate) }
+        }
         val s = _uiState.value
 
         // 1. VALIDIERUNG — collect every field error so the user sees them all at once.

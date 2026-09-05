@@ -341,4 +341,45 @@ class RegisterViewModelTest {
         assertEquals(0, auth.registerCalls)
         assertEquals(0, auth.loginCalls)
     }
+
+    // ── birth date normalised at submit (#166) ───────────────────────────
+
+    @Test
+    fun sevenDigitsAreNormalisedWhenSubmittingWithoutLeavingTheField() = runTest {
+        fillMinimumValidForm()
+        vm.onBirthDateChange("2000.22.3") // what typing 2000223 leaves behind
+
+        vm.register()
+        advanceUntilIdle()
+
+        assertEquals("2000.02.23", vm.uiState.value.birthDate)
+        assertEquals(1, auth.registerCalls)
+        assertEquals("2000-02-23", auth.lastRequest?.birthDate)
+    }
+
+    @Test
+    fun anAmbiguousBirthDateBlocksSubmitInsteadOfGuessing() = runTest {
+        // 2000105 is either 5 January or 10 May; sending either would be a
+        // date the member never typed.
+        fillMinimumValidForm()
+        vm.onBirthDateChange("2000.10.5")
+
+        vm.register()
+        advanceUntilIdle()
+
+        assertEquals(0, auth.registerCalls, "no request on an ambiguous date")
+        assertEquals(RegisterFieldError.DATE_INCOMPLETE, vm.uiState.value.birthDateError)
+    }
+
+    @Test
+    fun animpossibleDateBlocksSubmit() = runTest {
+        fillMinimumValidForm()
+        vm.onBirthDateChange("2000.02.30")
+
+        vm.register()
+        advanceUntilIdle()
+
+        assertEquals(0, auth.registerCalls)
+        assertEquals(RegisterFieldError.DATE_INVALID, vm.uiState.value.birthDateError)
+    }
 }

@@ -37,6 +37,36 @@ object BirthDateInput {
         }
     }
 
+    /**
+     * Settles a finished entry into `YYYY.MM.DD`, or leaves it alone.
+     *
+     * Eight digits are unambiguous. Seven are not: `2000223` could be read as
+     * `yyyyMdd` (2000-02-23) or `yyyyMMd` (2000-22-3), and only the readings
+     * that are real calendar dates count. When exactly one survives, that is
+     * what the user meant. When both do — `2000105` is either 5 January or
+     * 10 May — the input is genuinely ambiguous and is returned untouched, so
+     * validation asks for the full form rather than picking a date the user
+     * never typed.
+     *
+     * Called when the field loses focus and again before submitting, never on
+     * every keystroke: rewriting mid-typing would fight the user's caret.
+     */
+    fun normalise(text: String): String {
+        val digits = text.filter { it.isDigit() }
+        if (digits.length == 8) return format(digits)
+        if (digits.length != 7) return format(text)
+
+        val year = digits.take(4)
+        val readings = listOf(
+            // yyyyMdd — single-digit month
+            "$year.0${digits[4]}.${digits.substring(5)}",
+            // yyyyMMd — single-digit day
+            "$year.${digits.substring(4, 6)}.0${digits[6]}",
+        ).filter { parse(it) != null }
+
+        return readings.singleOrNull() ?: format(text)
+    }
+
     /** `2000.08.16` for a date — the same shape [format] produces. */
     fun format(date: LocalDate): String = date.toString().replace('-', '.')
 
