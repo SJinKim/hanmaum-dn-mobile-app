@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
@@ -25,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +40,7 @@ import com.hanmaum.dn.mobile.core.presentation.components.DnErrorState
 import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlows
 import com.hanmaum.dn.mobile.core.presentation.components.DnScrollEdge
+import com.hanmaum.dn.mobile.core.navigation.ParticipationRoute
 import com.hanmaum.dn.mobile.core.presentation.components.DnSegmented
 import com.hanmaum.dn.mobile.core.presentation.components.DnTopBar
 import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
@@ -66,7 +69,17 @@ fun ParticipationScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val c = DnTheme.colors
 
-    var tab by remember { mutableIntStateOf(if (initialTab == TAB_SERVE) 1 else 0) }
+    // rememberSaveable, not remember: navigating into a detail takes this
+    // screen out of composition, and a plain remember loses the tab. On the way
+    // back it was then re-derived from the route argument, so a 양육 detail
+    // returned the member to 사역 (#162). Navigation Compose keeps saveable
+    // state per back stack entry, so the saved tab wins over the argument —
+    // which stays the fallback for a fresh entry from elsewhere.
+    var tab by rememberSaveable { mutableIntStateOf(participationTabIndex(initialTab)) }
+    // The scroll position deserves the same treatment; returning to the top of
+    // a long list is the same class of lost context.
+    val nurtureListState = rememberLazyListState()
+    val ministryListState = rememberLazyListState()
     val ministries = (state as? MinistryListUiState.Success)?.ministries.orEmpty()
 
     DnBackground(glows = DnGlows.action()) {
@@ -105,7 +118,7 @@ fun ParticipationScreen(
 
             Spacer(Modifier.height(18.dp))
 
-            if (tab == 1) {
+            if (tab == TAB_SERVE_INDEX) {
                 when (val s = state) {
                     is MinistryListUiState.Loading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
                         CircularProgressIndicator(color = c.lime)
@@ -115,6 +128,7 @@ fun ParticipationScreen(
                         DnErrorState(onRetry = viewModel::loadMinistries)
 
                     is MinistryListUiState.Success -> LazyColumn(
+                        state = ministryListState,
                         contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 60.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
@@ -138,6 +152,7 @@ fun ParticipationScreen(
                 // durationWeeks and openForRegistration — enough for this list.
                 // Placeholder rows until the client reads them.
                 LazyColumn(
+                    state = nurtureListState,
                     contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 60.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
@@ -162,7 +177,20 @@ fun ParticipationScreen(
     }
 }
 
-const val TAB_SERVE = "SERVE"
+/**
+ * Which tab a route argument selects, and the fallback for anything else.
+ *
+ * A function rather than a comparison buried in the composable, so the
+ * fallback the issue asks for is stated once and can be tested. It reads
+ * `ParticipationRoute`'s own constants — this file used to keep a second
+ * `TAB_SERVE` with the same value, which would have sent every entry to 양육
+ * the day one of the two changed, without a compile error.
+ */
+fun participationTabIndex(routeTab: String): Int =
+    if (routeTab == ParticipationRoute.TAB_SERVE) TAB_SERVE_INDEX else TAB_NURTURE_INDEX
+
+const val TAB_NURTURE_INDEX = 0
+const val TAB_SERVE_INDEX = 1
 
 /** Stand-in content so the layout can be reviewed before #113 lands. */
 private val NURTURE_PLACEHOLDER = listOf(
