@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.input.KeyboardType
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.components.DnTextField
@@ -44,12 +45,19 @@ fun BirthdayPickerField(
 ) {
     val strings = LocalStrings.current
     var showPicker by remember { mutableStateOf(false) }
+    var hadFocus by remember { mutableStateOf(false) }
 
     DnTextField(
         label = label,
         value = value,
         onValueChange = { onValueChange(BirthDateInput.format(it)) },
-        modifier = modifier,
+        // Settle the entry when the field is left, not on every keystroke:
+        // rewriting mid-typing would fight the caret. Seven digits become a
+        // date only when one reading of them is a real one (#166).
+        modifier = modifier.onFocusChanged { focus ->
+            if (hadFocus && !focus.hasFocus) onValueChange(BirthDateInput.normalise(value))
+            hadFocus = focus.hasFocus
+        },
         placeholder = placeholder,
         trailing = DnIcons.Calendar,
         onTrailingClick = { showPicker = true },
