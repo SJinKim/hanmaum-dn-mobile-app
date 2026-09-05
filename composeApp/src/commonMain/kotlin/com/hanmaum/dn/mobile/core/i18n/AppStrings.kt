@@ -35,6 +35,11 @@ interface AppStrings {
     val attendancePresent: String
     val attendanceAbsent: String
     val attendanceNoRecords: String
+    // 행사 참석 entry on 출석 현황 (#163)
+    val rsvpPendingCount: String
+    val rsvpAllAnswered: String
+    val rsvpPendingHint: String
+    val rsvpAllAnsweredHint: String
     // Attendance history calendar (#164)
     val attendanceHistoryTitle: String
     val attendanceViewAll: String
@@ -259,6 +264,11 @@ object EnStrings : AppStrings {
     override val attendancePresent = "Attended"
     override val attendanceAbsent = "Missed"
     override val attendanceNoRecords = "No attendance recorded yet"
+    // 행사 참석 entry on 출석 현황 (#163)
+    override val rsvpPendingCount = "{n} events awaiting your reply"
+    override val rsvpAllAnswered = "You have replied to every event"
+    override val rsvpPendingHint = "Let them know whether you are coming"
+    override val rsvpAllAnsweredHint = "Tap to review your replies"
     // Attendance history calendar (#164)
     override val attendanceHistoryTitle = "Attendance record"
     override val attendanceViewAll = "View all"
@@ -457,6 +467,11 @@ object KoStrings : AppStrings {
     override val attendancePresent = "출석"
     override val attendanceAbsent = "미출석"
     override val attendanceNoRecords = "아직 출석 기록이 없습니다"
+    // 행사 참석 entry on 출석 현황 (#163)
+    override val rsvpPendingCount = "응답하지 않은 행사 {n}건"
+    override val rsvpAllAnswered = "모든 행사에 응답했습니다"
+    override val rsvpPendingHint = "참석 여부를 알려주세요"
+    override val rsvpAllAnsweredHint = "응답 내역을 확인해 보세요"
     // Attendance history calendar (#164)
     override val attendanceHistoryTitle = "출석 확인"
     override val attendanceViewAll = "전체 보기"
@@ -655,6 +670,11 @@ object DeStrings : AppStrings {
     override val attendancePresent = "Anwesend"
     override val attendanceAbsent = "Gefehlt"
     override val attendanceNoRecords = "Noch keine Anwesenheit erfasst"
+    // 행사 참석 entry on 출석 현황 (#163)
+    override val rsvpPendingCount = "{n} Veranstaltungen ohne Antwort"
+    override val rsvpAllAnswered = "Du hast auf alle Veranstaltungen geantwortet"
+    override val rsvpPendingHint = "Sag Bescheid, ob du kommst"
+    override val rsvpAllAnsweredHint = "Antippen, um deine Antworten zu sehen"
     // Attendance history calendar (#164)
     override val attendanceHistoryTitle = "Anwesenheit"
     override val attendanceViewAll = "Alle anzeigen"
