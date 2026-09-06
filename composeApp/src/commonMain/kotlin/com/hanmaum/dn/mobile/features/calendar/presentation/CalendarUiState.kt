@@ -12,10 +12,13 @@ data class CalendarUiState(
     val events: List<CalendarEvent> = emptyList(),
     val selectedDay: Int? = null,
     val selectedEvent: CalendarEvent? = null,
-    val isLoading: Boolean = false,
-    val error: String? = null,
+    /** True from construction: the month load starts in `init`, so the first frame is never "no events". */
+    val isLoading: Boolean = true,
+    /** A failed load is not an empty calendar — the screen must say so and offer a retry. */
+    val monthLoadFailed: Boolean = false,
     val viewMode: ViewMode = ViewMode.CALENDAR,
     val yearEvents: List<CalendarEvent> = emptyList(),
     val yearEventsLoaded: Boolean = false,
     val isYearLoading: Boolean = false,
+    val yearLoadFailed: Boolean = false,
 )
