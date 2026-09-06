@@ -53,13 +53,37 @@ private fun clientOf(recorder: Recorder, vararg bodies: String, status: HttpStat
         install(ContentNegotiation) { json(testJson) }
     }
 
+
+private const val YOUTH_ID = "youth123@group.calendar.google.com"
+
+/**
+ * Routes by calendar id instead of by call order — with several calendars in
+ * flight at once, call order is not something a test may rely on.
+ */
+private fun routedClient(
+    recorder: Recorder,
+    route: (calendarId: String, pageToken: String?) -> Pair<HttpStatusCode, String>,
+) = HttpClient(MockEngine { request ->
+    recorder.requests += request
+    // .../calendars/{id}/events
+    val id = request.url.segments[request.url.segments.indexOf("events") - 1]
+    val (status, body) = route(id, request.url.parameters["pageToken"])
+    respond(
+        content = body,
+        status = status,
+        headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+    )
+}) {
+    install(ContentNegotiation) { json(testJson) }
+}
+
 private fun repositoryOf(
     client: HttpClient,
-    calendarId: String = CALENDAR_ID,
+    calendarIds: String = CALENDAR_ID,
     apiKey: String = API_KEY,
 ) = CalendarRepositoryImpl(
     client = client,
-    calendarId = calendarId,
+    calendarIds = calendarIds,
     apiKey = apiKey,
     zone = TimeZone.of("Europe/Berlin"),
 )
@@ -245,7 +269,7 @@ class CalendarRepositoryImplTest {
     @Test
     fun `a missing calendar id fails before any request goes out`() = runTest {
         val recorder = Recorder()
-        val result = repositoryOf(clientOf(recorder, page(emptyList())), calendarId = "").getEvents(2026, 5)
+        val result = repositoryOf(clientOf(recorder, page(emptyList())), calendarIds = "").getEvents(2026, 5)
 
         assertTrue(result.isFailure)
         assertContains(result.exceptionOrNull()?.message.orEmpty(), "GOOGLE_CALENDAR_ID")
@@ -260,5 +284,120 @@ class CalendarRepositoryImplTest {
         assertTrue(result.isFailure)
         assertContains(result.exceptionOrNull()?.message.orEmpty(), "GOOGLE_CALENDAR_API_KEY")
         assertTrue(recorder.requests.isEmpty(), "a blank key must not become a real request")
+    }
+
+    @Test
+    fun `both configured calendars are read and merged in time order`() = runTest {
+        val recorder = Recorder()
+        val client = routedClient(recorder) { id, _ ->
+            HttpStatusCode.OK to when (id) {
+                CALENDAR_ID -> page(listOf(event("main-01", "2026-09-01"), event("main-30", "2026-09-30")))
+                YOUTH_ID -> page(listOf(event("youth-15", "2026-09-15"), event("youth-25", "2026-09-25")))
+                else -> error("unexpected calendar $id")
+            }
+        }
+
+        val events = repositoryOf(client, calendarIds = "$CALENDAR_ID,$YOUTH_ID").getEvents(2026, 9).getOrThrow()
+
+        assertEquals(2, recorder.requests.size)
+        // Interleaved by start, not grouped by source.
+        assertEquals(listOf("main-01", "youth-15", "youth-25", "main-30"), events.map { it.id })
+    }
+
+    @Test
+    fun `each event remembers which calendar it came from`() = runTest {
+        val recorder = Recorder()
+        val client = routedClient(recorder) { id, _ ->
+            HttpStatusCode.OK to page(listOf(event("e1", "2026-09-15")))
+        }
+
+        val events = repositoryOf(client, calendarIds = "$CALENDAR_ID,$YOUTH_ID").getEvents(2026, 9).getOrThrow()
+
+        assertEquals(setOf(CALENDAR_ID, YOUTH_ID), events.map { it.calendarId }.toSet())
+    }
+
+    // Google ids are unique per calendar, not globally. Two calendars handing
+    // out the same id must stay two rows — a duplicate list key crashes Compose.
+    @Test
+    fun `the same event id on two calendars yields two distinct keys`() = runTest {
+        val recorder = Recorder()
+        val client = routedClient(recorder) { _, _ ->
+            HttpStatusCode.OK to page(listOf(event("collision", "2026-09-15")))
+        }
+
+        val events = repositoryOf(client, calendarIds = "$CALENDAR_ID,$YOUTH_ID").getEvents(2026, 9).getOrThrow()
+
+        assertEquals(2, events.size)
+        assertEquals(2, events.map { it.key }.toSet().size)
+    }
+
+    // Dropping the calendar that failed and rendering the rest would look exactly
+    // like a complete calendar — the failure #178 was filed for. It fails loudly.
+    @Test
+    fun `one failing calendar fails the whole load`() = runTest {
+        val recorder = Recorder()
+        val client = routedClient(recorder) { id, _ ->
+            if (id == YOUTH_ID) HttpStatusCode.NotFound to """{"error":{"code":404}}"""
+            else HttpStatusCode.OK to page(listOf(event("main-01", "2026-09-01")))
+        }
+
+        val result = repositoryOf(client, calendarIds = "$CALENDAR_ID,$YOUTH_ID").getEvents(2026, 9)
+
+        assertTrue(result.isFailure)
+        val message = result.exceptionOrNull()?.message.orEmpty()
+        assertContains(message, YOUTH_ID)
+        assertContains(message, "404")
+        assertFalse(message.contains(API_KEY), "the API key must never surface in an error")
+    }
+
+    @Test
+    fun `pagination is followed per calendar`() = runTest {
+        val recorder = Recorder()
+        val client = routedClient(recorder) { id, token ->
+            HttpStatusCode.OK to when {
+                id == YOUTH_ID && token == null ->
+                    page(listOf(event("youth-a", "2026-09-15")), nextPageToken = "y2")
+                id == YOUTH_ID -> page(listOf(event("youth-b", "2026-09-25")))
+                else -> page(listOf(event("main-01", "2026-09-01")))
+            }
+        }
+
+        val events = repositoryOf(client, calendarIds = "$CALENDAR_ID,$YOUTH_ID").getEvents(2026, 9).getOrThrow()
+
+        assertEquals(3, recorder.requests.size)
+        assertEquals(listOf("main-01", "youth-a", "youth-b"), events.map { it.id })
+    }
+
+    @Test
+    fun `whitespace and empty entries in the config are ignored`() = runTest {
+        val recorder = Recorder()
+        val client = routedClient(recorder) { _, _ -> HttpStatusCode.OK to page(emptyList()) }
+
+        repositoryOf(client, calendarIds = " $CALENDAR_ID , , $YOUTH_ID ,").getEvents(2026, 9).getOrThrow()
+
+        val asked = recorder.requests.map { it.url.segments[it.url.segments.indexOf("events") - 1] }
+        assertEquals(setOf(CALENDAR_ID, YOUTH_ID), asked.toSet())
+        assertEquals(2, recorder.requests.size)
+    }
+
+    @Test
+    fun `a single configured id still works unchanged`() = runTest {
+        val recorder = Recorder()
+        val client = routedClient(recorder) { _, _ -> HttpStatusCode.OK to page(listOf(event("only", "2026-09-15"))) }
+
+        val events = repositoryOf(client).getEvents(2026, 9).getOrThrow()
+
+        assertEquals(1, recorder.requests.size)
+        assertEquals(listOf("only"), events.map { it.id })
+    }
+
+    @Test
+    fun `a config of only separators fails before any request goes out`() = runTest {
+        val recorder = Recorder()
+        val result = repositoryOf(clientOf(recorder, page(emptyList())), calendarIds = " , ").getEvents(2026, 9)
+
+        assertTrue(result.isFailure)
+        assertContains(result.exceptionOrNull()?.message.orEmpty(), "GOOGLE_CALENDAR_ID")
+        assertTrue(recorder.requests.isEmpty())
     }
 }

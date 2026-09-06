@@ -10,6 +10,9 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.http.appendPathSegments
 import io.ktor.http.isSuccess
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
@@ -23,9 +26,9 @@ private const val MAX_PAGES = 20
 private const val PAGE_SIZE = 250
 
 /**
- * Read-only view of the church's public Google calendar.
+ * Read-only view of the church's public Google calendars.
  *
- * Two things here are load-bearing and easy to break:
+ * Four things here are load-bearing and easy to break:
  *
  * 1. **The window is computed in Europe/Berlin, not UTC.** A `timeMin` of
  *    `2026-05-01T00:00:00Z` is 02:00 local in summer, so an event at 00:30 on
@@ -33,16 +36,35 @@ private const val PAGE_SIZE = 250
  *    the real instant and follows the DST switch on its own.
  * 2. **Every page is fetched.** `nextPageToken` is followed until Google stops
  *    handing one out, so "the month" means the whole month.
+ * 3. **Every configured calendar is fetched**, in parallel, and the results are
+ *    merged into one time-ordered list. The church keeps more than one calendar
+ *    (the youth schedule is its own), and a screen that shows one of them while
+ *    looking complete is the exact failure #178 was filed for.
+ * 4. **One calendar failing fails the whole load.** Dropping the calendar that
+ *    errored and rendering the rest would repeat that same failure quietly: a
+ *    calendar accidentally set back to private would simply stop appearing.
+ *    Better a visible error with a retry — and the view model keeps the events
+ *    already on screen while it shows one.
  *
- * The calendar id and key are constructor parameters (defaulted from
+ * The calendar ids and key are constructor parameters (defaulted from
  * `BuildKonfig`) purely so tests can drive them; nothing else passes them.
  */
 class CalendarRepositoryImpl(
     private val client: HttpClient,
-    private val calendarId: String = BuildKonfig.GOOGLE_CALENDAR_ID,
+    calendarIds: String = BuildKonfig.GOOGLE_CALENDAR_ID,
     private val apiKey: String = BuildKonfig.GOOGLE_CALENDAR_API_KEY,
     private val zone: TimeZone = TimeZone.of("Europe/Berlin"),
 ) : CalendarRepository {
+
+    /**
+     * `GOOGLE_CALENDAR_ID` holds one id or a comma-separated list of them. The
+     * name stayed singular on purpose: renaming it would mean a new GitHub
+     * secret in four workflow steps, and a forgotten one ships a calendar that
+     * cannot load. A single id parses as a one-element list, so every existing
+     * `.env` and secret keeps working untouched.
+     */
+    private val calendarIds: List<String> =
+        calendarIds.split(',').map { it.trim() }.filter { it.isNotEmpty() }
 
     override suspend fun getEvents(year: Int, month: Int): Result<List<CalendarEvent>> = runCatching {
         val from = LocalDate(year, month, 1)
@@ -54,13 +76,30 @@ class CalendarRepositoryImpl(
         fetchWindow(LocalDate(year, 1, 1), LocalDate(year + 1, 1, 1))
     }
 
-    /** `[from, to)` in church-local time, every page, sorted by start. */
+    /** `[from, to)` in church-local time, every calendar, every page, sorted by start. */
     private suspend fun fetchWindow(from: LocalDate, to: LocalDate): List<CalendarEvent> {
         requireConfigured()
 
         val timeMin = from.atStartOfDayIn(zone).toString()
         val timeMax = to.atStartOfDayIn(zone).toString()
 
+        val perCalendar = coroutineScope {
+            calendarIds
+                .map { id -> async { fetchCalendar(id, timeMin, timeMax) } }
+                .awaitAll()
+        }
+
+        return perCalendar
+            .flatten()
+            .sortedBy { it.startDate }
+    }
+
+    /** Every page of one calendar's window. */
+    private suspend fun fetchCalendar(
+        calendarId: String,
+        timeMin: String,
+        timeMax: String,
+    ): List<CalendarEvent> {
         val items = mutableListOf<GoogleCalendarEventItem>()
         var pageToken: String? = null
         var page = 0
@@ -83,10 +122,14 @@ class CalendarRepositoryImpl(
             }
 
             // The shared client runs with expectSuccess = false, so a 403 arrives
-            // as a normal response whose body is an error envelope. Report the
-            // status and nothing else — the query string carries the API key.
+            // as a normal response whose body is an error envelope. Name the
+            // calendar and the status and nothing else — the query string carries
+            // the API key. A 404 here almost always means that calendar is not
+            // public, which no amount of client code can fix.
             if (!response.status.isSuccess()) {
-                throw CalendarApiException("Google Calendar request failed: ${response.status.value}")
+                throw CalendarApiException(
+                    "Google Calendar request failed for $calendarId: ${response.status.value}",
+                )
             }
 
             val body = response.body<GoogleCalendarEventsResponse>()
@@ -96,11 +139,8 @@ class CalendarRepositoryImpl(
         } while (pageToken != null && page < MAX_PAGES)
 
         return items
-            .asSequence()
             .filter { it.status != "cancelled" }
-            .map { it.toDomain() }
-            .sortedBy { it.startDate }
-            .toList()
+            .map { it.toDomain(calendarId) }
     }
 
     /**
@@ -109,7 +149,7 @@ class CalendarRepositoryImpl(
      * empty value the likeliest failure, so it gets named as one.
      */
     private fun requireConfigured() {
-        if (calendarId.isBlank()) {
+        if (calendarIds.isEmpty()) {
             throw CalendarApiException("GOOGLE_CALENDAR_ID is not configured")
         }
         if (apiKey.isBlank()) {
@@ -117,8 +157,9 @@ class CalendarRepositoryImpl(
         }
     }
 
-    private fun GoogleCalendarEventItem.toDomain() = CalendarEvent(
+    private fun GoogleCalendarEventItem.toDomain(calendarId: String) = CalendarEvent(
         id          = id,
+        calendarId  = calendarId,
         title       = summary,
         description = description,
         location    = location,

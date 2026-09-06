@@ -193,7 +193,7 @@ private fun MonthView(state: CalendarUiState, viewModel: CalendarViewModel) {
                 }
             }
         } else {
-            items(dayEvents, key = { it.id }) { event ->
+            items(dayEvents, key = { it.key }) { event ->
                 EventRow(event) { viewModel.selectEvent(event) }
             }
         }
@@ -256,7 +256,9 @@ private fun YearListView(
                     )
                 }
             } else {
-                items(monthEvents, key = { "${month}_${it.id}" }) { event ->
+                // The key spans calendars: two calendars can hand out the same
+                // event id, and a duplicate key crashes the list.
+                items(monthEvents, key = { "${month}_${it.key}" }) { event ->
                     EventRow(event) { onEventClick(event) }
                 }
             }

@@ -29,7 +29,8 @@ class CalendarViewModelTest {
     @AfterTest  fun tearDown() { Dispatchers.resetMain() }
 
     private fun fakeEvent(day: Int, month: Int = 5) = CalendarEvent(
-        id = "evt-$month-$day", title = "예배 $day", description = null,
+        id = "evt-$month-$day", calendarId = "hanmaum.dev@gmail.com",
+        title = "예배 $day", description = null,
         location = "본당",
         startDate = "2026-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}",
         endDate   = "2026-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}",

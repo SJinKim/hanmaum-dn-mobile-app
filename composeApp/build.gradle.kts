@@ -34,6 +34,9 @@ buildkonfig {
         buildConfigField(STRING, "BACKEND_URL", "http://10.0.2.2:8080")
         buildConfigField(STRING, "KEYCLOAK_URL", "http://10.0.2.2:8091")
         buildConfigField(STRING, "KEYCLOAK_REALM", "hanmaum")
+        // One calendar id, or several separated by commas — the church keeps the
+        // youth schedule on its own calendar. The name stays singular so the
+        // existing GitHub secret and every local .env keep working unchanged.
         buildConfigField(STRING, "GOOGLE_CALENDAR_ID",    envProps["GOOGLE_CALENDAR_ID"]    ?: "")
         buildConfigField(STRING, "GOOGLE_CALENDAR_API_KEY", envProps["GOOGLE_CALENDAR_API_KEY"] ?: "")
         buildConfigField(STRING, "PCLOUD_FOLDER_ENDPOINT",   envProps["PCLOUD_FOLDER_ENDPOINT"]   ?: "")
