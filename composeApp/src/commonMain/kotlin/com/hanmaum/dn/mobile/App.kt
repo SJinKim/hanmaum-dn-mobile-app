@@ -129,7 +129,7 @@ fun App() {
                             onNavigate = { route ->
                                 val targetRoute: Any = when (route) {
                                     NavRoute.Home            -> HomeRoute
-                                    NavRoute.Login           -> LoginRoute
+                                    NavRoute.Login           -> LoginRoute()
                                     NavRoute.PendingApproval -> PendingRoute
                                     NavRoute.Rejected        -> RejectedRoute
                                 }
@@ -144,8 +144,9 @@ fun App() {
                         )
                     }
 
-                    composable<LoginRoute> {
+                    composable<LoginRoute> { backStackEntry ->
                         LoginScreen(
+                            notice = backStackEntry.toRoute<LoginRoute>().notice,
                             onNavigateToHome = {
                                 navController.navigate(HomeRoute) {
                                     popUpTo<LoginRoute> { inclusive = true }
@@ -170,9 +171,17 @@ fun App() {
                     composable<RegisterRoute> {
                         RegisterScreen(
                             onBackClick = { navController.popBackStack() },
-                            onNavigateToPending = {
-                                navController.navigate(PendingRoute) {
-                                    popUpTo<LoginRoute> { inclusive = false }
+                            onRegistered = { destination, notice ->
+                                val target = when (destination) {
+                                    NavRoute.Home -> HomeRoute
+                                    NavRoute.Rejected -> RejectedRoute
+                                    NavRoute.Login -> LoginRoute(notice)
+                                    NavRoute.PendingApproval -> PendingRoute
+                                }
+                                navController.navigate(target) {
+                                    // Registration is done either way, so the
+                                    // form does not stay on the stack for a
+                                    // back gesture to return to and resubmit.
                                     popUpTo<RegisterRoute> { inclusive = true }
                                 }
                             },
@@ -191,7 +200,7 @@ fun App() {
                                 }
                             },
                             onNavigateToLogin = {
-                                navController.navigate(LoginRoute) {
+                                navController.navigate(LoginRoute()) {
                                     popUpTo(0) { inclusive = true }
                                 }
                             },
@@ -306,7 +315,7 @@ fun App() {
                     composable<ProfileRoute> {
                         ProfileScreen(
                             onLogout = {
-                                navController.navigate(LoginRoute) {
+                                navController.navigate(LoginRoute()) {
                                     popUpTo(0) { inclusive = true }
                                 }
                             },

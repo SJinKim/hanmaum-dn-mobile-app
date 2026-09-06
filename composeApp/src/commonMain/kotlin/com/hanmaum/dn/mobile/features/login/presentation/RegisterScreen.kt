@@ -36,6 +36,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.i18n.AppStrings
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
@@ -64,7 +65,12 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun RegisterScreen(
     onBackClick: () -> Unit,
-    onNavigateToPending: () -> Unit,
+    /**
+     * Where registration ended and, when that is the login screen, which notice
+     * to carry there. The screen used to call a single onNavigateToPending for
+     * any destination, which quietly discarded the status routing behind it.
+     */
+    onRegistered: (NavRoute, String?) -> Unit,
 ) {
     val viewModel: RegisterViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -74,8 +80,8 @@ fun RegisterScreen(
     val keyboard = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(state.navigateTo) {
-        state.navigateTo?.let {
-            onNavigateToPending()
+        state.navigateTo?.let { destination ->
+            onRegistered(destination, state.loginNotice)
             viewModel.onNavigationHandled()
         }
     }

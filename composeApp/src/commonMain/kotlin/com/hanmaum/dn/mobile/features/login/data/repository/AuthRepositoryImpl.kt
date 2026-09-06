@@ -2,6 +2,8 @@ package com.hanmaum.dn.mobile.features.login.data.repository
 
 import com.hanmaum.dn.mobile.BuildKonfig
 import com.hanmaum.dn.mobile.core.domain.model.ApiResponse
+import com.hanmaum.dn.mobile.features.login.domain.model.KeycloakError
+import com.hanmaum.dn.mobile.features.login.domain.model.LoginException
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterException
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterRequest
 import com.hanmaum.dn.mobile.features.login.domain.model.TokenResponse
@@ -37,8 +39,17 @@ class AuthRepositoryImpl(
         if (response.status == HttpStatusCode.OK) {
             return response.body()
         } else {
+            // Keycloak answers a refusal with {error, error_description}. Keeping
+            // the two apart lets the caller tell "wrong password" from "you have
+            // not confirmed your email yet" — the latter is actionable, and used
+            // to arrive as an opaque string (#168).
             val errorBody = response.bodyAsText()
-            throw Exception("Login fehlgeschlagen (${response.status.value}): $errorBody")
+            val parsed = runCatching { lenientJson.decodeFromString<KeycloakError>(errorBody) }.getOrNull()
+            throw LoginException(
+                status = response.status.value,
+                error = parsed?.error,
+                description = parsed?.errorDescription,
+            )
         }
     }
 
