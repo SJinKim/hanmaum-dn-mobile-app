@@ -36,6 +36,26 @@ fun HttpClient.invalidateBearerCache() {
         .forEach { provider -> provider.clearToken() }
 }
 
+/**
+ * Whether the Keycloak bearer may ride along on this request.
+ *
+ * Scoped by **host**, not by path: the app also talks to googleapis.com and S3,
+ * and handing them a church access token both leaks it and breaks those APIs
+ * (they reject a foreign Authorization header). Extracted from the plugin so
+ * the rule can be tested without standing up a client.
+ */
+internal fun shouldSendBearer(
+    requestHost: String,
+    requestPath: String,
+    backendHost: String,
+): Boolean {
+    // A blank host means the relative-URL branch of defaultRequest is about to
+    // rewrite it to the backend.
+    val isBackend = requestHost.isBlank() || requestHost == backendHost
+    val isAuthEndpoint = requestPath.contains("register") || requestPath.contains("openid-connect")
+    return isBackend && !isAuthEndpoint
+}
+
 fun createHttpClient(tokenStorage: TokenStorage): HttpClient {
     // Separate plain client for token refresh — no auth interceptor (avoids circular calls)
     val refreshClient = HttpClient {
@@ -104,12 +124,11 @@ fun createHttpClient(tokenStorage: TokenStorage): HttpClient {
                 }
 
                 sendWithoutRequest { request ->
-                    val host = request.url.host
-                    val backendHost = Url(BuildKonfig.BACKEND_URL).host
-                    val path = request.url.encodedPath
-                    val isBackend = host.isBlank() || host == backendHost
-                    val isAuthEndpoint = path.contains("register") || path.contains("openid-connect")
-                    isBackend && !isAuthEndpoint
+                    shouldSendBearer(
+                        requestHost = request.url.host,
+                        requestPath = request.url.encodedPath,
+                        backendHost = Url(BuildKonfig.BACKEND_URL).host,
+                    )
                 }
             }
         }

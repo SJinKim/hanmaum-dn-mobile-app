@@ -32,13 +32,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlows
 import com.hanmaum.dn.mobile.core.presentation.components.DnDock
+import com.hanmaum.dn.mobile.core.presentation.components.DnErrorState
 import com.hanmaum.dn.mobile.core.presentation.components.DnScrollEdge
 import com.hanmaum.dn.mobile.core.presentation.components.DnSegmented
+import com.hanmaum.dn.mobile.core.presentation.components.DnTintedButton
 import com.hanmaum.dn.mobile.core.presentation.components.DnTopBar
 import com.hanmaum.dn.mobile.core.presentation.components.DnMonthGrid
 import com.hanmaum.dn.mobile.core.presentation.components.DnMonthNav
@@ -67,6 +70,16 @@ fun CalendarScreen(onBackClick: () -> Unit) {
     val strings = LocalStrings.current
     val c = DnTheme.colors
 
+    // The screen is a window onto a Google calendar other people edit, so every
+    // resume re-reads it: coming back from another tab, from the background, or
+    // from a deep link all have to show what the web calendar shows now. The
+    // view model swallows the resume that immediately follows its own first
+    // load, so this costs one request per real re-entry, not two per open.
+    LifecycleResumeEffect(Unit) {
+        viewModel.refresh()
+        onPauseOrDispose { }
+    }
+
     DnBackground(glows = DnGlows.information()) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
             DnTopBar(title = strings.navCalendar, onBack = onBackClick)
@@ -83,7 +96,11 @@ fun CalendarScreen(onBackClick: () -> Unit) {
             if (state.viewMode == ViewMode.CALENDAR) {
                 MonthView(state = state, viewModel = viewModel)
             } else {
-                YearListView(state = state, onEventClick = viewModel::selectEvent)
+                YearListView(
+                    state = state,
+                    onEventClick = viewModel::selectEvent,
+                    onRetry = viewModel::retryYear,
+                )
             }
         }
 
@@ -158,14 +175,22 @@ private fun MonthView(state: CalendarUiState, viewModel: CalendarViewModel) {
             )
         }
 
+        // A failed fetch is not an empty month. Saying "no events" here is the
+        // one wrong answer, so the failure is stated and retried in its place.
+        if (state.monthLoadFailed) {
+            item { MonthLoadFailed(onRetry = viewModel::retryMonth) }
+        }
+
         if (dayEvents.isEmpty()) {
-            item {
-                Text(
-                    if (state.selectedDay != null) strings.calendarNoEventsThisDay
-                    else strings.calendarNoEvents,
-                    style = DnTheme.typography.caption,
-                    color = c.textTertiary,
-                )
+            if (!state.monthLoadFailed && !state.isLoading) {
+                item {
+                    Text(
+                        if (state.selectedDay != null) strings.calendarNoEventsThisDay
+                        else strings.calendarNoEvents,
+                        style = DnTheme.typography.caption,
+                        color = c.textTertiary,
+                    )
+                }
             }
         } else {
             items(dayEvents, key = { it.id }) { event ->
@@ -176,12 +201,23 @@ private fun MonthView(state: CalendarUiState, viewModel: CalendarViewModel) {
 }
 
 @Composable
-private fun YearListView(state: CalendarUiState, onEventClick: (CalendarEvent) -> Unit) {
+private fun YearListView(
+    state: CalendarUiState,
+    onEventClick: (CalendarEvent) -> Unit,
+    onRetry: () -> Unit,
+) {
     val c = DnTheme.colors
     val strings = LocalStrings.current
 
     if (state.isYearLoading) {
         Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator(color = c.lime) }
+        return
+    }
+
+    // Only when there is nothing to fall back on — a refresh that fails over a
+    // year already on screen leaves that year readable.
+    if (state.yearLoadFailed && state.yearEvents.isEmpty()) {
+        DnErrorState(onRetry = onRetry)
         return
     }
 
@@ -225,6 +261,29 @@ private fun YearListView(state: CalendarUiState, onEventClick: (CalendarEvent) -
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MonthLoadFailed(onRetry: () -> Unit) {
+    val c = DnTheme.colors
+    val strings = LocalStrings.current
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(DnTileShape)
+            .background(c.redDim, DnTileShape)
+            .padding(18.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Icon(DnIcons.AlertTriangle, null, tint = c.red, modifier = Modifier.size(18.dp))
+            Text(strings.calendarLoadFailed, style = DnTheme.typography.caption, color = c.textSecondary)
+        }
+        DnTintedButton(label = strings.errorRetry, onClick = onRetry)
     }
 }
 

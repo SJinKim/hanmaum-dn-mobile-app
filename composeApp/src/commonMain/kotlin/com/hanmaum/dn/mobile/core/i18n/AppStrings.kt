@@ -205,6 +205,7 @@ interface AppStrings {
     val calendarNoEvents: String
     val calendarNoEventsThisDay: String
     val calendarAllDay: String
+    val calendarLoadFailed: String
     val dayHeaders: List<String>
     // Attendance
     val attendanceNoService: String
@@ -417,6 +418,7 @@ object EnStrings : AppStrings {
     override val calendarNoEvents = "No events"
     override val calendarNoEventsThisDay = "No events on this day"
     override val calendarAllDay = "All day"
+    override val calendarLoadFailed = "The calendar could not be loaded."
     override val dayHeaders = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
     override val attendanceNoService = "No service today"
     override val attendanceCheckedIn = "Checked in!"
@@ -624,6 +626,7 @@ object KoStrings : AppStrings {
     override val calendarNoEvents = "이벤트 없음"
     override val calendarNoEventsThisDay = "이 날은 행사가 없습니다"
     override val calendarAllDay = "하루 종일"
+    override val calendarLoadFailed = "캘린더를 불러오지 못했습니다."
     override val dayHeaders = listOf("일", "월", "화", "수", "목", "금", "토")
     override val attendanceNoService = "오늘은 예배가 없습니다"
     override val attendanceCheckedIn = "출석 완료!"
@@ -831,6 +834,7 @@ object DeStrings : AppStrings {
     override val calendarNoEvents = "Keine Veranstaltungen"
     override val calendarNoEventsThisDay = "Keine Veranstaltungen an diesem Tag"
     override val calendarAllDay = "Ganztägig"
+    override val calendarLoadFailed = "Der Kalender konnte nicht geladen werden."
     override val dayHeaders = listOf("So", "Mo", "Di", "Mi", "Do", "Fr", "Sa")
     override val attendanceNoService = "Heute kein Gottesdienst"
     override val attendanceCheckedIn = "Eingecheckt!"
