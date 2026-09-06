@@ -47,6 +47,11 @@ data class RegisterUiState(
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
     val navigateTo: NavRoute? = null,
+    /**
+     * Which notice the login screen should show when [navigateTo] is Login.
+     * A code from LoginRoute, not a sentence — see that class.
+     */
+    val loginNotice: String? = null,
     val bannerError: RegisterBanner? = null,
 
     // Formular Felder

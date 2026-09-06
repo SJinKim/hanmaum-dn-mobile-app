@@ -3,7 +3,19 @@ package com.hanmaum.dn.mobile.core.navigation
 import kotlinx.serialization.Serializable
 
 @Serializable object SplashRoute
-@Serializable object LoginRoute
+/**
+ * [notice] is a code, never a sentence: routes are persisted across process
+ * death and a literal message would be frozen in the language it was written
+ * in. The screen resolves it through LocalStrings.
+ */
+@Serializable data class LoginRoute(val notice: String? = null) {
+    companion object {
+        /** Registered, but the email must be confirmed before signing in. */
+        const val NOTICE_VERIFY_EMAIL = "VERIFY_EMAIL"
+        /** Registered; the automatic sign-in did not go through. */
+        const val NOTICE_REGISTERED = "REGISTERED"
+    }
+}
 @Serializable object RegisterRoute
 @Serializable object PendingRoute
 @Serializable object RejectedRoute

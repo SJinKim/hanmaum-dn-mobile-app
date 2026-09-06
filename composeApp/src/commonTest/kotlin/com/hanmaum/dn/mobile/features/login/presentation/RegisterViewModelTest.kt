@@ -2,6 +2,8 @@ package com.hanmaum.dn.mobile.features.login.presentation
 
 import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
+import com.hanmaum.dn.mobile.core.navigation.LoginRoute
+import com.hanmaum.dn.mobile.features.login.domain.model.LoginException
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
@@ -318,9 +320,9 @@ class RegisterViewModelTest {
     }
 
     @Test
-    fun aFailedAutoLoginKeepsRegistrationASuccessAndAsksForLogin() = runTest {
-        // The fallback stays: the account was created, so this must never read
-        // as a failed registration.
+    fun aFailedAutoLoginStillLeavesTheForm() = runTest {
+        // The account exists, so leaving the member on a filled-in form invites
+        // them to send it a second time.
         auth.loginFailure = IllegalStateException("401 from keycloak")
         fillMinimumValidForm()
         vm.register()
@@ -328,9 +330,38 @@ class RegisterViewModelTest {
 
         val s = vm.uiState.value
         assertEquals(1, auth.registerCalls)
-        assertEquals(RegisterBanner.RegisteredPleaseLogin, s.bannerError)
         assertTrue(s.isSuccess, "registration itself succeeded")
-        assertNull(s.navigateTo, "and no navigation happens")
+        assertEquals(NavRoute.Login, s.navigateTo, "and the member is taken to the login screen")
+        assertEquals(LoginRoute.NOTICE_REGISTERED, s.loginNotice)
+        assertNull(s.bannerError, "a banner on a screen nobody stays on is pointless")
+    }
+
+    @Test
+    fun anUnconfirmedEmailSaysSoInsteadOfAskingForALogin() = runTest {
+        // Keycloak refuses the grant while a required action is pending. Telling
+        // this member to "please log in" aims them at a door that will not open.
+        auth.loginFailure = LoginException(
+            status = 400,
+            error = "invalid_grant",
+            description = "Account is not fully set up",
+        )
+        fillMinimumValidForm()
+        vm.register()
+        advanceUntilIdle()
+
+        val s = vm.uiState.value
+        assertEquals(NavRoute.Login, s.navigateTo)
+        assertEquals(LoginRoute.NOTICE_VERIFY_EMAIL, s.loginNotice)
+    }
+
+    @Test
+    fun anOrdinaryRefusalIsNotMistakenForAnUnconfirmedEmail() = runTest {
+        auth.loginFailure = LoginException(400, "invalid_grant", "Invalid user credentials")
+        fillMinimumValidForm()
+        vm.register()
+        advanceUntilIdle()
+
+        assertEquals(LoginRoute.NOTICE_REGISTERED, vm.uiState.value.loginNotice)
     }
 
     @Test

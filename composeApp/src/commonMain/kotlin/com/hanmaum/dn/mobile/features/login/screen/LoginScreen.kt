@@ -48,6 +48,7 @@ import com.hanmaum.dn.mobile.core.presentation.components.DnTintedButton
 import com.hanmaum.dn.mobile.core.presentation.components.DnPrimaryButton
 import com.hanmaum.dn.mobile.core.presentation.components.DnTextField
 import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
+import com.hanmaum.dn.mobile.core.navigation.LoginRoute
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
 import com.hanmaum.dn.mobile.core.presentation.theme.typography
 import com.hanmaum.dn.mobile.features.login.presentation.LoginViewModel
@@ -59,6 +60,12 @@ import org.koin.compose.viewmodel.koinViewModel
 /** Sign in. No back button — there is nothing behind this screen. */
 @Composable
 fun LoginScreen(
+    /**
+     * Code from [LoginRoute], set when the member arrives straight from
+     * registering. Shown once, above the form, in the positive colour: their
+     * account exists, so this is news rather than a failure.
+     */
+    notice: String? = null,
     onNavigateToHome: () -> Unit,
     onNavigateToPending: () -> Unit,
     onNavigateToRejected: () -> Unit,
@@ -171,6 +178,21 @@ fun LoginScreen(
                 keyboardType = KeyboardType.Password,
                 modifier = Modifier.fillMaxWidth(),
             )
+
+            // A notice from registration outranks nothing and is replaced by
+            // nothing: it is shown until the member navigates away. An error
+            // from an actual login attempt is shown alongside it.
+            notice?.let { code ->
+                val text = when (code) {
+                    LoginRoute.NOTICE_VERIFY_EMAIL -> strings.noticeRegisteredVerifyEmail
+                    LoginRoute.NOTICE_REGISTERED -> strings.noticeRegistered
+                    else -> null
+                }
+                text?.let {
+                    Spacer(Modifier.height(12.dp))
+                    Text(it, style = DnTheme.typography.caption, color = c.limeInk)
+                }
+            }
 
             state.error?.let {
                 Spacer(Modifier.height(12.dp))

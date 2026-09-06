@@ -4,10 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
+import com.hanmaum.dn.mobile.core.navigation.LoginRoute
 import com.hanmaum.dn.mobile.core.network.invalidateBearerCache
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.features.login.domain.model.BirthDateInput
 import com.hanmaum.dn.mobile.features.login.domain.model.Countries
+import com.hanmaum.dn.mobile.features.login.domain.model.LoginException
 import com.hanmaum.dn.mobile.features.login.domain.model.PasswordPolicy
 import com.hanmaum.dn.mobile.features.login.domain.model.PhoneNumber
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterException
@@ -283,15 +285,31 @@ class RegisterViewModel(
                 }
             } catch (e: Exception) {
                 // Registration itself succeeded, so this is a fallback, not a
-                // failure — but it used to be silent, which is why nobody could
-                // say why the pending screen never appeared (#168). The message
+                // failure. It used to be silent, which is why nobody could say
+                // why the pending screen never appeared (#168). The message
                 // carries the status and reason; it never carries the password.
                 println("[RegisterViewModel] auto-login after registration failed: ${e.message}")
+
+                // Whatever went wrong, the member does not stay on the form.
+                // Their account exists; leaving them on a filled-in
+                // registration page invites them to send it a second time.
+                val notice = if ((e as? LoginException)?.isAccountNotFullySetUp == true) {
+                    // Keycloak is waiting on a required action — here, the
+                    // confirmation link. Telling them to "please log in" would
+                    // send them at a door that will not open.
+                    LoginRoute.NOTICE_VERIFY_EMAIL
+                } else {
+                    LoginRoute.NOTICE_REGISTERED
+                }
                 _uiState.update {
                     it.copy(
                         isLoading = false,
                         isSuccess = true,
-                        bannerError = RegisterBanner.RegisteredPleaseLogin,
+                        navigateTo = NavRoute.Login,
+                        loginNotice = notice,
+                        // The message travels with the navigation, so a banner
+                        // on a screen nobody stays on would be pointless.
+                        bannerError = null,
                     )
                 }
             }
@@ -312,7 +330,7 @@ class RegisterViewModel(
     }
 
     fun onNavigationHandled() {
-        _uiState.update { it.copy(navigateTo = null) }
+        _uiState.update { it.copy(navigateTo = null, loginNotice = null) }
     }
 
     /** Called by the UI once it has focused/scrolled to the invalid field. */
