@@ -179,18 +179,41 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            // A notice from registration outranks nothing and is replaced by
-            // nothing: it is shown until the member navigates away. An error
-            // from an actual login attempt is shown alongside it.
+            // Nothing hides this card: no timer, no auto-dismiss. It stays
+            // until the member acts, which is well past the four seconds it
+            // takes to read — and a message telling someone to go and confirm
+            // their email is the last thing that should time out from under
+            // them. It sits above the form because it explains why the form is
+            // there at all.
             notice?.let { code ->
-                val text = when (code) {
-                    LoginRoute.NOTICE_VERIFY_EMAIL -> strings.noticeRegisteredVerifyEmail
-                    LoginRoute.NOTICE_REGISTERED -> strings.noticeRegistered
+                val body = when (code) {
+                    LoginRoute.NOTICE_VERIFY_EMAIL -> strings.noticeVerifyEmailBody
+                    LoginRoute.NOTICE_REGISTERED -> strings.noticeRegisteredBody
                     else -> null
                 }
-                text?.let {
-                    Spacer(Modifier.height(12.dp))
-                    Text(it, style = DnTheme.typography.caption, color = c.limeInk)
+                body?.let {
+                    Spacer(Modifier.height(4.dp))
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(c.limeDim, RoundedCornerShape(20.dp))
+                            .border(1.dp, c.lime, RoundedCornerShape(20.dp))
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Icon(DnIcons.Mail, null, tint = c.limeInk, modifier = Modifier.size(18.dp))
+                        Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                            Text(
+                                strings.noticeRegisteredTitle,
+                                style = DnTheme.typography.captionStrong,
+                                color = c.limeInk,
+                            )
+                            Text(it, style = DnTheme.typography.caption, color = c.textSecondary)
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
                 }
             }
 

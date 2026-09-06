@@ -32,8 +32,9 @@ interface AppStrings {
     val registerFailed: String
     val registerSuccessLogin: String
     // Notice carried to the login screen after registering (#168)
-    val noticeRegisteredVerifyEmail: String
-    val noticeRegistered: String
+    val noticeRegisteredTitle: String
+    val noticeVerifyEmailBody: String
+    val noticeRegisteredBody: String
     // Attendance history list (#110)
     val attendancePresent: String
     val attendanceAbsent: String
@@ -264,8 +265,9 @@ object EnStrings : AppStrings {
     override val registerFailed = "Registration failed. Please try again."
     override val registerSuccessLogin = "Registration successful. Please log in."
     // Notice carried to the login screen after registering (#168)
-    override val noticeRegisteredVerifyEmail = "Your application was sent. Confirm the email we sent you, then sign in."
-    override val noticeRegistered = "Your application was sent. Please sign in."
+    override val noticeRegisteredTitle = "Your application was sent"
+    override val noticeVerifyEmailBody = "Confirm the email we sent you, then sign in."
+    override val noticeRegisteredBody = "Please sign in."
     // Attendance history list (#110)
     override val attendancePresent = "Attended"
     override val attendanceAbsent = "Missed"
@@ -470,8 +472,9 @@ object KoStrings : AppStrings {
     override val registerFailed = "회원가입에 실패했습니다. 다시 시도해주세요."
     override val registerSuccessLogin = "등록 성공했습니다. 로그인 해주세요."
     // Notice carried to the login screen after registering (#168)
-    override val noticeRegisteredVerifyEmail = "가입 신청이 완료되었습니다. 이메일을 확인한 뒤 로그인해 주세요."
-    override val noticeRegistered = "가입 신청이 완료되었습니다. 로그인해 주세요."
+    override val noticeRegisteredTitle = "가입 신청이 완료되었습니다"
+    override val noticeVerifyEmailBody = "이메일을 확인한 뒤 로그인해 주세요."
+    override val noticeRegisteredBody = "로그인해 주세요."
     // Attendance history list (#110)
     override val attendancePresent = "출석"
     override val attendanceAbsent = "미출석"
@@ -676,8 +679,9 @@ object DeStrings : AppStrings {
     override val registerFailed = "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut."
     override val registerSuccessLogin = "Registrierung erfolgreich. Bitte melden Sie sich an."
     // Notice carried to the login screen after registering (#168)
-    override val noticeRegisteredVerifyEmail = "Deine Anmeldung ist raus. Bestätige die E-Mail, die wir dir geschickt haben, und melde dich dann an."
-    override val noticeRegistered = "Deine Anmeldung ist raus. Bitte melde dich an."
+    override val noticeRegisteredTitle = "Deine Anmeldung ist raus"
+    override val noticeVerifyEmailBody = "Bestätige die E-Mail, die wir dir geschickt haben, und melde dich dann an."
+    override val noticeRegisteredBody = "Bitte melde dich an."
     // Attendance history list (#110)
     override val attendancePresent = "Anwesend"
     override val attendanceAbsent = "Gefehlt"
