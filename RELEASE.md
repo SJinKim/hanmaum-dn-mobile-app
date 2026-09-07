@@ -1,15 +1,16 @@
 # Release Automation — Runbook
 
 Automated, label-driven GitHub Releases with generated notes, on two tracks:
-**staging** (`develop`) and **production** (`main`). Built on
+**staging** and **production**. Both draft off `main` — `develop` is retired and
+the branch no longer exists. Built on
 [Release Drafter](https://github.com/release-drafter/release-drafter).
 
 ## TL;DR
 
 - Open/merge PRs as usual. Your Conventional-Commit **PR title** auto-applies a
   bump label; a manual `major` / `minor` / `patch` label overrides it.
-- Every merge to `develop` updates a **draft** `ST-Release vX.Y.Z-st`.
-  Every merge to `main` updates a **draft** `PROD-Release vX.Y.Z`.
+- Every merge to `main` updates **both** drafts: `ST-Release vX.Y.Z-st` and
+  `PROD-Release vX.Y.Z`.
 - **Nothing is tagged or built** until you open the draft in the **Releases**
   tab and click **Publish**. Publishing is the deliberate, human release act.
 - Publishing an **ST** draft → tag `vX.Y.Z-st` → **iOS TestFlight** (staging).
@@ -52,16 +53,22 @@ to restore standard SemVer.
 
 | | Staging | Production |
 |---|---|---|
-| Branch | `develop` | `main` |
+| Branch | `main` | `main` |
 | Draft title | `ST-Release vX.Y.Z-st` | `PROD-Release vX.Y.Z` |
 | Tag on publish | `vX.Y.Z-st` (pre-release) | `vX.Y.Z` |
 | Config | `release-drafter-st.yml` | `release-drafter-prod.yml` |
 | Publish triggers | iOS TestFlight (staging backend) | release marker; App Store = manual |
 
-The two version lines are computed **independently** (`filter-by-commitish`), so
-the `-st` line races ahead as features land on `develop`, while the prod line's
-number is computed from what has been merged into `main`. Promote deliberately:
-the prod version is not automatically "the latest `-st` minus the suffix".
+Both lines draft off the same branch and are kept apart by the **pre-release
+flag**: `include-pre-releases` defaults to false, so the prod line's version base
+ignores the `-st` pre-releases entirely. Promote deliberately — the prod version
+is not automatically "the latest `-st` minus the suffix".
+
+> The staging config pointed at `refs/heads/develop` long after that branch was
+> deleted. Release Drafter found no commits there, left the draft untouched from
+> July onward, and still reported success on every run — nothing to add is not an
+> error. Twenty-three merged PRs went unrecorded. If a draft stops growing, check
+> `commitish` before anything else.
 
 ## Publishing a release
 
@@ -94,7 +101,7 @@ environment approval). The build derives its marketing version from the latest
 ## Caveats / things to watch
 
 - **Bot push vs branch protection.** `version-sync` pushes the `versionName`
-  commit directly to `develop`/`main` with the built-in `GITHUB_TOKEN`. If
+  commit directly to `main` with the built-in `GITHUB_TOKEN`. If
   branch protection is later set to *require pull requests* on those branches,
   that push will be rejected — switch the step to open a version-bump PR then.
 - **Label required to exist.** The bump/category labels are pre-created in the
