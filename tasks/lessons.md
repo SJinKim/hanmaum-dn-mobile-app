@@ -190,3 +190,33 @@ der Prosa, die ihn beschreibt. Widersprechen sich Werkzeug und Doku, gewinnt das
 Werkzeug und die Doku wird im selben PR korrigiert — an *allen* Stellen, denn
 dieselbe Zeile stand hier sechsfach kopiert herum. Das ist Regel 13 aus
 CLAUDE.md, angewandt auf den TODO-Gate statt auf die Lint-Baseline.
+
+## Ein Build ohne vorher publishte Note erbt stillschweigend die alte Version
+
+**2026-09-07.** Neun Tags standen im Repo, aber nur fünf Releases — und deren Inhalt
+passte zu keinem Tag. Die `PROD-Release v0.6.0` listete alles seit v0.5.0, inklusive
+der PRs, die längst als v0.7.0-st und v0.7.1-st ausgeliefert waren. Zwei identische
+Drafts lagen daneben.
+
+Die Ursache war nicht Schlamperei beim Schreiben, sondern die Reihenfolge: Die Builds
+76, 77, 78 und 79 wurden per `workflow_dispatch` losgeschickt, **ohne vorher den Draft
+zu publishen**. `distribute.yml` liest die Marketing-Version über
+`git describe --tags --abbrev=0`, findet also den letzten *erreichbaren* Tag. Der stand
+seit dem 30.08. still. Vier Builds mit deutlich verschiedenem Inhalt landeten damit als
+`0.7.1` in TestFlight, unterscheidbar allein an der Build-Nummer — 23 gemergte PRs
+erreichten Tester ohne jede Notiz darüber, was sich geändert hatte.
+
+Verschärfend: Ein Tag `v0.6.0` auf dem neuesten Commit machte `git describe` zu
+`v0.6.0`. Der nächste Upload wäre also *hinter* die schon ausgelieferte 0.7.1
+zurückgefallen. Eine Versionsnummer unterhalb des Ausgelieferten ist kein
+Schönheitsfehler, sie bricht den nächsten Upload.
+
+Bemerkenswert ist, wie leise das war: Publishen ist gratis (`distribute.yml` hört auf
+nichts als `workflow_dispatch`), es hätte also nie einen Grund gegeben, den Schritt zu
+überspringen. Er wurde übersprungen, weil nichts ihn erzwingt und nichts sich beschwert.
+
+**Regel:** Vor jedem Dispatch wird der Draft publisht — auf beiden Spuren, ST wie PROD.
+Erst der Tag, dann der Build; die Version kommt aus dem Tag, nicht aus der Absicht. Wer
+prüfen will, ob es stimmt: `git describe --tags --abbrev=0 origin/main` muss die Version
+liefern, die im Store stehen soll. Und ein Draft, der nach dem Publish leer ist, ist die
+Bestätigung — nicht der Anlass, den Schritt zu sparen.

@@ -39,6 +39,12 @@ include-pre-releases: true
 version-template: '$MAJOR.$MINOR.$PATCH'
 
 categories:
+  # `breaking` needs a category of its own: the autolabeler's `feature` pattern
+  # requires a `:` straight after the scope, so `feat!:` matches only the
+  # breaking rule. Without an entry here the most important kind of change fell
+  # into the uncategorised block above the first heading.
+  - title: '💥 Breaking Changes'
+    labels: ['breaking', 'major']
   - title: '🚀 Features'
     labels: ['feature', 'enhancement', 'minor']
   - title: '🐛 Fixes'
