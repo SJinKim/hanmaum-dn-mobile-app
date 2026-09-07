@@ -4,6 +4,7 @@ import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
 import com.hanmaum.dn.mobile.core.geofence.GeofenceManager
 import com.hanmaum.dn.mobile.core.notification.NotificationService
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceCheckIn
+import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceCheckInResult
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceDefinition
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceHistory
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceSummary
@@ -52,7 +53,7 @@ private class FakeAttendanceRepository(
     private val definitions: List<AttendanceDefinition> = emptyList()
 ) : AttendanceRepository {
     override suspend fun getActiveDefinitions() = Result.success(definitions)
-    override suspend fun checkIn() = Result.success(
+    override suspend fun checkIn() = AttendanceCheckInResult.Success(
         AttendanceCheckIn(definitionPublicId = "def", definitionTitle = "Service", attendanceDate = "2026-06-15"),
     )
     // The coordinator never reads these; they exist to satisfy the interface.

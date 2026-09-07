@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.attendance.data.repository
 
+import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceCheckInResult
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -12,18 +13,20 @@ import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 private val testJson = Json { ignoreUnknownKeys = true }
 
 private fun mockClient(
     responseJson: String,
+    status: HttpStatusCode = HttpStatusCode.OK,
     onRequest: ((HttpRequestData) -> Unit)? = null,
 ): HttpClient = HttpClient(MockEngine { request ->
     onRequest?.invoke(request)
     respond(
         content = responseJson,
-        status = HttpStatusCode.OK,
+        status = status,
         headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
     )
 }) {
@@ -45,6 +48,48 @@ private fun mockClient(
  * DTO whose name matched a stale spec and a default hid the mismatch.
  */
 class AttendanceRepositoryImplTest {
+
+    // ── check-in ─────────────────────────────────────────────────────────
+
+    @Test
+    fun checkInMapsSuccessfulResponse() = runTest {
+        val json = """
+            {"success":true,"data":{
+              "definitionPublicId":"def-1","definitionTitle":"주일예배",
+              "attendanceDate":"2026-09-06","presence":"UNCONFIRMED"}}
+        """.trimIndent()
+
+        val result = AttendanceRepositoryImpl(mockClient(json)).checkIn()
+
+        assertEquals("def-1", assertIs<AttendanceCheckInResult.Success>(result).checkIn.definitionPublicId)
+    }
+
+    @Test
+    fun checkInMapsConflictToAlreadyCheckedIn() = runTest {
+        val result = AttendanceRepositoryImpl(
+            mockClient("{}", status = HttpStatusCode.Conflict),
+        ).checkIn()
+
+        assertEquals(AttendanceCheckInResult.AlreadyCheckedIn, result)
+    }
+
+    @Test
+    fun checkInMapsBadRequestToOutsideWindow() = runTest {
+        val result = AttendanceRepositoryImpl(
+            mockClient("{}", status = HttpStatusCode.BadRequest),
+        ).checkIn()
+
+        assertEquals(AttendanceCheckInResult.OutsideWindow, result)
+    }
+
+    @Test
+    fun checkInMapsNetworkOrServerFailureToFailed() = runTest {
+        val result = AttendanceRepositoryImpl(
+            mockClient("{}", status = HttpStatusCode.InternalServerError),
+        ).checkIn()
+
+        assertEquals(AttendanceCheckInResult.Failed, result)
+    }
 
     // ── summary ──────────────────────────────────────────────────────────
 

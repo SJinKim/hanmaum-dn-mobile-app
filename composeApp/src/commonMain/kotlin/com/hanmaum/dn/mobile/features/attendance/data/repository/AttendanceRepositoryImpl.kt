@@ -7,6 +7,7 @@ import com.hanmaum.dn.mobile.features.attendance.data.model.AttendanceEntryRespo
 import com.hanmaum.dn.mobile.features.attendance.data.model.AttendanceHistoryResponse
 import com.hanmaum.dn.mobile.features.attendance.data.model.AttendanceSummaryResponse
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceCheckIn
+import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceCheckInResult
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceDefinition
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceEntry
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceHistory
@@ -14,9 +15,11 @@ import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceSummary
 import com.hanmaum.dn.mobile.features.attendance.domain.repository.AttendanceRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.get
 import io.ktor.client.request.post
+import io.ktor.http.HttpStatusCode
 
 class AttendanceRepositoryImpl(
     private val client: HttpClient,
@@ -28,13 +31,20 @@ class AttendanceRepositoryImpl(
         body.data?.map { it.toDomain() } ?: emptyList()
     }
 
-    override suspend fun checkIn(): Result<AttendanceCheckIn> = runCatching {
-        // expectSuccess so 4xx throws ClientRequestException: the ViewModel relies on
-        // 409 (already checked in) and 400 (outside window) to drive its UI states.
+    override suspend fun checkIn(): AttendanceCheckInResult = try {
         val response = client.post("attendance/check-in") { expectSuccess = true }
         val body = response.body<ApiResponse<AttendanceCheckInResponse>>()
         body.data?.toDomain()
-            ?: error("check-in response missing data")
+            ?.let(AttendanceCheckInResult::Success)
+            ?: AttendanceCheckInResult.Failed
+    } catch (error: ClientRequestException) {
+        when (error.response.status) {
+            HttpStatusCode.Conflict -> AttendanceCheckInResult.AlreadyCheckedIn
+            HttpStatusCode.BadRequest -> AttendanceCheckInResult.OutsideWindow
+            else -> AttendanceCheckInResult.Failed
+        }
+    } catch (_: Exception) {
+        AttendanceCheckInResult.Failed
     }
 
     override suspend fun getMySummary(): Result<AttendanceSummary> = runCatching {

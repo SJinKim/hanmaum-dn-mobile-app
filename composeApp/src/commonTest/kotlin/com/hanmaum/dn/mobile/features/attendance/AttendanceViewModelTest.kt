@@ -1,6 +1,7 @@
 package com.hanmaum.dn.mobile.features.attendance
 
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceCheckIn
+import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceCheckInResult
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceDefinition
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceEntry
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceHistory
@@ -80,7 +81,7 @@ class AttendanceViewModelTest {
     @Test
     fun checkIn_success_sets_isCheckedIn_true() = runTest(testDispatcher) {
         fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
-        fakeRepo.checkInResult = Result.success(
+        fakeRepo.checkInResult = AttendanceCheckInResult.Success(
             AttendanceCheckIn(definitionPublicId = "def-1", definitionTitle = "Sunday Service", attendanceDate = todayIso()),
         )
 
@@ -100,7 +101,7 @@ class AttendanceViewModelTest {
     @Test
     fun checkIn_failure_shows_error_message() = runTest(testDispatcher) {
         fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
-        fakeRepo.checkInResult = Result.failure(RuntimeException("network error"))
+        fakeRepo.checkInResult = AttendanceCheckInResult.Failed
 
         val viewModel = newViewModel()
         advanceUntilIdle()
@@ -118,7 +119,7 @@ class AttendanceViewModelTest {
     @Test
     fun checkIn_success_persists_to_preferences() = runTest(testDispatcher) {
         fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
-        fakeRepo.checkInResult = Result.success(
+        fakeRepo.checkInResult = AttendanceCheckInResult.Success(
             AttendanceCheckIn(definitionPublicId = "def-1", definitionTitle = "Sunday Service", attendanceDate = todayIso()),
         )
 
@@ -132,8 +133,9 @@ class AttendanceViewModelTest {
     }
 
     @Test
-    fun load_restores_checkedIn_when_already_checked_in_today() = runTest(testDispatcher) {
+    fun load_restoresCheckedInFromPreferencesWhenServerHistoryIsUnavailable() = runTest(testDispatcher) {
         fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
+        fakeRepo.historyResult = Result.failure(IllegalStateException("offline"))
         // Simulate a prior session: the check-in for today's definition is already persisted.
         fakePrefs.markCheckedIn("def-1", todayIso())
 
@@ -142,6 +144,21 @@ class AttendanceViewModelTest {
 
         // Without ever pressing the button, the screen must show the already-checked-in state.
         assertTrue(viewModel.uiState.value.isCheckedIn)
+    }
+
+    @Test
+    fun successfulServerRefreshClearsAStaleLocalCheckIn() = runTest(testDispatcher) {
+        fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
+        fakeRepo.historyResult = Result.success(
+            AttendanceHistory(todayIso(), todayIso(), emptyList()),
+        )
+        fakePrefs.markCheckedIn("def-1", todayIso())
+
+        val viewModel = newViewModel()
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.isCheckedIn)
+        assertFalse(fakePrefs.isCheckedIn("def-1", todayIso()))
     }
 
     @Test
@@ -154,6 +171,159 @@ class AttendanceViewModelTest {
         advanceUntilIdle()
 
         assertFalse(viewModel.uiState.value.isCheckedIn)
+    }
+
+    @Test
+    fun checkInFromAttendance_updatesExistingHomeState() = runTest(testDispatcher) {
+        fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
+        fakeRepo.checkInResult = AttendanceCheckInResult.Success(
+            AttendanceCheckIn("def-1", "Sunday Service", todayIso()),
+        )
+        val homeViewModel = newViewModel()
+        val attendanceViewModel = newViewModel()
+        advanceUntilIdle()
+
+        attendanceViewModel.checkIn()
+        advanceUntilIdle()
+
+        assertTrue(attendanceViewModel.uiState.value.isCheckedIn)
+        assertTrue(homeViewModel.uiState.value.isCheckedIn)
+    }
+
+    @Test
+    fun checkInFromHome_updatesExistingAttendanceState() = runTest(testDispatcher) {
+        fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
+        fakeRepo.checkInResult = AttendanceCheckInResult.Success(
+            AttendanceCheckIn("def-1", "Sunday Service", todayIso()),
+        )
+        val homeViewModel = newViewModel()
+        val attendanceViewModel = newViewModel()
+        advanceUntilIdle()
+
+        homeViewModel.checkIn()
+        advanceUntilIdle()
+
+        assertTrue(homeViewModel.uiState.value.isCheckedIn)
+        assertTrue(attendanceViewModel.uiState.value.isCheckedIn)
+    }
+
+    @Test
+    fun doubleTap_startsOnlyOneCheckInRequest() = runTest(testDispatcher) {
+        fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
+        fakeRepo.checkInResult = AttendanceCheckInResult.Success(
+            AttendanceCheckIn("def-1", "Sunday Service", todayIso()),
+        )
+        val viewModel = newViewModel()
+        advanceUntilIdle()
+
+        viewModel.checkIn()
+        viewModel.checkIn()
+        advanceUntilIdle()
+
+        assertEquals(1, fakeRepo.checkInCallCount)
+    }
+
+    @Test
+    fun alreadyCheckedInResponse_synchronizesInsteadOfShowingError() = runTest(testDispatcher) {
+        fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
+        fakeRepo.checkInResult = AttendanceCheckInResult.AlreadyCheckedIn
+        val viewModel = newViewModel()
+        advanceUntilIdle()
+
+        viewModel.checkIn()
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.isCheckedIn)
+        assertTrue(fakePrefs.isCheckedIn("def-1", todayIso()))
+        assertNull(viewModel.uiState.value.checkInError)
+    }
+
+    @Test
+    fun serverHistory_restoresAndSharesTodaysCheckIn() = runTest(testDispatcher) {
+        fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
+        fakeRepo.historyResult = Result.success(
+            AttendanceHistory(
+                from = todayIso(),
+                to = todayIso(),
+                entries = listOf(
+                    AttendanceEntry("def-1", "Sunday Service", todayIso(), checkedIn = true),
+                ),
+            ),
+        )
+        val homeViewModel = newViewModel()
+        val attendanceViewModel = newViewModel()
+        advanceUntilIdle()
+
+        assertTrue(homeViewModel.uiState.value.isCheckedIn)
+        assertTrue(attendanceViewModel.uiState.value.isCheckedIn)
+        assertTrue(fakePrefs.isCheckedIn("def-1", todayIso()))
+    }
+
+    @Test
+    fun successfulCheckIn_refreshesSummaryAndRecentAttendance() = runTest(testDispatcher) {
+        fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
+        fakeRepo.checkInResult = AttendanceCheckInResult.Success(
+            AttendanceCheckIn("def-1", "Sunday Service", todayIso()),
+        )
+        val refreshedSummary = AttendanceSummary(
+            monthAttended = 1,
+            monthTotal = 1,
+            yearAttended = 8,
+            yearToDateTotal = 10,
+            rate = 0.8,
+        )
+        val refreshedEntry = AttendanceEntry(
+            "def-1",
+            "Sunday Service",
+            todayIso(),
+            checkedIn = true,
+            checkedInAt = "2026-09-07T09:00:00Z",
+        )
+        fakeRepo.onCheckIn = {
+            fakeRepo.summaryResult = Result.success(refreshedSummary)
+            fakeRepo.historyResult = Result.success(
+                AttendanceHistory(todayIso(), todayIso(), listOf(refreshedEntry)),
+            )
+        }
+        val viewModel = newViewModel()
+        advanceUntilIdle()
+        val summaryCallsBefore = fakeRepo.summaryCallCount
+        val historyCallsBefore = fakeRepo.historyCallCount
+
+        viewModel.checkIn()
+        advanceUntilIdle()
+
+        assertTrue(fakeRepo.summaryCallCount > summaryCallsBefore)
+        assertTrue(fakeRepo.historyCallCount > historyCallsBefore)
+        assertEquals(refreshedSummary, viewModel.uiState.value.summary)
+        assertEquals(listOf(refreshedEntry), viewModel.uiState.value.history)
+    }
+
+    @Test
+    fun laterResume_refreshesStatusFromServerWithoutDuplicatingInitialLoad() = runTest(testDispatcher) {
+        fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
+        val viewModel = newViewModel()
+        advanceUntilIdle()
+        val historyCallsAfterInit = fakeRepo.historyCallCount
+
+        viewModel.onResume()
+        advanceUntilIdle()
+        assertEquals(historyCallsAfterInit, fakeRepo.historyCallCount)
+
+        fakeRepo.historyResult = Result.success(
+            AttendanceHistory(
+                from = todayIso(),
+                to = todayIso(),
+                entries = listOf(
+                    AttendanceEntry("def-1", "Sunday Service", todayIso(), checkedIn = true),
+                ),
+            ),
+        )
+        viewModel.onResume()
+        advanceUntilIdle()
+
+        assertTrue(fakeRepo.historyCallCount > historyCallsAfterInit)
+        assertTrue(viewModel.uiState.value.isCheckedIn)
     }
 
     // ── summary and history (#110) ────────────────────────────────────────
