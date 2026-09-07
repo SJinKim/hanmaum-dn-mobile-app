@@ -2,6 +2,7 @@ package com.hanmaum.dn.mobile.features.attendance.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,8 +21,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,18 +38,15 @@ import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTileShape
 import com.hanmaum.dn.mobile.core.presentation.theme.typography
 import com.hanmaum.dn.mobile.features.attendance.presentation.components.SlideToCheckIn
-import org.koin.compose.viewmodel.koinViewModel
-import androidx.compose.foundation.clickable
-import androidx.compose.runtime.LaunchedEffect
 import com.hanmaum.dn.mobile.features.events.presentation.EventRsvpViewModel
 import com.hanmaum.dn.mobile.features.events.presentation.RsvpEntryState
+import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * 출석 체크.
  *
- * The check-in itself works off the existing definition endpoint. The
- * counters and the history below need a per-member attendance endpoint that
- * does not exist yet — see hanmaum-dn-server#114.
+ * Check-in, counters and recent attendance are all backed by the attendance
+ * endpoints and the shared [AttendanceViewModel] state.
  */
 @Composable
 fun AttendanceScreen(
@@ -56,9 +56,13 @@ fun AttendanceScreen(
     viewModel: AttendanceViewModel = koinViewModel(),
     rsvpViewModel: EventRsvpViewModel = koinViewModel(),
 ) {
-    val state by viewModel.uiState.collectAsState()
-    val rsvpState by rsvpViewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val rsvpState by rsvpViewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { rsvpViewModel.refresh() }
+    LifecycleResumeEffect(viewModel) {
+        viewModel.onResume()
+        onPauseOrDispose { }
+    }
     val c = DnTheme.colors
     val strings = com.hanmaum.dn.mobile.core.i18n.LocalStrings.current
 

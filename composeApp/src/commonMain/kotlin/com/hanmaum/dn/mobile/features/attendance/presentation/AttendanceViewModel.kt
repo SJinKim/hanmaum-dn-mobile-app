@@ -4,13 +4,14 @@ package com.hanmaum.dn.mobile.features.attendance.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.repository.AttendancePreferences
+import com.hanmaum.dn.mobile.core.domain.repository.RecordedAttendanceCheckIn
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceDefinition
+import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceCheckInResult
 import com.hanmaum.dn.mobile.features.attendance.domain.repository.AttendanceRepository
-import io.ktor.client.plugins.ClientRequestException
-import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
@@ -23,8 +24,25 @@ class AttendanceViewModel(
 
     private val _uiState = MutableStateFlow(AttendanceUiState())
     val uiState: StateFlow<AttendanceUiState> = _uiState.asStateFlow()
+    private var isFirstResume = true
 
-    init { load() }
+    init {
+        observeSharedCheckInStatus()
+        load()
+    }
+
+    /**
+     * Refresh after returning from another destination or from the background.
+     * The first resume is already covered by init and is skipped to avoid
+     * sending every initial request twice.
+     */
+    fun onResume() {
+        if (isFirstResume) {
+            isFirstResume = false
+        } else {
+            load()
+        }
+    }
 
     fun load() {
         viewModelScope.launch {
@@ -34,8 +52,8 @@ class AttendanceViewModel(
                     val today = now.date.toString() // ISO "yyyy-MM-dd"
                     val todayName = now.dayOfWeek.name // "MONDAY" … "SUNDAY"
                     val todayDef = definitions.firstOrNull { it.dayOfWeek == todayName }
-                    // Restore the checked-in state from a prior session: PR#80 removed the
-                    // server-side "/logs/me", so the local record is the only way to know.
+                    // Restore immediately from the persisted shared status. The
+                    // concurrent history refresh reconciles it with the server.
                     val alreadyCheckedIn = todayDef != null && preferences.isCheckedIn(todayDef.publicId, today)
                     _uiState.update { it.copy(
                         definition    = todayDef,
@@ -55,7 +73,7 @@ class AttendanceViewModel(
      * than chained onto the definitions call: neither needs the other, and a
      * failing summary must not cost the user the check-in slider.
      */
-    private fun loadStats() {
+    private fun loadStats(reconcileCheckInStatus: Boolean = true) {
         viewModelScope.launch {
             repository.getMySummary().fold(
                 onSuccess = { summary -> _uiState.update { it.copy(summary = summary) } },
@@ -63,8 +81,18 @@ class AttendanceViewModel(
             )
         }
         viewModelScope.launch {
+            val statusAtRequestStart = preferences.lastCheckIn.value
             repository.getMyHistory().fold(
                 onSuccess = { history ->
+                    if (reconcileCheckInStatus) {
+                        val serverCheckIn = history.entries
+                            .firstOrNull { it.checkedIn && it.date == todayIso() }
+                        if (serverCheckIn != null) {
+                            preferences.markCheckedIn(serverCheckIn.definitionPublicId, serverCheckIn.date)
+                        } else {
+                            clearStaleLocalStatus(statusAtRequestStart)
+                        }
+                    }
                     _uiState.update { it.copy(history = history.entries, historyLoaded = true) }
                 },
                 onFailure = { err -> println("[AttendanceViewModel] Failed to load history: ${err.message}") },
@@ -76,25 +104,55 @@ class AttendanceViewModel(
         if (_uiState.value.isCheckedIn || _uiState.value.isCheckingIn) return
         _uiState.update { it.copy(isCheckingIn = true, checkInError = null) }
         viewModelScope.launch {
-            repository.checkIn().fold(
-                onSuccess = { checkIn ->
+            when (val result = repository.checkIn()) {
+                is AttendanceCheckInResult.Success -> {
+                    val checkIn = result.checkIn
                     preferences.markCheckedIn(checkIn.definitionPublicId, checkIn.attendanceDate)
                     _uiState.update { it.copy(isCheckedIn = true, isCheckingIn = false, checkedInDate = checkIn.attendanceDate) }
-                },
-                onFailure = { err ->
-                    val status = (err as? ClientRequestException)?.response?.status
-                    when (status) {
-                        // 409: the server already recorded today's check-in. Persist it locally
-                        // so the checked-in state is restored on the next launch.
-                        HttpStatusCode.Conflict    -> {
-                            markCheckedInForToday()
-                            _uiState.update { it.copy(isCheckedIn = true, isCheckingIn = false, checkedInDate = todayIso()) }
-                        }
-                        HttpStatusCode.BadRequest  -> _uiState.update { it.copy(isCheckingIn = false, checkInError = "출석 시간이 아닙니다") }
-                        else                       -> _uiState.update { it.copy(isCheckingIn = false, checkInError = "출석 처리에 실패했습니다") }
-                    }
-                },
-            )
+                }
+                AttendanceCheckInResult.AlreadyCheckedIn -> {
+                    markCheckedInForToday()
+                    _uiState.update { it.copy(isCheckedIn = true, isCheckingIn = false, checkedInDate = todayIso()) }
+                }
+                AttendanceCheckInResult.OutsideWindow ->
+                    _uiState.update { it.copy(isCheckingIn = false, checkInError = "출석 시간이 아닙니다") }
+                AttendanceCheckInResult.Failed ->
+                    _uiState.update { it.copy(isCheckingIn = false, checkInError = "출석 처리에 실패했습니다") }
+            }
+        }
+    }
+
+    private fun observeSharedCheckInStatus() {
+        viewModelScope.launch {
+            // load() applies the initial persisted value. Later emissions are
+            // successful check-ins from another screen or server reconciliation.
+            preferences.lastCheckIn.drop(1).collect { record ->
+                val definition = _uiState.value.definition
+                val isCheckedIn = record != null &&
+                    definition != null &&
+                    record.definitionId == definition.publicId &&
+                    record.date == todayIso()
+                _uiState.update {
+                    it.copy(
+                        isCheckedIn = isCheckedIn,
+                        isCheckingIn = if (isCheckedIn) false else it.isCheckingIn,
+                        checkedInDate = record?.date?.takeIf { isCheckedIn },
+                    )
+                }
+                if (isCheckedIn) {
+                    // The event itself is already server-confirmed. Refresh the
+                    // visible metrics, but never let an older in-flight history
+                    // snapshot undo the just-completed check-in.
+                    loadStats(reconcileCheckInStatus = false)
+                }
+            }
+        }
+    }
+
+    private fun clearStaleLocalStatus(statusAtRequestStart: RecordedAttendanceCheckIn?) {
+        val current = preferences.lastCheckIn.value
+        if (statusAtRequestStart != null && current == statusAtRequestStart && current.date == todayIso()) {
+            preferences.clearCheckedIn(current.definitionId, current.date)
         }
     }
 

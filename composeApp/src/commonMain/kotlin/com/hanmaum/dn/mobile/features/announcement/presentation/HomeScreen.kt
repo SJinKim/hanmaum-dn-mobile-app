@@ -26,13 +26,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
@@ -56,11 +56,8 @@ import org.koin.compose.viewmodel.koinViewModel
 /**
  * Home.
  *
- * Everything on this screen is driven by endpoints the app already calls —
- * announcements and the attendance definition. The two places the backend
- * cannot fill yet (the unread badge and the attendance summary) are marked
- * with the issue that tracks them and render placeholder content so the
- * layout can still be judged.
+ * Everything on this screen is driven by endpoints the app already calls,
+ * except the explicitly marked verse placeholders.
  */
 @Composable
 fun HomeScreen(
@@ -95,6 +92,10 @@ fun HomeScreen(
 
     val attendanceViewModel: AttendanceViewModel = koinViewModel()
     val attendance by attendanceViewModel.uiState.collectAsStateWithLifecycle()
+    LifecycleResumeEffect(attendanceViewModel) {
+        attendanceViewModel.onResume()
+        onPauseOrDispose { }
+    }
 
     val c = DnTheme.colors
 
