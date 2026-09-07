@@ -11,16 +11,47 @@ the branch no longer exists. Built on
   bump label; a manual `major` / `minor` / `patch` label overrides it.
 - Every merge to `main` updates **both** drafts: `ST-Release vX.Y.Z-st` and
   `PROD-Release vX.Y.Z`.
-- **Nothing is tagged or built** until you open the draft in the **Releases**
-  tab and click **Publish**. Publishing is the deliberate, human release act.
-- Publishing an **ST** draft → tag `vX.Y.Z-st` → **iOS TestFlight** (staging).
-- Publishing a **PROD** draft → tag `vX.Y.Z` → release marker only. Shipping to
-  the App Store stays the manual `Distribute → ios-appstore` lane.
-- On publish, Android `versionName` in `composeApp/build.gradle.kts` is
-  auto-synced to the numeric version by a bot commit `[skip ci]`.
+- **Nothing is tagged** until you open the draft in the **Releases** tab and
+  click **Publish**. Publishing is the deliberate, human release act.
+- **Publishing never builds anything.** Both tracks only cut a tag and record
+  the note. Every build is a separate manual `Actions → Distribute` run.
+- **Publish before you dispatch — every time, on both tracks.** See
+  [One release, one note](#one-release-one-note) below; this is the rule the
+  rest of the runbook exists to serve.
+- On publish, `version-sync` opens a PR bumping Android `versionName` in
+  `composeApp/build.gradle.kts` to the numeric version.
 - Each note line credits the PR author by GitHub login (`- <title> (#N) @author`).
   Automation/AI logins are excluded (`exclude-contributors`), and since notes
   only list merged PRs authored by humans, an AI name can never appear.
+
+## One release, one note
+
+**Every distribution gets a published release note first — staging and
+production alike.** Publish the draft, *then* dispatch the build.
+
+Publishing costs nothing. `distribute.yml` runs on `workflow_dispatch` only, so
+creating the tag starts no build and spends no runner minutes. There is no
+situation in which skipping it saves anything.
+
+The order matters because the build reads its version from the tag:
+
+```
+Publish draft  →  tag vX.Y.Z-st now exists
+               →  Actions → Distribute → ios-testflight
+               →  git describe finds the new tag
+               →  TestFlight shows X.Y.Z (<run number>)
+```
+
+Dispatch a build without publishing first and it silently inherits the previous
+tag. That is not hypothetical. Builds **76, 77, 78 and 79** all reached
+TestFlight as marketing version **0.7.1** with materially different content — 76
+had none of the registration fixes, 79 had all of them — telling them apart
+required reading the build number. Twenty-three merged PRs went to testers with
+no note saying what had changed.
+
+If you find yourself about to dispatch a build and the top draft is empty, that
+is the signal that the last publish already covered `main` — not a reason to
+skip the step.
 
 ## How the version is decided (labels)
 
@@ -57,12 +88,21 @@ to restore standard SemVer.
 | Draft title | `ST-Release vX.Y.Z-st` | `PROD-Release vX.Y.Z` |
 | Tag on publish | `vX.Y.Z-st` (pre-release) | `vX.Y.Z` |
 | Config | `release-drafter-st.yml` | `release-drafter-prod.yml` |
-| Publish triggers | iOS TestFlight (staging backend) | release marker; App Store = manual |
+| On publish | tag + note only | tag + note only |
+| How it ships | `Distribute → ios-testflight` / `android-st` | `Distribute → ios-appstore` / `android-prod` |
 
-Both lines draft off the same branch and are kept apart by the **pre-release
-flag**: `include-pre-releases` defaults to false, so the prod line's version base
-ignores the `-st` pre-releases entirely. Promote deliberately — the prod version
-is not automatically "the latest `-st` minus the suffix".
+Both lines draft off the same branch and are kept apart by **tag shape** alone.
+They share one ascending version base: `release-drafter-prod.yml` sets
+`include-pre-releases: true`, so the prod line counts the `-st` releases too.
+
+It used to be left at the default (false), on the idea that the prod line
+deserved a base of its own. What that produced was a prod draft numbered
+**below** what was already in TestFlight — `v0.6.0` while `v0.7.1-st` was live —
+regenerated on every push to `main`. A production release must never be numbered
+under what has shipped.
+
+The staging config carries no such key, and must not: its action step passes
+`prerelease: true`, and `include-pre-releases` has no effect in that case.
 
 > The staging config pointed at `refs/heads/develop` long after that branch was
 > deleted. Release Drafter found no commits there, left the draft untouched from
@@ -75,11 +115,11 @@ is not automatically "the latest `-st` minus the suffix".
 1. Go to the repo **Releases** tab. The relevant draft is at the top with the
    computed version and categorized notes.
 2. Review the notes and the version. Edit the notes if you like.
-3. Click **Publish release**. This creates the tag and (for `-st`) kicks off the
-   TestFlight build. A tag push spends a real ~15-min TestFlight build — publish
-   when you mean it.
-4. The `version-sync` workflow commits the matching `versionName` back to the
-   release's branch (`[skip ci]`, no re-build).
+3. Click **Publish release**. This creates the tag and publishes the note. It
+   starts **no build** — no tag and no push triggers `distribute.yml`.
+4. `version-sync` opens a PR bumping `versionName` to match. Merge it.
+5. Only now: **Actions → Distribute → Run workflow**, pick the lane. The build
+   picks up the tag you just created via `git describe`.
 
 ## Shipping production to the App Store
 
@@ -95,18 +135,23 @@ environment approval). The build derives its marketing version from the latest
   draft on merge), routed to the right track by branch.
 - `.github/workflows/version-sync.yml` — syncs `versionName` on publish.
 - `.github/release-drafter-st.yml` / `-prod.yml` — per-track config.
-- `.github/workflows/distribute.yml` — TestFlight fires on `v*-st`; App Store is
-  the manual `ios-appstore` lane.
+- `.github/workflows/distribute.yml` — every lane is a manual
+  `workflow_dispatch`; no push and no tag starts a build.
 
 ## Caveats / things to watch
 
-- **Bot push vs branch protection.** `version-sync` pushes the `versionName`
-  commit directly to `main` with the built-in `GITHUB_TOKEN`. If
-  branch protection is later set to *require pull requests* on those branches,
-  that push will be rejected — switch the step to open a version-bump PR then.
+- **`version-sync` needs the PR permission.** It pushes a bot branch and opens a
+  PR (`main` requires pull requests, so it cannot commit directly). This fails
+  with `GitHub Actions is not permitted to create or approve pull requests`
+  unless **Settings → Actions → General → Workflow permissions → "Allow GitHub
+  Actions to create and approve pull requests"** is on. Its earlier runs looked
+  green only because the no-downgrade guard had skipped them.
 - **Label required to exist.** The bump/category labels are pre-created in the
   repo. If you rename one in a config, create the matching GitHub label too.
 - **First run.** Before any track has a release, the drafter starts the line
   from `0.0.0` + the first bump (e.g. a `feat` → `0.1.0`). Seed the starting
-  point by publishing the first draft with the version you actually want
-  (we are currently at `v0.5.0`).
+  point by publishing the first draft with the version you actually want.
+- **The prod track has never shipped.** Across every `distribute.yml` run to
+  date only `android-st` and `ios-testflight` have executed; `android-prod` and
+  `ios-appstore` never have. `1.0.0` at App Store launch will be the first real
+  production release.
