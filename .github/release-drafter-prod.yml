@@ -17,11 +17,24 @@ name-template: 'PROD-Release v$RESOLVED_VERSION'
 tag-template: 'v$RESOLVED_VERSION'
 
 # Draft against main (target branch for the release + which merged PRs count).
-# `include-pre-releases` defaults to false, so this prod line's version base
-# ignores the `-st` staging pre-releases without needing filter-by-commitish
-# (which was removed — it filtered out baseline/seed releases by exact
-# target_commitish string matching).
+# filter-by-commitish was removed — it matched releases by exact
+# target_commitish string, which filtered out baseline/seed releases.
 commitish: refs/heads/main
+
+# Count the `-st` staging pre-releases when picking the last release.
+#
+# This used to be left at its default (false) so the prod line would have a
+# version base "of its own". That is what it did: with the newest non-pre-release
+# being v0.5.0 from July, this config kept resolving to v0.6.0 — a number BELOW
+# the v0.7.1-st already in TestFlight — and re-created that draft on every push
+# to main. A production release must never be numbered under what has shipped.
+#
+# Both tracks now share one ascending version line and stay apart by tag shape
+# alone (`vX.Y.Z` here, `vX.Y.Z-st` in the staging config). The staging config
+# needs no matching key: it is run with `prerelease: true`, and
+# `include-pre-releases` has no effect in that case — pre-releases are already
+# its version base.
+include-pre-releases: true
 
 version-template: '$MAJOR.$MINOR.$PATCH'
 

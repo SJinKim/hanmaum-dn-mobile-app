@@ -21,11 +21,16 @@ tag-template: 'v$RESOLVED_VERSION-st'
 # workflow passes `commitish` as an input too, but that sets the draft's target;
 # this one decides which commits are considered.
 #
-# The staging and prod lines are kept apart by the pre-release flag rather than
-# by commitish filtering: `include-pre-releases` defaults to false, so the prod
-# config's version base ignores these `-st` pre-releases. (filter-by-commitish
-# was removed — it matches releases by exact target_commitish string, which made
-# a baseline/seed release on an existing tag get filtered out.)
+# The staging and prod lines are kept apart by tag shape (`vX.Y.Z-st` here,
+# `vX.Y.Z` there), not by commitish filtering — filter-by-commitish was removed
+# because it matches releases by exact target_commitish string, which made a
+# baseline/seed release on an existing tag get filtered out.
+#
+# They no longer have separate version bases: the prod config sets
+# `include-pre-releases: true` so both climb one shared line. This config needs
+# no such key — the action step runs it with `prerelease: true`, and
+# `include-pre-releases` has no effect in that case, so `-st` releases are
+# already what this track resolves its next version from.
 commitish: refs/heads/main
 
 # Force a clean numeric version — no auto-appended prerelease identifier. The
