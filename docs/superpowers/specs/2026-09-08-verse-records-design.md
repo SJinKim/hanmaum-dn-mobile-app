@@ -114,9 +114,21 @@ features/verse/
 `StreakBar` renders seven pills from `weekStart`. Each pill stays visually
 24×6 dp but sits inside a **44 dp tall transparent hit area** — the visual
 design is unchanged while the touch target meets the guideline. Today's pill is
-outlined rather than filled and is the only one that is clickable; every other
-pill is inert. A pill for a non-markable day (Sunday on the QT bar) gets the
-third, muted style.
+the only one that is clickable; every other pill is inert.
+
+Pill states, settled against the rendered design rather than in the abstract:
+
+| State | Treatment |
+|---|---|
+| Marked | fill `accent/amber` |
+| Today, markable | fill `accent/amber-dim` **plus a 1 dp `accent/amber` stroke** |
+| Empty (future or missed) | fill `bg/surface-3` |
+| Not markable (Sunday, QT bar) | fill `bg/surface-2` |
+
+The stroke is not decoration. `accent/amber-dim` alone renders *darker* than
+`bg/surface-3` in dark mode, so today's pill read as less prominent than an
+empty one — the hierarchy inverted. The stroke restores it, and at 6 dp height
+a 1 dp stroke is legible at 1:1 (verified on the rendered frame).
 
 Tapping fills the pill immediately and fires the POST behind it. On failure the
 fill reverts and the card shows a short message. Optimistic, because with no
@@ -146,8 +158,16 @@ its single job of opening the reading page; it does **not** mark the day.
 **주간 암송 구절** — unchanged except that today's pill takes the outlined,
 tappable state.
 
-**Profile** — a third `StatTile` row below the existing 2×2. The `소속 사역`
-placeholder keeps its slot; #160 is untouched.
+**Profile** — a new `StatTile` row below the existing ones. The `소속 사역`
+placeholder keeps its slot; #160 is untouched. Both values bind to
+`accent/amber`: the colour roles are load-bearing in this design system, lime
+is action/attendance and blue is information, and a 말씀 record is neither.
+
+One divergence found while building: Figma's profile carries **one row of three**
+tiles at 111 dp, while the shipped code renders **2×2 with four** (`소속 그룹`
+exists only in code). The new row keeps Figma's 111 dp column rhythm, so the
+grid reads as a grid with one empty cell. Aligning the two layouts is a separate
+piece of work and is deliberately not bundled here.
 
 Six Figma frames: Home Dark/Light, Home · unten Dark/Light, Profile Dark/Light.
 
