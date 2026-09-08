@@ -234,6 +234,9 @@ interface AppStrings {
     val profileSaved: String
     // Date picker (BirthdayField)
     val selectDate: String
+    // Home · daily passage card
+    val verseTodayTitle: String
+    val verseReadAction: String
 }
 
 object EnStrings : AppStrings {
@@ -442,6 +445,8 @@ object EnStrings : AppStrings {
     override val lockedFieldHint = "Managed by the church office"
     override val profileSaved = "Saved"
     override val selectDate = "Select date"
+    override val verseTodayTitle = "Today’s Passage"
+    override val verseReadAction = "Read"
 }
 
 object KoStrings : AppStrings {
@@ -650,6 +655,8 @@ object KoStrings : AppStrings {
     override val lockedFieldHint = "교회에서 관리하는 정보입니다"
     override val profileSaved = "저장되었습니다"
     override val selectDate = "날짜 선택"
+    override val verseTodayTitle = "오늘의 말씀"
+    override val verseReadAction = "읽기"
 }
 
 object DeStrings : AppStrings {
@@ -858,4 +865,6 @@ object DeStrings : AppStrings {
     override val lockedFieldHint = "Wird vom Gemeindebüro verwaltet"
     override val profileSaved = "Gespeichert"
     override val selectDate = "Datum wählen"
+    override val verseTodayTitle = "Bibeltext heute"
+    override val verseReadAction = "Lesen"
 }

@@ -30,11 +30,20 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
+import com.hanmaum.dn.mobile.features.verse.domain.model.DailyVerse
 import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlassIconButton
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlows
@@ -97,6 +106,8 @@ fun HomeScreen(
         onPauseOrDispose { }
     }
 
+    val uriHandler = LocalUriHandler.current
+
     val c = DnTheme.colors
 
     DnBackground(glows = DnGlows.action()) {
@@ -158,16 +169,16 @@ fun HomeScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            VerseCard(
-                eyebrow = "오늘의 말씀",
-                icon = DnIcons.Book,
-                // TODO(hanmaum-dn-server#115): no verse endpoint yet
-                verse = PLACEHOLDER_VERSE,
-                reference = "본문 미정 · 자리표시자",
-                filled = false,
-            )
+            // Hidden on days the plan has no entry, and while the call is in
+            // flight — an empty passage card is worse than none.
+            state.dailyVerse?.let { verse ->
+                DailyPassageCard(
+                    verse = verse,
+                    onReadClick = { verse.sourceUrl?.let(uriHandler::openUri) },
+                )
 
-            Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(12.dp))
+            }
 
             VerseCard(
                 eyebrow = "주간 암송 구절",
@@ -186,10 +197,7 @@ fun HomeScreen(
     }
 }
 
-/** Placeholder copy — replaced once the verse endpoint exists. */
-private const val PLACEHOLDER_VERSE =
-    "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor."
-
+/** Placeholder copy — 주간 암송 has no source yet, see hanmaum-dn-server#115. */
 private const val PLACEHOLDER_VERSE_WEEKLY =
     "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore."
 
@@ -472,6 +480,94 @@ private fun HomeTiles(
                     .clip(RoundedCornerShape(3.dp))
                     .background(c.surface3)
             )
+        }
+    }
+}
+
+/**
+ * Today's passage: reference only, plus a way out to the church's reading page.
+ *
+ * A quiet-time passage runs 8–25 verses, so the full text does not belong on
+ * Home — the card names the passage and hands the reading off. Korean and
+ * English sit under each other regardless of app language, because the passage
+ * is announced in Korean and read by members who search for it in English.
+ */
+@Composable
+private fun DailyPassageCard(
+    verse: DailyVerse,
+    onReadClick: () -> Unit,
+) {
+    val c = DnTheme.colors
+    val strings = LocalStrings.current
+    val readable = verse.sourceUrl != null
+
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (pressed && readable) 0.97f else 1f,
+        animationSpec = spring(),
+        label = "dailyPassagePress",
+    )
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .scale(scale)
+            .clip(DnCardShape)
+            .background(c.surface, DnCardShape)
+            .border(1.dp, c.strokeSubtle, DnCardShape)
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                enabled = readable,
+                onClick = onReadClick,
+            )
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Icon(DnIcons.Book, null, tint = c.amber, modifier = Modifier.size(16.dp))
+            Text(strings.verseTodayTitle, style = DnTheme.typography.label, color = c.amber)
+        }
+
+        // Either half can be empty if the server could not resolve that
+        // language; the other one still carries the card.
+        if (verse.referenceKo.isNotEmpty()) {
+            Text(verse.referenceKo, style = DnTheme.typography.title, color = c.textPrimary)
+        }
+        if (verse.referenceEn.isNotEmpty()) {
+            Text(verse.referenceEn, style = DnTheme.typography.body, color = c.textSecondary)
+        }
+
+        Row(
+            Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(verse.translation, style = DnTheme.typography.caption, color = c.textTertiary)
+
+            if (readable) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        strings.verseReadAction,
+                        style = DnTheme.typography.captionStrong,
+                        color = c.amber,
+                    )
+                    Icon(
+                        DnIcons.ArrowUpRight,
+                        null,
+                        tint = c.amber,
+                        modifier = Modifier.size(14.dp),
+                    )
+                }
+            }
         }
     }
 }
