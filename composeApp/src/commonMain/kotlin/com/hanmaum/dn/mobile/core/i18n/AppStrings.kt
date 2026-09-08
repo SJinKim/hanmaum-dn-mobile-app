@@ -111,6 +111,8 @@ interface AppStrings {
     // Profile screen
     val profileLogout: String
     val profileTimeTogether: String
+    val profileQtRecord: String
+    val profileMemorizationRecord: String
 
     /**
      * The "함께한 시간" tile value. Takes years and months rather than a
@@ -343,6 +345,8 @@ object EnStrings : AppStrings {
     override val settingsPushPermissionHint = "Allow notifications in system settings"
     override val profileLogout = "Logout"
     override val profileTimeTogether = "Time together"
+    override val profileQtRecord = "Quiet time"
+    override val profileMemorizationRecord = "Memory verses"
     override fun profileTimeTogetherValue(years: Int, months: Int) = when {
         years > 0 && months > 0 -> "${years}y ${months}m"
         years > 0 -> "${years}y"
@@ -553,6 +557,8 @@ object KoStrings : AppStrings {
     override val settingsPushPermissionHint = "기기 설정에서 알림을 허용해주세요"
     override val profileLogout = "로그아웃"
     override val profileTimeTogether = "함께한 시간"
+    override val profileQtRecord = "QT 기록"
+    override val profileMemorizationRecord = "암송 기록"
     override fun profileTimeTogetherValue(years: Int, months: Int) = when {
         years > 0 && months > 0 -> "${years}년 ${months}개월"
         years > 0 -> "${years}년"
@@ -649,7 +655,7 @@ object KoStrings : AppStrings {
     override val personalInfoTitle = "개인 정보"
     override val labelBirthDate = "생년월일"
     override val labelDivision = "교구"
-    override val labelGroup = "목장"
+    override val labelGroup = "순"
     override val labelName = "이름"
     override val labelChurchRole = "직분"
     override val lockedFieldHint = "교회에서 관리하는 정보입니다"
@@ -763,6 +769,8 @@ object DeStrings : AppStrings {
     override val settingsPushPermissionHint = "Erlauben Sie Mitteilungen in den Systemeinstellungen"
     override val profileLogout = "Abmelden"
     override val profileTimeTogether = "Gemeinsame Zeit"
+    override val profileQtRecord = "Stille Zeit"
+    override val profileMemorizationRecord = "Merkverse"
     override fun profileTimeTogetherValue(years: Int, months: Int) = when {
         years > 0 && months > 0 -> "${years} J. ${months} Mon."
         years > 0 -> "${years} J."
