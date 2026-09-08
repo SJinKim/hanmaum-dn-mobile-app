@@ -4,7 +4,9 @@ import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.navigation.LoginRoute
 import com.hanmaum.dn.mobile.features.login.domain.model.LoginException
+import com.hanmaum.dn.mobile.core.data.repository.AuthPreferencesImpl
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
+import com.russhwolf.settings.MapSettings
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import io.ktor.client.HttpClient
@@ -72,16 +74,11 @@ private class FakeMemberRepository : MemberRepository {
 private class FakeTokenStorage : TokenStorage {
     private var access: String? = null
     private var refresh: String? = null
-    var keptSignedIn = false
     override fun saveAccessToken(token: String) { access = token }
     override fun getAccessToken(): String? = access
     override fun saveRefreshToken(token: String?) { refresh = token }
     override fun getRefreshToken(): String? = refresh
     override fun clear() { access = null; refresh = null }
-    override fun setKeepSignedIn(value: Boolean) { keptSignedIn = value }
-    override fun isKeepSignedIn(): Boolean = keptSignedIn
-    override fun setBiometricEnabled(value: Boolean) = Unit
-    override fun isBiometricEnabled(): Boolean = false
 }
 
 /**
@@ -97,6 +94,7 @@ class RegisterViewModelTest {
     private lateinit var auth: FakeAuthRepository
     private lateinit var members: FakeMemberRepository
     private lateinit var tokens: FakeTokenStorage
+    private lateinit var authPrefs: AuthPreferencesImpl
     private lateinit var vm: RegisterViewModel
 
     @BeforeTest
@@ -105,9 +103,10 @@ class RegisterViewModelTest {
         auth = FakeAuthRepository()
         members = FakeMemberRepository()
         tokens = FakeTokenStorage()
+        authPrefs = AuthPreferencesImpl(MapSettings())
         // A bare client is enough: invalidateBearerCache is a no-op without the
         // Auth plugin installed, and no test here makes an HTTP call.
-        vm = RegisterViewModel(auth, tokens, FakeCityLookupRepository(), members, HttpClient(MockEngine { respondOk() }))
+        vm = RegisterViewModel(auth, tokens, FakeCityLookupRepository(), members, HttpClient(MockEngine { respondOk() }), authPrefs)
     }
 
     @AfterTest
@@ -269,7 +268,7 @@ class RegisterViewModelTest {
 
         assertEquals(1, auth.loginCalls, "registration must be followed by a login")
         assertEquals("hello@hanmaum.de" to "Passwort1!", auth.lastLogin)
-        assertTrue(tokens.keptSignedIn, "the session must survive the next app start")
+        assertTrue(authPrefs.isKeepSignedInEnabled(), "the session must survive the next app start")
     }
 
     @Test

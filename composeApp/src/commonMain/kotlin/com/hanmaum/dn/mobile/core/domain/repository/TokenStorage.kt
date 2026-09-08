@@ -1,21 +1,18 @@
 package com.hanmaum.dn.mobile.core.domain.repository
 
+/**
+ * The session tokens, and nothing else.
+ *
+ * "Keep me signed in" and "Face ID 로그인" used to live here as well, in
+ * parallel to [AuthPreferences] — two stores, two key names, one meaning. The
+ * 설정 screen wrote one pair and the login and splash paths read the other, so
+ * neither toggle reached the code it was supposed to steer. They now live in
+ * [AuthPreferences] only.
+ */
 interface TokenStorage {
     fun saveAccessToken(token: String)
     fun getAccessToken(): String?
     fun saveRefreshToken(token: String?)
     fun getRefreshToken(): String?
     fun clear()
-
-    /**
-     * Whether the session should survive an app restart ("Keep me signed in").
-     * Defaults to true. When false, the splash screen clears the persisted
-     * session on the next launch so the user has to sign in again.
-     */
-    fun setKeepSignedIn(value: Boolean)
-    fun isKeepSignedIn(): Boolean
-
-    /** Whether the biometric app lock is enabled. Defaults to false (opt-in). */
-    fun setBiometricEnabled(value: Boolean)
-    fun isBiometricEnabled(): Boolean
 }

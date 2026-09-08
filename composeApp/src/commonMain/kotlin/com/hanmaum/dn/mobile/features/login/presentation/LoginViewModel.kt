@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
+import com.hanmaum.dn.mobile.core.domain.repository.AuthPreferences
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.core.network.invalidateBearerCache
 import com.hanmaum.dn.mobile.core.security.CredentialStore
@@ -23,6 +24,7 @@ class LoginViewModel(
     private val tokenStorage: TokenStorage,
     private val httpClient: HttpClient,
     private val credentialStore: CredentialStore,
+    private val authPreferences: AuthPreferences,
 ) : ViewModel() {
 
     // 1. UI State: Single Source of Truth
@@ -31,7 +33,7 @@ class LoginViewModel(
 
     /** True when Face ID sign-in is enabled and credentials are saved to autofill. */
     fun canFaceIdSignIn(): Boolean =
-        tokenStorage.isBiometricEnabled() && credentialStore.hasCredentials()
+        authPreferences.isBiometricEnabled() && credentialStore.hasCredentials()
 
     /**
      * Saved credentials for Face ID autofill, or null if none. The caller must
@@ -59,7 +61,7 @@ class LoginViewModel(
                 tokenStorage.saveRefreshToken(tokenResponse.refreshToken)
                 // Remember the user's "Keep me signed in" choice so the splash
                 // screen knows whether to auto-login on the next app launch.
-                tokenStorage.setKeepSignedIn(keepSignedIn)
+                authPreferences.setKeepSignedInEnabled(keepSignedIn)
 
                 // Force Ktor's BearerAuthProvider to drop any cached (possibly
                 // stale) tokens so the very next authed call reads the ones we
@@ -74,9 +76,9 @@ class LoginViewModel(
                 profileResult.onSuccess { member ->
                     // Persist credentials for Face ID sign-in if the user opted in
                     // (via the login checkbox or a previously enabled toggle).
-                    if (enableFaceId || tokenStorage.isBiometricEnabled()) {
+                    if (enableFaceId || authPreferences.isBiometricEnabled()) {
                         credentialStore.saveCredentials(user, pass)
-                        tokenStorage.setBiometricEnabled(true)
+                        authPreferences.setBiometricEnabled(true)
                     }
                     // Route by status. Sending every non-active member to the
                     // pending screen used to tell a refused applicant to wait for

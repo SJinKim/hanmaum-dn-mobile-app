@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
+import com.hanmaum.dn.mobile.core.domain.repository.AuthPreferences
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.core.security.CredentialStore
 import com.hanmaum.dn.mobile.features.geofence.domain.GeofenceCoordinator
@@ -17,6 +18,7 @@ class SplashViewModel(
     private val memberRepository: MemberRepository,
     private val geofenceCoordinator: GeofenceCoordinator,
     private val credentialStore: CredentialStore,
+    private val authPreferences: AuthPreferences,
 ) : ViewModel() {
 
     private val _navigateTo = MutableStateFlow<NavRoute?>(null)
@@ -34,7 +36,7 @@ class SplashViewModel(
 
             // "Keep me signed in" was off at login → this is a fresh launch, so
             // drop the persisted session and require sign-in again.
-            if (!tokenStorage.isKeepSignedIn()) {
+            if (!authPreferences.isKeepSignedInEnabled()) {
                 tokenStorage.clear()
                 _navigateTo.value = NavRoute.Login
                 return@launch
@@ -74,7 +76,7 @@ class SplashViewModel(
         viewModelScope.launch {
             tokenStorage.clear()
             if (forgetBiometric) {
-                tokenStorage.setBiometricEnabled(false)
+                authPreferences.setBiometricEnabled(false)
                 credentialStore.clear()
             }
             _navigateTo.value = NavRoute.Login

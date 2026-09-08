@@ -136,6 +136,8 @@ interface AppStrings {
     // Face ID sign-in
     val profileFaceIdLogin: String
     val faceIdLoginDesc: String
+    val faceIdSetupTitle: String
+    val faceIdSetupSubtitle: String
     val loginForgotPassword: String
     val loginUseFaceId: String
     val loginSignInWithFaceId: String
@@ -368,6 +370,8 @@ object EnStrings : AppStrings {
     override val lockUsePassword = "Use password instead"
     override val profileFaceIdLogin = "Face ID Sign-In"
     override val faceIdLoginDesc = "Use Face ID / Touch ID to sign in automatically"
+    override val faceIdSetupTitle = "Confirm your password"
+    override val faceIdSetupSubtitle = "Enter it once so Face ID can sign you in from now on."
     override val loginForgotPassword = "Forgot?"
     override val loginUseFaceId = "Enable Face ID sign-in"
     override val loginSignInWithFaceId = "Sign in with Face ID"
@@ -580,6 +584,8 @@ object KoStrings : AppStrings {
     override val lockUsePassword = "비밀번호로 로그인"
     override val profileFaceIdLogin = "Face ID 로그인"
     override val faceIdLoginDesc = "Face ID / Touch ID로 자동 로그인합니다"
+    override val faceIdSetupTitle = "비밀번호 확인"
+    override val faceIdSetupSubtitle = "한 번만 입력하면 다음부터 Face ID로 로그인합니다."
     override val loginForgotPassword = "비밀번호 찾기"
     override val loginUseFaceId = "다음에 Face ID로 로그인"
     override val loginSignInWithFaceId = "Face ID로 로그인"
@@ -792,6 +798,8 @@ object DeStrings : AppStrings {
     override val lockUsePassword = "Stattdessen Passwort verwenden"
     override val profileFaceIdLogin = "Face-ID-Anmeldung"
     override val faceIdLoginDesc = "Mit Face ID / Touch ID automatisch anmelden"
+    override val faceIdSetupTitle = "Passwort bestätigen"
+    override val faceIdSetupSubtitle = "Einmal eingeben, danach meldet Face ID dich an."
     override val loginForgotPassword = "Vergessen?"
     override val loginUseFaceId = "Face-ID-Anmeldung aktivieren"
     override val loginSignInWithFaceId = "Mit Face ID anmelden"

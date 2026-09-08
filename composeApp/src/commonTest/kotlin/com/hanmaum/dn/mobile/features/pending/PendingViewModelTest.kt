@@ -37,10 +37,6 @@ private class FakeTokenStorage : TokenStorage {
     override fun saveRefreshToken(token: String?) {}
     override fun getRefreshToken(): String? = null
     override fun clear() { cleared = true }
-    override fun setKeepSignedIn(value: Boolean) {}
-    override fun isKeepSignedIn(): Boolean = true
-    override fun setBiometricEnabled(value: Boolean) {}
-    override fun isBiometricEnabled(): Boolean = false
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)

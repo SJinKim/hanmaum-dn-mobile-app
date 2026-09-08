@@ -2,6 +2,7 @@ package com.hanmaum.dn.mobile.features.profile.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hanmaum.dn.mobile.core.domain.repository.AuthPreferences
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.core.push.PushManager
 import com.hanmaum.dn.mobile.core.security.CredentialStore
@@ -18,6 +19,7 @@ class ProfileViewModel(
     private val credentialStore: CredentialStore,
     private val notificationRepository: NotificationRepository,
     private val pushManager: PushManager,
+    private val authPreferences: AuthPreferences,
 ) : ViewModel() {
 
     private val _loggedOut = MutableStateFlow(false)
@@ -113,7 +115,7 @@ class ProfileViewModel(
             // credentials AND the biometric flag so the next login starts clean.
             // (A plain session expiry keeps both so Face ID still works — see
             // TokenStorageImpl.clear.)
-            tokenStorage.setBiometricEnabled(false)
+            authPreferences.setBiometricEnabled(false)
             credentialStore.clear()
             _loggedOut.value = true
         }

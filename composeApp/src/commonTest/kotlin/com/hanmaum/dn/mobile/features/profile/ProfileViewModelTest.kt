@@ -1,7 +1,9 @@
 package com.hanmaum.dn.mobile.features.profile
 
 import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
+import com.hanmaum.dn.mobile.core.data.repository.AuthPreferencesImpl
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
+import com.russhwolf.settings.MapSettings
 import com.hanmaum.dn.mobile.core.push.PushManager
 import com.hanmaum.dn.mobile.core.security.CredentialStore
 import com.hanmaum.dn.mobile.core.security.SecureStore
@@ -78,17 +80,11 @@ private class FakeMemberRepository : MemberRepository {
 private class FakeTokenStorage : TokenStorage {
     private var access: String? = null
     private var refresh: String? = null
-    private var keepSignedIn = true
-    private var biometric = false
     override fun saveAccessToken(token: String) { access = token }
     override fun getAccessToken(): String? = access
     override fun saveRefreshToken(token: String?) { refresh = token }
     override fun getRefreshToken(): String? = refresh
     override fun clear() { access = null; refresh = null }
-    override fun setKeepSignedIn(value: Boolean) { keepSignedIn = value }
-    override fun isKeepSignedIn(): Boolean = keepSignedIn
-    override fun setBiometricEnabled(value: Boolean) { biometric = value }
-    override fun isBiometricEnabled(): Boolean = biometric
 }
 
 private class InMemorySecureStore : SecureStore {
@@ -143,6 +139,7 @@ class ProfileViewModelTest {
         CredentialStore(InMemorySecureStore()),
         notificationRepository,
         pushManager,
+        AuthPreferencesImpl(MapSettings()),
     )
 
     private fun success(viewModel: ProfileViewModel) =
