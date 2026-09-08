@@ -19,7 +19,6 @@ import com.hanmaum.dn.mobile.core.domain.model.ThemeMode
 import com.hanmaum.dn.mobile.core.domain.repository.ThemeRepository
 import com.hanmaum.dn.mobile.core.domain.repository.AuthPreferences
 import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
-import com.hanmaum.dn.mobile.core.security.rememberBiometricAuthenticator
 import com.hanmaum.dn.mobile.features.profile.presentation.SettingsScreen
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
@@ -240,9 +239,7 @@ fun App() {
                         val geofence = koinInject<GeofenceCoordinator>()
                         val credentials = koinInject<CredentialStore>()
                         val scope = rememberCoroutineScope()
-                        val biometrics = rememberBiometricAuthenticator()
                         var keepSignedIn by remember { mutableStateOf(authPrefs.isKeepSignedInEnabled()) }
-                        var biometricEnabled by remember { mutableStateOf(authPrefs.isBiometricEnabled()) }
                         var locationEnabled by remember { mutableStateOf(locationPrefs.isSharingEnabled()) }
 
                         SettingsScreen(
@@ -261,16 +258,9 @@ fun App() {
                             onKeepSignedInChange = { value ->
                                 authPrefs.setKeepSignedInEnabled(value)
                                 keepSignedIn = value
-                                // turning it off also clears biometrics — see AuthPreferencesImpl
-                                biometricEnabled = authPrefs.isBiometricEnabled()
-                                // nothing may stay behind that could sign someone in
-                                if (!value) credentials.clear()
-                            },
-                            biometricEnabled = biometricEnabled,
-                            biometricAvailable = biometrics.isAvailable(),
-                            onBiometricChange = { value ->
-                                authPrefs.setBiometricEnabled(value)
-                                biometricEnabled = value
+                                // Turning it off also clears the biometric flag (see
+                                // AuthPreferencesImpl); the Face ID row re-reads it.
+                                // Nothing may stay behind that could sign someone in.
                                 if (!value) credentials.clear()
                             },
                             locationEnabled = locationEnabled,

@@ -69,6 +69,7 @@ import com.hanmaum.dn.mobile.features.floorplan.domain.repository.FloorPlanRepos
 import com.hanmaum.dn.mobile.features.floorplan.presentation.FloorPlanViewModel
 import com.hanmaum.dn.mobile.features.pending.presentation.PendingViewModel
 import com.hanmaum.dn.mobile.features.pending.presentation.SplashViewModel
+import com.hanmaum.dn.mobile.features.profile.presentation.FaceIdSetupViewModel
 import com.hanmaum.dn.mobile.features.profile.presentation.ProfileViewModel
 import org.koin.dsl.module
 import org.koin.core.module.dsl.viewModel
@@ -121,6 +122,7 @@ val appModule = module {
 
     // Profile VM
     viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { FaceIdSetupViewModel(get(), get(), get(), get()) }
 
     // Ministry
     single<MinistryRepository> { MinistryRepositoryImpl(get()) }
