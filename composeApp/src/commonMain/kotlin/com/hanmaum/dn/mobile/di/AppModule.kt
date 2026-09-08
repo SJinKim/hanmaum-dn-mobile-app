@@ -41,7 +41,9 @@ import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
 import com.hanmaum.dn.mobile.features.login.domain.repository.CityLookupRepository
 import com.hanmaum.dn.mobile.features.login.presentation.LoginViewModel
 import com.hanmaum.dn.mobile.features.login.presentation.RegisterViewModel
+import com.hanmaum.dn.mobile.features.verse.data.repository.VerseRecordRepositoryImpl
 import com.hanmaum.dn.mobile.features.verse.data.repository.VerseRepositoryImpl
+import com.hanmaum.dn.mobile.features.verse.domain.repository.VerseRecordRepository
 import com.hanmaum.dn.mobile.features.verse.domain.repository.VerseRepository
 import com.hanmaum.dn.mobile.features.member.data.repository.MemberRepositoryImpl
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
@@ -81,6 +83,7 @@ val appModule = module {
     single<CityLookupRepository> { CityLookupRepositoryImpl(get()) }
     single<MemberRepository> { MemberRepositoryImpl(get()) }
     single<VerseRepository> { VerseRepositoryImpl(get()) }
+    single<VerseRecordRepository> { VerseRecordRepositoryImpl(get()) }
     single { createHttpClient(get()) } // Client
     single<TokenStorage> { TokenStorageImpl(Settings()) }
     single<LocaleRepository> { LocaleRepositoryImpl(Settings()) }
@@ -98,7 +101,7 @@ val appModule = module {
 
 
     // Home VM
-    viewModel { HomeViewModel(repository = get(), notificationRepository = get(), memberRepository = get(), verseRepository = get(), pushManager = get()) }
+    viewModel { HomeViewModel(repository = get(), notificationRepository = get(), memberRepository = get(), verseRepository = get(), verseRecordRepository = get(), pushManager = get()) }
 
     // Detail VM
     viewModel { (announcementId: String) ->
@@ -121,7 +124,7 @@ val appModule = module {
     viewModel { LoginViewModel(get(), get(), get(), get(), get(), get()) }
 
     // Profile VM
-    viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get(), get()) }
     viewModel { FaceIdSetupViewModel(get(), get(), get(), get()) }
 
     // Ministry

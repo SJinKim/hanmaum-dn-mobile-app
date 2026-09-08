@@ -242,6 +242,19 @@ interface AppStrings {
     val verseTodayTitle: String
     val verseReadAction: String
     val verseWeeklyTitle: String
+
+    /** `3/6일` under the streak pills. Total excludes days that can never be marked. */
+    fun verseStreakRatio(marked: Int, total: Int): String
+
+    /**
+     * The value in the two 말씀 profile tiles.
+     *
+     * Language-specific for the same reason as [profileTimeTogetherValue]: the tiles
+     * are a third of the row wide (~87 dp of usable width at 28 sp), where Korean's
+     * `84일` fits but `84 days` and `84 Tage` do not. Those two show the bare count,
+     * which is what the neighbouring 올해 출석 tile does anyway.
+     */
+    fun verseRecordDaysValue(days: Long): String
 }
 
 object EnStrings : AppStrings {
@@ -457,6 +470,8 @@ object EnStrings : AppStrings {
     override val verseTodayTitle = "Today’s Passage"
     override val verseReadAction = "Read"
     override val verseWeeklyTitle = "Weekly Memory Verse"
+    override fun verseStreakRatio(marked: Int, total: Int) = "$marked/$total days"
+    override fun verseRecordDaysValue(days: Long) = "$days"
 }
 
 object KoStrings : AppStrings {
@@ -672,6 +687,8 @@ object KoStrings : AppStrings {
     override val verseTodayTitle = "오늘의 말씀"
     override val verseReadAction = "읽기"
     override val verseWeeklyTitle = "주간 암송 구절"
+    override fun verseStreakRatio(marked: Int, total: Int) = "$marked/${total}일"
+    override fun verseRecordDaysValue(days: Long) = "${days}일"
 }
 
 object DeStrings : AppStrings {
@@ -887,4 +904,6 @@ object DeStrings : AppStrings {
     override val verseTodayTitle = "Bibeltext heute"
     override val verseReadAction = "Lesen"
     override val verseWeeklyTitle = "Wochenvers"
+    override fun verseStreakRatio(marked: Int, total: Int) = "$marked/$total Tage"
+    override fun verseRecordDaysValue(days: Long) = "$days"
 }
