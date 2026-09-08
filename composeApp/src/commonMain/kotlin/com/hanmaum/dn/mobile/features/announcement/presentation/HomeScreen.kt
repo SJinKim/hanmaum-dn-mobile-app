@@ -44,6 +44,12 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.features.verse.domain.model.DailyVerse
+import com.hanmaum.dn.mobile.features.verse.domain.model.VerseRecordKind
+import com.hanmaum.dn.mobile.features.verse.domain.model.VerseStreak
+import com.hanmaum.dn.mobile.features.verse.presentation.components.StreakBar
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlassIconButton
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlows
@@ -108,6 +114,9 @@ fun HomeScreen(
 
     val uriHandler = LocalUriHandler.current
     val strings = LocalStrings.current
+    val today = remember {
+        kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+    }
 
     val c = DnTheme.colors
 
@@ -175,7 +184,10 @@ fun HomeScreen(
             state.dailyVerse?.let { verse ->
                 DailyPassageCard(
                     verse = verse,
+                    streak = state.verseRecords?.quietTime,
+                    today = today,
                     onReadClick = { verse.sourceUrl?.let(uriHandler::openUri) },
+                    onMarkToday = { viewModel.markVerseRecord(VerseRecordKind.QUIET_TIME) },
                 )
 
                 Spacer(Modifier.height(12.dp))
@@ -189,6 +201,15 @@ fun HomeScreen(
                     verse = verse.text,
                     reference = verse.reference,
                     filled = true,
+                    footer = state.verseRecords?.recitation?.let { streak ->
+                        {
+                            StreakBar(
+                                streak = streak,
+                                today = today,
+                                onMarkToday = { viewModel.markVerseRecord(VerseRecordKind.RECITATION) },
+                            )
+                        }
+                    },
                 )
             }
 
@@ -494,43 +515,69 @@ private fun HomeTiles(
 @Composable
 private fun DailyPassageCard(
     verse: DailyVerse,
+    streak: VerseStreak?,
+    today: LocalDate,
     onReadClick: () -> Unit,
+    onMarkToday: () -> Unit,
 ) {
     val c = DnTheme.colors
     val strings = LocalStrings.current
     val readable = verse.sourceUrl != null
 
-    val interaction = remember { MutableInteractionSource() }
-    val pressed by interaction.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (pressed && readable) 0.97f else 1f,
+    val readInteraction = remember { MutableInteractionSource() }
+    val readPressed by readInteraction.collectIsPressedAsState()
+    val readScale by animateFloatAsState(
+        targetValue = if (readPressed) 0.97f else 1f,
         animationSpec = spring(),
-        label = "dailyPassagePress",
+        label = "readPress",
     )
 
     Column(
         Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
-            .scale(scale)
             .clip(DnCardShape)
             .background(c.surface, DnCardShape)
             .border(1.dp, c.strokeSubtle, DnCardShape)
-            .clickable(
-                interactionSource = interaction,
-                indication = null,
-                enabled = readable,
-                onClick = onReadClick,
-            )
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
+        // 읽기 sits up here beside the eyebrow rather than in a footer: the row
+        // below it belongs to the streak now. The card itself is not clickable —
+        // two targets on one surface would fight over a tap.
         Row(
+            Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Icon(DnIcons.Book, null, tint = c.amber, modifier = Modifier.size(16.dp))
-            Text(strings.verseTodayTitle, style = DnTheme.typography.label, color = c.amber)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Icon(DnIcons.Book, null, tint = c.amber, modifier = Modifier.size(16.dp))
+                Text(strings.verseTodayTitle, style = DnTheme.typography.label, color = c.amber)
+            }
+
+            if (readable) {
+                Row(
+                    Modifier
+                        .scale(readScale)
+                        .clickable(
+                            interactionSource = readInteraction,
+                            indication = null,
+                            onClick = onReadClick,
+                        ),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        strings.verseReadAction,
+                        style = DnTheme.typography.captionStrong,
+                        color = c.amber,
+                    )
+                    Icon(DnIcons.ArrowUpRight, null, tint = c.amber, modifier = Modifier.size(14.dp))
+                }
+            }
         }
 
         // Either half can be empty if the server could not resolve that
@@ -542,31 +589,8 @@ private fun DailyPassageCard(
             Text(verse.referenceEn, style = DnTheme.typography.body, color = c.textSecondary)
         }
 
-        Row(
-            Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(verse.translation, style = DnTheme.typography.caption, color = c.textTertiary)
-
-            if (readable) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Text(
-                        strings.verseReadAction,
-                        style = DnTheme.typography.captionStrong,
-                        color = c.amber,
-                    )
-                    Icon(
-                        DnIcons.ArrowUpRight,
-                        null,
-                        tint = c.amber,
-                        modifier = Modifier.size(14.dp),
-                    )
-                }
-            }
+        streak?.let {
+            StreakBar(streak = it, today = today, onMarkToday = onMarkToday)
         }
     }
 }
@@ -578,6 +602,7 @@ private fun VerseCard(
     verse: String,
     reference: String,
     filled: Boolean,
+    footer: (@Composable () -> Unit)? = null,
 ) {
     val c = DnTheme.colors
     Column(
@@ -599,6 +624,7 @@ private fun VerseCard(
         }
         Text(verse, style = DnTheme.typography.bodyStrong, color = c.textPrimary)
         Text(reference, style = DnTheme.typography.caption, color = c.textTertiary)
+        footer?.invoke()
     }
 }
 

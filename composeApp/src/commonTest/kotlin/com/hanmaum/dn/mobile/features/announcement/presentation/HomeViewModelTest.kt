@@ -11,6 +11,11 @@ import com.hanmaum.dn.mobile.features.notification.domain.repository.Notificatio
 import com.hanmaum.dn.mobile.features.verse.domain.model.DailyVerse
 import com.hanmaum.dn.mobile.features.verse.domain.model.WeeklyVerse
 import com.hanmaum.dn.mobile.features.verse.domain.repository.VerseRepository
+import com.hanmaum.dn.mobile.features.verse.FakeVerseRecordRepository
+import com.hanmaum.dn.mobile.features.verse.domain.model.VerseRecordKind
+import com.hanmaum.dn.mobile.features.verse.domain.model.VerseRecords
+import com.hanmaum.dn.mobile.features.verse.records
+import com.hanmaum.dn.mobile.features.verse.streak
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -21,6 +26,8 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -89,28 +96,29 @@ class HomeViewModelTest {
     @BeforeTest fun setUp() { Dispatchers.setMain(dispatcher) }
     @AfterTest fun tearDown() { Dispatchers.resetMain() }
 
+    /**
+     * Named defaults rather than five positional fakes: every new collaborator on
+     * HomeViewModel used to break all of these calls at once.
+     */
+    private fun vm(
+        announcements: AnnouncementRepository = FakeAnnouncementRepository(),
+        notifications: FakeNotificationRepository = FakeNotificationRepository(),
+        member: MemberRepository = FakeMemberRepository(),
+        verses: VerseRepository = FakeVerseRepository(),
+        verseRecords: FakeVerseRecordRepository = FakeVerseRecordRepository(),
+        push: PushManager = FakePushManager(token = null),
+    ) = HomeViewModel(announcements, notifications, member, verses, verseRecords, push)
+
     @Test
     fun `unseen count lands in ui state`() = runTest(dispatcher) {
-        val vm = HomeViewModel(
-            FakeAnnouncementRepository(),
-            FakeNotificationRepository(unseen = 5),
-            FakeMemberRepository(),
-            FakeVerseRepository(),
-            FakePushManager(token = null),
-        )
+        val vm = vm(notifications = FakeNotificationRepository(unseen = 5))
         vm.loadAnnouncements(); advanceUntilIdle()
         assertEquals(5, vm.uiState.value.unseenCount)
     }
 
     @Test
     fun `unseen count failure keeps zero`() = runTest(dispatcher) {
-        val vm = HomeViewModel(
-            FakeAnnouncementRepository(),
-            FakeNotificationRepository(failCount = true),
-            FakeMemberRepository(),
-            FakeVerseRepository(),
-            FakePushManager(token = null),
-        )
+        val vm = vm(notifications = FakeNotificationRepository(failCount = true))
         vm.loadAnnouncements(); advanceUntilIdle()
         assertEquals(0, vm.uiState.value.unseenCount)
     }
@@ -118,7 +126,7 @@ class HomeViewModelTest {
     @Test
     fun `registers device token on load when available`() = runTest(dispatcher) {
         val repo = FakeNotificationRepository()
-        val vm = HomeViewModel(FakeAnnouncementRepository(), repo, FakeMemberRepository(), FakeVerseRepository(), FakePushManager(token = "tok1"))
+        val vm = vm(notifications = repo, push = FakePushManager(token = "tok1"))
         vm.loadAnnouncements(); advanceUntilIdle()
         assertEquals(listOf("tok1" to "ANDROID"), repo.registeredTokens)
     }
@@ -126,7 +134,7 @@ class HomeViewModelTest {
     @Test
     fun `null token skips registration`() = runTest(dispatcher) {
         val repo = FakeNotificationRepository()
-        val vm = HomeViewModel(FakeAnnouncementRepository(), repo, FakeMemberRepository(), FakeVerseRepository(), FakePushManager(token = null))
+        val vm = vm(notifications = repo, push = FakePushManager(token = null))
         vm.loadAnnouncements(); advanceUntilIdle()
         assertTrue(repo.registeredTokens.isEmpty())
     }
@@ -134,7 +142,7 @@ class HomeViewModelTest {
     @Test
     fun `token registers only once per process`() = runTest(dispatcher) {
         val repo = FakeNotificationRepository()
-        val vm = HomeViewModel(FakeAnnouncementRepository(), repo, FakeMemberRepository(), FakeVerseRepository(), FakePushManager(token = "tok1"))
+        val vm = vm(notifications = repo, push = FakePushManager(token = "tok1"))
         vm.loadAnnouncements(); advanceUntilIdle()
         vm.loadAnnouncements(); advanceUntilIdle()
         assertEquals(1, repo.registeredTokens.size)
@@ -148,39 +156,21 @@ class HomeViewModelTest {
             translation = "개역개정",
             sourceUrl = "https://bible.asher.design/quiettime.php?qt_date=2026-09-08",
         )
-        val vm = HomeViewModel(
-            FakeAnnouncementRepository(),
-            FakeNotificationRepository(),
-            FakeMemberRepository(),
-            FakeVerseRepository(Result.success(verse)),
-            FakePushManager(token = null),
-        )
+        val vm = vm(verses = FakeVerseRepository(Result.success(verse)))
         vm.loadAnnouncements(); advanceUntilIdle()
         assertEquals(verse, vm.uiState.value.dailyVerse)
     }
 
     @Test
     fun `a day without a passage leaves the card hidden`() = runTest(dispatcher) {
-        val vm = HomeViewModel(
-            FakeAnnouncementRepository(),
-            FakeNotificationRepository(),
-            FakeMemberRepository(),
-            FakeVerseRepository(Result.success(null)),
-            FakePushManager(token = null),
-        )
+        val vm = vm(verses = FakeVerseRepository(Result.success(null)))
         vm.loadAnnouncements(); advanceUntilIdle()
         assertNull(vm.uiState.value.dailyVerse)
     }
 
     @Test
     fun `a failing verse call leaves home without an error`() = runTest(dispatcher) {
-        val vm = HomeViewModel(
-            FakeAnnouncementRepository(),
-            FakeNotificationRepository(),
-            FakeMemberRepository(),
-            FakeVerseRepository(Result.failure(RuntimeException("boom"))),
-            FakePushManager(token = null),
-        )
+        val vm = vm(verses = FakeVerseRepository(Result.failure(RuntimeException("boom"))))
         vm.loadAnnouncements(); advanceUntilIdle()
         assertNull(vm.uiState.value.dailyVerse)
         assertNull(vm.uiState.value.error)
@@ -193,26 +183,14 @@ class HomeViewModelTest {
             text = "여호와는 나의 목자시니 내게 부족함이 없으리로다",
             translation = "개역개정",
         )
-        val vm = HomeViewModel(
-            FakeAnnouncementRepository(),
-            FakeNotificationRepository(),
-            FakeMemberRepository(),
-            FakeVerseRepository(weekly = Result.success(verse)),
-            FakePushManager(token = null),
-        )
+        val vm = vm(verses = FakeVerseRepository(weekly = Result.success(verse)))
         vm.loadAnnouncements(); advanceUntilIdle()
         assertEquals(verse, vm.uiState.value.weeklyVerse)
     }
 
     @Test
     fun `no weekly verse set leaves that card hidden`() = runTest(dispatcher) {
-        val vm = HomeViewModel(
-            FakeAnnouncementRepository(),
-            FakeNotificationRepository(),
-            FakeMemberRepository(),
-            FakeVerseRepository(weekly = Result.success(null)),
-            FakePushManager(token = null),
-        )
+        val vm = vm(verses = FakeVerseRepository(weekly = Result.success(null)))
         vm.loadAnnouncements(); advanceUntilIdle()
         assertNull(vm.uiState.value.weeklyVerse)
     }
@@ -222,19 +200,96 @@ class HomeViewModelTest {
         // The two calls are independent on purpose: one card going missing must not
         // take the other with it.
         val daily = DailyVerse("신명기 3:1-11", "Deuteronomy 3:1-11", "개역개정", null)
-        val vm = HomeViewModel(
-            FakeAnnouncementRepository(),
-            FakeNotificationRepository(),
-            FakeMemberRepository(),
-            FakeVerseRepository(
-                result = Result.success(daily),
-                weekly = Result.failure(RuntimeException("boom")),
-            ),
-            FakePushManager(token = null),
-        )
+        val vm = vm(verses = FakeVerseRepository( result = Result.success(daily), weekly = Result.failure(RuntimeException("boom")), ))
         vm.loadAnnouncements(); advanceUntilIdle()
         assertEquals(daily, vm.uiState.value.dailyVerse)
         assertNull(vm.uiState.value.weeklyVerse)
+        assertNull(vm.uiState.value.error)
+    }
+
+    @Test
+    fun `both streaks land in ui state`() = runTest(dispatcher) {
+        val vm = vm(verseRecords = FakeVerseRecordRepository())
+        vm.loadAnnouncements(); advanceUntilIdle()
+
+        assertEquals(VerseRecordKind.QUIET_TIME, vm.uiState.value.verseRecords?.quietTime?.kind)
+        assertEquals(VerseRecordKind.RECITATION, vm.uiState.value.verseRecords?.recitation?.kind)
+    }
+
+    @Test
+    fun `marking fills the pill before the request returns`() = runTest(dispatcher) {
+        // The optimistic update is the point: marking cannot be undone, so the
+        // member has to see the tap land rather than wait for a round trip.
+        val repo = FakeVerseRecordRepository(
+            Result.success(records(recitation = streak(VerseRecordKind.RECITATION, totalDays = 41))),
+        )
+        val vm = vm(verseRecords = repo)
+        vm.loadAnnouncements(); advanceUntilIdle()
+
+        vm.markVerseRecord(VerseRecordKind.RECITATION)
+
+        // No advanceUntilIdle yet — this is the state the member sees immediately.
+        assertTrue(vm.uiState.value.verseRecords!!.recitation.todayMarked)
+        assertEquals(42, vm.uiState.value.verseRecords!!.recitation.totalDays)
+
+        advanceUntilIdle()
+        assertEquals(listOf(VerseRecordKind.RECITATION), repo.marked)
+    }
+
+    @Test
+    fun `a failed mark puts the streak back and says so`() = runTest(dispatcher) {
+        val repo = FakeVerseRecordRepository(
+            Result.success(records(recitation = streak(VerseRecordKind.RECITATION, totalDays = 7))),
+            markFails = true,
+        )
+        val vm = vm(verseRecords = repo)
+        vm.loadAnnouncements(); advanceUntilIdle()
+
+        vm.markVerseRecord(VerseRecordKind.RECITATION); advanceUntilIdle()
+
+        assertFalse(vm.uiState.value.verseRecords!!.recitation.todayMarked)
+        assertEquals(7, vm.uiState.value.verseRecords!!.recitation.totalDays)
+        assertNotNull(vm.uiState.value.verseRecordError)
+    }
+
+    @Test
+    fun `a day already marked is not marked twice`() = runTest(dispatcher) {
+        val repo = FakeVerseRecordRepository(
+            Result.success(records(recitation = streak(VerseRecordKind.RECITATION, todayMarked = true))),
+        )
+        val vm = vm(verseRecords = repo)
+        vm.loadAnnouncements(); advanceUntilIdle()
+
+        vm.markVerseRecord(VerseRecordKind.RECITATION); advanceUntilIdle()
+
+        assertTrue(repo.marked.isEmpty())
+    }
+
+    @Test
+    fun `a day that cannot be marked is not marked`() = runTest(dispatcher) {
+        // Sundays for 오늘의 말씀, and any day before a weekly verse is chosen.
+        val repo = FakeVerseRecordRepository(
+            Result.success(records(quietTime = streak(VerseRecordKind.QUIET_TIME, todayMarkable = false))),
+        )
+        val vm = vm(verseRecords = repo)
+        vm.loadAnnouncements(); advanceUntilIdle()
+
+        vm.markVerseRecord(VerseRecordKind.QUIET_TIME); advanceUntilIdle()
+
+        assertTrue(repo.marked.isEmpty())
+    }
+
+    @Test
+    fun `a failing records call leaves the verses alone`() = runTest(dispatcher) {
+        val daily = DailyVerse("신명기 3:1-11", "Deuteronomy 3:1-11", "개역개정", null)
+        val vm = vm(
+            verses = FakeVerseRepository(result = Result.success(daily)),
+            verseRecords = FakeVerseRecordRepository(Result.failure(RuntimeException("boom"))),
+        )
+        vm.loadAnnouncements(); advanceUntilIdle()
+
+        assertEquals(daily, vm.uiState.value.dailyVerse)
+        assertNull(vm.uiState.value.verseRecords)
         assertNull(vm.uiState.value.error)
     }
 }

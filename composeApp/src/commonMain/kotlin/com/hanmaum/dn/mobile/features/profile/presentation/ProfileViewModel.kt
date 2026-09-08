@@ -7,6 +7,8 @@ import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.core.push.PushManager
 import com.hanmaum.dn.mobile.core.security.CredentialStore
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
+import com.hanmaum.dn.mobile.features.verse.domain.model.VerseRecords
+import com.hanmaum.dn.mobile.features.verse.domain.repository.VerseRecordRepository
 import com.hanmaum.dn.mobile.features.notification.domain.repository.NotificationRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,10 +22,21 @@ class ProfileViewModel(
     private val notificationRepository: NotificationRepository,
     private val pushManager: PushManager,
     private val authPreferences: AuthPreferences,
+    private val verseRecordRepository: VerseRecordRepository,
 ) : ViewModel() {
 
     private val _loggedOut = MutableStateFlow(false)
     val loggedOut: StateFlow<Boolean> = _loggedOut.asStateFlow()
+
+    /**
+     * The two 말씀 streaks, kept beside [uiState] rather than inside it.
+     *
+     * They are orthogonal to loading the profile: the tiles show a dash until
+     * they arrive, and a failed streak call must not turn the whole screen into
+     * an error. Folding them into the sealed state would tie the two together.
+     */
+    private val _verseRecords = MutableStateFlow<VerseRecords?>(null)
+    val verseRecords: StateFlow<VerseRecords?> = _verseRecords.asStateFlow()
 
     private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
@@ -35,7 +48,16 @@ class ProfileViewModel(
      * while an edit is in progress (so it is never clobbered), and keeps the
      * current data on a transient refresh failure.
      */
+    private fun loadVerseRecords() {
+        viewModelScope.launch {
+            verseRecordRepository.getRecords()
+                .onSuccess { _verseRecords.value = it }
+            // onFailure: the tiles keep their dash.
+        }
+    }
+
     fun loadProfile() {
+        loadVerseRecords()
         viewModelScope.launch {
             val current = _uiState.value
             if (current is ProfileUiState.Success && current.isDirty) return@launch

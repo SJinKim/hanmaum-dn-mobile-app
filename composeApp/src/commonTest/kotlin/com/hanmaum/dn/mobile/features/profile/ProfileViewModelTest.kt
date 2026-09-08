@@ -9,6 +9,7 @@ import com.hanmaum.dn.mobile.core.security.CredentialStore
 import com.hanmaum.dn.mobile.core.security.SecureStore
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
+import com.hanmaum.dn.mobile.features.verse.FakeVerseRecordRepository
 import com.hanmaum.dn.mobile.features.notification.domain.model.NotificationPage
 import com.hanmaum.dn.mobile.features.notification.domain.repository.NotificationRepository
 import com.hanmaum.dn.mobile.features.profile.presentation.ProfileUiState
@@ -140,6 +141,7 @@ class ProfileViewModelTest {
         notificationRepository,
         pushManager,
         AuthPreferencesImpl(MapSettings()),
+        FakeVerseRecordRepository(),
     )
 
     private fun success(viewModel: ProfileViewModel) =

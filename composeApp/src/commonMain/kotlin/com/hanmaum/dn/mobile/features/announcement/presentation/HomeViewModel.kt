@@ -10,7 +10,13 @@ import com.hanmaum.dn.mobile.features.announcement.domain.repository.Announcemen
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import com.hanmaum.dn.mobile.features.notification.domain.repository.NotificationRepository
 import com.hanmaum.dn.mobile.features.verse.domain.model.DailyVerse
+import com.hanmaum.dn.mobile.features.verse.domain.model.VerseRecordKind
+import com.hanmaum.dn.mobile.features.verse.domain.model.VerseRecords
 import com.hanmaum.dn.mobile.features.verse.domain.model.WeeklyVerse
+import com.hanmaum.dn.mobile.features.verse.domain.model.withMark
+import com.hanmaum.dn.mobile.features.verse.domain.repository.VerseRecordRepository
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import com.hanmaum.dn.mobile.features.verse.domain.repository.VerseRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,12 +42,17 @@ data class HomeUiState(
      * or the call failed. Hides the card, same reasoning as [dailyVerse].
      */
     val weeklyVerse: WeeklyVerse? = null,
+    /** Both streaks, or null while unloaded or the call failed — the bars stay hidden. */
+    val verseRecords: VerseRecords? = null,
+    /** Set when a mark could not be saved, so the card can say so once. */
+    val verseRecordError: String? = null,
 )
 class HomeViewModel(
     private val repository: AnnouncementRepository,
     private val notificationRepository: NotificationRepository,
     private val memberRepository: MemberRepository,
     private val verseRepository: VerseRepository,
+    private val verseRecordRepository: VerseRecordRepository,
     private val pushManager: PushManager,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState(isLoading = true))
@@ -116,11 +127,62 @@ class HomeViewModel(
         }
     }
 
+    private fun loadVerseRecords() {
+        viewModelScope.launch {
+            verseRecordRepository.getRecords()
+                .onSuccess { records -> _uiState.update { it.copy(verseRecords = records) } }
+            // onFailure: the bars stay hidden. The verse itself is the card's
+            // content; a missing streak must not take the verse with it.
+        }
+    }
+
+    /**
+     * Marks today for one of the two practices.
+     *
+     * Fills the pill before the request returns, because marking cannot be
+     * undone and the member has to see the tap land. If the call fails the old
+     * streak goes back and the card says so — silently reverting would look
+     * like the tap never registered.
+     */
+    fun markVerseRecord(kind: VerseRecordKind) {
+        val before = _uiState.value.verseRecords ?: return
+        val streak = before.of(kind)
+        if (!streak.todayMarkable || streak.todayMarked) return
+
+        val today = kotlin.time.Clock.System.now()
+            .toLocalDateTime(TimeZone.currentSystemDefault()).date
+        _uiState.update {
+            it.copy(
+                verseRecords = before.replacing(kind, streak.withMark(today)),
+                verseRecordError = null,
+            )
+        }
+
+        viewModelScope.launch {
+            verseRecordRepository.mark(kind).fold(
+                onSuccess = { fresh ->
+                    _uiState.update { it.copy(verseRecords = it.verseRecords?.replacing(kind, fresh)) }
+                },
+                onFailure = {
+                    _uiState.update {
+                        it.copy(verseRecords = before, verseRecordError = "기록하지 못했습니다")
+                    }
+                },
+            )
+        }
+    }
+
+    /** Clears the mark error once the card has shown it. */
+    fun consumeVerseRecordError() {
+        _uiState.update { it.copy(verseRecordError = null) }
+    }
+
     fun loadAnnouncements() {
         registerTokenIfNeeded()
         loadUnseenCount()
         loadMember()
         loadVerses()
+        loadVerseRecords()
         viewModelScope.launch {
             val hadData = _uiState.value.run { banners.isNotEmpty() || announcements.isNotEmpty() }
             try {

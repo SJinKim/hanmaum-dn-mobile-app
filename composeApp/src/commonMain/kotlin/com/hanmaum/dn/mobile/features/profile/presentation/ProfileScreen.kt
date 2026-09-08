@@ -51,6 +51,7 @@ import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTileShape
 import com.hanmaum.dn.mobile.core.presentation.theme.typography
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
+import com.hanmaum.dn.mobile.features.verse.domain.model.VerseRecords
 import com.hanmaum.dn.mobile.features.member.domain.membershipDuration
 import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
@@ -82,6 +83,7 @@ fun ProfileScreen(
     val attendance by attendanceViewModel.uiState.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
     val loggedOut by viewModel.loggedOut.collectAsState()
+    val verseRecords by viewModel.verseRecords.collectAsState()
     val c = DnTheme.colors
 
     // Without this the screen sits on ProfileUiState.Loading for ever: nothing
@@ -116,6 +118,7 @@ fun ProfileScreen(
                         ProfileViewContent(
                             profile = state.profile,
                             summary = attendance.summary,
+                            verseRecords = verseRecords,
                             onEdit = viewModel::startEditing,
                             onSettings = onSettings,
                             onLogout = viewModel::logout,
@@ -134,6 +137,7 @@ fun ProfileScreen(
 private fun ProfileViewContent(
     profile: MemberResponse,
     summary: AttendanceSummary?,
+    verseRecords: VerseRecords?,
     onEdit: () -> Unit,
     onSettings: () -> Unit,
     onLogout: () -> Unit,
@@ -216,14 +220,25 @@ private fun ProfileViewContent(
             )
         }
         Spacer(Modifier.height(10.dp))
-        // TODO(#188): 말씀 기록 has no endpoint yet — the tiles hold their place
-        // in the grid and fill in once that lands.
         Row(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            StatTile(strings.profileQtRecord, "–", c.amber, Modifier.weight(1f))
-            StatTile(strings.profileMemorizationRecord, "–", c.amber, Modifier.weight(1f))
+            // Dash, not zero, while the streaks are unloaded or the call failed —
+            // a fresh member's real zero and "we do not know yet" must not look
+            // the same.
+            StatTile(
+                strings.profileQtRecord,
+                verseRecords?.quietTime?.let { strings.verseRecordDaysValue(it.totalDays) } ?: "–",
+                c.amber,
+                Modifier.weight(1f),
+            )
+            StatTile(
+                strings.profileMemorizationRecord,
+                verseRecords?.recitation?.let { strings.verseRecordDaysValue(it.totalDays) } ?: "–",
+                c.amber,
+                Modifier.weight(1f),
+            )
             Spacer(Modifier.weight(1f))
         }
 
