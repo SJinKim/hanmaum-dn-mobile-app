@@ -9,6 +9,7 @@ import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import com.hanmaum.dn.mobile.features.notification.domain.model.NotificationPage
 import com.hanmaum.dn.mobile.features.notification.domain.repository.NotificationRepository
 import com.hanmaum.dn.mobile.features.verse.domain.model.DailyVerse
+import com.hanmaum.dn.mobile.features.verse.domain.model.WeeklyVerse
 import com.hanmaum.dn.mobile.features.verse.domain.repository.VerseRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -69,8 +70,10 @@ private class FakeMemberRepository : MemberRepository {
 
 private class FakeVerseRepository(
     private val result: Result<DailyVerse?> = Result.success(null),
+    private val weekly: Result<WeeklyVerse?> = Result.success(null),
 ) : VerseRepository {
     override suspend fun getTodayVerse(): Result<DailyVerse?> = result
+    override suspend fun getWeeklyVerse(): Result<WeeklyVerse?> = weekly
 }
 
 private class FakePushManager(private val token: String?) : PushManager {
@@ -180,6 +183,58 @@ class HomeViewModelTest {
         )
         vm.loadAnnouncements(); advanceUntilIdle()
         assertNull(vm.uiState.value.dailyVerse)
+        assertNull(vm.uiState.value.error)
+    }
+
+    @Test
+    fun `weekly verse lands in ui state`() = runTest(dispatcher) {
+        val verse = WeeklyVerse(
+            reference = "시편 23:1",
+            text = "여호와는 나의 목자시니 내게 부족함이 없으리로다",
+            translation = "개역개정",
+        )
+        val vm = HomeViewModel(
+            FakeAnnouncementRepository(),
+            FakeNotificationRepository(),
+            FakeMemberRepository(),
+            FakeVerseRepository(weekly = Result.success(verse)),
+            FakePushManager(token = null),
+        )
+        vm.loadAnnouncements(); advanceUntilIdle()
+        assertEquals(verse, vm.uiState.value.weeklyVerse)
+    }
+
+    @Test
+    fun `no weekly verse set leaves that card hidden`() = runTest(dispatcher) {
+        val vm = HomeViewModel(
+            FakeAnnouncementRepository(),
+            FakeNotificationRepository(),
+            FakeMemberRepository(),
+            FakeVerseRepository(weekly = Result.success(null)),
+            FakePushManager(token = null),
+        )
+        vm.loadAnnouncements(); advanceUntilIdle()
+        assertNull(vm.uiState.value.weeklyVerse)
+    }
+
+    @Test
+    fun `a failing weekly call still lets the daily passage through`() = runTest(dispatcher) {
+        // The two calls are independent on purpose: one card going missing must not
+        // take the other with it.
+        val daily = DailyVerse("신명기 3:1-11", "Deuteronomy 3:1-11", "개역개정", null)
+        val vm = HomeViewModel(
+            FakeAnnouncementRepository(),
+            FakeNotificationRepository(),
+            FakeMemberRepository(),
+            FakeVerseRepository(
+                result = Result.success(daily),
+                weekly = Result.failure(RuntimeException("boom")),
+            ),
+            FakePushManager(token = null),
+        )
+        vm.loadAnnouncements(); advanceUntilIdle()
+        assertEquals(daily, vm.uiState.value.dailyVerse)
+        assertNull(vm.uiState.value.weeklyVerse)
         assertNull(vm.uiState.value.error)
     }
 }

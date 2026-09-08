@@ -241,6 +241,7 @@ interface AppStrings {
     // Home · daily passage card
     val verseTodayTitle: String
     val verseReadAction: String
+    val verseWeeklyTitle: String
 }
 
 object EnStrings : AppStrings {
@@ -455,6 +456,7 @@ object EnStrings : AppStrings {
     override val selectDate = "Select date"
     override val verseTodayTitle = "Today’s Passage"
     override val verseReadAction = "Read"
+    override val verseWeeklyTitle = "Weekly Memory Verse"
 }
 
 object KoStrings : AppStrings {
@@ -669,6 +671,7 @@ object KoStrings : AppStrings {
     override val selectDate = "날짜 선택"
     override val verseTodayTitle = "오늘의 말씀"
     override val verseReadAction = "읽기"
+    override val verseWeeklyTitle = "주간 암송 구절"
 }
 
 object DeStrings : AppStrings {
@@ -883,4 +886,5 @@ object DeStrings : AppStrings {
     override val selectDate = "Datum wählen"
     override val verseTodayTitle = "Bibeltext heute"
     override val verseReadAction = "Lesen"
+    override val verseWeeklyTitle = "Wochenvers"
 }

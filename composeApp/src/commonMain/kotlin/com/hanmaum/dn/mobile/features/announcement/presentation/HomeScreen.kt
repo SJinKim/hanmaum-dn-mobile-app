@@ -107,6 +107,7 @@ fun HomeScreen(
     }
 
     val uriHandler = LocalUriHandler.current
+    val strings = LocalStrings.current
 
     val c = DnTheme.colors
 
@@ -180,14 +181,16 @@ fun HomeScreen(
                 Spacer(Modifier.height(12.dp))
             }
 
-            VerseCard(
-                eyebrow = "주간 암송 구절",
-                icon = DnIcons.Sparkle,
-                // TODO(hanmaum-dn-server#115): no verse endpoint yet
-                verse = PLACEHOLDER_VERSE_WEEKLY,
-                reference = "본문 미정 · 자리표시자",
-                filled = true,
-            )
+            // Hidden until an admin has chosen a verse for the running week.
+            state.weeklyVerse?.let { verse ->
+                VerseCard(
+                    eyebrow = strings.verseWeeklyTitle,
+                    icon = DnIcons.Sparkle,
+                    verse = verse.text,
+                    reference = verse.reference,
+                    filled = true,
+                )
+            }
 
             // room for the floating dock plus its scroll edge
             Spacer(Modifier.height(DnDock.contentInset(extra = 22.dp)))
@@ -196,10 +199,6 @@ fun HomeScreen(
         DnScrollEdge()
     }
 }
-
-/** Placeholder copy — 주간 암송 has no source yet, see hanmaum-dn-server#115. */
-private const val PLACEHOLDER_VERSE_WEEKLY =
-    "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore."
 
 @Composable
 private fun HomeHeader(
