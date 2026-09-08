@@ -116,4 +116,51 @@ class VerseRepositoryImplTest {
 
         assertTrue(repo.getTodayVerse().isFailure)
     }
+
+    @Test
+    fun `weekly verse maps reference text and translation`() = runTest {
+        val body = """
+            {"success":true,"data":{
+              "reference":{"ko":"시편 23:1","en":"Psalm 23:1","de":"Psalm 23,1"},
+              "text":"여호와는 나의 목자시니 내게 부족함이 없으리로다",
+              "translation":"개역개정"}}
+        """.trimIndent()
+
+        val verse = VerseRepositoryImpl(mockClient(body)).getWeeklyVerse().getOrThrow()
+
+        assertEquals("시편 23:1", verse?.reference)
+        assertEquals("여호와는 나의 목자시니 내게 부족함이 없으리로다", verse?.text)
+        assertEquals("개역개정", verse?.translation)
+    }
+
+    @Test
+    fun `a weekly verse without text is dropped`() = runTest {
+        val body = """{"success":true,"data":{"reference":{"ko":"시편 23:1"},"text":"  "}}"""
+
+        assertNull(VerseRepositoryImpl(mockClient(body)).getWeeklyVerse().getOrThrow())
+    }
+
+    @Test
+    fun `a weekly verse without a reference is dropped`() = runTest {
+        val body = """{"success":true,"data":{"text":"여호와는 나의 목자시니"}}"""
+
+        assertNull(VerseRepositoryImpl(mockClient(body)).getWeeklyVerse().getOrThrow())
+    }
+
+    @Test
+    fun `no weekly verse set means an empty card`() = runTest {
+        val body = """{"success":true,"data":null}"""
+
+        assertNull(VerseRepositoryImpl(mockClient(body)).getWeeklyVerse().getOrThrow())
+    }
+
+    @Test
+    fun `an unreachable bible source fails rather than claiming no verse`() = runTest {
+        // The server answers 503 when the church's bible API cannot be reached and
+        // distinguishes that from "nothing set". Flattening it to null would tell the
+        // member there is no verse this week when there is one.
+        val repo = VerseRepositoryImpl(mockClient("", HttpStatusCode.ServiceUnavailable))
+
+        assertTrue(repo.getWeeklyVerse().isFailure)
+    }
 }

@@ -10,6 +10,7 @@ import com.hanmaum.dn.mobile.features.announcement.domain.repository.Announcemen
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import com.hanmaum.dn.mobile.features.notification.domain.repository.NotificationRepository
 import com.hanmaum.dn.mobile.features.verse.domain.model.DailyVerse
+import com.hanmaum.dn.mobile.features.verse.domain.model.WeeklyVerse
 import com.hanmaum.dn.mobile.features.verse.domain.repository.VerseRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,6 +31,11 @@ data class HomeUiState(
      * a nice-to-have and must never turn Home into an error screen.
      */
     val dailyVerse: DailyVerse? = null,
+    /**
+     * This week's memory verse, or null when none is set for the running week
+     * or the call failed. Hides the card, same reasoning as [dailyVerse].
+     */
+    val weeklyVerse: WeeklyVerse? = null,
 )
 class HomeViewModel(
     private val repository: AnnouncementRepository,
@@ -93,13 +99,20 @@ class HomeViewModel(
     }
 
     /**
-     * Reads today's passage. Failure is silent on purpose: the card simply
-     * stays hidden, exactly as it does on a day the plan has no entry.
+     * Reads both verse cards. Failure is silent on purpose: a card simply stays
+     * hidden, exactly as it does when there is nothing planned for it.
+     *
+     * Two calls rather than one, launched together — they are independent, and
+     * a missing weekly verse must not keep the daily passage off the screen.
      */
-    private fun loadDailyVerse() {
+    private fun loadVerses() {
         viewModelScope.launch {
             verseRepository.getTodayVerse()
                 .onSuccess { verse -> _uiState.update { it.copy(dailyVerse = verse) } }
+        }
+        viewModelScope.launch {
+            verseRepository.getWeeklyVerse()
+                .onSuccess { verse -> _uiState.update { it.copy(weeklyVerse = verse) } }
         }
     }
 
@@ -107,7 +120,7 @@ class HomeViewModel(
         registerTokenIfNeeded()
         loadUnseenCount()
         loadMember()
-        loadDailyVerse()
+        loadVerses()
         viewModelScope.launch {
             val hadData = _uiState.value.run { banners.isNotEmpty() || announcements.isNotEmpty() }
             try {
