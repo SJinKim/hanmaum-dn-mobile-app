@@ -93,7 +93,7 @@ val appModule = module {
     single { CredentialStore(get()) }
 
     //Splash VM
-    viewModel { SplashViewModel(get(), get(), get(), get()) }
+    viewModel { SplashViewModel(get(), get(), get(), get(), get()) }
 
 
     // Home VM
@@ -114,13 +114,13 @@ val appModule = module {
     viewModel { AnnouncementListViewModel(get()) }
 
     // Register VM
-    viewModel { RegisterViewModel(get(), get(), get(), get(), get()) }
+    viewModel { RegisterViewModel(get(), get(), get(), get(), get(), get()) }
 
     // Login VM
-    viewModel { LoginViewModel(get(), get(), get(), get(), get()) }
+    viewModel { LoginViewModel(get(), get(), get(), get(), get(), get()) }
 
     // Profile VM
-    viewModel { ProfileViewModel(get(), get(), get(), get(), get()) }
+    viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get()) }
 
     // Ministry
     single<MinistryRepository> { MinistryRepositoryImpl(get()) }

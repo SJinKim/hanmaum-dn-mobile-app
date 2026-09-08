@@ -6,6 +6,7 @@ import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.navigation.LoginRoute
 import com.hanmaum.dn.mobile.core.network.invalidateBearerCache
+import com.hanmaum.dn.mobile.core.domain.repository.AuthPreferences
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.features.login.domain.model.BirthDateInput
 import com.hanmaum.dn.mobile.features.login.domain.model.Countries
@@ -32,6 +33,7 @@ class RegisterViewModel(
     private val cityLookupRepository: CityLookupRepository,
     private val memberRepository: MemberRepository,
     private val httpClient: HttpClient,
+    private val authPreferences: AuthPreferences,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterUiState())
@@ -255,7 +257,7 @@ class RegisterViewModel(
                 tokenStorage.saveRefreshToken(tokenResponse.refreshToken)
                 // The login screen sets this too; without it the session does
                 // not survive the next app start.
-                tokenStorage.setKeepSignedIn(true)
+                authPreferences.setKeepSignedInEnabled(true)
 
                 // Ktor's BearerAuthProvider caches tokens. Without dropping that
                 // cache the very next authed call — the profile fetch below —
