@@ -41,12 +41,8 @@ import com.hanmaum.dn.mobile.core.domain.model.ThemeMode
 import com.hanmaum.dn.mobile.core.geofence.GeofencePermissionRequest
 import com.hanmaum.dn.mobile.core.i18n.AppLocale
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlows
-import com.hanmaum.dn.mobile.core.presentation.components.DnPrimaryButton
-import com.hanmaum.dn.mobile.core.presentation.components.DnTextField
 import com.hanmaum.dn.mobile.core.presentation.components.DnTopBar
 import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
 import com.hanmaum.dn.mobile.core.presentation.theme.DnCardShape
@@ -54,8 +50,10 @@ import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
 import com.hanmaum.dn.mobile.core.presentation.theme.typography
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import com.hanmaum.dn.mobile.core.notification.NotificationService
-import com.hanmaum.dn.mobile.core.security.rememberBiometricAuthenticator
+import com.hanmaum.dn.mobile.core.security.rememberBiometricVault
 import com.hanmaum.dn.mobile.features.notification.presentation.NotificationSettingsViewModel
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -302,73 +300,55 @@ private fun DnSwitch(checked: Boolean, enabled: Boolean, onChange: () -> Unit) {
 }
 
 /**
- * Face ID sign-in, with the password it cannot work without.
+ * Face ID sign-in.
  *
  * Its own composable for the same reason as [PushSwitchRow]: it owns a
- * ViewModel the rest of the screen has no use for. Switching it on opens a
- * sheet asking for the password once — the screen is only reachable while
- * already signed in, so nothing here knows it, and without a stored password
- * Face ID has nothing to replay (#197).
+ * ViewModel the rest of the screen has no use for. Switching it on costs one
+ * biometric prompt and no password — the session is already here, so what gets
+ * sealed into the vault is its refresh token (#200).
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FaceIdSwitchRow(keepSignedIn: Boolean) {
     val c = DnTheme.colors
     val strings = LocalStrings.current
     val viewModel: FaceIdSetupViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsState()
-    val biometrics = rememberBiometricAuthenticator()
-    val available = remember { biometrics.isAvailable() }
+    val vault = rememberBiometricVault()
+    val available = remember { vault.isAvailable() }
+    val scope = rememberCoroutineScope()
 
     // Turning "keep me signed in" off also clears the biometric flag.
     LaunchedEffect(keepSignedIn) { viewModel.refresh() }
 
-    SwitchRow(
-        label = strings.profileFaceIdLogin,
-        // Unlocking a session only means something when one is kept.
-        description = if (!available) strings.appLockUnavailable else strings.faceIdLoginDesc,
-        checked = state.enabled && keepSignedIn,
-        enabled = available && keepSignedIn,
-        onChange = viewModel::onToggle,
-    )
-
-    if (state.askingForPassword) {
-        ModalBottomSheet(onDismissRequest = viewModel::onDismiss, containerColor = c.surface) {
-            Column(
-                Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 4.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(strings.faceIdSetupTitle, style = DnTheme.typography.title, color = c.textPrimary)
-                    Text(strings.faceIdSetupSubtitle, style = DnTheme.typography.caption, color = c.textSecondary)
+    Column {
+        SwitchRow(
+            label = strings.profileFaceIdLogin,
+            // Unlocking a session only means something when one is kept.
+            description = if (!available) strings.appLockUnavailable else strings.faceIdLoginDesc,
+            checked = state.enabled && keepSignedIn,
+            enabled = available && keepSignedIn && !state.isBusy,
+            onChange = { want ->
+                if (want) {
+                    scope.launch {
+                        viewModel.enable(
+                            vault = vault,
+                            title = strings.faceIdSetupTitle,
+                            subtitle = strings.faceIdSetupSubtitle,
+                            cancelLabel = strings.cancel,
+                        )
+                    }
+                } else {
+                    viewModel.disable(vault)
                 }
-
-                DnTextField(
-                    label = strings.fieldPassword,
-                    value = state.password,
-                    onValueChange = viewModel::onPasswordChange,
-                    placeholder = "••••••••",
-                    leading = DnIcons.Lock,
-                    isPassword = true,
-                    keyboardType = KeyboardType.Password,
-                    isError = state.error != null,
-                    imeAction = ImeAction.Done,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-
-                state.error?.let {
-                    Text(it, style = DnTheme.typography.caption, color = c.red)
-                }
-
-                DnPrimaryButton(
-                    label = if (state.isVerifying) strings.saving else strings.confirm,
-                    onClick = viewModel::onConfirm,
-                    enabled = !state.isVerifying,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-
-                Spacer(Modifier.height(26.dp))
-            }
+            },
+        )
+        state.error?.let {
+            Text(
+                it,
+                style = DnTheme.typography.caption,
+                color = c.red,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 14.dp),
+            )
         }
     }
 }

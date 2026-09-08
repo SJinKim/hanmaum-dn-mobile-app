@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.repository.AuthPreferences
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.core.push.PushManager
-import com.hanmaum.dn.mobile.core.security.CredentialStore
+import com.hanmaum.dn.mobile.core.security.BiometricVault
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import com.hanmaum.dn.mobile.features.verse.domain.model.VerseRecords
 import com.hanmaum.dn.mobile.features.verse.domain.repository.VerseRecordRepository
@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 class ProfileViewModel(
     private val memberRepository: MemberRepository,
     private val tokenStorage: TokenStorage,
-    private val credentialStore: CredentialStore,
+    private val biometricVault: BiometricVault,
     private val notificationRepository: NotificationRepository,
     private val pushManager: PushManager,
     private val authPreferences: AuthPreferences,
@@ -133,12 +133,12 @@ class ProfileViewModel(
             // Must run before the token clear or the call goes out unauthenticated.
             pushManager.currentToken()?.let { notificationRepository.deleteDeviceToken(it) }
             tokenStorage.clear()
-            // Explicit logout is an intentional teardown: forget the saved Face ID
-            // credentials AND the biometric flag so the next login starts clean.
-            // (A plain session expiry keeps both so Face ID still works — see
+            // Explicit logout is an intentional teardown: drop the sealed
+            // refresh token AND the flag so the next sign-in starts clean.
+            // (A plain session expiry keeps both, so Face ID still works — see
             // TokenStorageImpl.clear.)
             authPreferences.setBiometricEnabled(false)
-            credentialStore.clear()
+            biometricVault.clear()
             _loggedOut.value = true
         }
     }

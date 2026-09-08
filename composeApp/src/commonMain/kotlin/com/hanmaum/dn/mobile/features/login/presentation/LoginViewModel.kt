@@ -7,8 +7,8 @@ import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.domain.repository.AuthPreferences
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.core.network.invalidateBearerCache
-import com.hanmaum.dn.mobile.core.security.CredentialStore
-import com.hanmaum.dn.mobile.core.security.Credentials
+import com.hanmaum.dn.mobile.core.security.BiometricVault
+import com.hanmaum.dn.mobile.core.security.VaultResult
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import io.ktor.client.HttpClient
@@ -23,7 +23,6 @@ class LoginViewModel(
     private val memberRepository: MemberRepository,
     private val tokenStorage: TokenStorage,
     private val httpClient: HttpClient,
-    private val credentialStore: CredentialStore,
     private val authPreferences: AuthPreferences,
 ) : ViewModel() {
 
@@ -31,15 +30,60 @@ class LoginViewModel(
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState = _uiState.asStateFlow()
 
-    /** True when Face ID sign-in is enabled and credentials are saved to autofill. */
-    fun canFaceIdSignIn(): Boolean =
-        authPreferences.isBiometricEnabled() && credentialStore.hasCredentials()
+    /** True when Face ID sign-in is armed: switched on and a secret is sealed. */
+    fun canFaceIdSignIn(vault: BiometricVault): Boolean =
+        authPreferences.isBiometricEnabled() && vault.hasSecret()
 
     /**
-     * Saved credentials for Face ID autofill, or null if none. The caller must
-     * pass a successful biometric check first, then autofill the fields and submit.
+     * Signs in with Face ID.
+     *
+     * The vault releases the refresh token only against a real biometric match,
+     * and that token is then traded for a session. Nothing here replays a
+     * password — there is none stored to replay (#200).
      */
-    fun savedCredentials(): Credentials? = credentialStore.getCredentials()
+    suspend fun signInWithFaceId(
+        vault: BiometricVault,
+        title: String,
+        subtitle: String,
+        cancelLabel: String,
+    ) {
+        when (val opened = vault.open(title, subtitle, cancelLabel)) {
+            is VaultResult.Success -> exchangeRefreshToken(opened.value)
+            // Dismissing the prompt is a choice: fall back to the form quietly.
+            VaultResult.Cancelled -> Unit
+            VaultResult.Invalidated -> {
+                // Biometrics were re-enrolled; the secret is gone for good.
+                authPreferences.setBiometricEnabled(false)
+                _uiState.update { it.copy(error = "생체 인증이 변경되어 다시 설정해야 합니다.") }
+            }
+            VaultResult.Empty, VaultResult.Unavailable ->
+                authPreferences.setBiometricEnabled(false)
+            VaultResult.Failed ->
+                _uiState.update { it.copy(error = "생체 인증에 실패했습니다. 비밀번호로 로그인해주세요.") }
+        }
+    }
+
+    private suspend fun exchangeRefreshToken(refreshToken: String) {
+        _uiState.update { it.copy(isLoading = true, error = null, statusMessage = "인증하는 중입니다. 잠시만 기다려주세요.") }
+        try {
+            val tokens = authRepository.refresh(refreshToken)
+            tokenStorage.saveAccessToken(tokens.accessToken)
+            tokens.refreshToken?.let { tokenStorage.saveRefreshToken(it) }
+            httpClient.invalidateBearerCache()
+            routeByStatus()
+        } catch (e: Exception) {
+            // Keycloak's idle timeout has passed, so the sealed token is spent.
+            // The password form is the way back in; option C in #200 is what
+            // would avoid this, and it needs the server.
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    statusMessage = "",
+                    error = "다시 로그인해주세요.",
+                )
+            }
+        }
+    }
 
     // 2. Events verarbeiten
     fun onLoginClicked(user: String, pass: String, keepSignedIn: Boolean = true, enableFaceId: Boolean = false) {
@@ -68,48 +112,7 @@ class LoginViewModel(
                 // just saved.
                 httpClient.invalidateBearerCache()
 
-                _uiState.update { it.copy(statusMessage = "사용자 정보를 확인 중입니다. 잠시만 기다려주세요.") }
-
-                // PROFIL & STATUS CHECK (/me)
-                val profileResult = memberRepository.getMyProfile()
-
-                profileResult.onSuccess { member ->
-                    // Persist credentials for Face ID sign-in if the user opted in
-                    // (via the login checkbox or a previously enabled toggle).
-                    if (enableFaceId || authPreferences.isBiometricEnabled()) {
-                        credentialStore.saveCredentials(user, pass)
-                        authPreferences.setBiometricEnabled(true)
-                    }
-                    // Route by status. Sending every non-active member to the
-                    // pending screen used to tell a refused applicant to wait for
-                    // an approval that was never coming.
-                    val destination = when (member.status) {
-                        MemberStatus.ACTIVE -> NavRoute.Home
-                        MemberStatus.REJECTED -> NavRoute.Rejected
-                        // INACTIVE / DELETED / UNKNOWN still land here. That is not
-                        // right either — they are not waiting for anything — but
-                        // what they should see is its own question, and guessing at
-                        // it would repeat the mistake this change is fixing.
-                        else -> NavRoute.PendingApproval
-                    }
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            statusMessage = if (destination == NavRoute.Home) "인증 완료!" else it.statusMessage,
-                            isSuccess = true,
-                            navigateTo = destination
-                        )
-                    }
-                }.onFailure { e ->
-                    tokenStorage.clear()
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = "사용자 정보를 가져오지 못했습니다. 로그인을 다시 시도해주세요.",
-                            statusMessage = "로그인 실패하였습니다."
-                        )
-                    }
-                }
+                routeByStatus()
 
             } catch (e: Exception) {
                 // login failed
@@ -123,6 +126,50 @@ class LoginViewModel(
                 }
             }
         }
+    }
+
+    /**
+     * Fetches the profile and routes by member status.
+     *
+     * Shared by the password form and Face ID: both end with a session in hand
+     * and the same question — where does this member belong?
+     */
+    private suspend fun routeByStatus() {
+        _uiState.update { it.copy(statusMessage = "사용자 정보를 확인 중입니다. 잠시만 기다려주세요.") }
+
+        memberRepository.getMyProfile()
+            .onSuccess { member ->
+                // Sending every non-active member to the pending screen used to
+                // tell a refused applicant to wait for an approval that was
+                // never coming.
+                val destination = when (member.status) {
+                    MemberStatus.ACTIVE -> NavRoute.Home
+                    MemberStatus.REJECTED -> NavRoute.Rejected
+                    // INACTIVE / DELETED / UNKNOWN still land here. That is not
+                    // right either — they are not waiting for anything — but what
+                    // they should see is its own question, and guessing at it
+                    // would repeat the mistake this change is fixing.
+                    else -> NavRoute.PendingApproval
+                }
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        statusMessage = if (destination == NavRoute.Home) "인증 완료!" else it.statusMessage,
+                        isSuccess = true,
+                        navigateTo = destination,
+                    )
+                }
+            }
+            .onFailure {
+                tokenStorage.clear()
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "사용자 정보를 가져오지 못했습니다. 로그인을 다시 시도해주세요.",
+                        statusMessage = "로그인 실패하였습니다.",
+                    )
+                }
+            }
     }
 
     // Nach Navigation State resetten, damit er nicht immer wieder navigiert

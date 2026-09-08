@@ -23,7 +23,7 @@ import com.hanmaum.dn.mobile.features.profile.presentation.SettingsScreen
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import com.hanmaum.dn.mobile.features.geofence.domain.GeofenceCoordinator
-import com.hanmaum.dn.mobile.core.security.CredentialStore
+import com.hanmaum.dn.mobile.core.security.BiometricVault
 import com.hanmaum.dn.mobile.core.domain.repository.LocaleRepository
 import com.hanmaum.dn.mobile.core.i18n.AppLocale
 import com.hanmaum.dn.mobile.core.i18n.DeStrings
@@ -237,7 +237,7 @@ fun App() {
                         val authPrefs = koinInject<AuthPreferences>()
                         val locationPrefs = koinInject<LocationPreferences>()
                         val geofence = koinInject<GeofenceCoordinator>()
-                        val credentials = koinInject<CredentialStore>()
+                        val vault = koinInject<BiometricVault>()
                         val scope = rememberCoroutineScope()
                         var keepSignedIn by remember { mutableStateOf(authPrefs.isKeepSignedInEnabled()) }
                         var locationEnabled by remember { mutableStateOf(locationPrefs.isSharingEnabled()) }
@@ -261,7 +261,7 @@ fun App() {
                                 // Turning it off also clears the biometric flag (see
                                 // AuthPreferencesImpl); the Face ID row re-reads it.
                                 // Nothing may stay behind that could sign someone in.
-                                if (!value) credentials.clear()
+                                if (!value) vault.clear()
                             },
                             locationEnabled = locationEnabled,
                             onLocationChange = { value ->

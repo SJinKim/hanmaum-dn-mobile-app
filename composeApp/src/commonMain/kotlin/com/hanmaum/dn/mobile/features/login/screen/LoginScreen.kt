@@ -42,8 +42,7 @@ import com.hanmaum.dn.mobile.core.presentation.components.DnGlow
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
-import com.hanmaum.dn.mobile.core.security.BiometricResult
-import com.hanmaum.dn.mobile.core.security.rememberBiometricAuthenticator
+import com.hanmaum.dn.mobile.core.security.rememberBiometricVault
 import com.hanmaum.dn.mobile.core.presentation.components.DnTintedButton
 import com.hanmaum.dn.mobile.core.presentation.components.DnPrimaryButton
 import com.hanmaum.dn.mobile.core.presentation.components.DnTextField
@@ -79,34 +78,31 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
 
     val strings = LocalStrings.current
-    val biometrics = rememberBiometricAuthenticator()
-    // Armed once per screen: the settings and the stored credentials cannot
-    // change while this screen is up, and re-reading them on every recomposition
-    // would re-trigger the prompt.
-    val autoLoginArmed = remember { viewModel.canFaceIdSignIn() && biometrics.isAvailable() }
+    val vault = rememberBiometricVault()
+    // Armed once per screen: neither the setting nor the sealed secret can
+    // change while this screen is up, and re-reading them on every
+    // recomposition would re-trigger the prompt.
+    val autoLoginArmed = remember { viewModel.canFaceIdSignIn(vault) && vault.isAvailable() }
     var promptRunning by remember { mutableStateOf(false) }
 
-    suspend fun runBiometricPrompt() {
+    // The vault raises the prompt and, on a real match, hands back the refresh
+    // token; the ViewModel trades it for a session. Cancelling is a choice, not
+    // a failure — the form is right there and the button stays for a retry.
+    suspend fun runFaceIdSignIn() {
         if (promptRunning) return
         promptRunning = true
-        val result = biometrics.authenticate(
+        viewModel.signInWithFaceId(
+            vault = vault,
             title = strings.lockTitle,
             subtitle = strings.lockSubtitle,
             cancelLabel = strings.lockUsePassword,
         )
         promptRunning = false
-        // Cancelling is a choice, not a failure — fall back to the form quietly
-        // and leave the button so it can be retried.
-        if (result == BiometricResult.SUCCESS) {
-            // main's ViewModel hands back the credentials and lets the caller
-            // submit them, rather than owning the whole autologin itself.
-            viewModel.savedCredentials()?.let { viewModel.onLoginClicked(it.email, it.password) }
-        }
     }
 
     // Offer the prompt as the screen opens, so the common case is one glance.
     LaunchedEffect(autoLoginArmed) {
-        if (autoLoginArmed) runBiometricPrompt()
+        if (autoLoginArmed) runFaceIdSignIn()
     }
 
     LaunchedEffect(state.navigateTo) {
@@ -235,7 +231,7 @@ fun LoginScreen(
                 val scope = rememberCoroutineScope()
                 DnTintedButton(
                     label = strings.loginSignInWithFaceId,
-                    onClick = { scope.launch { runBiometricPrompt() } },
+                    onClick = { scope.launch { runFaceIdSignIn() } },
                     modifier = Modifier.fillMaxWidth(),
                 )
             }

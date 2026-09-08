@@ -13,7 +13,6 @@ import com.hanmaum.dn.mobile.core.notification.NotificationRouter
 import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
 import com.hanmaum.dn.mobile.core.domain.repository.ThemeRepository
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
-import com.hanmaum.dn.mobile.core.security.CredentialStore
 import com.hanmaum.dn.mobile.core.network.createHttpClient
 import com.hanmaum.dn.mobile.core.push.PushPreferences
 import com.hanmaum.dn.mobile.core.push.PushPreferencesImpl
@@ -94,7 +93,6 @@ val appModule = module {
     // a single instance because the tap can arrive before the graph exists.
     single { NotificationRouter() }
     single<AttendancePreferences> { AttendancePreferencesImpl(Settings()) }
-    single { CredentialStore(get()) }
 
     //Splash VM
     viewModel { SplashViewModel(get(), get(), get(), get(), get()) }
@@ -121,11 +119,11 @@ val appModule = module {
     viewModel { RegisterViewModel(get(), get(), get(), get(), get(), get()) }
 
     // Login VM
-    viewModel { LoginViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { LoginViewModel(get(), get(), get(), get(), get()) }
 
     // Profile VM
     viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get(), get()) }
-    viewModel { FaceIdSetupViewModel(get(), get(), get(), get()) }
+    viewModel { FaceIdSetupViewModel(get(), get()) }
 
     // Ministry
     single<MinistryRepository> { MinistryRepositoryImpl(get()) }

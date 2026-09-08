@@ -1,42 +1,33 @@
 package com.hanmaum.dn.mobile.features.profile.presentation
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.repository.AuthPreferences
-import com.hanmaum.dn.mobile.core.security.CredentialStore
-import com.hanmaum.dn.mobile.features.login.domain.model.LoginException
-import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
-import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
+import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
+import com.hanmaum.dn.mobile.core.security.BiometricVault
+import com.hanmaum.dn.mobile.core.security.VaultResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 data class FaceIdSetupUiState(
     val enabled: Boolean = false,
-    val askingForPassword: Boolean = false,
-    val password: String = "",
-    val isVerifying: Boolean = false,
+    val isBusy: Boolean = false,
     val error: String? = null,
 )
 
 /**
- * Turning Face ID sign-in on, including the password it needs.
+ * Switching Face ID sign-in on and off.
  *
- * The switch alone cannot arm anything: Face ID replays a stored password, and
- * this screen is reachable only while already signed in, so there is no
- * password around to store. Before the prompt the toggle therefore did nothing
- * until the member happened to sign in by hand again — which, with "keep me
- * signed in" on, may never happen (#197).
+ * Enabling costs one biometric prompt and no password: the member is already
+ * signed in, so the refresh token that Face ID will replay is right there. It
+ * is sealed into the [BiometricVault], where the OS — not this code — decides
+ * whether to hand it back (#200).
  *
- * The typed password is verified against Keycloak before it is stored. Storing
- * it unverified would move the failure to the next launch, where it surfaces as
- * "Face ID is broken" rather than "that was the wrong password".
+ * The vault is passed in per call rather than injected: it needs the hosting
+ * activity on Android, so it can only be built inside composition.
  */
 class FaceIdSetupViewModel(
-    private val authRepository: AuthRepository,
-    private val memberRepository: MemberRepository,
-    private val credentialStore: CredentialStore,
+    private val tokenStorage: TokenStorage,
     private val authPreferences: AuthPreferences,
 ) : ViewModel() {
 
@@ -48,66 +39,35 @@ class FaceIdSetupViewModel(
         _uiState.update { it.copy(enabled = authPreferences.isBiometricEnabled()) }
     }
 
-    fun onToggle(want: Boolean) {
-        if (want) {
-            _uiState.update { it.copy(askingForPassword = true, password = "", error = null) }
-        } else {
-            authPreferences.setBiometricEnabled(false)
-            credentialStore.clear()
-            _uiState.update { it.copy(enabled = false, askingForPassword = false, password = "", error = null) }
-        }
-    }
-
-    fun onPasswordChange(value: String) {
-        _uiState.update { it.copy(password = value, error = null) }
-    }
-
-    fun onDismiss() {
-        // Backing out leaves the switch where it was: nothing was stored.
-        _uiState.update { it.copy(askingForPassword = false, password = "", error = null, isVerifying = false) }
-    }
-
-    fun onConfirm() {
-        val password = _uiState.value.password
-        if (password.isBlank()) {
-            _uiState.update { it.copy(error = "비밀번호를 입력해주세요.") }
+    suspend fun enable(vault: BiometricVault, title: String, subtitle: String, cancelLabel: String) {
+        val refreshToken = tokenStorage.getRefreshToken()
+        if (refreshToken.isNullOrBlank()) {
+            // Nothing to seal. Rather than arm a switch that would fail at the
+            // next launch, say so now.
+            _uiState.update { it.copy(error = "다시 로그인한 뒤 설정해주세요.") }
             return
         }
 
-        viewModelScope.launch {
-            _uiState.update { it.copy(isVerifying = true, error = null) }
-
-            val email = memberRepository.getMyProfile().getOrNull()?.email
-            if (email.isNullOrBlank()) {
-                // Face ID signs in with an email and a password. Without the
-                // address there is nothing to store that would ever work.
-                _uiState.update {
-                    it.copy(isVerifying = false, error = "계정 정보를 불러오지 못했습니다. 다시 시도해주세요.")
+        _uiState.update { it.copy(isBusy = true, error = null) }
+        val result = vault.seal(refreshToken, title, subtitle, cancelLabel)
+        _uiState.update { state ->
+            when (result) {
+                is VaultResult.Success -> {
+                    authPreferences.setBiometricEnabled(true)
+                    state.copy(enabled = true, isBusy = false)
                 }
-                return@launch
-            }
-
-            try {
-                authRepository.login(email, password)
-                credentialStore.saveCredentials(email, password)
-                authPreferences.setBiometricEnabled(true)
-                _uiState.update {
-                    it.copy(enabled = true, askingForPassword = false, password = "", isVerifying = false)
-                }
-            } catch (e: LoginException) {
-                _uiState.update {
-                    it.copy(
-                        isVerifying = false,
-                        error = if (e.isAccountNotFullySetUp) {
-                            "이메일 확인이 아직 완료되지 않았습니다."
-                        } else {
-                            "비밀번호가 올바르지 않습니다."
-                        },
-                    )
-                }
-            } catch (e: Exception) {
-                _uiState.update { it.copy(isVerifying = false, error = "연결에 실패했습니다. 다시 시도해주세요.") }
+                // Backing out is a choice, not an error worth a message.
+                VaultResult.Cancelled -> state.copy(isBusy = false)
+                VaultResult.Unavailable ->
+                    state.copy(isBusy = false, error = "기기에 등록된 생체 인증이 없습니다.")
+                else -> state.copy(isBusy = false, error = "설정에 실패했습니다. 다시 시도해주세요.")
             }
         }
+    }
+
+    fun disable(vault: BiometricVault) {
+        authPreferences.setBiometricEnabled(false)
+        vault.clear()
+        _uiState.update { it.copy(enabled = false, error = null) }
     }
 }
