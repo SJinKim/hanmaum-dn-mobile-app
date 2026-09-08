@@ -650,7 +650,7 @@ object KoStrings : AppStrings {
     override val personalInfoTitle = "개인 정보"
     override val labelBirthDate = "생년월일"
     override val labelDivision = "교구"
-    override val labelGroup = "목장"
+    override val labelGroup = "순"
     override val labelName = "이름"
     override val labelChurchRole = "직분"
     override val lockedFieldHint = "교회에서 관리하는 정보입니다"

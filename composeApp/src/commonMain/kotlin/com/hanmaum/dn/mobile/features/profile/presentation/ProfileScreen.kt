@@ -167,8 +167,8 @@ private fun ProfileViewContent(
             color = c.textPrimary,
         )
 
-        // The chip carries 부서 · 그룹 · 직분, which is why the group has no tile
-        // of its own — repeating it below the name would say the same twice.
+        // The chip carries 교구 · 순 · 직분, which is why the 순 has no tile of
+        // its own — repeating it below the name would say the same twice.
         val role = listOfNotNull(profile.division, profile.groupName, profile.churchRole)
             .filter { it.isNotBlank() }
             .joinToString(" · ")
@@ -298,6 +298,7 @@ private fun ProfileEditContent(
     viewModel: ProfileViewModel,
 ) {
     val c = DnTheme.colors
+    val strings = LocalStrings.current
     val p = state.profile
 
     Column(
@@ -340,13 +341,15 @@ private fun ProfileEditContent(
 
         Spacer(Modifier.height(40.dp))
 
+        // 교구/순 are what the church calls church_groups.division and .name;
+        // the labels live in AppStrings so all three languages say the same (#194).
         LockedGroup(
             rows = listOf(
-                "이름" to "${p.lastName}${p.firstName}",
-                "이메일" to (p.email ?: "—"),
-                "부서" to (p.division ?: "—"),
-                "그룹" to (p.groupName ?: "—"),
-                "직분" to (p.churchRole ?: "—"),
+                strings.labelName to "${p.lastName}${p.firstName}",
+                strings.labelEmail to (p.email ?: "—"),
+                strings.labelDivision to (p.division ?: "—"),
+                strings.labelGroup to (p.groupName ?: "—"),
+                strings.labelChurchRole to (p.churchRole ?: "—"),
             )
         )
 
