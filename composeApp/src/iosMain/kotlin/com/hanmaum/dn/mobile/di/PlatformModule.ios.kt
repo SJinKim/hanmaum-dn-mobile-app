@@ -8,6 +8,8 @@ import com.hanmaum.dn.mobile.core.notification.IosNotificationService
 import com.hanmaum.dn.mobile.core.notification.NotificationService
 import com.hanmaum.dn.mobile.core.push.IosPushManager
 import com.hanmaum.dn.mobile.core.push.PushManager
+import com.hanmaum.dn.mobile.core.security.BiometricVault
+import com.hanmaum.dn.mobile.core.security.IosBiometricVault
 import com.hanmaum.dn.mobile.core.security.IosSecureStore
 import com.hanmaum.dn.mobile.core.security.SecureStore
 import org.koin.dsl.module
@@ -17,5 +19,6 @@ actual val platformModule = module {
     single<CurrentLocationProvider> { IosCurrentLocationProvider() }
     single<NotificationService> { IosNotificationService() }
     single<SecureStore> { IosSecureStore() }
+    single<BiometricVault> { IosBiometricVault() }
     single<PushManager> { IosPushManager() }
 }

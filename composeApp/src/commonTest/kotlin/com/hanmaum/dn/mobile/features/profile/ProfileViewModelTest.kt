@@ -5,7 +5,7 @@ import com.hanmaum.dn.mobile.core.data.repository.AuthPreferencesImpl
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.russhwolf.settings.MapSettings
 import com.hanmaum.dn.mobile.core.push.PushManager
-import com.hanmaum.dn.mobile.core.security.CredentialStore
+import com.hanmaum.dn.mobile.core.security.FakeBiometricVault
 import com.hanmaum.dn.mobile.core.security.SecureStore
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
@@ -137,7 +137,7 @@ class ProfileViewModelTest {
     ) = ProfileViewModel(
         repo,
         FakeTokenStorage(),
-        CredentialStore(InMemorySecureStore()),
+        FakeBiometricVault(),
         notificationRepository,
         pushManager,
         AuthPreferencesImpl(MapSettings()),

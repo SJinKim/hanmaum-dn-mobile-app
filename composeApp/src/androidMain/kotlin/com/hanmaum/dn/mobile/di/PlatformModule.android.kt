@@ -8,7 +8,9 @@ import com.hanmaum.dn.mobile.core.notification.AndroidNotificationService
 import com.hanmaum.dn.mobile.core.notification.NotificationService
 import com.hanmaum.dn.mobile.core.push.AndroidPushManager
 import com.hanmaum.dn.mobile.core.push.PushManager
+import com.hanmaum.dn.mobile.core.security.AndroidBiometricVault
 import com.hanmaum.dn.mobile.core.security.AndroidSecureStore
+import com.hanmaum.dn.mobile.core.security.BiometricVault
 import com.hanmaum.dn.mobile.core.security.SecureStore
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
@@ -18,5 +20,7 @@ actual val platformModule = module {
     single<CurrentLocationProvider> { AndroidCurrentLocationProvider(androidContext()) }
     single<NotificationService> { AndroidNotificationService(androidContext()) }
     single<SecureStore> { AndroidSecureStore(androidContext()) }
+    // No activity: this instance exists so logout can clear the vault.
+    single<BiometricVault> { AndroidBiometricVault(androidContext()) }
     single<PushManager> { AndroidPushManager(androidContext(), get()) }
 }

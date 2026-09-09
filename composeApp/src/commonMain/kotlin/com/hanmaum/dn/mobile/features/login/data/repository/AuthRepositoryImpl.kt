@@ -23,17 +23,21 @@ class AuthRepositoryImpl(
 
     private val lenientJson = Json { ignoreUnknownKeys = true }
 
-    override suspend fun login(user: String, pass: String): TokenResponse {
+    override suspend fun login(user: String, pass: String): TokenResponse =
+        tokenRequest {
+            append("client_id", "hanmaum-mobile")
+            append("grant_type", "password")
+            append("username", user)
+            append("password", pass)
+        }
+
+    /** Both grants hit the same endpoint and fail the same way. */
+    private suspend fun tokenRequest(form: ParametersBuilder.() -> Unit): TokenResponse {
         val keycloakUrl = "${BuildKonfig.KEYCLOAK_URL}/realms/${BuildKonfig.KEYCLOAK_REALM}/protocol/openid-connect/token"
 
         val response: HttpResponse = client.submitForm(
             url = keycloakUrl,
-            formParameters = Parameters.build {
-                append("client_id", "hanmaum-mobile")
-                append("grant_type", "password")
-                append("username", user)
-                append("password", pass)
-            }
+            formParameters = Parameters.build(form),
         )
 
         if (response.status == HttpStatusCode.OK) {
@@ -52,6 +56,13 @@ class AuthRepositoryImpl(
             )
         }
     }
+
+    override suspend fun refresh(refreshToken: String): TokenResponse =
+        tokenRequest {
+            append("client_id", "hanmaum-mobile")
+            append("grant_type", "refresh_token")
+            append("refresh_token", refreshToken)
+        }
 
     override suspend fun register(request: RegisterRequest): Result<Unit> {
         return try {

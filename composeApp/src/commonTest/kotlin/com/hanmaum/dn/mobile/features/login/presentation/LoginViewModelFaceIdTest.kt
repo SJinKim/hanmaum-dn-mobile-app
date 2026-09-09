@@ -3,8 +3,9 @@ package com.hanmaum.dn.mobile.features.login.presentation
 import com.hanmaum.dn.mobile.core.data.repository.AuthPreferencesImpl
 import com.hanmaum.dn.mobile.core.data.repository.TokenStorageImpl
 import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
-import com.hanmaum.dn.mobile.core.security.CredentialStore
-import com.hanmaum.dn.mobile.core.security.SecureStore
+import com.hanmaum.dn.mobile.core.domain.model.NavRoute
+import com.hanmaum.dn.mobile.core.security.FakeBiometricVault
+import com.hanmaum.dn.mobile.core.security.VaultResult
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterRequest
 import com.hanmaum.dn.mobile.features.login.domain.model.TokenResponse
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
@@ -26,12 +27,23 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-private class FaceIdAuthRepository : AuthRepository {
+private class FaceIdAuthRepository(private val refreshWorks: Boolean = true) : AuthRepository {
+    var refreshedWith: String? = null
     override suspend fun login(user: String, pass: String) = TokenResponse(
         accessToken = "access", expiresIn = 300, refreshToken = "refresh", tokenType = "Bearer",
     )
+    override suspend fun refresh(refreshToken: String): TokenResponse {
+        refreshedWith = refreshToken
+        if (!refreshWorks) throw IllegalStateException("refresh token expired")
+        return TokenResponse(
+            accessToken = "fresh-access", expiresIn = 300,
+            refreshToken = "rotated-refresh", tokenType = "Bearer",
+        )
+    }
     override suspend fun register(request: RegisterRequest): Result<Unit> = Result.success(Unit)
 }
 
@@ -45,20 +57,9 @@ private class FaceIdMemberRepository : MemberRepository {
     ): Result<MemberResponse> = getMyProfile()
 }
 
-private class InMemorySecureStore : SecureStore {
-    private val values = mutableMapOf<String, String>()
-    override fun putString(key: String, value: String) { values[key] = value }
-    override fun getString(key: String): String? = values[key]
-    override fun remove(key: String) { values.remove(key) }
-}
-
 /**
- * Face ID sign-in, driven the way a member drives it: switch it on in 설정,
- * sign in once with the password, and it is armed for the next launch.
- *
- * It regressed because 설정 wrote AuthPreferences while the login path read a
- * second, identically-meaning flag on TokenStorage — so the toggle steered
- * nothing and the credentials were never stored.
+ * Signing in with Face ID: the vault releases the refresh token, and that token
+ * buys the session. No password is stored, so none can be replayed (#200).
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class LoginViewModelFaceIdTest {
@@ -70,43 +71,88 @@ class LoginViewModelFaceIdTest {
 
     private val settings = MapSettings()
     private val authPreferences = AuthPreferencesImpl(settings)
-    private val credentialStore = CredentialStore(InMemorySecureStore())
+    private val tokenStorage = TokenStorageImpl(settings)
+    private val vault = FakeBiometricVault()
 
-    private fun viewModel() = LoginViewModel(
-        authRepository = FaceIdAuthRepository(),
+    private fun viewModel(auth: AuthRepository = FaceIdAuthRepository()) = LoginViewModel(
+        authRepository = auth,
         memberRepository = FaceIdMemberRepository(),
-        tokenStorage = TokenStorageImpl(settings),
+        tokenStorage = tokenStorage,
         httpClient = HttpClient(MockEngine { respond("") }),
-        credentialStore = credentialStore,
         authPreferences = authPreferences,
     )
 
-    @Test
-    fun signingInWithFaceIdEnabledInSettingsArmsTheNextLaunch() = runTest(dispatcher) {
-        // what the 설정 screen does when Face ID 로그인 is switched on
+    private suspend fun signIn(vm: LoginViewModel) =
+        vm.signInWithFaceId(vault, "title", "subtitle", "cancel")
+
+    /** What the 설정 switch leaves behind once Face ID is on. */
+    private suspend fun armed() {
         authPreferences.setBiometricEnabled(true)
-
-        viewModel().onLoginClicked("seojin@hanmaum.de", "pw")
-        advanceUntilIdle()
-
-        assertTrue(viewModel().canFaceIdSignIn())
-        assertEquals("seojin@hanmaum.de", viewModel().savedCredentials()?.email)
-        assertEquals("pw", viewModel().savedCredentials()?.password)
+        vault.seal("sealed-refresh", "t", "s", "c")
     }
 
     @Test
-    fun signingInWithFaceIdOffStoresNothing() = runTest(dispatcher) {
-        viewModel().onLoginClicked("seojin@hanmaum.de", "pw")
+    fun anArmedVaultSignsTheMemberIn() = runTest(dispatcher) {
+        armed()
+        val auth = FaceIdAuthRepository()
+        val vm = viewModel(auth)
+
+        signIn(vm)
         advanceUntilIdle()
 
-        assertFalse(viewModel().canFaceIdSignIn())
+        assertEquals("sealed-refresh", auth.refreshedWith)
+        assertEquals(NavRoute.Home, vm.uiState.value.navigateTo)
+        assertEquals("fresh-access", tokenStorage.getAccessToken())
+        assertEquals("rotated-refresh", tokenStorage.getRefreshToken(), "the token rotates on use")
     }
 
     @Test
-    fun keepSignedInChoiceLandsWhereTheSplashReadsIt() = runTest(dispatcher) {
-        viewModel().onLoginClicked("seojin@hanmaum.de", "pw", keepSignedIn = false)
+    fun faceIdIsOfferedOnlyWhenSwitchedOnAndSealed() = runTest(dispatcher) {
+        val vm = viewModel()
+        assertFalse(vm.canFaceIdSignIn(vault), "nothing sealed yet")
+
+        armed()
+
+        assertTrue(vm.canFaceIdSignIn(vault))
+    }
+
+    @Test
+    fun cancellingThePromptSaysNothingAndSignsNobodyIn() = runTest(dispatcher) {
+        armed()
+        vault.nextResult = VaultResult.Cancelled
+        val vm = viewModel()
+
+        signIn(vm)
         advanceUntilIdle()
 
-        assertFalse(authPreferences.isKeepSignedInEnabled())
+        assertNull(vm.uiState.value.navigateTo)
+        assertNull(vm.uiState.value.error, "backing out is a choice, not a failure")
+    }
+
+    @Test
+    fun reenrolledBiometricsDisarmTheSwitchAndSayWhy() = runTest(dispatcher) {
+        armed()
+        vault.nextResult = VaultResult.Invalidated
+        val vm = viewModel()
+
+        signIn(vm)
+        advanceUntilIdle()
+
+        assertFalse(authPreferences.isBiometricEnabled(), "it has to be set up again")
+        assertNotNull(vm.uiState.value.error)
+        assertNull(vm.uiState.value.navigateTo)
+    }
+
+    @Test
+    fun anExpiredRefreshTokenFallsBackToThePasswordForm() = runTest(dispatcher) {
+        armed()
+        val vm = viewModel(FaceIdAuthRepository(refreshWorks = false))
+
+        signIn(vm)
+        advanceUntilIdle()
+
+        assertNull(vm.uiState.value.navigateTo)
+        assertNotNull(vm.uiState.value.error)
+        assertFalse(vm.uiState.value.isLoading)
     }
 }

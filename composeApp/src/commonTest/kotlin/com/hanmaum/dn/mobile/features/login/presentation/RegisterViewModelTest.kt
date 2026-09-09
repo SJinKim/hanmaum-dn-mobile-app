@@ -47,6 +47,9 @@ private class FakeAuthRepository : AuthRepository {
         return TokenResponse(accessToken = "at", expiresIn = 300, refreshToken = "rt", tokenType = "Bearer")
     }
 
+    override suspend fun refresh(refreshToken: String): TokenResponse =
+        login("", "")
+
     override suspend fun register(request: RegisterRequest): Result<Unit> {
         registerCalls++
         lastRequest = request
