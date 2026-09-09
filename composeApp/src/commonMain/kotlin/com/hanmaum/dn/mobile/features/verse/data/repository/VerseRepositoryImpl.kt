@@ -4,6 +4,7 @@ import com.hanmaum.dn.mobile.core.domain.model.ApiResponse
 import com.hanmaum.dn.mobile.features.verse.data.model.DailyVerseResponse
 import com.hanmaum.dn.mobile.features.verse.data.model.WeeklyVerseResponse
 import com.hanmaum.dn.mobile.features.verse.domain.model.DailyVerse
+import com.hanmaum.dn.mobile.features.verse.domain.model.DailyVerseState
 import com.hanmaum.dn.mobile.features.verse.domain.model.WeeklyVerse
 import com.hanmaum.dn.mobile.features.verse.domain.repository.VerseRepository
 import io.ktor.client.HttpClient
@@ -54,14 +55,24 @@ class VerseRepositoryImpl(
     }
 
     /**
-     * Drops a row that carries no usable reference. Without one the card has
-     * nothing to show, and an empty card is worse than no card.
+     * Turns a row into the card's three cases.
+     *
+     * `NO_PLAN` and a `PASSAGE` without any usable reference both become null:
+     * there is nothing honest to put on the card, and an empty card is worse
+     * than no card. `SUNDAY_SERVICE` deliberately survives without a reference —
+     * there is no planned passage on a Sunday, but the day is still markable and
+     * the card names the service.
      */
     private fun DailyVerseResponse.toDomainOrNull(): DailyVerse? {
+        val verseState = DailyVerseState.fromWire(state)
+        if (verseState == DailyVerseState.NO_PLAN) return null
+
         val ko = reference?.ko?.trim().orEmpty()
         val en = reference?.en?.trim().orEmpty()
-        if (ko.isEmpty() && en.isEmpty()) return null
+        if (verseState == DailyVerseState.PASSAGE && ko.isEmpty() && en.isEmpty()) return null
+
         return DailyVerse(
+            state = verseState,
             referenceKo = ko,
             referenceEn = en,
             translation = translation?.trim().orEmpty(),

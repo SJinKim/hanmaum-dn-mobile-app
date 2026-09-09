@@ -70,16 +70,15 @@ fun StreakBar(
             streak.week.forEach { day ->
                 val marked = streak.isMarked(day)
                 val isToday = day == today
-                val markable = streak.isMarkable(day)
 
-                // A day that can never be filled reads dimmest, a marked one
-                // brightest, and today sits between the two so the state that
-                // invites a tap is not the least visible one.
+                // A marked day reads brightest and today sits just below it, so
+                // the state that invites a tap is not the least visible one.
+                // There is no third, dimmer state any more: every day of the
+                // week can be marked, Sundays included (server #159).
                 val fill by animateColorAsState(
                     targetValue = when {
                         marked -> c.amber
                         isToday && canMark -> c.amberDim
-                        !markable -> c.surface2
                         else -> c.surface3
                     },
                     animationSpec = spring(),
@@ -103,7 +102,7 @@ fun StreakBar(
         }
 
         Text(
-            strings.verseStreakRatio(streak.markedThisWeek, streak.markableDays.size),
+            strings.verseStreakRatio(streak.markedThisWeek, streak.week.size),
             style = DnTheme.typography.caption,
             color = c.textTertiary,
             modifier = Modifier.padding(start = 8.dp),
