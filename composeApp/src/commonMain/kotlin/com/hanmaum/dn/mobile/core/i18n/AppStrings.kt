@@ -243,6 +243,15 @@ interface AppStrings {
     val verseReadAction: String
     val verseWeeklyTitle: String
 
+    /**
+     * The 오늘의 말씀 card on a Sunday. The reading plan has no passage then —
+     * the verses come from the sermon — and the server says so with
+     * `state = SUNDAY_SERVICE` without wording it, because it is not localised
+     * and the app is.
+     */
+    val verseSundayServiceTitle: String
+    val verseSundayServiceHint: String
+
     /** `3/6일` under the streak pills. Total excludes days that can never be marked. */
     fun verseStreakRatio(marked: Int, total: Int): String
 
@@ -470,6 +479,8 @@ object EnStrings : AppStrings {
     override val verseTodayTitle = "Today’s Passage"
     override val verseReadAction = "Read"
     override val verseWeeklyTitle = "Weekly Memory Verse"
+    override val verseSundayServiceTitle = "Sunday service"
+    override val verseSundayServiceHint = "Read along with today’s sermon passage"
     override fun verseStreakRatio(marked: Int, total: Int) = "$marked/$total days"
     override fun verseRecordDaysValue(days: Long) = "$days"
 }
@@ -687,6 +698,8 @@ object KoStrings : AppStrings {
     override val verseTodayTitle = "오늘의 말씀"
     override val verseReadAction = "읽기"
     override val verseWeeklyTitle = "주간 암송 구절"
+    override val verseSundayServiceTitle = "주일 말씀"
+    override val verseSundayServiceHint = "설교 본문으로 함께 읽어요"
     override fun verseStreakRatio(marked: Int, total: Int) = "$marked/${total}일"
     override fun verseRecordDaysValue(days: Long) = "${days}일"
 }
@@ -904,6 +917,8 @@ object DeStrings : AppStrings {
     override val verseTodayTitle = "Bibeltext heute"
     override val verseReadAction = "Lesen"
     override val verseWeeklyTitle = "Wochenvers"
+    override val verseSundayServiceTitle = "Sonntagsgottesdienst"
+    override val verseSundayServiceHint = "Wir lesen den Predigttext mit"
     override fun verseStreakRatio(marked: Int, total: Int) = "$marked/$total Tage"
     override fun verseRecordDaysValue(days: Long) = "$days"
 }

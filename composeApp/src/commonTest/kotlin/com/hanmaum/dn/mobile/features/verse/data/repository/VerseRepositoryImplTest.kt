@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.verse.data.repository
 
+import com.hanmaum.dn.mobile.features.verse.domain.model.DailyVerseState
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
@@ -41,7 +42,7 @@ class VerseRepositoryImplTest {
     @Test
     fun `maps reference translation and link`() = runTest {
         val body = """
-            {"success":true,"data":{
+            {"success":true,"data":{"state":"PASSAGE",
               "reference":{"ko":"신명기 3:1-11","en":"Deuteronomy 3:1-11","de":"5. Mose 3,1-11"},
               "translation":"개역개정",
               "sourceUrl":"https://bible.asher.design/quiettime.php?qt_date=2026-09-08"}}
@@ -58,7 +59,7 @@ class VerseRepositoryImplTest {
     @Test
     fun `trims padding the upstream leaves on the fields`() = runTest {
         val body = """
-            {"success":true,"data":{
+            {"success":true,"data":{"state":"PASSAGE",
               "reference":{"ko":"  신명기 3:1-11  ","en":"  Deuteronomy 3:1-11 "},
               "translation":" 개역개정 ","sourceUrl":" https://example.org "}}
         """.trimIndent()
@@ -73,7 +74,7 @@ class VerseRepositoryImplTest {
 
     @Test
     fun `one language alone still carries the card`() = runTest {
-        val body = """{"success":true,"data":{"reference":{"ko":"시편 23:1"}}}"""
+        val body = """{"success":true,"data":{"state":"PASSAGE","reference":{"ko":"시편 23:1"}}}"""
 
         val verse = VerseRepositoryImpl(mockClient(body)).getTodayVerse().getOrThrow()
 
@@ -84,7 +85,7 @@ class VerseRepositoryImplTest {
 
     @Test
     fun `a row without any reference is dropped`() = runTest {
-        val body = """{"success":true,"data":{"reference":{"ko":"","en":" "},"translation":"개역개정"}}"""
+        val body = """{"success":true,"data":{"state":"PASSAGE","reference":{"ko":"","en":" "},"translation":"개역개정"}}"""
 
         assertNull(VerseRepositoryImpl(mockClient(body)).getTodayVerse().getOrThrow())
     }
@@ -94,6 +95,41 @@ class VerseRepositoryImplTest {
         val body = """{"success":true,"data":null}"""
 
         assertNull(VerseRepositoryImpl(mockClient(body)).getTodayVerse().getOrThrow())
+    }
+
+    @Test
+    fun `a gap in the plan hides the card`() = runTest {
+        val body = """{"success":true,"data":{"state":"NO_PLAN"}}"""
+
+        assertNull(VerseRepositoryImpl(mockClient(body)).getTodayVerse().getOrThrow())
+    }
+
+    @Test
+    fun `a sunday survives without a reference`() = runTest {
+        // There is no planned passage on a Sunday, but the day is still markable
+        // and the card names the service — so this row must not be dropped.
+        val body = """{"success":true,"data":{"state":"SUNDAY_SERVICE"}}"""
+
+        val verse = VerseRepositoryImpl(mockClient(body)).getTodayVerse().getOrThrow()
+
+        assertEquals(DailyVerseState.SUNDAY_SERVICE, verse?.state)
+        assertEquals("", verse?.referenceKo)
+    }
+
+    @Test
+    fun `a state this build does not know hides the card`() = runTest {
+        val body = """{"success":true,"data":{"state":"FUTURE_THING"}}"""
+
+        assertNull(VerseRepositoryImpl(mockClient(body)).getTodayVerse().getOrThrow())
+    }
+
+    @Test
+    fun `a passage carries its state through`() = runTest {
+        val body = """{"success":true,"data":{"state":"PASSAGE","reference":{"ko":"시편 23:1"}}}"""
+
+        val verse = VerseRepositoryImpl(mockClient(body)).getTodayVerse().getOrThrow()
+
+        assertEquals(DailyVerseState.PASSAGE, verse?.state)
     }
 
     @Test

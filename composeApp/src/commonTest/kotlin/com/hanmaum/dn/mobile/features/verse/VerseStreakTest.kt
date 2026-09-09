@@ -5,7 +5,6 @@ import com.hanmaum.dn.mobile.features.verse.domain.model.withMark
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class VerseStreakTest {
@@ -20,43 +19,48 @@ class VerseStreakTest {
     }
 
     @Test
-    fun `the quiet time streak cannot be marked on a sunday`() {
-        // Measured against the upstream: quiet-time.php has no passage on Sundays,
-        // so that pill can never fill.
+    fun `sunday counts for the quiet time streak too`() {
+        // The reading plan has no passage on Sundays, but the verses come from
+        // the sermon — reading along is the same practice as any other day, so
+        // the day is markable and the denominator is seven (server #159).
         val qt = streak(VerseRecordKind.QUIET_TIME)
 
-        assertFalse(qt.isMarkable(WEEK_START))
-        assertEquals(6, qt.markableDays.size)
+        assertEquals(7, qt.week.size)
+        assertTrue(WEEK_START in qt.week)
     }
 
     @Test
-    fun `the recitation streak can be marked any day of the week`() {
-        val recite = streak(VerseRecordKind.RECITATION)
-
-        assertTrue(recite.isMarkable(WEEK_START))
-        assertEquals(7, recite.markableDays.size)
+    fun `both streaks span the same seven days`() {
+        assertEquals(
+            streak(VerseRecordKind.QUIET_TIME).week,
+            streak(VerseRecordKind.RECITATION).week,
+        )
     }
 
     @Test
-    fun `a sunday mark does not count toward the quiet time ratio`() {
-        // Otherwise a member who reads every readable day would be shown 6 of 7
-        // for ever, and marking the unmarkable day could push the ratio past one.
+    fun `a sunday mark counts toward the quiet time ratio`() {
         val qt = streak(
             VerseRecordKind.QUIET_TIME,
             marked = setOf(WEEK_START, LocalDate(2026, 9, 7), LocalDate(2026, 9, 8)),
         )
 
-        assertEquals(2, qt.markedThisWeek)
-        assertEquals(6, qt.markableDays.size)
+        assertEquals(3, qt.markedThisWeek)
     }
 
     @Test
-    fun `a full readable week reads as six of six`() {
-        val everyReadableDay = (7..12).map { LocalDate(2026, 9, it) }.toSet()
-        val qt = streak(VerseRecordKind.QUIET_TIME, marked = everyReadableDay)
+    fun `a full week reads as seven of seven`() {
+        val everyDay = (6..12).map { LocalDate(2026, 9, it) }.toSet()
+        val qt = streak(VerseRecordKind.QUIET_TIME, marked = everyDay)
 
-        assertEquals(6, qt.markedThisWeek)
-        assertEquals(6, qt.markableDays.size)
+        assertEquals(7, qt.markedThisWeek)
+        assertEquals(7, qt.week.size)
+    }
+
+    @Test
+    fun `marks outside the shown week do not count`() {
+        val qt = streak(VerseRecordKind.QUIET_TIME, marked = setOf(LocalDate(2026, 9, 5)))
+
+        assertEquals(0, qt.markedThisWeek)
     }
 
     @Test

@@ -9,6 +9,7 @@ import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import com.hanmaum.dn.mobile.features.notification.domain.model.NotificationPage
 import com.hanmaum.dn.mobile.features.notification.domain.repository.NotificationRepository
 import com.hanmaum.dn.mobile.features.verse.domain.model.DailyVerse
+import com.hanmaum.dn.mobile.features.verse.domain.model.DailyVerseState
 import com.hanmaum.dn.mobile.features.verse.domain.model.WeeklyVerse
 import com.hanmaum.dn.mobile.features.verse.domain.repository.VerseRepository
 import com.hanmaum.dn.mobile.features.verse.FakeVerseRecordRepository
@@ -151,6 +152,7 @@ class HomeViewModelTest {
     @Test
     fun `daily verse lands in ui state`() = runTest(dispatcher) {
         val verse = DailyVerse(
+            state = DailyVerseState.PASSAGE,
             referenceKo = "신명기 3:1-11",
             referenceEn = "Deuteronomy 3:1-11",
             translation = "개역개정",
@@ -199,7 +201,7 @@ class HomeViewModelTest {
     fun `a failing weekly call still lets the daily passage through`() = runTest(dispatcher) {
         // The two calls are independent on purpose: one card going missing must not
         // take the other with it.
-        val daily = DailyVerse("신명기 3:1-11", "Deuteronomy 3:1-11", "개역개정", null)
+        val daily = DailyVerse(DailyVerseState.PASSAGE, "신명기 3:1-11", "Deuteronomy 3:1-11", "개역개정", null)
         val vm = vm(verses = FakeVerseRepository( result = Result.success(daily), weekly = Result.failure(RuntimeException("boom")), ))
         vm.loadAnnouncements(); advanceUntilIdle()
         assertEquals(daily, vm.uiState.value.dailyVerse)
@@ -281,7 +283,7 @@ class HomeViewModelTest {
 
     @Test
     fun `a failing records call leaves the verses alone`() = runTest(dispatcher) {
-        val daily = DailyVerse("신명기 3:1-11", "Deuteronomy 3:1-11", "개역개정", null)
+        val daily = DailyVerse(DailyVerseState.PASSAGE, "신명기 3:1-11", "Deuteronomy 3:1-11", "개역개정", null)
         val vm = vm(
             verses = FakeVerseRepository(result = Result.success(daily)),
             verseRecords = FakeVerseRecordRepository(Result.failure(RuntimeException("boom"))),

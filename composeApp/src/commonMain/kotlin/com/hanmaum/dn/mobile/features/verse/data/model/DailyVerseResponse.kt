@@ -9,6 +9,8 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class DailyVerseResponse(
+    /** `PASSAGE` | `SUNDAY_SERVICE` | `NO_PLAN`. Non-null in the contract. */
+    val state: String? = null,
     val reference: VerseReferenceDto? = null,
     val translation: String? = null,
     val sourceUrl: String? = null,

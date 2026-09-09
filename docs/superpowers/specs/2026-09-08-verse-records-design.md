@@ -1,7 +1,10 @@
 # 말씀 기록 — daily QT and recitation streaks
 
-Status: design approved 2026-09-08. Blocked on the verse endpoints
-(SJinKim/hanmaum-dn-server#115) before any of it can render real data.
+Status: implemented. Server: hanmaum-dn-server#152, #153. Mobile: #188, #192.
+
+**Superseded in one place, 2026-09-09.** The Sunday exclusion below was wrong
+about the practice and has been reversed — see "The Sunday problem" for what
+replaced it. Everything else stands as built.
 
 ## Problem
 
@@ -30,21 +33,58 @@ implies was never built.
 | Past days, mis-taps? | **Today only, no undo.** Missed days stay empty for ever. |
 | Profile surfacing | **Third `StatTile` row**: `QT 기록` and `암송 기록`, both all-time day counts. |
 | Where does the record live? | **Server.** See "Approaches rejected". |
-| Sunday on the QT streak | Seven pills, Sunday drawn as a third state and excluded from the denominator → `3/6일`. |
+| Sunday on the QT streak | ~~Excluded from the denominator → `3/6일`~~ → **reversed 2026-09-09: Sunday counts, seven pills, `n/7일`.** |
 
-## The Sunday problem
+## The Sunday problem — and why the first answer was wrong
 
-Measured, not assumed: `quiet-time.php` returns `found:false` on Sundays
-(checked 2026-09-06, -13, -20, -27). The 오늘의 말씀 card therefore **hides
-itself every Sunday**, and a QT streak can never reach 7/7 — on Sunday there is
-not even a pill to tap.
+Measured: `quiet-time.php` returns `found:false` on Sundays (checked 2026-09-06,
+-13, -20, -27). The reading plan genuinely has no entry.
 
-Resolution: both bars keep seven pills so the two cards look alike, but on the
-QT bar the Sunday pill renders in a third state — neither empty nor filled —
-and drops out of the denominator. The counter reads `3/6일`.
+The first conclusion drawn from that was to exclude Sunday from the QT streak:
+seven pills, the Sunday one drawn in a third muted state and kept out of the
+denominator, so the ratio read `3/6일`.
 
-Rejected: six pills (Mon–Sat) would make the two bars different lengths on one
-screen; seven equal pills would show a day that is never fillable.
+**That was correct about the data and wrong about the practice.** The Sunday
+verses come from the sermon. Someone who goes to church and reads along has done
+exactly what they do on any other day. Refusing the mark made a perfect week
+`6/7` by construction and told those members, silently, that their Sunday did not
+count.
+
+Reversed on 2026-09-09 (server #159, mobile #204):
+
+| | first answer | now |
+|---|---|---|
+| `todayMarkable` on Sunday | `false` | `true` |
+| `POST` on Sunday | `400` | `201` |
+| a full week | 6 pills | **7 pills** |
+| the muted "never markable" pill state | existed | gone — no day has it |
+
+The server short-circuits Sunday locally without calling upstream: no query
+could establish that the sermon is the passage.
+
+What remains of the finding is the *card*, not the streak. There is still no
+planned passage to name on a Sunday, so `/verses/today` returns
+`state: SUNDAY_SERVICE` and the app words it — see below.
+
+## Three states on the daily card
+
+`GET /verses/today` carries `state: PASSAGE | SUNDAY_SERVICE | NO_PLAN`,
+non-null and always set, so the client can switch exhaustively.
+
+| State | Card |
+|---|---|
+| `PASSAGE` | reference KO over EN, translation, arrow to `sourceUrl` |
+| `SUNDAY_SERVICE` | the service named in the app's own words, streak still markable |
+| `NO_PLAN` | hidden |
+
+An empty payload had two causes — a Sunday, and a gap at the turn of the year,
+because the plan is written annually. Without the distinction the app would draw
+a Sunday service on a Tuesday in January.
+
+**The wording belongs to the app.** An interim `notice` field carrying fixed
+Korean text was removed server-side: the server is not localised and the app is,
+so a Korean sentence would have landed on a German-speaking member's home
+screen, and every rephrasing would have been a server deploy.
 
 ## Approaches rejected
 
@@ -123,7 +163,10 @@ Pill states, settled against the rendered design rather than in the abstract:
 | Marked | fill `accent/amber` |
 | Today, markable | fill `accent/amber-dim` **plus a 1 dp `accent/amber` stroke** |
 | Empty (future or missed) | fill `bg/surface-3` |
-| Not markable (Sunday, QT bar) | fill `bg/surface-2` |
+
+There is no fourth, dimmer state. It existed for the Sunday pill and went away
+with the reversal above; `todayMarkable` alone decides whether today invites a
+tap, and no *weekday* is ever unmarkable.
 
 The stroke is not decoration. `accent/amber-dim` alone renders *darker* than
 `bg/surface-3` in dark mode, so today's pill read as less prominent than an
@@ -205,7 +248,7 @@ Steps 3 and 4 can start before 1 and 2 land; the cards simply stay hidden.
 - Tapping today's pill on either card fills it and survives an app restart.
 - A second tap on the same day does nothing; the next day's pill becomes
   tappable.
-- On a Sunday the QT bar shows its Sunday pill muted and reads `n/6일`.
+- On a Sunday the QT card names the service, its pill is markable, and the bar reads `n/7일`.
 - Both profile tiles show a day count that matches the sum of marked days, and
   a dash when the call has not returned.
 - With the records endpoint absent, both cards render exactly as they do today

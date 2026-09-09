@@ -65,14 +65,15 @@ class VerseRecordRepositoryImplTest {
     }
 
     @Test
-    fun `the kind travels with each streak so the sunday rule can apply`() = runTest {
+    fun `the kind travels with each streak and both span seven days`() = runTest {
         val records = VerseRecordRepositoryImpl(mockClient()).getRecords().getOrThrow()
 
         assertEquals(VerseRecordKind.QUIET_TIME, records.quietTime.kind)
         assertEquals(VerseRecordKind.RECITATION, records.recitation.kind)
-        // The Sunday in days[] counts for recitation but not for quiet time.
-        assertEquals(7, records.recitation.markableDays.size)
-        assertEquals(6, records.quietTime.markableDays.size)
+        // The Sunday in days[] counts for both now.
+        assertEquals(7, records.recitation.week.size)
+        assertEquals(7, records.quietTime.week.size)
+        assertEquals(1, records.recitation.markedThisWeek)
     }
 
     @Test
@@ -129,8 +130,8 @@ class VerseRecordRepositoryImplTest {
 
     @Test
     fun `a day the server refuses fails rather than pretending`() = runTest {
-        // 400 means today cannot be marked for this kind at all — a Sunday for
-        // 오늘의 말씀, or a week with no chosen verse for 암송.
+        // 400 means today cannot be marked for this kind — a weekday without a
+        // plan entry, or a week with no chosen verse for 암송. No longer Sundays.
         val repo = VerseRecordRepositoryImpl(mockClient(onPost = "" to HttpStatusCode.BadRequest))
 
         assertTrue(repo.mark(VerseRecordKind.QUIET_TIME).isFailure)

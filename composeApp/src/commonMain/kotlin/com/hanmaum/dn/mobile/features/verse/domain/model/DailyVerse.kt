@@ -10,6 +10,11 @@ package com.hanmaum.dn.mobile.features.verse.domain.model
  * (see hanmaum-dn-server#115).
  */
 data class DailyVerse(
+    /**
+     * What the server is saying. Never [DailyVerseState.NO_PLAN] here — that
+     * case has nothing to show and never becomes a [DailyVerse] at all.
+     */
+    val state: DailyVerseState,
     /** e.g. `신명기 3:1-11`. Empty if the server could not render it. */
     val referenceKo: String,
     /** e.g. `Deuteronomy 3:1-11`. Empty if the server could not render it. */

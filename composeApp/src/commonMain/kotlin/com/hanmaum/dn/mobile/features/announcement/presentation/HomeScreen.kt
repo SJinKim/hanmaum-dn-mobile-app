@@ -44,6 +44,7 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.features.verse.domain.model.DailyVerse
+import com.hanmaum.dn.mobile.features.verse.domain.model.DailyVerseState
 import com.hanmaum.dn.mobile.features.verse.domain.model.VerseRecordKind
 import com.hanmaum.dn.mobile.features.verse.domain.model.VerseStreak
 import com.hanmaum.dn.mobile.features.verse.presentation.components.StreakBar
@@ -580,13 +581,33 @@ private fun DailyPassageCard(
             }
         }
 
-        // Either half can be empty if the server could not resolve that
-        // language; the other one still carries the card.
-        if (verse.referenceKo.isNotEmpty()) {
-            Text(verse.referenceKo, style = DnTheme.typography.title, color = c.textPrimary)
-        }
-        if (verse.referenceEn.isNotEmpty()) {
-            Text(verse.referenceEn, style = DnTheme.typography.body, color = c.textSecondary)
+        when (verse.state) {
+            // Sunday has no planned passage — the verses come from the sermon —
+            // so the card names the service instead of a reference. The wording
+            // lives here, not on the server, which is not localised.
+            DailyVerseState.SUNDAY_SERVICE -> {
+                Text(
+                    strings.verseSundayServiceTitle,
+                    style = DnTheme.typography.title,
+                    color = c.textPrimary,
+                )
+                Text(
+                    strings.verseSundayServiceHint,
+                    style = DnTheme.typography.body,
+                    color = c.textSecondary,
+                )
+            }
+
+            // Either half can be empty if the server could not resolve that
+            // language; the other one still carries the card.
+            else -> {
+                if (verse.referenceKo.isNotEmpty()) {
+                    Text(verse.referenceKo, style = DnTheme.typography.title, color = c.textPrimary)
+                }
+                if (verse.referenceEn.isNotEmpty()) {
+                    Text(verse.referenceEn, style = DnTheme.typography.body, color = c.textSecondary)
+                }
+            }
         }
 
         streak?.let {

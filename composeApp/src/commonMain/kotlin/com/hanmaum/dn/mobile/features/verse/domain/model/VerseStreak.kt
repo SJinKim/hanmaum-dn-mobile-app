@@ -1,7 +1,6 @@
 package com.hanmaum.dn.mobile.features.verse.domain.model
 
 import kotlinx.datetime.DatePeriod
-import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 
@@ -24,22 +23,15 @@ data class VerseStreak(
     val week: List<LocalDate> = (0..6).map { weekStart.plus(DatePeriod(days = it)) }
 
     /**
-     * Days that could ever be marked this week.
+     * Marks that fall inside the shown week, so the ratio cannot exceed 1.
      *
-     * For [VerseRecordKind.QUIET_TIME] the reading plan has no passage on
-     * Sundays, so that day can never be filled and must not sit in the
-     * denominator — a member who reads every single day would otherwise be
-     * shown 6/7 for ever. Measured against the upstream, not assumed.
+     * All seven days count for both practices. The reading plan carries no
+     * passage on Sundays, but the Sunday verses come from the sermon — someone
+     * who goes to church and reads along has done the same thing they do on any
+     * other day. Excluding it made a perfect week 6/7 by construction and told
+     * those members their Sunday did not count (server #159).
      */
-    val markableDays: List<LocalDate> = when (kind) {
-        VerseRecordKind.QUIET_TIME -> week.filter { it.dayOfWeek != DayOfWeek.SUNDAY }
-        VerseRecordKind.RECITATION -> week
-    }
-
-    /** Marks that count toward [markableDays], so the ratio cannot exceed 1. */
-    val markedThisWeek: Int = markedDays.count { it in markableDays }
-
-    fun isMarkable(day: LocalDate): Boolean = day in markableDays
+    val markedThisWeek: Int = markedDays.count { it in week }
 
     fun isMarked(day: LocalDate): Boolean = day in markedDays
 }
