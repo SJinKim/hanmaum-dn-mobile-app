@@ -86,7 +86,7 @@ val appModule = module {
     single<VerseRepository> { VerseRepositoryImpl(get(), get()) }
     single<VerseRecordRepository> { VerseRecordRepositoryImpl(get()) }
     single { createHttpClient(get()) } // Client
-    single<TokenStorage> { TokenStorageImpl(Settings()) }
+    single<TokenStorage> { TokenStorageImpl(get(), Settings()) }
     single<LocaleRepository> { LocaleRepositoryImpl(Settings()) }
     single<ThemeRepository> { ThemeRepositoryImpl(Settings()) }
     single<LocationPreferences> { LocationPreferencesImpl(Settings()) }
