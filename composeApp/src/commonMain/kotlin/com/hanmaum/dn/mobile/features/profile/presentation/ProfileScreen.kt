@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.hanmaum.dn.mobile.core.i18n.AppLocale
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
+import com.hanmaum.dn.mobile.core.presentation.dismissKeyboardOnTap
 import com.hanmaum.dn.mobile.core.presentation.components.DnErrorState
 import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlows
@@ -320,6 +321,9 @@ private fun ProfileEditContent(
         Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
+            // Four address fields and a phone number, none of them with a Done
+            // key on iOS — tapping off a field is the way out (#218).
+            .dismissKeyboardOnTap()
             .padding(horizontal = 20.dp),
     ) {
         Spacer(Modifier.height(20.dp))

@@ -2,7 +2,6 @@ package com.hanmaum.dn.mobile.features.login.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,13 +28,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hanmaum.dn.mobile.core.presentation.dismissKeyboardOnTap
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.i18n.AppStrings
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
@@ -116,9 +115,10 @@ fun RegisterScreen(
                     // Tapping anywhere off a field dismisses the keyboard. iOS
                     // number pads have no Done key of their own, so without
                     // this the birth date and postcode trap the keyboard open.
-                    .pointerInput(Unit) {
-                        detectTapGestures(onTap = { focusManager.clearFocus() })
-                    }
+                    // The shared modifier, not a local copy: this screen had the
+                    // only copy, which is why three other screens went without
+                    // one (#218).
+                    .dismissKeyboardOnTap()
                     .padding(horizontal = 24.dp),
             ) {
                 Spacer(Modifier.height(18.dp))
