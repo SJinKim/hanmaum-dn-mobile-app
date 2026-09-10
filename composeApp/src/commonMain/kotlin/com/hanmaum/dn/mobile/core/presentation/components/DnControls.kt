@@ -9,8 +9,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -379,40 +379,44 @@ fun DnTextField(
                     Text(placeholder, style = DnTheme.typography.captionStrong, color = c.textTertiary)
                 }
             }
-            // The icon itself stays 18 dp, but the tap target around it is 44 dp
-            // so it clears the minimum touch size. The target grows inward, so a
-            // small outward offset keeps the glyph optically where it was — an
-            // offset, not padding, because Compose rejects negative padding.
+            // The icon itself stays 18 dp and the tap target around it is 44 dp, so
+            // it clears the minimum touch size. The two are nested rather than one
+            // box: a bare 44 dp target sits in the Row and *drives its height*, so
+            // every field carrying a trailing icon stood ~26 dp taller than its
+            // neighbours — the password field next to the e-mail field on the login
+            // screen was where that showed (#213). requiredSize ignores the 18 dp
+            // slot it is measured in, which keeps the target big and the row short.
             val onTrailing = when {
                 isPassword -> ({ revealed = !revealed })
                 else -> onTrailingClick
             }
             trailing?.let {
                 val glyph = if (isPassword && revealed) DnIcons.EyeOff else it
-                Box(
-                    Modifier
-                        .offset(x = 6.dp)
-                        .size(44.dp)
-                        .clip(androidx.compose.foundation.shape.CircleShape)
-                        .then(
-                            if (onTrailing != null) {
-                                Modifier.clickable(onClick = onTrailing)
+                Box(Modifier.size(18.dp), contentAlignment = Alignment.Center) {
+                    Box(
+                        Modifier
+                            .requiredSize(44.dp)
+                            .clip(androidx.compose.foundation.shape.CircleShape)
+                            .then(
+                                if (onTrailing != null) {
+                                    Modifier.clickable(onClick = onTrailing)
+                                } else {
+                                    Modifier
+                                }
+                            ),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            glyph,
+                            contentDescription = if (isPassword) {
+                                if (revealed) "비밀번호 숨기기" else "비밀번호 표시"
                             } else {
-                                Modifier
-                            }
-                        ),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        glyph,
-                        contentDescription = if (isPassword) {
-                            if (revealed) "비밀번호 숨기기" else "비밀번호 표시"
-                        } else {
-                            null
-                        },
-                        tint = if (isPassword && revealed) c.textPrimary else c.textTertiary,
-                        modifier = Modifier.size(18.dp),
-                    )
+                                null
+                            },
+                            tint = if (isPassword && revealed) c.textPrimary else c.textTertiary,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    }
                 }
             }
         }
