@@ -133,6 +133,12 @@ fun App() {
                                     NavRoute.Rejected        -> RejectedRoute
                                 }
                                 navController.navigate(targetRoute) {
+                                    // Belt and braces: the splash reports its
+                                    // destination once and clears it, but a second
+                                    // report would stack a second copy of the same
+                                    // screen — two login screens, one behind the
+                                    // other (#213).
+                                    launchSingleTop = true
                                     if (route == NavRoute.Rejected) {
                                         popUpTo(0) { inclusive = true }
                                     } else {
@@ -200,6 +206,7 @@ fun App() {
                             },
                             onNavigateToLogin = {
                                 navController.navigate(LoginRoute()) {
+                                    launchSingleTop = true
                                     popUpTo(0) { inclusive = true }
                                 }
                             },
