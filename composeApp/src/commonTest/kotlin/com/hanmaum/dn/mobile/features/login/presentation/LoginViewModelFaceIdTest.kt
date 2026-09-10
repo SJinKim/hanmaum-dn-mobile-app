@@ -107,6 +107,63 @@ class LoginViewModelFaceIdTest {
     }
 
     @Test
+    fun theRotatedTokenGoesBackIntoTheVault() = runTest(dispatcher) {
+        // Without this the vault keeps the token that was just spent, and the
+        // second sign-in replays a dead one — Face ID works exactly once (#212).
+        armed()
+        val vm = viewModel()
+
+        signIn(vm)
+        advanceUntilIdle()
+
+        assertEquals("rotated-refresh", vault.sealed)
+        assertEquals(1, vault.resealCount, "and it costs no second prompt")
+    }
+
+    @Test
+    fun twoSignInsInARowBothWork() = runTest(dispatcher) {
+        armed()
+        val auth = FaceIdAuthRepository()
+
+        signIn(viewModel(auth))
+        advanceUntilIdle()
+        val second = viewModel(auth)
+        signIn(second)
+        advanceUntilIdle()
+
+        assertEquals("rotated-refresh", auth.refreshedWith, "the second one used the rotated token")
+        assertEquals(NavRoute.Home, second.uiState.value.navigateTo)
+    }
+
+    @Test
+    fun aBiometricLockoutDoesNotDisarmTheSwitch() = runTest(dispatcher) {
+        // A lockout after failed attempts reports "unavailable" on both platforms.
+        // Treating that as "never set up" made a passing condition permanent: the
+        // button was gone until Face ID was set up again (#212).
+        armed()
+        vault.available = false
+        val vm = viewModel()
+
+        signIn(vm)
+        advanceUntilIdle()
+
+        assertTrue(authPreferences.isBiometricEnabled(), "it is unavailable now, not gone")
+        assertNotNull(vault.sealed)
+    }
+
+    @Test
+    fun anEmptyVaultDoesDisarmTheSwitch() = runTest(dispatcher) {
+        // The other half of the pair: nothing sealed is permanent, not passing.
+        authPreferences.setBiometricEnabled(true)
+        val vm = viewModel()
+
+        signIn(vm)
+        advanceUntilIdle()
+
+        assertFalse(authPreferences.isBiometricEnabled())
+    }
+
+    @Test
     fun faceIdIsOfferedOnlyWhenSwitchedOnAndSealed() = runTest(dispatcher) {
         val vm = viewModel()
         assertFalse(vm.canFaceIdSignIn(vault), "nothing sealed yet")

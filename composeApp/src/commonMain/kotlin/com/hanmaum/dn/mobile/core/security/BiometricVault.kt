@@ -56,6 +56,25 @@ interface BiometricVault {
     /** Prompts, and on success returns the sealed secret. */
     suspend fun open(title: String, subtitle: String, cancelLabel: String): VaultResult
 
+    /**
+     * Replaces the secret using the authorisation of the [open] that just ran,
+     * without a second prompt.
+     *
+     * It exists because the sealed secret is a refresh token, and a refresh
+     * token is spent the moment it is used: without writing the rotated one
+     * back, Face ID works exactly once and then never again (#212). The window
+     * has to span a network round trip, which is why this is not folded into
+     * [open] — the new token does not exist yet when [open] returns.
+     *
+     * Only a *write* is authorised this way, never a read. Overwriting the
+     * vault with a token the caller already holds discloses nothing, so the
+     * property that matters — plaintext leaves the vault only against a live
+     * biometric match — is untouched.
+     *
+     * Returns [VaultResult.Failed] when no recent [open] backs the call.
+     */
+    suspend fun reseal(secret: String): VaultResult
+
     /** Forgets the secret. Never prompts — used on logout and teardown. */
     fun clear()
 }

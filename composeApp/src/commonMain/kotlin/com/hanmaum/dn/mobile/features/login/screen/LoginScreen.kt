@@ -79,10 +79,9 @@ fun LoginScreen(
 
     val strings = LocalStrings.current
     val vault = rememberBiometricVault()
-    // Armed once per screen: neither the setting nor the sealed secret can
-    // change while this screen is up, and re-reading them on every
-    // recomposition would re-trigger the prompt.
-    val autoLoginArmed = remember { viewModel.canFaceIdSignIn(vault) && vault.isAvailable() }
+    // Read once per screen: neither the setting nor the sealed secret can change
+    // while this screen is up.
+    val faceIdArmed = remember { viewModel.canFaceIdSignIn(vault) && vault.isAvailable() }
     var promptRunning by remember { mutableStateOf(false) }
 
     // The vault raises the prompt and, on a real match, hands back the refresh
@@ -100,10 +99,10 @@ fun LoginScreen(
         promptRunning = false
     }
 
-    // Offer the prompt as the screen opens, so the common case is one glance.
-    LaunchedEffect(autoLoginArmed) {
-        if (autoLoginArmed) runFaceIdSignIn()
-    }
+    // No prompt of its own accord. It used to be raised the moment this screen
+    // entered composition — which happens while the splash is still on screen,
+    // so Face ID appeared to come out of the waiting screen, unbidden, on every
+    // launch (#212). The member starts it now, with the button below.
 
     LaunchedEffect(state.navigateTo) {
         state.navigateTo?.let { route ->
@@ -226,7 +225,7 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            if (autoLoginArmed) {
+            if (faceIdArmed) {
                 Spacer(Modifier.height(10.dp))
                 val scope = rememberCoroutineScope()
                 DnTintedButton(

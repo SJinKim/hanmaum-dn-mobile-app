@@ -70,6 +70,13 @@ import kotlin.coroutines.resume
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 class IosBiometricVault : BiometricVault {
 
+    /**
+     * The context of the last successful [open], kept so [reseal] can write the
+     * rotated token back without a second prompt. Dropped as soon as it is used
+     * or the vault is cleared.
+     */
+    private var authorised: LAContext? = null
+
     override fun isAvailable(): Boolean =
         LAContext().canEvaluatePolicy(LAPolicyDeviceOwnerAuthenticationWithBiometrics, null)
 
@@ -128,7 +135,10 @@ class IosBiometricVault : BiometricVault {
 
     override suspend fun open(title: String, subtitle: String, cancelLabel: String): VaultResult {
         if (!isAvailable()) return VaultResult.Unavailable
-        if (!hasSecret()) return VaultResult.Empty
+        // No hasSecret() gate here on purpose: an attribute query that comes back
+        // anything but errSecSuccess would be read as "never set up", and the
+        // caller switches Face ID off on that. The data query below answers the
+        // same question authoritatively — errSecItemNotFound means not there.
 
         val context = LAContext().apply {
             localizedCancelTitle = cancelLabel
@@ -150,7 +160,14 @@ class IosBiometricVault : BiometricVault {
                         val text = data?.let {
                             NSString.create(data = it, encoding = NSUTF8StringEncoding)?.toString()
                         }
-                        if (text != null) VaultResult.Success(text) else VaultResult.Failed
+                        if (text != null) {
+                            // The match just happened; hold the context so the
+                            // rotated token can go back in without prompting again.
+                            authorised = context
+                            VaultResult.Success(text)
+                        } else {
+                            VaultResult.Failed
+                        }
                     }
                     errSecUserCanceled -> VaultResult.Cancelled
                     errSecItemNotFound -> VaultResult.Empty
@@ -165,7 +182,42 @@ class IosBiometricVault : BiometricVault {
         }
     }
 
+    /**
+     * Re-adds the item under the context that the last [open] authenticated.
+     *
+     * `SecItemAdd` never prompts by itself — the prompt in [seal] is an explicit
+     * `evaluatePolicy` call. Handing it an already-authenticated context is
+     * therefore all it takes, and no second prompt appears.
+     */
+    override suspend fun reseal(secret: String): VaultResult {
+        val context = authorised ?: return VaultResult.Failed
+        authorised = null
+
+        val access = SecAccessControlCreateWithFlags(
+            null,
+            kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
+            BIOMETRY_CURRENT_SET,
+            null,
+        ) ?: return VaultResult.Failed
+
+        deleteItem()
+
+        val query = Query()
+        return try {
+            query.putIdentity()
+            query.put(kSecAttrAccessControl, access)
+            query.putObject(kSecUseAuthenticationContext, context)
+            query.putObject(kSecValueData, secret.toNSData())
+            if (SecItemAdd(query.build(), null) == errSecSuccess) VaultResult.Success("")
+            else VaultResult.Failed
+        } finally {
+            query.release()
+            CFRelease(access)
+        }
+    }
+
     override fun clear() {
+        authorised = null
         deleteItem()
     }
 

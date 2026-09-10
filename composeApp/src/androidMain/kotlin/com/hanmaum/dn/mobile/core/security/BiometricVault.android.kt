@@ -21,6 +21,8 @@ import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
+import javax.crypto.spec.SecretKeySpec
+import java.security.SecureRandom
 import kotlin.coroutines.resume
 
 /**
@@ -36,6 +38,13 @@ import kotlin.coroutines.resume
  *
  * Class 3 (`BIOMETRIC_STRONG`) throughout — a crypto-bound key cannot be
  * unlocked by weak biometrics.
+ *
+ * Two layers rather than one: the Keystore key wraps a random data key, and the
+ * data key encrypts the token. That is what makes [reseal] possible without a
+ * second prompt — the rotated token is re-encrypted with the data key the just
+ * finished prompt released, while the Keystore key keeps its per-use
+ * authentication untouched. The alternative, a Keystore key with a time-based
+ * validity window, is API 30+ and cannot be used with a `CryptoObject` at all.
  */
 class AndroidBiometricVault(
     private val context: Context,
@@ -50,11 +59,19 @@ class AndroidBiometricVault(
     private val prefs = context.applicationContext
         .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
+    /**
+     * The data key from the last prompt, held so [reseal] can write the rotated
+     * token back. Dropped once used or the vault is cleared. It authorises a
+     * write, never a read: the ciphertext it produces still needs a real
+     * biometric match to be opened again.
+     */
+    private var authorised: SecretKey? = null
+
     override fun isAvailable(): Boolean =
         BiometricManager.from(context).canAuthenticate(BIOMETRIC_STRONG) ==
             BiometricManager.BIOMETRIC_SUCCESS
 
-    override fun hasSecret(): Boolean = prefs.contains(KEY_PAYLOAD)
+    override fun hasSecret(): Boolean = prefs.contains(KEY_PAYLOAD) && prefs.contains(KEY_WRAPPED)
 
     override suspend fun seal(
         secret: String,
@@ -75,13 +92,16 @@ class AndroidBiometricVault(
 
         return when (val prompt = prompt(cipher, title, subtitle, cancelLabel)) {
             is PromptOutcome.Ok -> try {
-                val iv = prompt.cipher.iv
-                val ciphertext = prompt.cipher.doFinal(secret.encodeToByteArray())
+                // The prompt wrapped the data key; the token itself is encrypted
+                // with that data key, one layer down.
+                val dataKey = SecretKeySpec(ByteArray(DATA_KEY_BYTES).also(SecureRandom()::nextBytes), "AES")
+                val wrapped = prompt.cipher.doFinal(dataKey.encoded)
                 prefs.edit()
-                    .putString(KEY_PAYLOAD, Base64.encodeToString(ciphertext, Base64.NO_WRAP))
-                    .putString(KEY_IV, Base64.encodeToString(iv, Base64.NO_WRAP))
+                    .putString(KEY_WRAPPED, Base64.encodeToString(wrapped, Base64.NO_WRAP))
+                    .putString(KEY_WRAPPED_IV, Base64.encodeToString(prompt.cipher.iv, Base64.NO_WRAP))
                     .apply()
-                VaultResult.Success("")
+                authorised = dataKey
+                if (writePayload(dataKey, secret)) VaultResult.Success("") else VaultResult.Failed
             } catch (e: Exception) {
                 VaultResult.Failed
             }
@@ -93,13 +113,18 @@ class AndroidBiometricVault(
         if (!isAvailable()) return VaultResult.Unavailable
         val payload = prefs.getString(KEY_PAYLOAD, null) ?: return VaultResult.Empty
         val iv = prefs.getString(KEY_IV, null) ?: return VaultResult.Empty
+        // Absent on an install that sealed under the single-layer scheme. There is
+        // no key left that could read that ciphertext without a prompt-per-use, so
+        // it reads as "not set up" and the member arms Face ID once more.
+        val wrapped = prefs.getString(KEY_WRAPPED, null) ?: return VaultResult.Empty
+        val wrappedIv = prefs.getString(KEY_WRAPPED_IV, null) ?: return VaultResult.Empty
 
         val cipher = try {
             Cipher.getInstance(TRANSFORMATION).apply {
                 init(
                     Cipher.DECRYPT_MODE,
                     loadKey() ?: return VaultResult.Empty,
-                    GCMParameterSpec(TAG_BITS, Base64.decode(iv, Base64.NO_WRAP)),
+                    GCMParameterSpec(TAG_BITS, Base64.decode(wrappedIv, Base64.NO_WRAP)),
                 )
             }
         } catch (e: KeyPermanentlyInvalidatedException) {
@@ -113,7 +138,11 @@ class AndroidBiometricVault(
 
         return when (val prompt = prompt(cipher, title, subtitle, cancelLabel)) {
             is PromptOutcome.Ok -> try {
-                val plain = prompt.cipher.doFinal(Base64.decode(payload, Base64.NO_WRAP))
+                val dataKey = SecretKeySpec(prompt.cipher.doFinal(Base64.decode(wrapped, Base64.NO_WRAP)), "AES")
+                val plain = Cipher.getInstance(TRANSFORMATION).apply {
+                    init(Cipher.DECRYPT_MODE, dataKey, GCMParameterSpec(TAG_BITS, Base64.decode(iv, Base64.NO_WRAP)))
+                }.doFinal(Base64.decode(payload, Base64.NO_WRAP))
+                authorised = dataKey
                 VaultResult.Success(plain.decodeToString())
             } catch (e: Exception) {
                 VaultResult.Failed
@@ -122,8 +151,31 @@ class AndroidBiometricVault(
         }
     }
 
+    override suspend fun reseal(secret: String): VaultResult {
+        val dataKey = authorised ?: return VaultResult.Failed
+        authorised = null
+        return if (writePayload(dataKey, secret)) VaultResult.Success("") else VaultResult.Failed
+    }
+
+    /** Encrypts the token with the data key. No Keystore, so no prompt. */
+    private fun writePayload(dataKey: SecretKey, secret: String): Boolean = try {
+        val cipher = Cipher.getInstance(TRANSFORMATION).apply { init(Cipher.ENCRYPT_MODE, dataKey) }
+        val ciphertext = cipher.doFinal(secret.encodeToByteArray())
+        prefs.edit()
+            .putString(KEY_PAYLOAD, Base64.encodeToString(ciphertext, Base64.NO_WRAP))
+            .putString(KEY_IV, Base64.encodeToString(cipher.iv, Base64.NO_WRAP))
+            .apply()
+        true
+    } catch (e: Exception) {
+        false
+    }
+
     override fun clear() {
-        prefs.edit().remove(KEY_PAYLOAD).remove(KEY_IV).apply()
+        authorised = null
+        prefs.edit()
+            .remove(KEY_PAYLOAD).remove(KEY_IV)
+            .remove(KEY_WRAPPED).remove(KEY_WRAPPED_IV)
+            .apply()
         deleteKey()
     }
 
@@ -213,6 +265,9 @@ class AndroidBiometricVault(
         const val PREFS_NAME = "dn_biometric_vault"
         const val KEY_PAYLOAD = "vault_payload"
         const val KEY_IV = "vault_iv"
+        const val KEY_WRAPPED = "vault_wrapped_key"
+        const val KEY_WRAPPED_IV = "vault_wrapped_key_iv"
+        const val DATA_KEY_BYTES = 32
         const val ANDROID_KEYSTORE = "AndroidKeyStore"
         const val KEY_ALIAS = "dn_biometric_vault_key"
         const val TRANSFORMATION = "AES/GCM/NoPadding"
