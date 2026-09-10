@@ -48,7 +48,7 @@ class LoginViewModel(
         cancelLabel: String,
     ) {
         when (val opened = vault.open(title, subtitle, cancelLabel)) {
-            is VaultResult.Success -> exchangeRefreshToken(opened.value)
+            is VaultResult.Success -> exchangeRefreshToken(vault, opened.value)
             // Dismissing the prompt is a choice: fall back to the form quietly.
             VaultResult.Cancelled -> Unit
             VaultResult.Invalidated -> {
@@ -56,19 +56,31 @@ class LoginViewModel(
                 authPreferences.setBiometricEnabled(false)
                 _uiState.update { it.copy(error = "생체 인증이 변경되어 다시 설정해야 합니다.") }
             }
-            VaultResult.Empty, VaultResult.Unavailable ->
-                authPreferences.setBiometricEnabled(false)
+            // Nothing sealed. The item is gone for good, so the switch follows it.
+            VaultResult.Empty -> authPreferences.setBiometricEnabled(false)
+            // "Not available right now" — a biometric lockout after failed attempts
+            // reports exactly this, on both platforms. Switching the setting off
+            // here made a passing condition permanent: the member had to set Face ID
+            // up again to get the button back (#212).
+            VaultResult.Unavailable -> Unit
             VaultResult.Failed ->
                 _uiState.update { it.copy(error = "생체 인증에 실패했습니다. 비밀번호로 로그인해주세요.") }
         }
     }
 
-    private suspend fun exchangeRefreshToken(refreshToken: String) {
+    private suspend fun exchangeRefreshToken(vault: BiometricVault, refreshToken: String) {
         _uiState.update { it.copy(isLoading = true, error = null, statusMessage = "인증하는 중입니다. 잠시만 기다려주세요.") }
         try {
             val tokens = authRepository.refresh(refreshToken)
             tokenStorage.saveAccessToken(tokens.accessToken)
-            tokens.refreshToken?.let { tokenStorage.saveRefreshToken(it) }
+            tokens.refreshToken?.let {
+                tokenStorage.saveRefreshToken(it)
+                // The token that just bought this session is spent. Without writing
+                // the rotated one back, the vault keeps a dead token and Face ID
+                // works exactly once (#212). The prompt from open() still counts,
+                // so this costs the member nothing.
+                vault.reseal(it)
+            }
             httpClient.invalidateBearerCache()
             routeByStatus()
         } catch (e: Exception) {
@@ -86,7 +98,12 @@ class LoginViewModel(
     }
 
     // 2. Events verarbeiten
-    fun onLoginClicked(user: String, pass: String, keepSignedIn: Boolean = true, enableFaceId: Boolean = false) {
+    /**
+     * Face ID is not armed from here. It is switched on in 설정, where the member
+     * is already signed in and the refresh token is there to seal — this screen
+     * carried an `enableFaceId` flag that nothing ever read (#212).
+     */
+    fun onLoginClicked(user: String, pass: String, keepSignedIn: Boolean = true) {
         if (user.isBlank() || pass.isBlank()) {
             _uiState.update { it.copy( error = "아이디와 비밀번호를 입력해주세요.") }
         }
