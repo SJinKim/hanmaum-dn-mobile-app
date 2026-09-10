@@ -220,3 +220,26 @@ Erst der Tag, dann der Build; die Version kommt aus dem Tag, nicht aus der Absic
 prüfen will, ob es stimmt: `git describe --tags --abbrev=0 origin/main` muss die Version
 liefern, die im Store stehen soll. Und ein Draft, der nach dem Publish leer ist, ist die
 Bestätigung — nicht der Anlass, den Schritt zu sparen.
+
+## Bei Zustandsvielfalt zuerst das Figma-Board, dann der Code
+
+**2026-09-10.** Für „주간 암송 구절 soll nie unsichtbar sein" hatte ich den Entwurf
+in Prosa beschrieben und angeboten, ihn direkt zu bauen — Figma wahlweise „vor oder
+nach dem Code". Die Antwort war eindeutig: erst Figma, dann prüfen, dann Code.
+
+Das war nicht Geschmack, es hat die Lösung verändert. Auf dem Board wurden aus meinen
+drei Zuständen fünf. Erst als die Karten nebeneinander lagen, war zu sehen, dass „leer"
+und „Fehler" ohne Fußzeile identisch aussehen, dass der Rückgriff auf den gemerkten Vers
+überhaupt nötig ist, dass die Erstinstallation ein eigener Fall bleibt und dass der
+laufende Aufruf sonst kurz „nichts veröffentlicht" behauptet hätte. Vier Erkenntnisse,
+die in Prosa alle unter „die Karte bleibt sichtbar" verschwunden waren.
+
+Der Grund ist strukturell: Ein Zustand, den man nicht zeichnet, wird im Code zum
+`else`-Zweig — und `else` ist genau der Ort, an dem verschiedene Wirklichkeiten gleich
+aussehen. Das war ja der ursprüngliche Fehler dieser Karte.
+
+**Regel:** Sobald eine Änderung mehr als zwei Darstellungszustände hat, entsteht zuerst
+ein `· Zustände`-Board in Figma (Dark **und** Light, jeder Zustand mit Label und
+Caption, die sagt, wann er auftritt), und das wird abgenommen, bevor eine Zeile Code
+entsteht. Laden zählt als Zustand. Vorbild: `오늘의 말씀 · Zustände` (316:3104) und
+`주간 암송 구절 · Zustände` (337:3120).
