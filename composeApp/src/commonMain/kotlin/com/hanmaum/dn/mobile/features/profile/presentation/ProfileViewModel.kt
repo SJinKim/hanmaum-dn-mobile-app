@@ -133,12 +133,12 @@ class ProfileViewModel(
             // Must run before the token clear or the call goes out unauthenticated.
             pushManager.currentToken()?.let { notificationRepository.deleteDeviceToken(it) }
             tokenStorage.clear()
-            // Explicit logout is an intentional teardown: drop the sealed
-            // refresh token AND the flag so the next sign-in starts clean.
-            // (A plain session expiry keeps both, so Face ID still works — see
-            // TokenStorageImpl.clear.)
-            authPreferences.setBiometricEnabled(false)
-            biometricVault.clear()
+            // The Face ID arming deliberately survives. Signing out and back in
+            // is the ordinary way to end a session, and disarming here left the
+            // member with a login screen that never offered Face ID — there was
+            // no way to reach it at all (#218). What stays behind is a refresh
+            // token the OS releases only against this member's face; another
+            // member signing in with a password clears it (LoginViewModel).
             _loggedOut.value = true
         }
     }

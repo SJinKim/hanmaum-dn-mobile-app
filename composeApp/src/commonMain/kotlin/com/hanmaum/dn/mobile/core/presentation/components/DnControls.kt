@@ -266,6 +266,8 @@ fun DnTintedButton(
     modifier: Modifier = Modifier,
     tint: Color = DnTheme.colors.red,
     container: Color = DnTheme.colors.redDim,
+    /** Sits left of the label. Face ID is found by its mark, not by its word. */
+    icon: ImageVector? = null,
 ) {
     Row(
         modifier
@@ -274,9 +276,10 @@ fun DnTintedButton(
             .border(1.dp, tint, DnPillShape)
             .clickable(onClick = onClick)
             .padding(vertical = 16.dp, horizontal = 24.dp),
-        horizontalArrangement = Arrangement.Center,
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        icon?.let { Icon(it, null, tint = tint, modifier = Modifier.size(20.dp)) }
         Text(label, style = DnTheme.typography.bodyStrong, color = tint)
     }
 }

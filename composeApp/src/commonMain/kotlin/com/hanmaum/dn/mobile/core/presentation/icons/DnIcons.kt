@@ -267,6 +267,26 @@ object DnIcons {
         )
     }
 
+    /**
+     * Face ID: the scan frame with a face inside it.
+     *
+     * Its own glyph rather than [Lock] or [User] — the member is looking for the
+     * mark iOS itself uses, and a padlock beside "Face ID" reads as a password
+     * field (#218).
+     */
+    val FaceId: ImageVector by lazy {
+        stroked(
+            "FaceId",
+            "M4 8.6V6.6A2.6 2.6 0 0 1 6.6 4h2",
+        "M15.4 4h2A2.6 2.6 0 0 1 20 6.6v2",
+        "M20 15.4v2a2.6 2.6 0 0 1-2.6 2.6h-2",
+        "M8.6 20h-2A2.6 2.6 0 0 1 4 17.4v-2",
+        "M9.2 10.1v1.7",
+        "M14.8 10.1v1.7",
+        "M9.3 14.9a3.5 3.5 0 0 0 5.4 0",
+        )
+    }
+
     val Eye: ImageVector by lazy {
         stroked(
             "Eye",

@@ -122,7 +122,7 @@ val appModule = module {
     viewModel { RegisterViewModel(get(), get(), get(), get(), get(), get()) }
 
     // Login VM
-    viewModel { LoginViewModel(get(), get(), get(), get(), get()) }
+    viewModel { LoginViewModel(get(), get(), get(), get(), get(), get()) }
 
     // Profile VM
     viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get(), get()) }

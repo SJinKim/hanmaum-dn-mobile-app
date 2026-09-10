@@ -15,10 +15,28 @@ class AuthPreferencesImpl(private val settings: Settings) : AuthPreferences {
 
     override fun isBiometricEnabled(): Boolean = settings.getBoolean(KEY_BIO, false)
 
-    override fun setBiometricEnabled(value: Boolean) = settings.putBoolean(KEY_BIO, value)
+    override fun setBiometricEnabled(value: Boolean) {
+        settings.putBoolean(KEY_BIO, value)
+        // An owner without an arming is a dangling claim, so the two go together.
+        if (!value) settings.remove(KEY_BIO_MEMBER)
+    }
+
+    override fun biometricMemberId(): String? = settings.getStringOrNull(KEY_BIO_MEMBER)
+
+    override fun setBiometricMemberId(id: String?) {
+        if (id == null) settings.remove(KEY_BIO_MEMBER) else settings.putString(KEY_BIO_MEMBER, id)
+    }
+
+    override fun signedInMemberId(): String? = settings.getStringOrNull(KEY_SIGNED_IN_MEMBER)
+
+    override fun setSignedInMemberId(id: String?) {
+        if (id == null) settings.remove(KEY_SIGNED_IN_MEMBER) else settings.putString(KEY_SIGNED_IN_MEMBER, id)
+    }
 
     private companion object {
         const val KEY_KEEP = "auth_keep_signed_in"
         const val KEY_BIO = "auth_biometric_enabled"
+        const val KEY_BIO_MEMBER = "auth_biometric_member"
+        const val KEY_SIGNED_IN_MEMBER = "auth_signed_in_member"
     }
 }

@@ -54,6 +54,9 @@ class FaceIdSetupViewModel(
             when (result) {
                 is VaultResult.Success -> {
                     authPreferences.setBiometricEnabled(true)
+                    // Whose token is in there. The arming outlives a sign-out now,
+                    // so it has to say who it belongs to (#218).
+                    authPreferences.setBiometricMemberId(authPreferences.signedInMemberId())
                     state.copy(enabled = true, isBusy = false)
                 }
                 // Backing out is a choice, not an error worth a message.

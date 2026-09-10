@@ -80,6 +80,7 @@ class LoginViewModelFaceIdTest {
         tokenStorage = tokenStorage,
         httpClient = HttpClient(MockEngine { respond("") }),
         authPreferences = authPreferences,
+        biometricVault = vault,
     )
 
     private suspend fun signIn(vm: LoginViewModel) =
@@ -161,6 +162,34 @@ class LoginViewModelFaceIdTest {
         advanceUntilIdle()
 
         assertFalse(authPreferences.isBiometricEnabled())
+    }
+
+    @Test
+    fun anotherMemberSigningInWithAPasswordClearsTheVault() = runTest(dispatcher) {
+        // The arming outlives a sign-out, so the button must not survive into
+        // somebody else's session.
+        armed()
+        authPreferences.setBiometricMemberId("someone-else")
+        val vm = viewModel()
+
+        vm.onLoginClicked("user", "pass")
+        advanceUntilIdle()
+
+        assertFalse(authPreferences.isBiometricEnabled())
+        assertNull(vault.sealed)
+    }
+
+    @Test
+    fun theSameMemberSigningInWithAPasswordKeepsTheVault() = runTest(dispatcher) {
+        armed()
+        authPreferences.setBiometricMemberId("p1")
+        val vm = viewModel()
+
+        vm.onLoginClicked("user", "pass")
+        advanceUntilIdle()
+
+        assertTrue(authPreferences.isBiometricEnabled(), "same member, nothing to protect against")
+        assertEquals("sealed-refresh", vault.sealed)
     }
 
     @Test
