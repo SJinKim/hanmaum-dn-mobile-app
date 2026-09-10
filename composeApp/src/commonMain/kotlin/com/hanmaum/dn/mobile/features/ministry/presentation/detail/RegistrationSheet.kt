@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
+import com.hanmaum.dn.mobile.core.presentation.dismissKeyboardOnTap
 import com.hanmaum.dn.mobile.core.presentation.components.DnPrimaryButton
 import com.hanmaum.dn.mobile.core.presentation.theme.DnInnerShape
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
@@ -39,7 +40,15 @@ fun RegistrationSheet(
 ) {
     val c = DnTheme.colors
     ModalBottomSheet(onDismissRequest = onDismiss, containerColor = c.surface) {
-        Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
+        // A sheet has no space beside the field to tap, but it does have the
+        // header and the text above it — and the note field has no Done key of
+        // its own on iOS (#218).
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .dismissKeyboardOnTap()
+                .padding(horizontal = 20.dp),
+        ) {
             Text("신청하기", style = DnTheme.typography.title, color = c.textPrimary)
             Spacer(Modifier.height(4.dp))
             Text(

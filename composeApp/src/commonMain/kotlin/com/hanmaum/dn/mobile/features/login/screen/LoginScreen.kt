@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
+import com.hanmaum.dn.mobile.core.presentation.dismissKeyboardOnTap
 import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlow
 import androidx.compose.runtime.rememberCoroutineScope
@@ -121,6 +122,10 @@ fun LoginScreen(
             Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                // Tapping off a field puts the keyboard away. Without it the
+                // password field keeps it open over the login button, and on iOS
+                // there is no Done key to fall back on (#218).
+                .dismissKeyboardOnTap()
                 .statusBarsPadding()
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
