@@ -4,6 +4,7 @@ import com.hanmaum.dn.mobile.core.data.repository.AuthPreferencesImpl
 import com.hanmaum.dn.mobile.core.data.repository.TokenStorageImpl
 import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
+import com.hanmaum.dn.mobile.core.security.FakeSecureStore
 import com.hanmaum.dn.mobile.core.security.FakeBiometricVault
 import com.hanmaum.dn.mobile.core.security.VaultResult
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterRequest
@@ -71,7 +72,7 @@ class LoginViewModelFaceIdTest {
 
     private val settings = MapSettings()
     private val authPreferences = AuthPreferencesImpl(settings)
-    private val tokenStorage = TokenStorageImpl(settings)
+    private val tokenStorage = TokenStorageImpl(FakeSecureStore(), settings)
     private val vault = FakeBiometricVault()
 
     private fun viewModel(auth: AuthRepository = FaceIdAuthRepository()) = LoginViewModel(
