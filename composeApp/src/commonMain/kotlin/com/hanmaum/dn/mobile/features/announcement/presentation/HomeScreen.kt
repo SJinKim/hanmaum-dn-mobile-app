@@ -42,11 +42,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hanmaum.dn.mobile.core.domain.repository.RememberedWeeklyVerse
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.features.verse.domain.model.DailyVerse
 import com.hanmaum.dn.mobile.features.verse.domain.model.DailyVerseState
 import com.hanmaum.dn.mobile.features.verse.domain.model.VerseRecordKind
 import com.hanmaum.dn.mobile.features.verse.domain.model.VerseStreak
+import com.hanmaum.dn.mobile.features.verse.domain.model.WeeklyVerse
 import com.hanmaum.dn.mobile.features.verse.presentation.components.StreakBar
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -195,25 +197,18 @@ fun HomeScreen(
                 Spacer(Modifier.height(12.dp))
             }
 
-            // Hidden until an admin has chosen a verse for the running week.
-            state.weeklyVerse?.let { verse ->
-                VerseCard(
-                    eyebrow = strings.verseWeeklyTitle,
-                    icon = DnIcons.Sparkle,
-                    verse = verse.text,
-                    reference = verse.reference,
-                    filled = true,
-                    footer = state.verseRecords?.recitation?.let { streak ->
-                        {
-                            StreakBar(
-                                streak = streak,
-                                today = today,
-                                onMarkToday = { viewModel.markVerseRecord(VerseRecordKind.RECITATION) },
-                            )
-                        }
-                    },
-                )
-            }
+            // Never hidden: with the verse, or with the reason there is none plus
+            // whatever this device still remembers.
+            WeeklyVerseCard(
+                verse = state.weeklyVerse,
+                error = state.weeklyVerseError,
+                loaded = state.weeklyVerseLoaded,
+                remembered = state.rememberedWeeklyVerse,
+                streak = state.verseRecords?.recitation,
+                streakError = state.verseRecordsError,
+                today = today,
+                onMarkToday = { viewModel.markVerseRecord(VerseRecordKind.RECITATION) },
+            )
 
             // room for the floating dock plus its scroll edge
             Spacer(Modifier.height(DnDock.contentInset(extra = 22.dp)))
@@ -628,16 +623,32 @@ private fun DailyPassageCard(
     }
 }
 
+/**
+ * 주간 암송 구절 — on screen in every case.
+ *
+ * It used to disappear whenever [verse] was null, which covered three very
+ * different situations: nothing published, the church's source unreachable, and
+ * a call still in flight. A member saw the same nothing for all of them.
+ *
+ * Now the card always stands, and only its middle changes. The amber fill is
+ * reserved for the case where a verse is actually there — an amber card whose
+ * whole message is "there is nothing" shouts for its content.
+ */
 @Composable
-private fun VerseCard(
-    eyebrow: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    verse: String,
-    reference: String,
-    filled: Boolean,
-    footer: (@Composable () -> Unit)? = null,
+private fun WeeklyVerseCard(
+    verse: WeeklyVerse?,
+    error: String?,
+    loaded: Boolean,
+    remembered: RememberedWeeklyVerse?,
+    streak: VerseStreak?,
+    streakError: String?,
+    today: LocalDate,
+    onMarkToday: () -> Unit,
 ) {
     val c = DnTheme.colors
+    val strings = LocalStrings.current
+    val filled = verse != null
+
     Column(
         Modifier
             .fillMaxWidth()
@@ -652,13 +663,75 @@ private fun VerseCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Icon(icon, null, tint = c.amber, modifier = Modifier.size(16.dp))
-            Text(eyebrow, style = DnTheme.typography.label, color = c.amber)
+            Icon(DnIcons.Sparkle, null, tint = c.amber, modifier = Modifier.size(16.dp))
+            Text(strings.verseWeeklyTitle, style = DnTheme.typography.label, color = c.amber)
         }
-        Text(verse, style = DnTheme.typography.bodyStrong, color = c.textPrimary)
-        Text(reference, style = DnTheme.typography.caption, color = c.textTertiary)
-        footer?.invoke()
+
+        if (verse != null) {
+            Text(verse.text, style = DnTheme.typography.bodyStrong, color = c.textPrimary)
+            VerseFootRow(verse.reference, weekRangeLabel(verse.weekStart, verse.weekEnd))
+        } else {
+            // Nothing is claimed while the call is still out: "nothing published"
+            // would be a statement we cannot make yet, and it would flash away a
+            // moment later.
+            if (loaded) {
+                Text(
+                    if (error != null) strings.verseWeeklyUnavailable else strings.verseWeeklyEmpty,
+                    style = DnTheme.typography.body,
+                    color = c.textSecondary,
+                )
+            }
+            // The server is out of answers here, so this is the only source left.
+            // Null on a device that has never loaded a verse.
+            remembered?.let {
+                VerseFootRow(
+                    reference = strings.verseWeeklyRemembered(it.reference),
+                    weekRange = weekRangeLabel(it.weekStart, it.weekEnd),
+                )
+            }
+        }
+
+        streak?.let {
+            StreakBar(streak = it, today = today, onMarkToday = onMarkToday)
+        }
+
+        // Same as the passage card: a missing bar with a known reason says so.
+        if (streak == null && streakError != null) {
+            Text(
+                strings.verseRecordsUnavailable(streakError),
+                style = DnTheme.typography.caption,
+                color = c.textTertiary,
+            )
+        }
     }
+}
+
+/** Reference on the left, the week it belongs to on the right. */
+@Composable
+private fun VerseFootRow(reference: String, weekRange: String?) {
+    val c = DnTheme.colors
+    Row(
+        Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(reference, style = DnTheme.typography.caption, color = c.textTertiary)
+        weekRange?.let {
+            Text(it, style = DnTheme.typography.caption, color = c.textTertiary)
+        }
+    }
+}
+
+/** Null when the server sent no span — then the row carries the reference alone. */
+@Composable
+private fun weekRangeLabel(start: LocalDate?, end: LocalDate?): String? {
+    if (start == null || end == null) return null
+    return LocalStrings.current.verseWeekRange(
+        startMonth = start.month.ordinal + 1,
+        startDay = start.day,
+        endMonth = end.month.ordinal + 1,
+        endDay = end.day,
+    )
 }
 
 private fun dayLabel(dayOfWeek: String): String = when (dayOfWeek.uppercase()) {

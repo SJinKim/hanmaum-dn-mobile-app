@@ -253,6 +253,32 @@ interface AppStrings {
     val verseSundayServiceHint: String
 
     /**
+     * The 주간 암송 구절 card when the server has no verse to give.
+     *
+     * [verseWeeklyEmpty] means nothing is published anywhere; [verseWeeklyUnavailable]
+     * means the church's source could not be reached. Two different facts that used to
+     * look identical, because the card simply disappeared in both cases.
+     */
+    val verseWeeklyEmpty: String
+    val verseWeeklyUnavailable: String
+
+    /**
+     * `지난 구절 · 신명기 1:33` — the last verse this device saw, shown under either
+     * message above so the card is never empty-handed. The prefix is what keeps it
+     * from reading as this week's.
+     */
+    fun verseWeeklyRemembered(reference: String): String
+
+    /**
+     * `8월 30일 ~ 9월 5일` — the week a memory verse belongs to.
+     *
+     * Always shown next to the reference, because the verse is not always the running
+     * week's: with nothing published yet the server answers with the most recent one
+     * (hanmaum-dn-server#160), and the span is what makes that honest.
+     */
+    fun verseWeekRange(startMonth: Int, startDay: Int, endMonth: Int, endDay: Int): String
+
+    /**
      * Shown on the 오늘의 말씀 card when the streaks could not be read.
      *
      * Exists so that "we could not ask" stops looking exactly like "nothing
@@ -492,6 +518,11 @@ object EnStrings : AppStrings {
     override fun verseRecordsUnavailable(reason: String) = "Could not load your record · $reason"
     override fun verseStreakRatio(marked: Int, total: Int) = "$marked/$total days"
     override fun verseRecordDaysValue(days: Long) = "$days"
+    override val verseWeeklyEmpty = "No memory verse has been published yet"
+    override val verseWeeklyUnavailable = "Could not load the memory verse"
+    override fun verseWeeklyRemembered(reference: String) = "Last verse · $reference"
+    override fun verseWeekRange(startMonth: Int, startDay: Int, endMonth: Int, endDay: Int) =
+        "${months[startMonth].take(3)} $startDay – ${months[endMonth].take(3)} $endDay"
 }
 
 object KoStrings : AppStrings {
@@ -712,6 +743,11 @@ object KoStrings : AppStrings {
     override fun verseRecordsUnavailable(reason: String) = "기록을 불러오지 못했어요 · $reason"
     override fun verseStreakRatio(marked: Int, total: Int) = "$marked/${total}일"
     override fun verseRecordDaysValue(days: Long) = "${days}일"
+    override val verseWeeklyEmpty = "아직 등록된 암송 구절이 없습니다"
+    override val verseWeeklyUnavailable = "말씀을 불러오지 못했습니다"
+    override fun verseWeeklyRemembered(reference: String) = "지난 구절 · $reference"
+    override fun verseWeekRange(startMonth: Int, startDay: Int, endMonth: Int, endDay: Int) =
+        "${months[startMonth]} ${startDay}일 ~ ${months[endMonth]} ${endDay}일"
 }
 
 object DeStrings : AppStrings {
@@ -932,4 +968,9 @@ object DeStrings : AppStrings {
     override fun verseRecordsUnavailable(reason: String) = "Aufzeichnung nicht geladen · $reason"
     override fun verseStreakRatio(marked: Int, total: Int) = "$marked/$total Tage"
     override fun verseRecordDaysValue(days: Long) = "$days"
+    override val verseWeeklyEmpty = "Noch kein Wochenvers veröffentlicht"
+    override val verseWeeklyUnavailable = "Wochenvers konnte nicht geladen werden"
+    override fun verseWeeklyRemembered(reference: String) = "Letzter Vers · $reference"
+    override fun verseWeekRange(startMonth: Int, startDay: Int, endMonth: Int, endDay: Int) =
+        "$startDay. ${months[startMonth].take(3)} – $endDay. ${months[endMonth].take(3)}"
 }

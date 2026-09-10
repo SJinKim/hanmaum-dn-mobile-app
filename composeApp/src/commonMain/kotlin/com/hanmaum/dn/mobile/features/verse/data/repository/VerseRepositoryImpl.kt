@@ -1,6 +1,8 @@
 package com.hanmaum.dn.mobile.features.verse.data.repository
 
 import com.hanmaum.dn.mobile.core.domain.model.ApiResponse
+import com.hanmaum.dn.mobile.core.domain.repository.RememberedWeeklyVerse
+import com.hanmaum.dn.mobile.core.domain.repository.VersePreferences
 import com.hanmaum.dn.mobile.features.verse.data.model.DailyVerseResponse
 import com.hanmaum.dn.mobile.features.verse.data.model.WeeklyVerseResponse
 import com.hanmaum.dn.mobile.features.verse.domain.model.DailyVerse
@@ -10,9 +12,11 @@ import com.hanmaum.dn.mobile.features.verse.domain.repository.VerseRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import kotlinx.datetime.LocalDate
 
 class VerseRepositoryImpl(
     private val client: HttpClient,
+    private val preferences: VersePreferences,
 ) : VerseRepository {
 
     // The shared client uses expectSuccess = false, so non-2xx returns normally
@@ -30,13 +34,30 @@ class VerseRepositoryImpl(
     override suspend fun getWeeklyVerse(): Result<WeeklyVerse?> = runCatching {
         val response = client.get("verses/weekly")
         when (response.status.value) {
-            200 -> response.body<ApiResponse<WeeklyVerseResponse>>().data?.toDomainOrNull()
+            200 -> response.body<ApiResponse<WeeklyVerseResponse>>().data?.toDomainOrNull()?.also(::remember)
             204, 404 -> null
             // 503 means the church's bible source could not be reached. The server
             // distinguishes that from "no verse set" on purpose, so it must not be
             // flattened into null here — a retry may well succeed.
             else -> error("verses/weekly failed with ${response.status.value}")
         }
+    }
+
+    /**
+     * Keeps reference and week for the next launch that comes back empty-handed.
+     *
+     * Written here rather than in the ViewModel so every path that reads a verse
+     * feeds the same memory, and so the card's fallback cannot silently stop being
+     * maintained when a second caller appears.
+     */
+    private fun remember(verse: WeeklyVerse) {
+        preferences.rememberWeekly(
+            RememberedWeeklyVerse(
+                reference = verse.reference,
+                weekStart = verse.weekStart,
+                weekEnd = verse.weekEnd,
+            ),
+        )
     }
 
     /**
@@ -51,8 +72,14 @@ class VerseRepositoryImpl(
             reference = reference,
             text = body,
             translation = translation?.trim().orEmpty(),
+            weekStart = weekStart.toLocalDateOrNull(),
+            weekEnd = weekEnd.toLocalDateOrNull(),
         )
     }
+
+    /** A span the server cannot express must not cost the card its verse. */
+    private fun String?.toLocalDateOrNull(): LocalDate? =
+        this?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
 
     /**
      * Turns a row into the card's three cases.

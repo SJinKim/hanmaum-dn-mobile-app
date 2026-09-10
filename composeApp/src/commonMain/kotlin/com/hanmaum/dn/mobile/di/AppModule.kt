@@ -2,12 +2,14 @@ package com.hanmaum.dn.mobile.di
 
 import com.hanmaum.dn.mobile.core.data.repository.LocaleRepositoryImpl
 import com.hanmaum.dn.mobile.core.data.repository.AttendancePreferencesImpl
+import com.hanmaum.dn.mobile.core.data.repository.VersePreferencesImpl
 import com.hanmaum.dn.mobile.core.data.repository.AuthPreferencesImpl
 import com.hanmaum.dn.mobile.core.data.repository.LocationPreferencesImpl
 import com.hanmaum.dn.mobile.core.data.repository.ThemeRepositoryImpl
 import com.hanmaum.dn.mobile.core.data.repository.TokenStorageImpl
 import com.hanmaum.dn.mobile.core.domain.repository.LocaleRepository
 import com.hanmaum.dn.mobile.core.domain.repository.AttendancePreferences
+import com.hanmaum.dn.mobile.core.domain.repository.VersePreferences
 import com.hanmaum.dn.mobile.core.domain.repository.AuthPreferences
 import com.hanmaum.dn.mobile.core.notification.NotificationRouter
 import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
@@ -81,7 +83,7 @@ val appModule = module {
     single<AuthRepository> { AuthRepositoryImpl(get()) }
     single<CityLookupRepository> { CityLookupRepositoryImpl(get()) }
     single<MemberRepository> { MemberRepositoryImpl(get()) }
-    single<VerseRepository> { VerseRepositoryImpl(get()) }
+    single<VerseRepository> { VerseRepositoryImpl(get(), get()) }
     single<VerseRecordRepository> { VerseRecordRepositoryImpl(get()) }
     single { createHttpClient(get()) } // Client
     single<TokenStorage> { TokenStorageImpl(Settings()) }
@@ -93,13 +95,14 @@ val appModule = module {
     // a single instance because the tap can arrive before the graph exists.
     single { NotificationRouter() }
     single<AttendancePreferences> { AttendancePreferencesImpl(Settings()) }
+    single<VersePreferences> { VersePreferencesImpl(Settings()) }
 
     //Splash VM
     viewModel { SplashViewModel(get(), get(), get(), get(), get()) }
 
 
     // Home VM
-    viewModel { HomeViewModel(repository = get(), notificationRepository = get(), memberRepository = get(), verseRepository = get(), verseRecordRepository = get(), pushManager = get()) }
+    viewModel { HomeViewModel(repository = get(), notificationRepository = get(), memberRepository = get(), verseRepository = get(), verseRecordRepository = get(), versePreferences = get(), pushManager = get()) }
 
     // Detail VM
     viewModel { (announcementId: String) ->
