@@ -10,6 +10,9 @@ import com.hanmaum.dn.mobile.features.notification.domain.model.NotificationPage
 import com.hanmaum.dn.mobile.features.notification.domain.repository.NotificationRepository
 import com.hanmaum.dn.mobile.features.verse.domain.model.DailyVerse
 import com.hanmaum.dn.mobile.features.verse.domain.model.DailyVerseState
+import com.hanmaum.dn.mobile.core.domain.repository.RememberedWeeklyVerse
+import com.hanmaum.dn.mobile.core.domain.repository.VersePreferences
+import com.hanmaum.dn.mobile.features.verse.FakeVersePreferences
 import com.hanmaum.dn.mobile.features.verse.domain.model.WeeklyVerse
 import com.hanmaum.dn.mobile.features.verse.domain.repository.VerseRepository
 import com.hanmaum.dn.mobile.features.verse.FakeVerseRecordRepository
@@ -23,6 +26,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.datetime.LocalDate
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -107,8 +111,9 @@ class HomeViewModelTest {
         member: MemberRepository = FakeMemberRepository(),
         verses: VerseRepository = FakeVerseRepository(),
         verseRecords: FakeVerseRecordRepository = FakeVerseRecordRepository(),
+        versePreferences: VersePreferences = FakeVersePreferences(),
         push: PushManager = FakePushManager(token = null),
-    ) = HomeViewModel(announcements, notifications, member, verses, verseRecords, push)
+    ) = HomeViewModel(announcements, notifications, member, verses, verseRecords, versePreferences, push)
 
     @Test
     fun `unseen count lands in ui state`() = runTest(dispatcher) {
@@ -191,10 +196,40 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `no weekly verse set leaves that card hidden`() = runTest(dispatcher) {
+    fun `no weekly verse published is not an error`() = runTest(dispatcher) {
+        // The card stays on screen either way — what tells the two apart is whether
+        // an error came with it, because they are worded differently.
         val vm = vm(verses = FakeVerseRepository(weekly = Result.success(null)))
         vm.loadAnnouncements(); advanceUntilIdle()
         assertNull(vm.uiState.value.weeklyVerse)
+        assertNull(vm.uiState.value.weeklyVerseError)
+        assertTrue(vm.uiState.value.weeklyVerseLoaded)
+    }
+
+    @Test
+    fun `a failing weekly call is reported rather than swallowed`() = runTest(dispatcher) {
+        val vm = vm(verses = FakeVerseRepository(weekly = Result.failure(RuntimeException("boom"))))
+        vm.loadAnnouncements(); advanceUntilIdle()
+        assertEquals("boom", vm.uiState.value.weeklyVerseError)
+        assertTrue(vm.uiState.value.weeklyVerseLoaded)
+    }
+
+    @Test
+    fun `the remembered verse is offered while the server has none`() = runTest(dispatcher) {
+        val kept = RememberedWeeklyVerse("신명기 1:33", LocalDate(2026, 8, 30), LocalDate(2026, 9, 5))
+        val vm = vm(
+            verses = FakeVerseRepository(weekly = Result.failure(RuntimeException("boom"))),
+            versePreferences = FakeVersePreferences(kept),
+        )
+        vm.loadAnnouncements(); advanceUntilIdle()
+        assertEquals(kept, vm.uiState.value.rememberedWeeklyVerse)
+    }
+
+    @Test
+    fun `a fresh install has nothing remembered`() = runTest(dispatcher) {
+        val vm = vm(verses = FakeVerseRepository(weekly = Result.success(null)))
+        vm.loadAnnouncements(); advanceUntilIdle()
+        assertNull(vm.uiState.value.rememberedWeeklyVerse)
     }
 
     @Test

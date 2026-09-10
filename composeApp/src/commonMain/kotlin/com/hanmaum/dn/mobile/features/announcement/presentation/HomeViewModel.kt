@@ -9,6 +9,8 @@ import com.hanmaum.dn.mobile.features.announcement.domain.model.Announcement
 import com.hanmaum.dn.mobile.features.announcement.domain.repository.AnnouncementRepository
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import com.hanmaum.dn.mobile.features.notification.domain.repository.NotificationRepository
+import com.hanmaum.dn.mobile.core.domain.repository.RememberedWeeklyVerse
+import com.hanmaum.dn.mobile.core.domain.repository.VersePreferences
 import com.hanmaum.dn.mobile.features.verse.domain.model.DailyVerse
 import com.hanmaum.dn.mobile.features.verse.domain.model.VerseRecordKind
 import com.hanmaum.dn.mobile.features.verse.domain.model.VerseRecords
@@ -38,10 +40,30 @@ data class HomeUiState(
      */
     val dailyVerse: DailyVerse? = null,
     /**
-     * This week's memory verse, or null when none is set for the running week
-     * or the call failed. Hides the card, same reasoning as [dailyVerse].
+     * The memory verse the server last gave us, or null when it had none and
+     * when the call failed.
+     *
+     * Unlike [dailyVerse] this does not hide the card. 주간 암송 구절 stays on
+     * screen in every case — with the verse, or with a reason and whatever the
+     * device still remembers ([rememberedWeeklyVerse]).
      */
     val weeklyVerse: WeeklyVerse? = null,
+    /**
+     * Why the weekly verse is missing, or null.
+     *
+     * Separates "nothing published" (loaded, no verse, no error) from "could not
+     * ask" (loaded, no verse, error) — the card words the two differently.
+     */
+    val weeklyVerseError: String? = null,
+    /** False until the weekly call has answered, so the card does not flash "nothing published". */
+    val weeklyVerseLoaded: Boolean = false,
+    /**
+     * Reference and week of the last verse this device saw, from local storage.
+     *
+     * The card's fallback when the server has nothing: on a fresh install it is
+     * null and the card carries only its message.
+     */
+    val rememberedWeeklyVerse: RememberedWeeklyVerse? = null,
     /** Both streaks, or null while unloaded or the call failed — the bars stay hidden. */
     val verseRecords: VerseRecords? = null,
     /** Set when a mark could not be saved, so the card can say so once. */
@@ -62,6 +84,7 @@ class HomeViewModel(
     private val memberRepository: MemberRepository,
     private val verseRepository: VerseRepository,
     private val verseRecordRepository: VerseRecordRepository,
+    private val versePreferences: VersePreferences,
     private val pushManager: PushManager,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState(isLoading = true))
@@ -119,20 +142,47 @@ class HomeViewModel(
     }
 
     /**
-     * Reads both verse cards. Failure is silent on purpose: a card simply stays
-     * hidden, exactly as it does when there is nothing planned for it.
+     * Reads both verse cards.
      *
      * Two calls rather than one, launched together — they are independent, and
      * a missing weekly verse must not keep the daily passage off the screen.
+     *
+     * The daily passage still fails silently: it hides its card, exactly as it
+     * does when the plan has no entry. The weekly verse does not — its card
+     * stays on screen and says which of the two things happened, so a failure
+     * is visible to the member instead of looking like an empty week.
      */
     private fun loadVerses() {
+        _uiState.update { it.copy(rememberedWeeklyVerse = versePreferences.rememberedWeekly()) }
+
         viewModelScope.launch {
             verseRepository.getTodayVerse()
                 .onSuccess { verse -> _uiState.update { it.copy(dailyVerse = verse) } }
         }
         viewModelScope.launch {
-            verseRepository.getWeeklyVerse()
-                .onSuccess { verse -> _uiState.update { it.copy(weeklyVerse = verse) } }
+            verseRepository.getWeeklyVerse().fold(
+                onSuccess = { verse ->
+                    _uiState.update {
+                        it.copy(
+                            weeklyVerse = verse,
+                            weeklyVerseError = null,
+                            weeklyVerseLoaded = true,
+                            // A fresh verse is a fresh memory — re-read rather than
+                            // leave the previous one standing next to it.
+                            rememberedWeeklyVerse = versePreferences.rememberedWeekly(),
+                        )
+                    }
+                },
+                onFailure = { cause ->
+                    _uiState.update {
+                        it.copy(
+                            weeklyVerse = null,
+                            weeklyVerseError = cause.message ?: cause::class.simpleName ?: "unknown",
+                            weeklyVerseLoaded = true,
+                        )
+                    }
+                },
+            )
         }
     }
 
