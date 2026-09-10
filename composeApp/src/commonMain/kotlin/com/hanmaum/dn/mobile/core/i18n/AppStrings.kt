@@ -252,6 +252,14 @@ interface AppStrings {
     val verseSundayServiceTitle: String
     val verseSundayServiceHint: String
 
+    /**
+     * Shown on the 오늘의 말씀 card when the streaks could not be read.
+     *
+     * Exists so that "we could not ask" stops looking exactly like "nothing
+     * recorded yet" — the two used to render identically, as no bar at all.
+     */
+    fun verseRecordsUnavailable(reason: String): String
+
     /** `3/6일` under the streak pills. Total excludes days that can never be marked. */
     fun verseStreakRatio(marked: Int, total: Int): String
 
@@ -481,6 +489,7 @@ object EnStrings : AppStrings {
     override val verseWeeklyTitle = "Weekly Memory Verse"
     override val verseSundayServiceTitle = "Sunday service"
     override val verseSundayServiceHint = "Read along with today’s sermon passage"
+    override fun verseRecordsUnavailable(reason: String) = "Could not load your record · $reason"
     override fun verseStreakRatio(marked: Int, total: Int) = "$marked/$total days"
     override fun verseRecordDaysValue(days: Long) = "$days"
 }
@@ -700,6 +709,7 @@ object KoStrings : AppStrings {
     override val verseWeeklyTitle = "주간 암송 구절"
     override val verseSundayServiceTitle = "주일 말씀"
     override val verseSundayServiceHint = "설교 본문으로 함께 읽어요"
+    override fun verseRecordsUnavailable(reason: String) = "기록을 불러오지 못했어요 · $reason"
     override fun verseStreakRatio(marked: Int, total: Int) = "$marked/${total}일"
     override fun verseRecordDaysValue(days: Long) = "${days}일"
 }
@@ -919,6 +929,7 @@ object DeStrings : AppStrings {
     override val verseWeeklyTitle = "Wochenvers"
     override val verseSundayServiceTitle = "Sonntagsgottesdienst"
     override val verseSundayServiceHint = "Wir lesen den Predigttext mit"
+    override fun verseRecordsUnavailable(reason: String) = "Aufzeichnung nicht geladen · $reason"
     override fun verseStreakRatio(marked: Int, total: Int) = "$marked/$total Tage"
     override fun verseRecordDaysValue(days: Long) = "$days"
 }

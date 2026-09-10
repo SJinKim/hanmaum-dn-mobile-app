@@ -186,6 +186,7 @@ fun HomeScreen(
                 DailyPassageCard(
                     verse = verse,
                     streak = state.verseRecords?.quietTime,
+                    streakError = state.verseRecordsError,
                     today = today,
                     onReadClick = { verse.sourceUrl?.let(uriHandler::openUri) },
                     onMarkToday = { viewModel.markVerseRecord(VerseRecordKind.QUIET_TIME) },
@@ -517,6 +518,7 @@ private fun HomeTiles(
 private fun DailyPassageCard(
     verse: DailyVerse,
     streak: VerseStreak?,
+    streakError: String?,
     today: LocalDate,
     onReadClick: () -> Unit,
     onMarkToday: () -> Unit,
@@ -612,6 +614,16 @@ private fun DailyPassageCard(
 
         streak?.let {
             StreakBar(streak = it, today = today, onMarkToday = onMarkToday)
+        }
+
+        // No bar and a known reason: say so rather than leave a gap that looks
+        // like nothing has been recorded yet.
+        if (streak == null && streakError != null) {
+            Text(
+                strings.verseRecordsUnavailable(streakError),
+                style = DnTheme.typography.caption,
+                color = c.textTertiary,
+            )
         }
     }
 }

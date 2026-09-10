@@ -294,4 +294,29 @@ class HomeViewModelTest {
         assertNull(vm.uiState.value.verseRecords)
         assertNull(vm.uiState.value.error)
     }
+
+    @Test
+    fun `a failing records call records why instead of swallowing it`() = runTest(dispatcher) {
+        // "nothing recorded yet" and "we could not ask" used to render identically
+        // as no bar at all, which made a real failure invisible on the device and
+        // undiagnosable from the outside.
+        val vm = vm(
+            verseRecords = FakeVerseRecordRepository(
+                Result.failure(RuntimeException("verses/records failed with 404")),
+            ),
+        )
+        vm.loadAnnouncements(); advanceUntilIdle()
+
+        assertNull(vm.uiState.value.verseRecords)
+        assertEquals("verses/records failed with 404", vm.uiState.value.verseRecordsError)
+    }
+
+    @Test
+    fun `a later success clears the earlier reason`() = runTest(dispatcher) {
+        val vm = vm(verseRecords = FakeVerseRecordRepository())
+        vm.loadAnnouncements(); advanceUntilIdle()
+
+        assertNotNull(vm.uiState.value.verseRecords)
+        assertNull(vm.uiState.value.verseRecordsError)
+    }
 }

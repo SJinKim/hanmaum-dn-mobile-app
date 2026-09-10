@@ -46,6 +46,15 @@ data class HomeUiState(
     val verseRecords: VerseRecords? = null,
     /** Set when a mark could not be saved, so the card can say so once. */
     val verseRecordError: String? = null,
+    /**
+     * Why the streaks could not be read, or null.
+     *
+     * Kept apart from [verseRecords] being null because the two mean different
+     * things and used to look identical: "nothing recorded yet" and "we could
+     * not ask" both rendered as no bar at all. That made a real failure
+     * invisible to the member and undiagnosable from the outside.
+     */
+    val verseRecordsError: String? = null,
 )
 class HomeViewModel(
     private val repository: AnnouncementRepository,
@@ -129,10 +138,22 @@ class HomeViewModel(
 
     private fun loadVerseRecords() {
         viewModelScope.launch {
-            verseRecordRepository.getRecords()
-                .onSuccess { records -> _uiState.update { it.copy(verseRecords = records) } }
-            // onFailure: the bars stay hidden. The verse itself is the card's
-            // content; a missing streak must not take the verse with it.
+            verseRecordRepository.getRecords().fold(
+                onSuccess = { records ->
+                    _uiState.update { it.copy(verseRecords = records, verseRecordsError = null) }
+                },
+                onFailure = { cause ->
+                    // The verse itself still shows — a missing streak must not take
+                    // the card with it — but the failure is now on the screen
+                    // instead of being swallowed.
+                    _uiState.update {
+                        it.copy(
+                            verseRecords = null,
+                            verseRecordsError = cause.message ?: cause::class.simpleName ?: "unknown",
+                        )
+                    }
+                },
+            )
         }
     }
 
