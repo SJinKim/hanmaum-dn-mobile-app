@@ -13,9 +13,10 @@ import com.russhwolf.settings.Settings
  * read the app directory had no reason to attack the sealed copy when an
  * identical token lay unprotected beside it (#222).
  *
- * [settings] stays for two jobs that are not the tokens: carrying the values of
- * an older install across to the [secureStore], and marking that this
- * installation has run before.
+ * [settings] stays for one job that is not the tokens: carrying the values of an
+ * older install across to the [secureStore]. Emptying the store on a fresh
+ * installation belongs to [com.hanmaum.dn.mobile.core.security.InstallationGuard],
+ * which does the same for the Face ID vault (#225).
  */
 class TokenStorageImpl(
     private val secureStore: SecureStore,
@@ -23,7 +24,6 @@ class TokenStorageImpl(
 ) : TokenStorage {
 
     init {
-        forgetAnotherInstallationsTokens()
         migrateFromPlainSettings()
     }
 
@@ -48,22 +48,6 @@ class TokenStorageImpl(
         secureStore.remove(KEY_REFRESH)
     }
 
-    /**
-     * An iOS Keychain item outlives the app that wrote it: delete the app,
-     * install it again, and the tokens are still there. NSUserDefaults does not
-     * survive, so a missing marker means this installation has never run — and
-     * whatever the Keychain kept belongs to an installation that is gone.
-     *
-     * Harmless on Android, where the store is app-private prefs and goes with
-     * the app; the marker is simply always found after the first launch.
-     */
-    private fun forgetAnotherInstallationsTokens() {
-        if (settings.getBoolean(KEY_INSTALLED, false)) return
-        secureStore.remove(KEY_ACCESS)
-        secureStore.remove(KEY_REFRESH)
-        settings.putBoolean(KEY_INSTALLED, true)
-    }
-
     /** Carries a signed-in member across the update instead of signing them out. */
     private fun migrateFromPlainSettings() {
         settings.getStringOrNull(KEY_ACCESS)?.let {
@@ -79,6 +63,5 @@ class TokenStorageImpl(
     companion object {
         private const val KEY_ACCESS = "access_token"
         private const val KEY_REFRESH = "refresh_token"
-        private const val KEY_INSTALLED = "token_store_installed"
     }
 }
