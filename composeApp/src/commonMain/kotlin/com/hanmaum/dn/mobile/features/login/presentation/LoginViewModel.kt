@@ -24,6 +24,12 @@ class LoginViewModel(
     private val tokenStorage: TokenStorage,
     private val httpClient: HttpClient,
     private val authPreferences: AuthPreferences,
+    /**
+     * Only ever cleared through this one, never opened: clearing needs no prompt
+     * and no activity, which is why the injected instance is enough here while
+     * the screens pass their own composition-bound vault into the calls below.
+     */
+    private val biometricVault: BiometricVault,
 ) : ViewModel() {
 
     // 1. UI State: Single Source of Truth
@@ -156,6 +162,17 @@ class LoginViewModel(
 
         memberRepository.getMyProfile()
             .onSuccess { member ->
+                // The Face ID arming outlives a sign-out (#218), so a second
+                // member on the same device would otherwise meet a button that
+                // hands them the first member's session. Their face would not
+                // open it, but the button has no business being there.
+                val armedFor = authPreferences.biometricMemberId()
+                if (armedFor != null && armedFor != member.publicId) {
+                    authPreferences.setBiometricEnabled(false)
+                    biometricVault.clear()
+                }
+                authPreferences.setSignedInMemberId(member.publicId)
+
                 // Sending every non-active member to the pending screen used to
                 // tell a refused applicant to wait for an approval that was
                 // never coming.

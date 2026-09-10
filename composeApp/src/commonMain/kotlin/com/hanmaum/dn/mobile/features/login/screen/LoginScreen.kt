@@ -26,6 +26,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.withFrameNanos
+import kotlinx.coroutines.delay
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -83,6 +86,8 @@ fun LoginScreen(
     // while this screen is up.
     val faceIdArmed = remember { viewModel.canFaceIdSignIn(vault) && vault.isAvailable() }
     var promptRunning by remember { mutableStateOf(false) }
+    // The offer is made once. Backing out leaves the button, not another prompt.
+    var offered by rememberSaveable { mutableStateOf(false) }
 
     // The vault raises the prompt and, on a real match, hands back the refresh
     // token; the ViewModel trades it for a session. Cancelling is a choice, not
@@ -99,10 +104,23 @@ fun LoginScreen(
         promptRunning = false
     }
 
-    // No prompt of its own accord. It used to be raised the moment this screen
-    // entered composition — which happens while the splash is still on screen,
-    // so Face ID appeared to come out of the waiting screen, unbidden, on every
-    // launch (#212). The member starts it now, with the button below.
+    // Armed means armed: the member switched Face ID on in 설정 and expects the
+    // next sign-in to use it — whether the session expired or they signed out.
+    //
+    // The wait is what makes that bearable. Raised the instant this screen
+    // enters composition, the sheet comes up while the splash is still painted,
+    // and Face ID looks like it fires from the waiting screen (#212). One frame
+    // plus a beat, and it belongs to the screen that asked for it.
+    //
+    // Once per arrival: cancelling leaves the button rather than another sheet.
+    LaunchedEffect(faceIdArmed) {
+        if (faceIdArmed && !offered) {
+            offered = true
+            withFrameNanos { }
+            delay(PROMPT_SETTLE_MS)
+            runFaceIdSignIn()
+        }
+    }
 
     LaunchedEffect(state.navigateTo) {
         state.navigateTo?.let { route ->
@@ -232,6 +250,11 @@ fun LoginScreen(
                     label = strings.loginSignInWithFaceId,
                     onClick = { scope.launch { runFaceIdSignIn() } },
                     modifier = Modifier.fillMaxWidth(),
+                    icon = DnIcons.FaceId,
+                    // Lime, not the component's red default: red is what 로그아웃
+                    // and 삭제 wear here, and this is a way in, not a way out.
+                    tint = c.limeInk,
+                    container = c.limeDim,
                 )
             }
 
@@ -253,3 +276,6 @@ fun LoginScreen(
         }
     }
 }
+
+/** Long enough for the navigation transition off the splash to finish. */
+private const val PROMPT_SETTLE_MS = 350L

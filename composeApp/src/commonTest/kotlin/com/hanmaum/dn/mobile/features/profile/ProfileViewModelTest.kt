@@ -134,13 +134,15 @@ class ProfileViewModelTest {
         repo: MemberRepository,
         notificationRepository: FakeNotificationRepository = FakeNotificationRepository(),
         pushManager: FakePushManager = FakePushManager(),
+        vault: FakeBiometricVault = FakeBiometricVault(),
+        authPreferences: AuthPreferencesImpl = AuthPreferencesImpl(MapSettings()),
     ) = ProfileViewModel(
         repo,
         FakeTokenStorage(),
-        FakeBiometricVault(),
+        vault,
         notificationRepository,
         pushManager,
-        AuthPreferencesImpl(MapSettings()),
+        authPreferences,
         FakeVerseRecordRepository(),
     )
 
@@ -268,6 +270,25 @@ class ProfileViewModelTest {
         viewModel.logout()
         dispatcher.scheduler.advanceUntilIdle()
         assertEquals(listOf("tok1"), notificationRepository.deletedTokens)
+    }
+
+    @Test
+    fun `logout leaves the face id arming alone`() = runTest {
+        // Signing out is how a session ordinarily ends. Disarming here left the
+        // member on a login screen that never offered Face ID, so there was no
+        // way to reach it at all (#218). Only their face opens what stays behind.
+        val vault = FakeBiometricVault()
+        val authPreferences = AuthPreferencesImpl(MapSettings())
+        vault.seal("sealed-refresh", "t", "s", "c")
+        authPreferences.setBiometricEnabled(true)
+
+        val viewModel = vm(FakeMemberRepository(), vault = vault, authPreferences = authPreferences)
+        viewModel.logout()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(true, authPreferences.isBiometricEnabled())
+        assertEquals("sealed-refresh", vault.sealed)
+        assertEquals(false, vault.cleared)
     }
 
     @Test
