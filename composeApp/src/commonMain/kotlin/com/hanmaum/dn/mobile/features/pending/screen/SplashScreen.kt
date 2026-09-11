@@ -11,6 +11,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -72,16 +78,52 @@ fun SplashScreen(
             Text("함께 걷는 신앙 공동체", style = DnTheme.typography.caption, color = c.textTertiary)
 
             Spacer(Modifier.height(22.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                repeat(3) { i ->
-                    Box(
-                        Modifier
-                            .size(7.dp)
-                            .clip(RoundedCornerShape(percent = 50))
-                            .background(if (i == 0) c.lime else c.surface3)
-                    )
-                }
-            }
+            LoadingDots()
         }
     }
 }
+
+/**
+ * The three dots under the tagline, with the lime one walking left to right
+ * and starting over — so the splash reads as "working", not as a still frame.
+ *
+ * A colour hand-off rather than a moving shape: each dot keeps its place and
+ * only the lime passes along the row. The step is a spring, like every other
+ * transition here, which keeps the hand-off soft instead of blinking.
+ *
+ * The loop ends on its own: the splash leaves composition as soon as the
+ * session check has an answer, and the effect is cancelled with it.
+ */
+@Composable
+private fun LoadingDots() {
+    val c = DnTheme.colors
+    var active by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(DOT_STEP_MS)
+            active = (active + 1) % DOT_COUNT
+        }
+    }
+
+    Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+        repeat(DOT_COUNT) { i ->
+            val fill by animateColorAsState(
+                targetValue = if (i == active) c.lime else c.surface3,
+                animationSpec = spring(),
+                label = "splashDot",
+            )
+            Box(
+                Modifier
+                    .size(7.dp)
+                    .clip(RoundedCornerShape(percent = 50))
+                    .background(fill)
+            )
+        }
+    }
+}
+
+private const val DOT_COUNT = 3
+
+/** One dot per step; a full pass is three of these. */
+private const val DOT_STEP_MS = 360L
