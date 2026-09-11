@@ -27,8 +27,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.withFrameNanos
-import kotlinx.coroutines.delay
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import kotlinx.coroutines.flow.first
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -89,6 +90,7 @@ fun LoginScreen(
     var promptRunning by remember { mutableStateOf(false) }
     // The offer is made once. Backing out leaves the button, not another prompt.
     var offered by rememberSaveable { mutableStateOf(false) }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
 
     // The vault raises the prompt and, on a real match, hands back the refresh
     // token; the ViewModel trades it for a session. Cancelling is a choice, not
@@ -107,18 +109,19 @@ fun LoginScreen(
 
     // Armed means armed: the member switched Face ID on in 설정 and expects the
     // next sign-in to use it — whether the session expired or they signed out.
+    // But never over the splash, only on this screen.
     //
-    // The wait is what makes that bearable. Raised the instant this screen
-    // enters composition, the sheet comes up while the splash is still painted,
-    // and Face ID looks like it fires from the waiting screen (#212). One frame
-    // plus a beat, and it belongs to the screen that asked for it.
+    // That is waited for, not timed. Navigation fades between destinations over
+    // 700 ms by default and holds the arriving one at STARTED until the fade is
+    // over; only then is it RESUMED. The 350 ms this used to sleep was half of
+    // that, so the prompt still came up over a splash that was only half gone
+    // (#225). RESUMED is the moment the splash has actually left the screen.
     //
-    // Once per arrival: cancelling leaves the button rather than another sheet.
+    // Once per arrival: cancelling leaves the button rather than another prompt.
     LaunchedEffect(faceIdArmed) {
         if (faceIdArmed && !offered) {
+            lifecycle.currentStateFlow.first { it.isAtLeast(Lifecycle.State.RESUMED) }
             offered = true
-            withFrameNanos { }
-            delay(PROMPT_SETTLE_MS)
             runFaceIdSignIn()
         }
     }
@@ -281,6 +284,3 @@ fun LoginScreen(
         }
     }
 }
-
-/** Long enough for the navigation transition off the splash to finish. */
-private const val PROMPT_SETTLE_MS = 350L
