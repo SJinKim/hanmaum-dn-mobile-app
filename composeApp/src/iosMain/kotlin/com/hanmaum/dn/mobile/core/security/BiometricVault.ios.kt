@@ -80,14 +80,31 @@ class IosBiometricVault : BiometricVault {
     override fun isAvailable(): Boolean =
         LAContext().canEvaluatePolicy(LAPolicyDeviceOwnerAuthenticationWithBiometrics, null)
 
+    /**
+     * Whether something is sealed — asked without ever showing a prompt.
+     *
+     * Leaving out `kSecReturnData` is not enough. The item carries a
+     * `SecAccessControl`, and the Keychain is free to authenticate a query that
+     * matches one; with the login screen asking this the moment it composes, the
+     * sheet came up over the splash and Face ID looked like it fired from the
+     * waiting screen (#212, #225). An `LAContext` with `interactionNotAllowed`
+     * takes that freedom away: the call returns instead of asking.
+     *
+     * `errSecInteractionNotAllowed` is then the answer "it is there, but you
+     * would have to authenticate" — which is a yes, not a no. Reading it as no
+     * is what let a locked-out device look like one that had never been set up.
+     */
     override fun hasSecret(): Boolean {
-        // Attributes only. Asking for kSecReturnData here would raise the
-        // prompt, and merely knowing whether the switch is armed must not.
+        val context = LAContext().apply { interactionNotAllowed = true }
         val query = Query()
         try {
             query.putIdentity()
             query.put(kSecMatchLimit, kSecMatchLimitOne)
-            return SecItemCopyMatching(query.build(), null) == errSecSuccess
+            query.putObject(kSecUseAuthenticationContext, context)
+            return when (SecItemCopyMatching(query.build(), null)) {
+                errSecSuccess, ERR_SEC_INTERACTION_NOT_ALLOWED -> true
+                else -> false
+            }
         } finally {
             query.release()
         }
@@ -301,6 +318,9 @@ class IosBiometricVault : BiometricVault {
         const val BIOMETRY_CURRENT_SET = 8uL
 
         const val ERR_SEC_AUTH_FAILED: OSStatus = -25293
+
+        /** The item exists and would need authentication — a yes, not a no. */
+        const val ERR_SEC_INTERACTION_NOT_ALLOWED: OSStatus = -25308
         const val LA_ERROR_USER_CANCEL = -2
     }
 }

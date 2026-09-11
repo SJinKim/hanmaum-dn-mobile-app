@@ -24,6 +24,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import com.hanmaum.dn.mobile.features.geofence.domain.GeofenceCoordinator
 import com.hanmaum.dn.mobile.core.security.BiometricVault
+import com.hanmaum.dn.mobile.core.security.InstallationGuard
 import com.hanmaum.dn.mobile.core.domain.repository.LocaleRepository
 import com.hanmaum.dn.mobile.core.i18n.AppLocale
 import com.hanmaum.dn.mobile.core.i18n.DeStrings
@@ -66,6 +67,12 @@ import org.koin.compose.koinInject
 @Composable
 fun App() {
     KoinContext {
+        // First thing, before any screen composes and before anything reads a
+        // token: a fresh installation must not inherit what the Keychain kept
+        // from the app it replaced (#225).
+        val installationGuard = koinInject<InstallationGuard>()
+        remember { installationGuard.enforce() }
+
         val localeRepo = koinInject<LocaleRepository>()
         var locale by remember { mutableStateOf(localeRepo.getLocale()) }
 

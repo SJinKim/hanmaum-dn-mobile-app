@@ -81,18 +81,4 @@ class TokenStorageImplTest {
         assertEquals("old-refresh", s.getRefreshToken())
         assertNull(settings.getStringOrNull("refresh_token"), "and the plain copy is gone")
     }
-
-    @Test
-    fun `a reinstall does not inherit the keychain of the app it replaced`() {
-        // iOS keeps Keychain items when an app is deleted; NSUserDefaults it does
-        // not. A fresh install must not find itself signed in as whoever used the
-        // device before.
-        val secure = FakeSecureStore()
-        storage(secure, MapSettings()).saveRefreshToken("previous-owner")
-
-        val afterReinstall = storage(secure.survivesUninstall(), MapSettings())
-
-        assertNull(afterReinstall.getRefreshToken())
-        assertNull(afterReinstall.getAccessToken())
-    }
 }

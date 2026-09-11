@@ -2,6 +2,7 @@ package com.hanmaum.dn.mobile.di
 
 import com.hanmaum.dn.mobile.core.data.repository.LocaleRepositoryImpl
 import com.hanmaum.dn.mobile.core.data.repository.AttendancePreferencesImpl
+import com.hanmaum.dn.mobile.core.security.InstallationGuard
 import com.hanmaum.dn.mobile.core.data.repository.VersePreferencesImpl
 import com.hanmaum.dn.mobile.core.data.repository.AuthPreferencesImpl
 import com.hanmaum.dn.mobile.core.data.repository.LocationPreferencesImpl
@@ -87,6 +88,7 @@ val appModule = module {
     single<VerseRecordRepository> { VerseRecordRepositoryImpl(get()) }
     single { createHttpClient(get()) } // Client
     single<TokenStorage> { TokenStorageImpl(get(), Settings()) }
+    single { InstallationGuard(Settings(), get(), get(), get()) }
     single<LocaleRepository> { LocaleRepositoryImpl(Settings()) }
     single<ThemeRepository> { ThemeRepositoryImpl(Settings()) }
     single<LocationPreferences> { LocationPreferencesImpl(Settings()) }
