@@ -23,12 +23,30 @@ class AuthRepositoryImpl(
 
     private val lenientJson = Json { ignoreUnknownKeys = true }
 
+    /**
+     * Signs in and asks for an *offline* session.
+     *
+     * Without `offline_access` the refresh token belongs to the SSO session,
+     * which the realm ends after 30 minutes idle and 10 hours at the latest. The
+     * Face ID vault seals that very token, so Face ID could not survive a night
+     * however correct the app was, and neither could "keep me signed in" (#231).
+     * An offline token is bound to the offline session instead — 30 days idle in
+     * this realm.
+     *
+     * It is asked for on every sign-in, not only when "keep me signed in" is on:
+     * Face ID is armed later, from 설정, and seals whatever refresh token is in
+     * hand at that moment. Handing it a short-lived one would arm something that
+     * quietly expires. Signing out still ends the session on this device — the
+     * app drops the tokens; what it deliberately keeps is the sealed copy, which
+     * only this member's face opens (#220).
+     */
     override suspend fun login(user: String, pass: String): TokenResponse =
         tokenRequest {
             append("client_id", "hanmaum-mobile")
             append("grant_type", "password")
             append("username", user)
             append("password", pass)
+            append("scope", "openid offline_access")
         }
 
     /** Both grants hit the same endpoint and fail the same way. */
