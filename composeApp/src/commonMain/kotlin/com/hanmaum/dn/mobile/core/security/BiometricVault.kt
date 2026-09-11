@@ -2,6 +2,26 @@ package com.hanmaum.dn.mobile.core.security
 
 import androidx.compose.runtime.Composable
 
+/**
+ * Why biometrics can or cannot be used right now.
+ *
+ * One boolean used to cover all of it, so a member who had only refused the
+ * permission for this app was told their phone had no Face ID set up — and was
+ * given no way back (#229).
+ */
+enum class BiometricAvailability {
+    AVAILABLE,
+
+    /** Nothing enrolled, or no passcode — set up in the system settings. */
+    NOT_ENROLLED,
+
+    /** iOS: enrolled, but the member refused this app access to Face ID. */
+    DENIED,
+
+    /** Locked out after failed attempts, or the hardware is busy. Passes. */
+    UNAVAILABLE,
+}
+
 /** Outcome of sealing into, or opening, the [BiometricVault]. */
 sealed interface VaultResult {
     /** [value] is empty for a seal, and the secret for an open. */
@@ -44,8 +64,11 @@ sealed interface VaultResult {
  */
 interface BiometricVault {
 
-    /** True only when *strong* (Class 3) biometrics are present and enrolled. */
-    fun isAvailable(): Boolean
+    /** What stands between the member and a biometric check, if anything. */
+    fun availability(): BiometricAvailability
+
+    /** True only when *strong* (Class 3) biometrics are present, enrolled and allowed. */
+    fun isAvailable(): Boolean = availability() == BiometricAvailability.AVAILABLE
 
     /** True when a secret is sealed — checked without prompting. */
     fun hasSecret(): Boolean
