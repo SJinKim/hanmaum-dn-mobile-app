@@ -171,7 +171,6 @@ class LoginViewModel(
                     authPreferences.setBiometricEnabled(false)
                     biometricVault.clear()
                 }
-                authPreferences.setSignedInMemberId(member.publicId)
 
                 // Sending every non-active member to the pending screen used to
                 // tell a refused applicant to wait for an approval that was

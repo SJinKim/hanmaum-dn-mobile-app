@@ -67,9 +67,13 @@ class AndroidBiometricVault(
      */
     private var authorised: SecretKey? = null
 
-    override fun isAvailable(): Boolean =
-        BiometricManager.from(context).canAuthenticate(BIOMETRIC_STRONG) ==
-            BiometricManager.BIOMETRIC_SUCCESS
+    /** Android has no per-app biometric permission, so it never reports DENIED. */
+    override fun availability(): BiometricAvailability =
+        when (BiometricManager.from(context).canAuthenticate(BIOMETRIC_STRONG)) {
+            BiometricManager.BIOMETRIC_SUCCESS -> BiometricAvailability.AVAILABLE
+            BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> BiometricAvailability.NOT_ENROLLED
+            else -> BiometricAvailability.UNAVAILABLE
+        }
 
     override fun hasSecret(): Boolean = prefs.contains(KEY_PAYLOAD) && prefs.contains(KEY_WRAPPED)
 

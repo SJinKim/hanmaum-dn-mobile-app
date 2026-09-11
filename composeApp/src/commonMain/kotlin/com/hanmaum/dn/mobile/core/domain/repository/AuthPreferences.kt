@@ -19,7 +19,8 @@ interface AuthPreferences {
     fun setBiometricEnabled(value: Boolean)
 
     /**
-     * Whose session the sealed secret opens, as `publicId`.
+     * Whose session the sealed secret opens, as `publicId` — recorded from the
+     * live session at the moment Face ID is switched on.
      *
      * Needed because the arming now survives a sign-out: without it, a second
      * member signing in with their password on the same device would find a
@@ -27,8 +28,4 @@ interface AuthPreferences {
      */
     fun biometricMemberId(): String?
     fun setBiometricMemberId(id: String?)
-
-    /** Whoever signed in last. Arming copies this into [biometricMemberId]. */
-    fun signedInMemberId(): String?
-    fun setSignedInMemberId(id: String?)
 }

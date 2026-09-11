@@ -136,6 +136,14 @@ interface AppStrings {
     // Face ID sign-in
     val profileFaceIdLogin: String
     val faceIdLoginDesc: String
+
+    /**
+     * Under the Face ID switch when it cannot be used. [appLockUnavailable] used
+     * to stand in for every reason, so a member who had only refused this app the
+     * permission read that their phone had no Face ID at all (#229).
+     */
+    val faceIdDenied: String
+    val biometricsUnavailableNow: String
     val faceIdSetupTitle: String
     val faceIdSetupSubtitle: String
     val loginForgotPassword: String
@@ -427,6 +435,8 @@ object EnStrings : AppStrings {
     override val lockUsePassword = "Use password instead"
     override val profileFaceIdLogin = "Face ID Sign-In"
     override val faceIdLoginDesc = "Use Face ID / Touch ID to sign in automatically"
+    override val faceIdDenied = "Allow Face ID for this app in the iPhone Settings"
+    override val biometricsUnavailableNow = "Biometrics are not available right now"
     override val faceIdSetupTitle = "Confirm your password"
     override val faceIdSetupSubtitle = "Enter it once so Face ID can sign you in from now on."
     override val loginForgotPassword = "Forgot?"
@@ -652,6 +662,8 @@ object KoStrings : AppStrings {
     override val lockUsePassword = "비밀번호로 로그인"
     override val profileFaceIdLogin = "Face ID 로그인"
     override val faceIdLoginDesc = "Face ID / Touch ID로 자동 로그인합니다"
+    override val faceIdDenied = "iPhone 설정에서 이 앱의 Face ID 사용을 허용해주세요"
+    override val biometricsUnavailableNow = "지금은 생체 인증을 사용할 수 없습니다"
     override val faceIdSetupTitle = "비밀번호 확인"
     override val faceIdSetupSubtitle = "한 번만 입력하면 다음부터 Face ID로 로그인합니다."
     override val loginForgotPassword = "비밀번호 찾기"
@@ -877,6 +889,8 @@ object DeStrings : AppStrings {
     override val lockUsePassword = "Stattdessen Passwort verwenden"
     override val profileFaceIdLogin = "Face-ID-Anmeldung"
     override val faceIdLoginDesc = "Mit Face ID / Touch ID automatisch anmelden"
+    override val faceIdDenied = "Face ID für diese App in den iPhone-Einstellungen erlauben"
+    override val biometricsUnavailableNow = "Biometrie ist gerade nicht verfügbar"
     override val faceIdSetupTitle = "Passwort bestätigen"
     override val faceIdSetupSubtitle = "Einmal eingeben, danach meldet Face ID dich an."
     override val loginForgotPassword = "Vergessen?"

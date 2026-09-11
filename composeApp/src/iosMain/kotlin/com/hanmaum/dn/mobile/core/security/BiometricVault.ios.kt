@@ -3,6 +3,9 @@ package com.hanmaum.dn.mobile.core.security
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import kotlinx.cinterop.BetaInteropApi
+import platform.LocalAuthentication.LABiometryTypeNone
+import platform.Foundation.NSError
+import kotlinx.cinterop.ObjCObjectVar
 import kotlinx.cinterop.CPointed
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.CValuesRef
@@ -77,8 +80,26 @@ class IosBiometricVault : BiometricVault {
      */
     private var authorised: LAContext? = null
 
-    override fun isAvailable(): Boolean =
-        LAContext().canEvaluatePolicy(LAPolicyDeviceOwnerAuthenticationWithBiometrics, null)
+    /**
+     * Reads the reason out of `canEvaluatePolicy`'s error rather than only its
+     * boolean. `LAErrorBiometryNotAvailable` means two different things: no
+     * hardware, or the member refused this app — told apart by whether the
+     * device still reports a biometry type afterwards.
+     */
+    override fun availability(): BiometricAvailability = memScoped {
+        val context = LAContext()
+        val error = alloc<ObjCObjectVar<NSError?>>()
+        if (context.canEvaluatePolicy(LAPolicyDeviceOwnerAuthenticationWithBiometrics, error.ptr)) {
+            return@memScoped BiometricAvailability.AVAILABLE
+        }
+        when (error.value?.code?.toInt()) {
+            LA_ERROR_BIOMETRY_NOT_ENROLLED, LA_ERROR_PASSCODE_NOT_SET -> BiometricAvailability.NOT_ENROLLED
+            LA_ERROR_BIOMETRY_NOT_AVAILABLE ->
+                if (context.biometryType != LABiometryTypeNone) BiometricAvailability.DENIED
+                else BiometricAvailability.NOT_ENROLLED
+            else -> BiometricAvailability.UNAVAILABLE
+        }
+    }
 
     /**
      * Whether something is sealed — asked without ever showing a prompt.
@@ -322,6 +343,9 @@ class IosBiometricVault : BiometricVault {
         /** The item exists and would need authentication — a yes, not a no. */
         const val ERR_SEC_INTERACTION_NOT_ALLOWED: OSStatus = -25308
         const val LA_ERROR_USER_CANCEL = -2
+        const val LA_ERROR_PASSCODE_NOT_SET = -5
+        const val LA_ERROR_BIOMETRY_NOT_AVAILABLE = -6
+        const val LA_ERROR_BIOMETRY_NOT_ENROLLED = -7
     }
 }
 

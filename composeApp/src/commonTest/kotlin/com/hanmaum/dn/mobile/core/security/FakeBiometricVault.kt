@@ -7,6 +7,8 @@ package com.hanmaum.dn.mobile.core.security
 class FakeBiometricVault(
     var available: Boolean = true,
     var nextResult: VaultResult? = null,
+    /** What [availability] reports while [available] is false. */
+    var unavailableBecause: BiometricAvailability = BiometricAvailability.NOT_ENROLLED,
 ) : BiometricVault {
 
     var sealed: String? = null
@@ -20,7 +22,8 @@ class FakeBiometricVault(
 
     private var opened = false
 
-    override fun isAvailable(): Boolean = available
+    override fun availability(): BiometricAvailability =
+        if (available) BiometricAvailability.AVAILABLE else unavailableBecause
 
     override fun hasSecret(): Boolean = sealed != null
 

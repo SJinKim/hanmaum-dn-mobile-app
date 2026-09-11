@@ -29,6 +29,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import com.hanmaum.dn.mobile.core.security.BiometricAvailability
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -314,7 +316,15 @@ private fun FaceIdSwitchRow(keepSignedIn: Boolean) {
     val viewModel: FaceIdSetupViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsState()
     val vault = rememberBiometricVault()
-    val available = remember { vault.isAvailable() }
+    var availability by remember { mutableStateOf(vault.availability()) }
+    // Allowing Face ID happens in the system settings, and coming back from
+    // there resumes the app — so the reason is read again on every resume
+    // rather than once, or the switch would stay greyed out after the fix.
+    LifecycleResumeEffect(Unit) {
+        availability = vault.availability()
+        onPauseOrDispose { }
+    }
+    val available = availability == BiometricAvailability.AVAILABLE
     val scope = rememberCoroutineScope()
 
     // Turning "keep me signed in" off also clears the biometric flag.
@@ -324,7 +334,12 @@ private fun FaceIdSwitchRow(keepSignedIn: Boolean) {
         SwitchRow(
             label = strings.profileFaceIdLogin,
             // Unlocking a session only means something when one is kept.
-            description = if (!available) strings.appLockUnavailable else strings.faceIdLoginDesc,
+            description = when (availability) {
+                BiometricAvailability.AVAILABLE -> strings.faceIdLoginDesc
+                BiometricAvailability.NOT_ENROLLED -> strings.appLockUnavailable
+                BiometricAvailability.DENIED -> strings.faceIdDenied
+                BiometricAvailability.UNAVAILABLE -> strings.biometricsUnavailableNow
+            },
             checked = state.enabled && keepSignedIn,
             enabled = available && keepSignedIn && !state.isBusy,
             onChange = { want ->
