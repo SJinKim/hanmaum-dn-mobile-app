@@ -25,7 +25,7 @@ never run.
 | Anything at all | 1, 2, 3 |
 | `commonMain` / `iosMain` / anything iOS-reachable | + 4 |
 | A Kotlin declaration Swift calls (`MainViewController`, `KoinHelper`, framework API) | + 5 |
-| UI / navigation / DI wiring / auth-token flow | + 6 (run the app, drive the flow) |
+| UI / navigation / DI wiring / auth-token flow | + 6 (Android emulator; iOS runtime is the user's TestFlight check) |
 | `buildkonfig {}`, `.env` fields, flavors | + 7 |
 
 ## The ladder
@@ -60,17 +60,10 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild build \
   CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
 
 # 6. Run it — Android: assembleDevDebug + emulator against real backend.
-#    iOS simulator (fastest way to see a Kotlin crash + screenshot):
-export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
-xcodebuild build -project iosApp/iosApp.xcodeproj -scheme iosApp \
-  -configuration Debug -sdk iphonesimulator \
-  -destination 'generic/platform=iOS Simulator' \
-  -derivedDataPath /tmp/dnbuild CODE_SIGNING_ALLOWED=NO
-SIM=$(xcrun simctl list devices available | grep -oE '\([0-9A-F-]{36}\)' | tr -d '()' | head -1)
-xcrun simctl boot "$SIM" 2>/dev/null
-xcrun simctl install "$SIM" /tmp/dnbuild/Build/Products/Debug-iphonesimulator/HanmaumDnApp.app
-xcrun simctl launch --console-pty "$SIM" com.hanmaum.dn.mobile.HanmaumDnApp
-xcrun simctl io "$SIM" screenshot /tmp/dn-verify.png
+#    iOS: NO simulator launch. The user checks iOS runtime on TestFlight;
+#    start the simulator only when the user asks for it (tasks/lessons.md,
+#    "TestFlight statt Simulator"). Say in the PR that iOS runtime is pending.
+./gradlew :composeApp:assembleDevDebug
 
 # 7. BuildKonfig changes — verify the generated actuals, don't trust the DSL
 ./gradlew :composeApp:generateBuildKonfig --rerun-tasks
@@ -84,7 +77,8 @@ xcrun simctl io "$SIM" screenshot /tmp/dn-verify.png
 - **Evidence before claims.** Paste the failing/passing output; never report a
   gate you didn't run. If a gate can't run, name it and the residual risk.
 - **A compile is not a verification.** Gate 6 exists because DI wiring, routes,
-  and token flow only break at runtime.
+  and token flow only break at runtime. On iOS that runtime check is the user's
+  TestFlight build: name it as pending rather than claiming it.
 - **iOS is not optional** for `commonMain` changes — Android tolerating
   something (version skew, test names with punctuation) proves nothing about
   Kotlin/Native.
