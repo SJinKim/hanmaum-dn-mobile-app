@@ -99,67 +99,6 @@ internal fun DetailSection(title: String, body: String) {
     }
 }
 
-/** Capacity read-out — the number that decides whether applying is worth it. */
-@Composable
-internal fun DetailCapacity(taken: Int?, total: Int?, deadline: String?) {
-    val c = DnTheme.colors
-    val progress = if (taken != null && total != null && total > 0) {
-        taken.toFloat() / total.toFloat()
-    } else 0f
-
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .clip(DnCardShape)
-            .background(c.surface, DnCardShape)
-            .border(1.dp, c.strokeSubtle, DnCardShape)
-            .padding(18.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text("신청 현황", style = DnTheme.typography.captionStrong, color = c.textPrimary)
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text(
-                    taken?.toString() ?: "–",
-                    style = DnTheme.typography.captionStrong,
-                    color = c.limeInk,
-                )
-                Text(
-                    " / ${total?.toString() ?: "–"}명",
-                    style = DnTheme.typography.caption,
-                    color = c.textTertiary,
-                )
-            }
-        }
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .height(8.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(c.surface3),
-        ) {
-            if (progress > 0f) {
-                Box(
-                    Modifier
-                        .fillMaxWidth(progress)
-                        .height(8.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(c.lime)
-                )
-            }
-        }
-        Text(
-            deadline?.let { "마감 $it" } ?: "마감일 미정",
-            style = DnTheme.typography.label,
-            color = c.textTertiary,
-        )
-    }
-}
-
 /** Floating action bar carrying the single primary action of a detail page. */
 @Composable
 internal fun DetailActionBar(content: @Composable () -> Unit) {

@@ -57,6 +57,10 @@ import com.hanmaum.dn.mobile.features.ministry.data.repository.MinistryRepositor
 import com.hanmaum.dn.mobile.features.ministry.domain.repository.MinistryRepository
 import com.hanmaum.dn.mobile.features.ministry.presentation.detail.MinistryDetailViewModel
 import com.hanmaum.dn.mobile.features.ministry.presentation.list.MinistryListViewModel
+import com.hanmaum.dn.mobile.features.training.data.repository.TrainingRepositoryImpl
+import com.hanmaum.dn.mobile.features.training.domain.repository.TrainingRepository
+import com.hanmaum.dn.mobile.features.training.presentation.detail.TrainingDetailViewModel
+import com.hanmaum.dn.mobile.features.training.presentation.list.TrainingListViewModel
 import com.hanmaum.dn.mobile.features.album.data.repository.AlbumCacheRepositoryImpl
 import com.hanmaum.dn.mobile.features.album.data.repository.AlbumDetailRepositoryImpl
 import com.hanmaum.dn.mobile.features.album.data.repository.AlbumsRepositoryImpl
@@ -134,6 +138,11 @@ val appModule = module {
     single<MinistryRepository> { MinistryRepositoryImpl(get()) }
     viewModel { MinistryListViewModel(get()) }
     viewModel { (publicId: String) -> MinistryDetailViewModel(publicId, get()) }
+
+    // Training (양육)
+    single<TrainingRepository> { TrainingRepositoryImpl(get()) }
+    viewModel { TrainingListViewModel(get()) }
+    viewModel { (publicId: String) -> TrainingDetailViewModel(publicId, get()) }
 
     // Attendance
     single<AttendanceRepository> { AttendanceRepositoryImpl(get()) }

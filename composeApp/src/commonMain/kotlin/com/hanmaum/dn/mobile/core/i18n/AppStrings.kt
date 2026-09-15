@@ -306,6 +306,54 @@ interface AppStrings {
      * which is what the neighbouring 올해 출석 tile does anyway.
      */
     fun verseRecordDaysValue(days: Long): String
+
+    // 양육 (training list and detail)
+    val nurtureTitle: String
+    val nurtureEyebrow: String
+    /** List tag: the member can apply right now. */
+    val nurtureOpen: String
+    /** List tag, and the disabled button label when no course is open. */
+    val nurtureClosed: String
+    /** 상시 접수: shown instead of a registration end date. */
+    val nurtureAlwaysOpen: String
+    /** 503 COURSE_APPLICATION_UNAVAILABLE, and the title of the cancel dialog. */
+    val nurtureUnavailable: String
+    val nurtureUnavailableContact: String
+    val nurtureEmpty: String
+    val nurturePeriod: String
+    val nurtureTime: String
+    val nurturePlace: String
+    val nurtureLeader: String
+    val nurtureAudience: String
+    val nurtureCourseSelect: String
+    val nurtureSelectedCourse: String
+    val nurtureApply: String
+    val nurtureClosedHint: String
+    /** The server says a member may not apply to a course, but not why. */
+    val nurtureCourseNotEligible: String
+    val nurtureStatusTitle: String
+    val nurtureStatusCourse: String
+    val nurtureStatusAppliedOn: String
+    val nurtureCancel: String
+    val nurtureStatusApplied: String
+    val nurtureStatusEnrolled: String
+    val nurtureStatusInProgress: String
+    val nurtureStatusCompleted: String
+    val nurtureStatusDropped: String
+    val nurtureStatusUnknown: String
+    /** Registration window; [start] and [end] come from [nurtureMonthDay]. */
+    fun nurtureWindow(start: String, end: String): String
+    fun nurtureWindowUntil(end: String): String
+    fun nurtureWindowFrom(start: String): String
+    /** [month] is 1-based. */
+    fun nurtureMonthDay(month: Int, day: Int): String
+    /** [month] is 1-based. */
+    fun nurtureFullDate(year: Int, month: Int, day: Int): String
+    fun nurtureStarts(date: String): String
+    fun nurtureWeeks(weeks: Int): String
+    /** [day] is an entry of [dayHeaders]. */
+    fun nurtureWeekly(day: String): String
+    fun nurtureMinutes(minutes: Int): String
 }
 
 object EnStrings : AppStrings {
@@ -533,6 +581,44 @@ object EnStrings : AppStrings {
     override fun verseWeeklyRemembered(reference: String) = "Last verse · $reference"
     override fun verseWeekRange(startMonth: Int, startDay: Int, endMonth: Int, endDay: Int) =
         "${months[startMonth].take(3)} $startDay – ${months[endMonth].take(3)} $endDay"
+
+    override val nurtureTitle = "Discipleship"
+    override val nurtureEyebrow = "Growing in the Word"
+    override val nurtureOpen = "Open"
+    override val nurtureClosed = "Closed"
+    override val nurtureAlwaysOpen = "Open all year"
+    override val nurtureUnavailable = "Coming soon."
+    override val nurtureUnavailableContact = "Please contact the person in charge."
+    override val nurtureEmpty = "No courses are open for application right now."
+    override val nurturePeriod = "Period"
+    override val nurtureTime = "Time"
+    override val nurturePlace = "Place"
+    override val nurtureLeader = "Led by"
+    override val nurtureAudience = "Recommended for"
+    override val nurtureCourseSelect = "Choose a class"
+    override val nurtureSelectedCourse = "Class"
+    override val nurtureApply = "Apply"
+    override val nurtureClosedHint = "Applications are closed. Please wait for the next intake."
+    override val nurtureCourseNotEligible = "You cannot apply to this class"
+    override val nurtureStatusTitle = "Your application"
+    override val nurtureStatusCourse = "Class"
+    override val nurtureStatusAppliedOn = "Applied on"
+    override val nurtureCancel = "Cancel application"
+    override val nurtureStatusApplied = "Applied"
+    override val nurtureStatusEnrolled = "Confirmed"
+    override val nurtureStatusInProgress = "In progress"
+    override val nurtureStatusCompleted = "Completed"
+    override val nurtureStatusDropped = "Cancelled"
+    override val nurtureStatusUnknown = "Checking"
+    override fun nurtureWindow(start: String, end: String) = "Apply $start – $end"
+    override fun nurtureWindowUntil(end: String) = "Apply by $end"
+    override fun nurtureWindowFrom(start: String) = "Apply from $start"
+    override fun nurtureMonthDay(month: Int, day: Int) = "$month/$day"
+    override fun nurtureFullDate(year: Int, month: Int, day: Int) = "$month/$day/$year"
+    override fun nurtureStarts(date: String) = "Starts $date"
+    override fun nurtureWeeks(weeks: Int) = if (weeks == 1) "1 week" else "$weeks weeks"
+    override fun nurtureWeekly(day: String) = "Every $day"
+    override fun nurtureMinutes(minutes: Int) = "$minutes min"
 }
 
 object KoStrings : AppStrings {
@@ -760,6 +846,44 @@ object KoStrings : AppStrings {
     override fun verseWeeklyRemembered(reference: String) = "지난 구절 · $reference"
     override fun verseWeekRange(startMonth: Int, startDay: Int, endMonth: Int, endDay: Int) =
         "${months[startMonth]} ${startDay}일 ~ ${months[endMonth]} ${endDay}일"
+
+    override val nurtureTitle = "양육"
+    override val nurtureEyebrow = "말씀 안에서 자라기"
+    override val nurtureOpen = "신청 가능"
+    override val nurtureClosed = "신청 마감"
+    override val nurtureAlwaysOpen = "상시 접수"
+    override val nurtureUnavailable = "준비중입니다."
+    override val nurtureUnavailableContact = "담당자에게 문의 바랍니다."
+    override val nurtureEmpty = "현재 신청할 수 있는 양육이 없습니다."
+    override val nurturePeriod = "기간"
+    override val nurtureTime = "시간"
+    override val nurturePlace = "장소"
+    override val nurtureLeader = "인도"
+    override val nurtureAudience = "이런 분께 권합니다"
+    override val nurtureCourseSelect = "과정 선택"
+    override val nurtureSelectedCourse = "신청 과정"
+    override val nurtureApply = "신청하기"
+    override val nurtureClosedHint = "지금은 신청 기간이 아닙니다. 다음 모집을 기다려 주세요."
+    override val nurtureCourseNotEligible = "신청할 수 없는 과정입니다"
+    override val nurtureStatusTitle = "신청 현황"
+    override val nurtureStatusCourse = "과정"
+    override val nurtureStatusAppliedOn = "신청일"
+    override val nurtureCancel = "신청 취소"
+    override val nurtureStatusApplied = "신청완료"
+    override val nurtureStatusEnrolled = "참여확정"
+    override val nurtureStatusInProgress = "진행중"
+    override val nurtureStatusCompleted = "수료"
+    override val nurtureStatusDropped = "취소됨"
+    override val nurtureStatusUnknown = "확인중"
+    override fun nurtureWindow(start: String, end: String) = "신청 $start – $end"
+    override fun nurtureWindowUntil(end: String) = "신청 ~ $end"
+    override fun nurtureWindowFrom(start: String) = "신청 $start ~"
+    override fun nurtureMonthDay(month: Int, day: Int) = "${month}월 ${day}일"
+    override fun nurtureFullDate(year: Int, month: Int, day: Int) = "${year}년 ${month}월 ${day}일"
+    override fun nurtureStarts(date: String) = "$date 시작"
+    override fun nurtureWeeks(weeks: Int) = "${weeks}주"
+    override fun nurtureWeekly(day: String) = "매주 ${day}요일"
+    override fun nurtureMinutes(minutes: Int) = "${minutes}분"
 }
 
 object DeStrings : AppStrings {
@@ -987,4 +1111,42 @@ object DeStrings : AppStrings {
     override fun verseWeeklyRemembered(reference: String) = "Letzter Vers · $reference"
     override fun verseWeekRange(startMonth: Int, startDay: Int, endMonth: Int, endDay: Int) =
         "$startDay. ${months[startMonth].take(3)} – $endDay. ${months[endMonth].take(3)}"
+
+    override val nurtureTitle = "Jüngerschaft"
+    override val nurtureEyebrow = "Im Wort wachsen"
+    override val nurtureOpen = "Offen"
+    override val nurtureClosed = "Geschlossen"
+    override val nurtureAlwaysOpen = "Jederzeit offen"
+    override val nurtureUnavailable = "In Vorbereitung."
+    override val nurtureUnavailableContact = "Bitte wende dich an die zuständige Person."
+    override val nurtureEmpty = "Derzeit ist kein Kurs zur Anmeldung offen."
+    override val nurturePeriod = "Zeitraum"
+    override val nurtureTime = "Zeit"
+    override val nurturePlace = "Ort"
+    override val nurtureLeader = "Leitung"
+    override val nurtureAudience = "Empfohlen für"
+    override val nurtureCourseSelect = "Kurs wählen"
+    override val nurtureSelectedCourse = "Kurs"
+    override val nurtureApply = "Anmelden"
+    override val nurtureClosedHint = "Die Anmeldung ist geschlossen. Bitte warte auf den nächsten Durchgang."
+    override val nurtureCourseNotEligible = "Für diesen Kurs kannst du dich nicht anmelden"
+    override val nurtureStatusTitle = "Deine Anmeldung"
+    override val nurtureStatusCourse = "Kurs"
+    override val nurtureStatusAppliedOn = "Angemeldet am"
+    override val nurtureCancel = "Anmeldung stornieren"
+    override val nurtureStatusApplied = "Angemeldet"
+    override val nurtureStatusEnrolled = "Bestätigt"
+    override val nurtureStatusInProgress = "Läuft"
+    override val nurtureStatusCompleted = "Abgeschlossen"
+    override val nurtureStatusDropped = "Storniert"
+    override val nurtureStatusUnknown = "Wird geprüft"
+    override fun nurtureWindow(start: String, end: String) = "Anmeldung $start – $end"
+    override fun nurtureWindowUntil(end: String) = "Anmeldung bis $end"
+    override fun nurtureWindowFrom(start: String) = "Anmeldung ab $start"
+    override fun nurtureMonthDay(month: Int, day: Int) = "$day.$month."
+    override fun nurtureFullDate(year: Int, month: Int, day: Int) = "$day.$month.$year"
+    override fun nurtureStarts(date: String) = "Beginn $date"
+    override fun nurtureWeeks(weeks: Int) = if (weeks == 1) "1 Woche" else "$weeks Wochen"
+    override fun nurtureWeekly(day: String) = "Jeden $day"
+    override fun nurtureMinutes(minutes: Int) = "$minutes Min."
 }

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,7 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.components.DnErrorState
 import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlows
@@ -47,6 +48,14 @@ import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
 import com.hanmaum.dn.mobile.core.presentation.theme.DnCardShape
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
 import com.hanmaum.dn.mobile.core.presentation.theme.typography
+import com.hanmaum.dn.mobile.features.training.domain.model.Training
+import com.hanmaum.dn.mobile.features.training.presentation.TrainingFormat
+import com.hanmaum.dn.mobile.features.training.presentation.components.NurtureListSkeleton
+import com.hanmaum.dn.mobile.features.training.presentation.components.NurtureMessageCard
+import com.hanmaum.dn.mobile.features.training.presentation.components.NurtureOpenBadge
+import com.hanmaum.dn.mobile.features.training.presentation.components.NurtureUnavailableCard
+import com.hanmaum.dn.mobile.features.training.presentation.list.TrainingListUiState
+import com.hanmaum.dn.mobile.features.training.presentation.list.TrainingListViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -67,6 +76,8 @@ fun ParticipationScreen(
 ) {
     val viewModel: MinistryListViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val trainingViewModel: TrainingListViewModel = koinViewModel()
+    val nurture by trainingViewModel.uiState.collectAsStateWithLifecycle()
     val c = DnTheme.colors
 
     // rememberSaveable, not remember: navigating into a detail takes this
@@ -81,6 +92,8 @@ fun ParticipationScreen(
     val nurtureListState = rememberLazyListState()
     val ministryListState = rememberLazyListState()
     val ministries = (state as? MinistryListUiState.Success)?.ministries.orEmpty()
+    // No count while the list is loading or unavailable: "0" would claim there is nothing.
+    val nurtureCount = nurture.trainings.size.takeIf { !nurture.isLoading && !nurture.isUnavailable }
 
     DnBackground(glows = DnGlows.action()) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
@@ -95,7 +108,7 @@ fun ParticipationScreen(
                 options = listOf("양육", "사역"),
                 selectedIndex = tab,
                 onSelect = { tab = it },
-                counts = listOf(NURTURE_PLACEHOLDER.size.toString(), ministries.size.toString()),
+                counts = listOf(nurtureCount?.toString(), ministries.size.toString()),
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
             )
 
@@ -148,32 +161,55 @@ fun ParticipationScreen(
                     }
                 }
             } else {
-                // TODO(#113): /api/v1/trainings now carries description, startDate,
-                // durationWeeks and openForRegistration — enough for this list.
-                // Placeholder rows until the client reads them.
-                LazyColumn(
-                    state = nurtureListState,
-                    contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 60.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    items(NURTURE_PLACEHOLDER) { item ->
-                        ParticipationRow(
-                            icon = DnIcons.Book,
-                            container = c.blueDim,
-                            ink = c.blue,
-                            name = item.first,
-                            description = item.second,
-                            metaIcon = DnIcons.Calendar,
-                            meta = item.third,
-                            badge = "자리표시자",
-                            onClick = { onNurtureClick(item.first) },
-                        )
-                    }
-                }
+                NurtureList(
+                    state = nurture,
+                    listState = nurtureListState,
+                    onRetry = trainingViewModel::load,
+                    onNurtureClick = onNurtureClick,
+                )
             }
         }
 
         DnScrollEdge()
+    }
+}
+
+/** The 양육 tab. Figma: section `22 · 양육 신청 · Zustände`, board `양육 리스트`. */
+@Composable
+private fun NurtureList(
+    state: TrainingListUiState,
+    listState: LazyListState,
+    onRetry: () -> Unit,
+    onNurtureClick: (String) -> Unit,
+) {
+    val c = DnTheme.colors
+    val strings = LocalStrings.current
+    val edge = Modifier.padding(horizontal = 20.dp)
+
+    when {
+        state.isLoading -> NurtureListSkeleton(edge)
+        state.isUnavailable -> NurtureUnavailableCard(edge)
+        state.hasError -> DnErrorState(onRetry = onRetry)
+        state.trainings.isEmpty() -> NurtureMessageCard(DnIcons.Book, strings.nurtureEmpty, edge)
+        else -> LazyColumn(
+            state = listState,
+            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 60.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            items(state.trainings, key = { it.publicId }) { training: Training ->
+                ParticipationRow(
+                    icon = DnIcons.Book,
+                    container = c.blueDim,
+                    ink = c.blue,
+                    name = training.name,
+                    description = training.description,
+                    metaIcon = if (training.window.isAlwaysOpen) DnIcons.Clock else DnIcons.Calendar,
+                    meta = TrainingFormat.window(strings, training.window),
+                    badge = { NurtureOpenBadge(open = training.openForRegistration) },
+                    onClick = { onNurtureClick(training.publicId) },
+                )
+            }
+        }
     }
 }
 
@@ -192,23 +228,16 @@ fun participationTabIndex(routeTab: String): Int =
 const val TAB_NURTURE_INDEX = 0
 const val TAB_SERVE_INDEX = 1
 
-/** Stand-in content so the layout can be reviewed before #113 lands. */
-private val NURTURE_PLACEHOLDER = listOf(
-    Triple("Lorem ipsum", "Consetetur sadipscing elitr, sed diam nonumy eirmod.", "기간 미정"),
-    Triple("Dolor sit amet", "Sed diam voluptua, at vero eos et accusam et justo.", "기간 미정"),
-    Triple("Consetetur", "Stet clita kasd gubergren, no sea takimata sanctus.", "기간 미정"),
-)
-
 @Composable
 private fun ParticipationRow(
     icon: ImageVector,
     container: Color,
     ink: Color,
     name: String,
-    description: String,
+    description: String?,
     metaIcon: ImageVector,
-    meta: String,
-    badge: String?,
+    meta: String?,
+    badge: (@Composable () -> Unit)?,
     onClick: () -> Unit,
 ) {
     val c = DnTheme.colors
@@ -244,31 +273,27 @@ private fun ParticipationRow(
                     color = c.textPrimary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false),
                 )
-                if (badge != null) {
-                    Box(
-                        Modifier
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(c.surface2, RoundedCornerShape(10.dp))
-                            .padding(horizontal = 8.dp, vertical = 3.dp),
-                    ) {
-                        Text(badge, style = DnTheme.typography.label, color = c.textTertiary)
-                    }
-                }
+                badge?.invoke()
             }
-            Text(
-                description,
-                style = DnTheme.typography.caption,
-                color = c.textSecondary,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(5.dp),
-            ) {
-                Icon(metaIcon, null, tint = c.textTertiary, modifier = Modifier.size(12.dp))
-                Text(meta, style = DnTheme.typography.label, color = c.textTertiary)
+            description?.let {
+                Text(
+                    it,
+                    style = DnTheme.typography.caption,
+                    color = c.textSecondary,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            meta?.let {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                ) {
+                    Icon(metaIcon, null, tint = c.textTertiary, modifier = Modifier.size(12.dp))
+                    Text(it, style = DnTheme.typography.label, color = c.textTertiary)
+                }
             }
         }
 
