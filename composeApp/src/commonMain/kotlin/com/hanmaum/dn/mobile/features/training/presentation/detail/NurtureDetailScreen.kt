@@ -89,6 +89,7 @@ fun NurtureDetailScreen(
                     state = state,
                     detail = detail,
                     onSelectCourse = viewModel::selectCourse,
+                    onApply = viewModel::openApplicationForm,
                     onCancel = viewModel::openCancelDialog,
                 )
             }
@@ -98,6 +99,16 @@ fun NurtureDetailScreen(
     if (state.showCancelDialog) {
         NurtureCancelDialog(onDismiss = viewModel::dismissCancelDialog)
     }
+
+    state.form?.let { form ->
+        ApplicationSheet(
+            form = form,
+            onValueChange = viewModel::updateField,
+            onConsentChange = viewModel::setConsent,
+            onSubmit = viewModel::submitApplication,
+            onClose = viewModel::closeApplicationForm,
+        )
+    }
 }
 
 @Composable
@@ -105,6 +116,7 @@ private fun DetailContent(
     state: TrainingDetailUiState,
     detail: TrainingDetail,
     onSelectCourse: (Int) -> Unit,
+    onApply: () -> Unit,
     onCancel: () -> Unit,
 ) {
     val c = DnTheme.colors
@@ -168,9 +180,7 @@ private fun DetailContent(
             DnPrimaryButton(
                 label = if (detail.courses.isEmpty()) strings.nurtureClosed else strings.nurtureApply,
                 leading = DnIcons.UserCheck,
-                // The application form for state.selectedCourse arrives with #174;
-                // until then there is nothing for this button to open.
-                onClick = {},
+                onClick = onApply,
                 enabled = state.canApply,
                 modifier = Modifier.fillMaxWidth(),
             )

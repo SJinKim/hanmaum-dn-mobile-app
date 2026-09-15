@@ -354,6 +354,62 @@ interface AppStrings {
     /** [day] is an entry of [dayHeaders]. */
     fun nurtureWeekly(day: String): String
     fun nurtureMinutes(minutes: Int): String
+
+    // 양육 application form (#174)
+    val nurtureFormBasicGroup: String
+    val nurtureFormBasicHint: String
+    val nurtureFormChurchGroup: String
+    val nurtureFormExperienceGroup: String
+    val nurtureFormExperienceHint: String
+    val nurtureFormRequired: String
+    val nurtureFormOptional: String
+    /** Placeholder of a choice field with nothing chosen yet. */
+    val nurtureFormChoose: String
+    val nurtureFormMissingInProfile: String
+    val nurtureFormErrorRequired: String
+    val nurtureFormErrorEmail: String
+    val nurtureFormErrorDate: String
+    val nurtureFormErrorPhone: String
+    val nurtureFormErrorChoice: String
+    val nurtureFormConsent: String
+    val nurtureFormConsentBody: String
+    val nurtureFormSubmitting: String
+    val nurtureFormRetry: String
+    /** Disabled button label once the course is full. */
+    val nurtureFormFull: String
+    /** Disabled button label when the member may not apply. */
+    val nurtureFormNotEligible: String
+    val nurtureFormSuccessTitle: String
+    fun nurtureFormSuccessBody(courseName: String): String
+    val nurtureFormKeptInput: String
+    val nurtureFormFullTitle: String
+    val nurtureFormFullBody: String
+    val nurtureFormClosedTitle: String
+    val nurtureFormClosedBody: String
+    val nurtureFormAlreadyTitle: String
+    val nurtureFormAlreadyBody: String
+    val nurtureFormNotEligibleTitle: String
+    val nurtureFormInvalidTitle: String
+    val nurtureFormInvalidBody: String
+    val nurtureFormFailedTitle: String
+    val nurtureFormFailedBody: String
+    // Field labels, used when the external API sends none.
+    val nurtureFieldName: String
+    val nurtureFieldBirthDate: String
+    val nurtureFieldEmail: String
+    val nurtureFieldPhone: String
+    val nurtureFieldGender: String
+    val nurtureFieldBaptized: String
+    val nurtureFieldBaptizeType: String
+    val nurtureFieldResidence: String
+    val nurtureFieldGyogu: String
+    val nurtureFieldSoon: String
+    val nurtureFieldChildren: String
+    val nurtureFieldHistory: String
+    val nurtureFieldWaiting: String
+    val nurtureFieldRunning: String
+    val nurtureFieldComment: String
+    val nurtureFieldHistoryPlaceholder: String
 }
 
 object EnStrings : AppStrings {
@@ -619,6 +675,57 @@ object EnStrings : AppStrings {
     override fun nurtureWeeks(weeks: Int) = if (weeks == 1) "1 week" else "$weeks weeks"
     override fun nurtureWeekly(day: String) = "Every $day"
     override fun nurtureMinutes(minutes: Int) = "$minutes min"
+
+    override val nurtureFormBasicGroup = "Basic information"
+    override val nurtureFormBasicHint = "Taken from your profile. Changes here do not update your profile."
+    override val nurtureFormChurchGroup = "Church information"
+    override val nurtureFormExperienceGroup = "Discipleship experience"
+    override val nurtureFormExperienceHint = "Only fill in what applies to you."
+    override val nurtureFormRequired = "Required"
+    override val nurtureFormOptional = "Optional"
+    override val nurtureFormChoose = "Please choose"
+    override val nurtureFormMissingInProfile = "Your profile has no value for this. Please enter it here."
+    override val nurtureFormErrorRequired = "This field is required."
+    override val nurtureFormErrorEmail = "Please enter a valid email address."
+    override val nurtureFormErrorDate = "This date does not exist."
+    override val nurtureFormErrorPhone = "Please enter a phone number made of digits."
+    override val nurtureFormErrorChoice = "Please choose one of the options."
+    override val nurtureFormConsent = "I agree to the collection and use of my personal data"
+    override val nurtureFormConsentBody = "Your details are passed to the church's discipleship team to process the application."
+    override val nurtureFormSubmitting = "Applying…"
+    override val nurtureFormRetry = "Apply again"
+    override val nurtureFormFull = "Class full"
+    override val nurtureFormNotEligible = "Not available"
+    override val nurtureFormSuccessTitle = "Application received"
+    override fun nurtureFormSuccessBody(courseName: String) = "$courseName · The team will contact you."
+    override val nurtureFormKeptInput = "Your input has been kept."
+    override val nurtureFormFullTitle = "This class is full."
+    override val nurtureFormFullBody = "If another class is open, please choose it instead."
+    override val nurtureFormClosedTitle = "Applications have closed."
+    override val nurtureFormClosedBody = "Please apply again at the next intake."
+    override val nurtureFormAlreadyTitle = "You have already applied."
+    override val nurtureFormAlreadyBody = "You can follow its status under Your application."
+    override val nurtureFormNotEligibleTitle = "You cannot apply to this class."
+    override val nurtureFormInvalidTitle = "Please check your input."
+    override val nurtureFormInvalidBody = "Correct the marked fields and apply again."
+    override val nurtureFormFailedTitle = "Could not send your application."
+    override val nurtureFormFailedBody = "Please try again in a moment."
+    override val nurtureFieldName = "Name"
+    override val nurtureFieldBirthDate = "Date of birth"
+    override val nurtureFieldEmail = "Email"
+    override val nurtureFieldPhone = "Mobile"
+    override val nurtureFieldGender = "Gender"
+    override val nurtureFieldBaptized = "Baptism"
+    override val nurtureFieldBaptizeType = "Type of baptism"
+    override val nurtureFieldResidence = "Place of residence"
+    override val nurtureFieldGyogu = "Parish"
+    override val nurtureFieldSoon = "Cell group"
+    override val nurtureFieldChildren = "Family"
+    override val nurtureFieldHistory = "Previous discipleship"
+    override val nurtureFieldWaiting = "Pending applications"
+    override val nurtureFieldRunning = "Current discipleship"
+    override val nurtureFieldComment = "Anything else"
+    override val nurtureFieldHistoryPlaceholder = "e.g. QT basic seminar / May 2017 / Hanmaum Church"
 }
 
 object KoStrings : AppStrings {
@@ -884,6 +991,57 @@ object KoStrings : AppStrings {
     override fun nurtureWeeks(weeks: Int) = "${weeks}주"
     override fun nurtureWeekly(day: String) = "매주 ${day}요일"
     override fun nurtureMinutes(minutes: Int) = "${minutes}분"
+
+    override val nurtureFormBasicGroup = "기본 정보"
+    override val nurtureFormBasicHint = "프로필에서 불러왔습니다. 여기서 고친 내용은 프로필에 반영되지 않습니다."
+    override val nurtureFormChurchGroup = "교회 정보"
+    override val nurtureFormExperienceGroup = "양육 경험"
+    override val nurtureFormExperienceHint = "해당하는 내용만 적어 주세요."
+    override val nurtureFormRequired = "필수"
+    override val nurtureFormOptional = "선택"
+    override val nurtureFormChoose = "선택해 주세요"
+    override val nurtureFormMissingInProfile = "프로필에 없는 정보입니다. 여기에 입력해 주세요."
+    override val nurtureFormErrorRequired = "필수 항목입니다."
+    override val nurtureFormErrorEmail = "올바른 이메일 주소를 입력해 주세요."
+    override val nurtureFormErrorDate = "존재하지 않는 날짜입니다."
+    override val nurtureFormErrorPhone = "숫자로 된 휴대폰 번호를 입력해 주세요."
+    override val nurtureFormErrorChoice = "항목 중 하나를 선택해 주세요."
+    override val nurtureFormConsent = "개인정보 수집 및 이용에 동의합니다"
+    override val nurtureFormConsentBody = "신청 처리를 위해 입력한 정보가 한마음교회 양육 담당자에게 전달됩니다."
+    override val nurtureFormSubmitting = "신청 중…"
+    override val nurtureFormRetry = "다시 신청하기"
+    override val nurtureFormFull = "정원 마감"
+    override val nurtureFormNotEligible = "신청 불가"
+    override val nurtureFormSuccessTitle = "신청이 완료되었습니다"
+    override fun nurtureFormSuccessBody(courseName: String) = "$courseName · 담당자가 확인 후 연락드립니다."
+    override val nurtureFormKeptInput = "입력하신 내용은 그대로 남아 있습니다."
+    override val nurtureFormFullTitle = "정원이 마감되었습니다."
+    override val nurtureFormFullBody = "다른 반이 열려 있다면 과정을 다시 선택해 주세요."
+    override val nurtureFormClosedTitle = "신청 기간이 마감되었습니다."
+    override val nurtureFormClosedBody = "다음 모집 때 다시 신청해 주세요."
+    override val nurtureFormAlreadyTitle = "이미 신청한 양육입니다."
+    override val nurtureFormAlreadyBody = "신청 현황에서 진행 상태를 확인할 수 있습니다."
+    override val nurtureFormNotEligibleTitle = "신청할 수 없는 반입니다."
+    override val nurtureFormInvalidTitle = "입력값을 확인해 주세요."
+    override val nurtureFormInvalidBody = "표시된 항목을 고친 뒤 다시 신청해 주세요."
+    override val nurtureFormFailedTitle = "신청하지 못했습니다."
+    override val nurtureFormFailedBody = "잠시 후 다시 시도해 주세요."
+    override val nurtureFieldName = "이름"
+    override val nurtureFieldBirthDate = "생년월일"
+    override val nurtureFieldEmail = "이메일"
+    override val nurtureFieldPhone = "휴대폰"
+    override val nurtureFieldGender = "성별"
+    override val nurtureFieldBaptized = "세례"
+    override val nurtureFieldBaptizeType = "세례 구분"
+    override val nurtureFieldResidence = "거주지"
+    override val nurtureFieldGyogu = "교구"
+    override val nurtureFieldSoon = "순"
+    override val nurtureFieldChildren = "가족 정보"
+    override val nurtureFieldHistory = "받은 양육"
+    override val nurtureFieldWaiting = "신청해 둔 양육"
+    override val nurtureFieldRunning = "진행 중인 양육"
+    override val nurtureFieldComment = "기타 문의"
+    override val nurtureFieldHistoryPlaceholder = "예) 큐베세 / 2017년 5월 / 한마음교회"
 }
 
 object DeStrings : AppStrings {
@@ -1149,4 +1307,55 @@ object DeStrings : AppStrings {
     override fun nurtureWeeks(weeks: Int) = if (weeks == 1) "1 Woche" else "$weeks Wochen"
     override fun nurtureWeekly(day: String) = "Jeden $day"
     override fun nurtureMinutes(minutes: Int) = "$minutes Min."
+
+    override val nurtureFormBasicGroup = "Grunddaten"
+    override val nurtureFormBasicHint = "Aus deinem Profil übernommen. Änderungen hier ändern dein Profil nicht."
+    override val nurtureFormChurchGroup = "Gemeinde"
+    override val nurtureFormExperienceGroup = "Jüngerschaftserfahrung"
+    override val nurtureFormExperienceHint = "Trag nur ein, was auf dich zutrifft."
+    override val nurtureFormRequired = "Pflicht"
+    override val nurtureFormOptional = "Optional"
+    override val nurtureFormChoose = "Bitte wählen"
+    override val nurtureFormMissingInProfile = "In deinem Profil fehlt diese Angabe. Bitte hier eintragen."
+    override val nurtureFormErrorRequired = "Pflichtfeld."
+    override val nurtureFormErrorEmail = "Bitte gib eine gültige E-Mail-Adresse ein."
+    override val nurtureFormErrorDate = "Dieses Datum gibt es nicht."
+    override val nurtureFormErrorPhone = "Bitte gib eine Handynummer aus Ziffern ein."
+    override val nurtureFormErrorChoice = "Bitte wähle eine der Möglichkeiten."
+    override val nurtureFormConsent = "Ich stimme der Erhebung und Nutzung meiner Daten zu"
+    override val nurtureFormConsentBody = "Deine Angaben gehen zur Bearbeitung an das Jüngerschaftsteam der Gemeinde."
+    override val nurtureFormSubmitting = "Wird gesendet…"
+    override val nurtureFormRetry = "Erneut anmelden"
+    override val nurtureFormFull = "Kurs voll"
+    override val nurtureFormNotEligible = "Nicht möglich"
+    override val nurtureFormSuccessTitle = "Anmeldung eingegangen"
+    override fun nurtureFormSuccessBody(courseName: String) = "$courseName · Das Team meldet sich bei dir."
+    override val nurtureFormKeptInput = "Deine Eingaben bleiben erhalten."
+    override val nurtureFormFullTitle = "Dieser Kurs ist voll."
+    override val nurtureFormFullBody = "Ist ein anderer Kurs offen, wähle bitte diesen."
+    override val nurtureFormClosedTitle = "Die Anmeldung ist geschlossen."
+    override val nurtureFormClosedBody = "Bitte melde dich beim nächsten Durchgang an."
+    override val nurtureFormAlreadyTitle = "Du bist bereits angemeldet."
+    override val nurtureFormAlreadyBody = "Den Stand siehst du unter Deine Anmeldung."
+    override val nurtureFormNotEligibleTitle = "Für diesen Kurs kannst du dich nicht anmelden."
+    override val nurtureFormInvalidTitle = "Bitte prüfe deine Eingaben."
+    override val nurtureFormInvalidBody = "Korrigiere die markierten Felder und melde dich erneut an."
+    override val nurtureFormFailedTitle = "Anmeldung konnte nicht gesendet werden."
+    override val nurtureFormFailedBody = "Bitte versuche es gleich noch einmal."
+    override val nurtureFieldName = "Name"
+    override val nurtureFieldBirthDate = "Geburtsdatum"
+    override val nurtureFieldEmail = "E-Mail"
+    override val nurtureFieldPhone = "Handy"
+    override val nurtureFieldGender = "Geschlecht"
+    override val nurtureFieldBaptized = "Taufe"
+    override val nurtureFieldBaptizeType = "Art der Taufe"
+    override val nurtureFieldResidence = "Wohnort"
+    override val nurtureFieldGyogu = "Bezirk"
+    override val nurtureFieldSoon = "Zelle"
+    override val nurtureFieldChildren = "Familie"
+    override val nurtureFieldHistory = "Bisherige Jüngerschaft"
+    override val nurtureFieldWaiting = "Offene Anmeldungen"
+    override val nurtureFieldRunning = "Laufende Jüngerschaft"
+    override val nurtureFieldComment = "Sonstiges"
+    override val nurtureFieldHistoryPlaceholder = "z. B. QT-Grundseminar / Mai 2017 / Hanmaum-Gemeinde"
 }

@@ -3,9 +3,16 @@ package com.hanmaum.dn.mobile.features.training
 import com.hanmaum.dn.mobile.features.training.FakeTrainingRepository.Companion.application
 import com.hanmaum.dn.mobile.features.training.FakeTrainingRepository.Companion.course
 import com.hanmaum.dn.mobile.features.training.FakeTrainingRepository.Companion.detail
+import com.hanmaum.dn.mobile.features.training.domain.model.ApplicantPrefill
+import com.hanmaum.dn.mobile.features.training.domain.model.ApplicationField
+import com.hanmaum.dn.mobile.features.training.domain.model.ApplyResult
 import com.hanmaum.dn.mobile.features.training.domain.model.TrainingApplicationStatus
 import com.hanmaum.dn.mobile.features.training.domain.model.TrainingResult
+import com.hanmaum.dn.mobile.features.training.presentation.detail.FieldError
+import com.hanmaum.dn.mobile.features.training.presentation.detail.FormOutcome
 import com.hanmaum.dn.mobile.features.training.presentation.detail.TrainingDetailViewModel
+import kotlinx.coroutines.test.TestScope
+import kotlin.test.assertNotNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -184,5 +191,183 @@ class TrainingDetailViewModelTest {
         vm.dismissCancelDialog()
         assertFalse(vm.uiState.value.showCancelDialog)
         assertEquals(TrainingApplicationStatus.APPLIED, vm.uiState.value.detail?.myApplication?.status)
+    }
+
+    // ─── Application form (#174) ─────────────────────────────────────────────
+
+    private fun applicable(prefill: ApplicantPrefill? = FakeTrainingRepository.PREFILL) {
+        repo.detailResult = TrainingResult.Success(detail(courses = listOf(course(106)), prefill = prefill))
+    }
+
+    private fun TestScope.openedForm(): TrainingDetailViewModel {
+        val vm = loaded()
+        advanceUntilIdle()
+        vm.openApplicationForm()
+        return vm
+    }
+
+    private fun TestScope.sent(vm: TrainingDetailViewModel) {
+        vm.setConsent(true)
+        vm.submitApplication()
+        advanceUntilIdle()
+    }
+
+    @Test
+    fun theFormOpensOnlyForACourseThatCanBeApplied() = runTest {
+        repo.detailResult = TrainingResult.Success(detail(courses = listOf(course(105), course(106))))
+        val vm = loaded()
+        advanceUntilIdle()
+
+        vm.openApplicationForm()
+        assertNull(vm.uiState.value.form, "no course chosen yet")
+
+        vm.selectCourse(106)
+        vm.openApplicationForm()
+        assertEquals(106, vm.uiState.value.form?.course?.externalCourseId)
+    }
+
+    @Test
+    fun theFormStartsFromTheProfile() = runTest {
+        applicable()
+
+        val vm = openedForm()
+
+        assertEquals("김한마음", vm.uiState.value.form?.values?.get(ApplicationField.NAME))
+        assertEquals("1995.03.14", vm.uiState.value.form?.values?.get(ApplicationField.BIRTH_DATE))
+    }
+
+    @Test
+    fun nothingIsSentWithoutConsent() = runTest {
+        applicable()
+        val vm = openedForm()
+
+        vm.submitApplication()
+        advanceUntilIdle()
+
+        assertEquals(0, repo.applyCalls)
+    }
+
+    @Test
+    fun aFormThatFailsValidationIsNotSent() = runTest {
+        applicable(prefill = null)
+        val vm = openedForm()
+
+        sent(vm)
+
+        assertEquals(0, repo.applyCalls)
+        assertEquals(FieldError.Required, vm.uiState.value.form?.errors?.get(ApplicationField.PHONE))
+    }
+
+    @Test
+    fun aSentApplicationIsConfirmedAndClosingReloadsThePage() = runTest {
+        applicable()
+        val vm = openedForm()
+
+        sent(vm)
+
+        assertEquals(1, repo.applyCalls)
+        assertEquals(106, repo.lastApplyCourseId)
+        assertEquals("1995-03-14", repo.lastApplyValues[ApplicationField.BIRTH_DATE])
+        assertEquals(FormOutcome.Success("큐베세 직장인/청년 반"), vm.uiState.value.form?.outcome)
+
+        val loads = repo.detailCalls
+        vm.closeApplicationForm()
+        advanceUntilIdle()
+
+        assertNull(vm.uiState.value.form)
+        assertEquals(loads + 1, repo.detailCalls, "신청 현황 must show the new application")
+    }
+
+    @Test
+    fun alreadyAppliedElsewhereAlsoReloadsThePage() = runTest {
+        applicable()
+        repo.applyResult = ApplyResult.AlreadyApplied
+        val vm = openedForm()
+
+        sent(vm)
+        assertEquals(FormOutcome.AlreadyApplied, vm.uiState.value.form?.outcome)
+
+        val loads = repo.detailCalls
+        vm.closeApplicationForm()
+        advanceUntilIdle()
+        assertEquals(loads + 1, repo.detailCalls)
+    }
+
+    @Test
+    fun unavailableKeepsTheInputForALaterTry() = runTest {
+        applicable()
+        repo.applyResult = ApplyResult.Unavailable
+        val vm = openedForm()
+        vm.updateField(ApplicationField.PHONE, "+49 171 7654321")
+
+        sent(vm)
+
+        val form = assertNotNull(vm.uiState.value.form)
+        assertEquals(FormOutcome.Unavailable, form.outcome)
+        assertEquals("+49 171 7654321", form.values[ApplicationField.PHONE])
+        assertTrue(form.canSubmit)
+
+        val loads = repo.detailCalls
+        vm.closeApplicationForm()
+        advanceUntilIdle()
+        assertEquals(loads, repo.detailCalls, "nothing was applied, so nothing to reload")
+    }
+
+    @Test
+    fun serverFieldErrorsLandOnTheirFieldsAndClearWhenEdited() = runTest {
+        applicable()
+        repo.applyResult = ApplyResult.Invalid(mapOf(ApplicationField.EMAIL to "올바른 이메일 주소여야 합니다."), null)
+        val vm = openedForm()
+
+        sent(vm)
+
+        val form = assertNotNull(vm.uiState.value.form)
+        assertEquals(FieldError.Server("올바른 이메일 주소여야 합니다."), form.errors[ApplicationField.EMAIL])
+        assertEquals(FormOutcome.Invalid(null), form.outcome)
+
+        vm.updateField(ApplicationField.EMAIL, "new@example.com")
+        assertNull(vm.uiState.value.form?.errors?.get(ApplicationField.EMAIL))
+    }
+
+    @Test
+    fun aFullCourseCannotBeSentAgain() = runTest {
+        applicable()
+        repo.applyResult = ApplyResult.Full
+        val vm = openedForm()
+
+        sent(vm)
+        assertFalse(vm.uiState.value.form?.canSubmit ?: true)
+
+        vm.submitApplication()
+        advanceUntilIdle()
+        assertEquals(1, repo.applyCalls)
+    }
+
+    @Test
+    fun aSecondTapWhileSendingIsIgnored() = runTest {
+        applicable()
+        val vm = openedForm()
+        vm.setConsent(true)
+
+        vm.submitApplication()
+        vm.submitApplication()
+        advanceUntilIdle()
+
+        assertEquals(1, repo.applyCalls)
+    }
+
+    @Test
+    fun closingWhileSendingStillShowsTheApplication() = runTest {
+        applicable()
+        val vm = openedForm()
+        vm.setConsent(true)
+        vm.submitApplication()
+        vm.closeApplicationForm()
+
+        val loads = repo.detailCalls
+        advanceUntilIdle()
+
+        assertNull(vm.uiState.value.form)
+        assertEquals(loads + 1, repo.detailCalls)
     }
 }
