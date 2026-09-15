@@ -114,9 +114,9 @@ Never use `allTests`, `assembleDebug`, `testDebugUnitTest`, or
 `compileDebugKotlinAndroid`: the first fails at the iOS native link on a machine
 without full Xcode, and the rest are flavor-ambiguous.
 
-For iOS runtime verification, run `iosApp/iosApp.xcodeproj` on a simulator — either
-from Xcode, or headless via `xcodebuild build` + `xcrun simctl install/launch`, which
-prints Kotlin crash stack traces directly to the console.
+iOS runtime verification happens on TestFlight, done by the user. Do not launch the
+app on a simulator as a routine step; start it only when the user asks for it. The
+native tests and the Swift interop build above still run — they launch nothing.
 
 ## Definition of Done
 

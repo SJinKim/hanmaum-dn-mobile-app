@@ -9,7 +9,7 @@ Before coding, identify:
 - User journey affected: auth, approval, home, news, calendar, album, attendance, profile, etc.
 - Platforms affected: Android only, iOS only, or shared KMP.
 - Risk class: auth/security, networking, offline/cache, permissions/location, UI-only, or build/config.
-- Verification path: unit test, repository test, ViewModel test, Android APK, iOS simulator, visual check.
+- Verification path: unit test, repository test, ViewModel test, Android APK, iOS native tests, visual check. iOS runtime is checked by the user on TestFlight — no routine simulator launch.
 
 Prefer the smallest feature slice that can be proven correct.
 

@@ -127,18 +127,11 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild build \
   CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
 ```
 
-Run the iOS app end-to-end on the simulator (fastest way to see a Kotlin crash):
-
-```bash
-export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
-xcodebuild build -project iosApp/iosApp.xcodeproj -scheme iosApp -configuration Debug \
-  -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
-  -derivedDataPath /tmp/dnbuild CODE_SIGNING_ALLOWED=NO
-SIM=$(xcrun simctl list devices available | grep -oE '\([0-9A-F-]{36}\)' | tr -d '()' | head -1)
-xcrun simctl boot "$SIM" 2>/dev/null; xcrun simctl install "$SIM" /tmp/dnbuild/Build/Products/Debug-iphonesimulator/HanmaumDnApp.app
-xcrun simctl launch --console-pty "$SIM" com.hanmaum.dn.mobile.HanmaumDnApp
-xcrun simctl io "$SIM" screenshot /tmp/x.png
-```
+**iOS runtime is checked on TestFlight, by the user.** Do not build and launch the
+app on the simulator as a routine step. Start it only when the user asks for it.
+`iosSimulatorArm64Test` and the interop `xcodebuild build` above stay: they compile
+and test, and launch nothing. In a PR, state that iOS runtime is pending on TestFlight.
+Dispatching that TestFlight build spends a build, so it is the user's call (§8).
 
 Known baseline: **`./gradlew lint` is clean — 0 errors** (verified 2026-08-19 on
 AGP 8.13.2; warnings drift, so read the count from the report rather than from here).
@@ -306,8 +299,8 @@ Everything above, plus:
 - [ ] Detail screens: chevron-left back icon (44dp target) AND system swipe-back both pop
 - [ ] Korean body text line-height ≥1.6; labels UPPERCASE `label` style
 - [ ] Renders correctly in light AND dark (both are first-class)
-- [ ] Verified on the Android emulator against a real backend, and the iOS simulator
-      run from §4 launches without crash — screenshot(s) captured for the PR
+- [ ] Verified on the Android emulator against a real backend, screenshot(s) captured
+      for the PR. iOS runtime is checked by the user on TestFlight; no simulator launch (§4)
 
 ### Bug fix
 - [ ] Root cause stated in one sentence (not "made it work") — if you can't state it,

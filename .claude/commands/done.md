@@ -6,8 +6,8 @@ commands (flavored task names, `DEVELOPER_DIR` prefix for iOS). Then confirm:
 
 ## Functional
 - [ ] Feature works end-to-end on the Android emulator against the real backend
-- [ ] iOS gates for the change type passed (native tests / Swift interop build /
-      simulator launch — per the skill's gate table)
+- [ ] iOS gates for the change type passed (native tests / Swift interop build —
+      per the skill's gate table); iOS runtime is the user's TestFlight check, no simulator launch
 - [ ] Unit tests passing for ViewModels and repositories (`:composeApp:testDevDebugUnitTest`)
 - [ ] No println, dead code, hardcoded URLs (BuildKonfig only), or secrets
 - [ ] All HTTP calls go through `createHttpClient(tokenStorage)` — no raw Ktor instances

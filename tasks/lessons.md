@@ -76,18 +76,7 @@
 - **Mistake**: The first real iOS run crashed instantly with `kotlin.internal.IrLinkageError: Can not read value from backing field of property 'androidx_lifecycle_viewmodel_compose_LocalViewModelStoreOwner$stable' ... can not be accessed in module <navigation-compose>` (then again in `koin-compose-viewmodel`). Cause: `lifecycle` was pinned to **2.9.6** but `navigation-compose 2.8.0-alpha10` and `koin 4.0.0` were compiled against **lifecycle 2.8.x**; the private `$stable` field ABI changed between 2.8 and 2.9. **Android tolerates this skew; Kotlin/Native's strict IR linkage throws at runtime** (the mismatch shows up only as harmless compile-time "can not be accessed" *notes*). The whole compose stack must be version-aligned for iOS.
 - **Rule**:
   1. Keep `lifecycle`, `navigation-compose`, and `koin-compose-viewmodel` on the **same lifecycle line**. For lifecycle 2.9.6 / CMP 1.10.0 / Kotlin 2.3.0: `navigation-compose = 2.9.2` (requires lifecycle 2.9.6), `koin = 4.1.1` (requires lifecycle 2.9.3). Verify a candidate's lifecycle requirement from its `.module` on Maven before bumping. When you bump lifecycle, bump its dependents too.
-  2. **Reproduce iOS runtime crashes locally instead of via TestFlight** (this Mac has Xcode 26.0.1). Build + run on the simulator and read the Kotlin stack trace directly — far faster than device logs or CI:
-     ```
-     export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
-     xcodebuild build -project iosApp/iosApp.xcodeproj -scheme iosApp -configuration Debug \
-       -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
-       -derivedDataPath /tmp/dnbuild CODE_SIGNING_ALLOWED=NO
-     SIM=$(xcrun simctl list devices available | grep -oE '\([0-9A-F-]{36}\)' | tr -d '()' | head -1)  # or boot an iPhone
-     xcrun simctl install "$SIM" /tmp/dnbuild/Build/Products/Debug-iphonesimulator/HanmaumDnApp.app
-     xcrun simctl launch --console-pty "$SIM" com.hanmaum.dn.mobile.HanmaumDnApp   # prints the Kotlin crash
-     xcrun simctl io "$SIM" screenshot /tmp/x.png                                  # confirm UI rendered
-     ```
-     Note: the geofence code touches CoreLocation, but it's a lazy Koin `single` not created at launch, so the splash/login path runs on the simulator before any `_LocationEssentials` issue.
+  2. ~~Reproduce iOS runtime crashes locally on the simulator instead of via TestFlight.~~ **Superseded 2026-09-15** (see „TestFlight statt Simulator“ below): the user checks iOS runtime on TestFlight, and the simulator is started only when the user asks for it. What still catches this class of bug before a build is `iosSimulatorArm64Test` plus the version alignment in rule 1.
 
 ### foojay daemon-JVM toolchain broke ALL CI builds (external API 400) — and xcpretty hid it on iOS
 - **Mistake**: Both Android (`assembleStDebug`) and iOS (TestFlight archive) CI builds suddenly failed ~5s in, on a commit that built fine locally. Wasted theories first: blamed the marketing-version downgrade (1.1.x → 0.2.0 / "Apple won't allow it"), an Xcode bump, and a poisoned gradle cache — all wrong. The iOS failure surfaced only as `PhaseScriptExecution 'Compile Kotlin Framework' failed, exit 65 / ARCHIVE FAILED` because **fastlane's xcpretty swallowed the real gradle error**. The Android job (no xcpretty) showed the true cause: `Unable to download toolchain (languageVersion=21, vendor=JetBrains) from api.foojay.io ... 400 Bad Request`.
@@ -243,3 +232,22 @@ ein `· Zustände`-Board in Figma (Dark **und** Light, jeder Zustand mit Label u
 Caption, die sagt, wann er auftritt), und das wird abgenommen, bevor eine Zeile Code
 entsteht. Laden zählt als Zustand. Vorbild: `오늘의 말씀 · Zustände` (316:3104) und
 `주간 암송 구절 · Zustände` (337:3120).
+
+## TestFlight statt Simulator
+
+**2026-09-15.** Für PR #237 waren alle Gates grün, danach lief noch der Simulator-Start
+aus CLAUDE.md §4 los: Build, Boot, Install, Launch. Die Antwort: „ich teste alles auf
+testflight. versuche nicht zu starten mit ios Simulator.“
+
+Ausgelöst hat den Lauf die Doku, nicht ein Einfall. Der Start stand an sieben Stellen:
+CLAUDE.md §4 und die UI-Checkliste in §7, Gate 6 im Skill `verifying-kmp-changes`,
+`AGENTS.md`, `/done`, Regel 2 zum `IrLinkageError` weiter oben und
+`debugging-ci-failures`. Die Laufzeitprüfung auf iOS passiert aber längst woanders, und
+ein Simulator, den niemand ansieht, verbraucht nur Minuten und blockiert den Gradle-Lock
+für den nächsten Schritt.
+
+**Regel:** Kein Simulator-Start als Standard-Gate. iOS-Laufzeit prüft der User auf
+TestFlight; im PR steht, dass sie noch aussteht. `iosSimulatorArm64Test` und der
+Swift-Interop-`xcodebuild build` bleiben, denn sie starten nichts. Den Simulator nur
+starten, wenn der User es ausdrücklich verlangt. Einen TestFlight-Build stößt man nie
+selbst an.
