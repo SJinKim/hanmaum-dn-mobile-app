@@ -237,6 +237,16 @@ class TrainingDetailViewModelTest {
     }
 
     @Test
+    fun aLockedProfileValueIgnoresEdits() = runTest {
+        applicable()
+        val vm = openedForm()
+
+        vm.updateField(ApplicationField.NAME, "다른 이름")
+
+        assertEquals("김한마음", vm.uiState.value.form?.values?.get(ApplicationField.NAME))
+    }
+
+    @Test
     fun nothingIsSentWithoutConsent() = runTest {
         applicable()
         val vm = openedForm()
@@ -267,7 +277,11 @@ class TrainingDetailViewModelTest {
 
         assertEquals(1, repo.applyCalls)
         assertEquals(106, repo.lastApplyCourseId)
-        assertEquals("1995-03-14", repo.lastApplyValues[ApplicationField.BIRTH_DATE])
+        assertEquals("+49 170 1234567", repo.lastApplyValues[ApplicationField.PHONE])
+        assertNull(
+            repo.lastApplyValues[ApplicationField.BIRTH_DATE],
+            "a locked profile value is not sent; the server takes it from the profile",
+        )
         assertEquals(FormOutcome.Success("큐베세 직장인/청년 반"), vm.uiState.value.form?.outcome)
 
         val loads = repo.detailCalls

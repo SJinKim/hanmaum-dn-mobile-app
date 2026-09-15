@@ -92,9 +92,12 @@ class TrainingDetailViewModel(
         }
     }
 
-    /** Editing a field clears its error; the rest stay until the next attempt. */
+    /**
+     * Editing a field clears its error; the rest stay until the next attempt. A locked field
+     * (a profile value) ignores edits, whatever the UI lets through.
+     */
     fun updateField(field: ApplicationField, value: String) = updateForm {
-        it.copy(values = it.values + (field to value), errors = it.errors - field)
+        if (it.isLocked(field)) it else it.copy(values = it.values + (field to value), errors = it.errors - field)
     }
 
     fun setConsent(checked: Boolean) = updateForm { it.copy(consent = checked) }
