@@ -48,6 +48,7 @@ data class TrainingDetailResponse(
     val isAlwaysOpen: Boolean,
     val courses: List<TrainingCourseResponse> = emptyList(),
     val myApplication: MyTrainingApplicationResponse? = null,
+    val applicantPrefill: ApplicantPrefillResponse? = null,
 )
 
 @Serializable
@@ -59,6 +60,66 @@ data class TrainingCourseResponse(
     val registrationEndsAt: String? = null,
     val isAlwaysOpen: Boolean,
     val isEligible: Boolean,
+    val formFields: List<CourseFormFieldResponse> = emptyList(),
+)
+
+@Serializable
+data class CourseFormFieldResponse(
+    val name: String,
+    val type: String? = null,
+    val required: Boolean,
+    val label: String? = null,
+    val options: List<CourseFormFieldOptionResponse> = emptyList(),
+)
+
+@Serializable
+data class CourseFormFieldOptionResponse(
+    val value: String,
+    val label: String? = null,
+)
+
+@Serializable
+data class ApplicantPrefillResponse(
+    val name: String? = null,
+    /** "YYYY-MM-DD". */
+    val birthDate: String? = null,
+    val email: String? = null,
+    val phone: String? = null,
+    val gender: String? = null,
+    val residence: String? = null,
+)
+
+/**
+ * Body of POST /trainings/{publicId}/registrations. A null field is not encoded (it has a
+ * default), which is what lets the server fall back to the member's profile for it.
+ */
+@Serializable
+data class TrainingApplicationRequest(
+    val externalCourseId: Int,
+    val name: String? = null,
+    /** "YYYY-MM-DD". */
+    val birthDate: String? = null,
+    val email: String? = null,
+    val phone: String? = null,
+    val gender: String? = null,
+    val baptized: String? = null,
+    val baptizeType: String? = null,
+    val residence: String? = null,
+    val gyogu: String? = null,
+    val soon: String? = null,
+    val children: String? = null,
+    val history: String? = null,
+    val waiting: String? = null,
+    val running: String? = null,
+    val comment: String? = null,
+)
+
+@Serializable
+data class TrainingRegistrationResponse(
+    val trainingPublicId: String,
+    val status: String,
+    val externalCourseId: Int,
+    val courseName: String,
 )
 
 @Serializable

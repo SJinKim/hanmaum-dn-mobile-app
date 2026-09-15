@@ -307,13 +307,21 @@ fun DnTextField(
         androidx.compose.ui.text.input.ImeAction.Next,
     keyboardActions: androidx.compose.foundation.text.KeyboardActions =
         androidx.compose.foundation.text.KeyboardActions.Default,
+    /** Sits right of the label, e.g. a 필수 badge on a form whose fields come from the server. */
+    labelTrailing: (@Composable () -> Unit)? = null,
 ) {
     val c = DnTheme.colors
     // A password field owns its own reveal state: every caller wants the same
     // behaviour, and leaving it to them produced an eye icon that did nothing.
     var revealed by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     androidx.compose.foundation.layout.Column(modifier) {
-        Text(label, style = DnTheme.typography.label, color = c.textTertiary)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Text(label, style = DnTheme.typography.label, color = c.textTertiary)
+            labelTrailing?.invoke()
+        }
         androidx.compose.foundation.layout.Spacer(Modifier.size(7.dp))
         Row(
             Modifier

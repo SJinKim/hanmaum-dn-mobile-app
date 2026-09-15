@@ -42,6 +42,8 @@ fun BirthdayPickerField(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     placeholder: String? = null,
+    isError: Boolean = false,
+    labelTrailing: (@Composable () -> Unit)? = null,
 ) {
     val strings = LocalStrings.current
     var showPicker by remember { mutableStateOf(false) }
@@ -62,6 +64,8 @@ fun BirthdayPickerField(
         trailing = DnIcons.Calendar,
         onTrailingClick = { showPicker = true },
         keyboardType = KeyboardType.Number,
+        isError = isError,
+        labelTrailing = labelTrailing,
     )
 
     if (showPicker) {

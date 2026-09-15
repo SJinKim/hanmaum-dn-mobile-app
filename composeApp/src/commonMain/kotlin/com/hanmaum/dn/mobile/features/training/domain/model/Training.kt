@@ -50,6 +50,7 @@ data class TrainingDetail(
     /** Courses open right now, including ones this member may not apply to. */
     val courses: List<TrainingCourse>,
     val myApplication: TrainingApplication?,
+    val applicantPrefill: ApplicantPrefill?,
 )
 
 /** One 반 of a training in application.hanmaum.de, e.g. 큐베세 직장인/청년 반. */
@@ -61,6 +62,38 @@ data class TrainingCourse(
     val window: RegistrationWindow,
     /** False when this member may not apply. The server gives no reason. */
     val isEligible: Boolean,
+    /** What this course's application form asks for, in the server's order. */
+    val formFields: List<CourseFormField>,
+)
+
+/** One field of a course's application form. */
+data class CourseFormField(
+    /** A request property name, e.g. "phone"; see [ApplicationField]. */
+    val name: String,
+    /** As the external API defines it, e.g. "enum"; null when it does not say. */
+    val type: String?,
+    val required: Boolean,
+    /** Null when the external API gives none; the app then uses its own wording. */
+    val label: String?,
+    val options: List<FormFieldOption>,
+)
+
+data class FormFieldOption(
+    /** What is sent, e.g. "F". */
+    val value: String,
+    /** What is shown, e.g. "여성"; null when the external API gives none. */
+    val label: String?,
+)
+
+/** The member's profile data the form starts from. Editing the form never changes the profile. */
+data class ApplicantPrefill(
+    val name: String?,
+    val birthDate: LocalDate?,
+    val email: String?,
+    val phone: String?,
+    /** "M" or "F". */
+    val gender: String?,
+    val residence: String?,
 )
 
 /** An application the member made through the app: 신청 현황. */
