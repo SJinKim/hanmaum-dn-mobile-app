@@ -45,8 +45,18 @@ for the first App Store release and is published by hand at launch.
    git log --oneline "$(git describe --tags --abbrev=0 origin/main)"..origin/main
    ```
    - Every merged PR since the last tag must appear in the note. If one is missing, re-run
-     the drafter: `gh workflow run release-drafter.yml --ref main`. A just-merged squash
-     commit can be missed by a drafter run that starts in the same minute.
+     the drafter: `gh workflow run release-drafter.yml --ref main`.
+   - **A green drafter run can still have updated nothing.** When GitHub's GraphQL API
+     fails (`##[error] Request failed … Something went wrong while executing your query`),
+     the job still reports success, and the draft keeps its old body. That happened
+     for `v0.9.0-st`: the PROD draft picked up #239 and the ST draft did not.
+     Check the draft's `updated_at` and the job log:
+     ```bash
+     gh api repos/SJinKim/hanmaum-dn-mobile-app/releases --jq '.[] | select(.draft) | "\(.tag_name) \(.updated_at)"'
+     gh run view <id> --log | grep -P "^draft-staging\t" | grep "##\[error\]"
+     ```
+     Re-run the drafter. If it keeps failing, edit the note by hand, using the PR
+     list from `git log`.
    - Nothing may sit above `## 🚀 Features`. An entry there has no category label.
      Label the PR (`gh pr edit <n> --add-label chore`) and re-run the drafter. The
      `version-sync` bot PRs arrive unlabelled.
