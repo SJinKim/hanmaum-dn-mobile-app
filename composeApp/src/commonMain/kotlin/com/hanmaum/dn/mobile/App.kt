@@ -56,8 +56,8 @@ import com.hanmaum.dn.mobile.features.floorplan.presentation.FloorPlanScreen
 import com.hanmaum.dn.mobile.features.login.presentation.RegisterScreen
 import com.hanmaum.dn.mobile.features.login.screen.LoginScreen
 import com.hanmaum.dn.mobile.features.ministry.presentation.detail.MinistryDetailScreen
-import com.hanmaum.dn.mobile.features.ministry.presentation.detail.NurtureDetailScreen
 import com.hanmaum.dn.mobile.features.ministry.presentation.list.ParticipationScreen
+import com.hanmaum.dn.mobile.features.training.presentation.detail.NurtureDetailScreen
 import com.hanmaum.dn.mobile.features.pending.screen.PendingScreen
 import com.hanmaum.dn.mobile.features.pending.screen.SplashScreen
 import com.hanmaum.dn.mobile.features.profile.presentation.ProfileScreen
