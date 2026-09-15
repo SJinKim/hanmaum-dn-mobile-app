@@ -8,6 +8,7 @@ import com.hanmaum.dn.mobile.features.training.domain.model.FormFieldOption
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -39,9 +40,13 @@ class ApplicationFormsTest {
     )
 
     @Test
-    fun theFormShowsTheServersFieldsInSectionsAndSkipsUnknownOnes() {
+    fun theFormAlwaysShowsBasicThenChurchThenExperienceInTheAppsOrder() {
+        // Server order deliberately scrambled: experience first, church before basic.
         val form = ApplicationForms.open(
-            course(field("history"), field("phone", true), field("name", true), gender, field("aSomethingNew", true), field("birthDate", true)),
+            course(
+                field("history"), field("baptized"), field("residence"), field("phone", true), gender,
+                field("aSomethingNew", true), field("email", true), field("birthDate", true), field("name", true),
+            ),
             prefill,
         )
 
@@ -50,17 +55,74 @@ class ApplicationFormsTest {
             form.groups().map { it.first },
         )
         assertEquals(
-            listOf(ApplicationField.PHONE, ApplicationField.NAME, ApplicationField.BIRTH_DATE),
+            listOf(
+                ApplicationField.NAME,
+                ApplicationField.BIRTH_DATE,
+                ApplicationField.GENDER,
+                ApplicationField.EMAIL,
+                ApplicationField.PHONE,
+                ApplicationField.RESIDENCE,
+            ),
             form.groups().first().second.map { it.field },
-            "within a section the server's order is kept",
+            "성별 and 거주지 belong to 기본 정보 (#242)",
         )
-        assertEquals(5, form.fields.size, "a field the app cannot send is not shown")
+        assertEquals(8, form.fields.size, "a field the app cannot send is not shown")
 
         val kinds = form.fields.associate { it.field to it.kind }
         assertEquals(FieldKind.PHONE, kinds[ApplicationField.PHONE])
         assertEquals(FieldKind.DATE, kinds[ApplicationField.BIRTH_DATE])
         assertEquals(FieldKind.CHOICE, kinds[ApplicationField.GENDER])
         assertEquals(FieldKind.MULTILINE, kinds[ApplicationField.HISTORY])
+    }
+
+    @Test
+    fun genderAndBaptismAreChoicesEvenWithoutServerOptions() {
+        // The live application.hanmaum.de deployment sends no options at all.
+        val form = ApplicationForms.open(course(field("gender", true), field("baptized"), field("baptizeType", true)), null)
+
+        val byField = form.fields.associateBy { it.field }
+        assertEquals(FieldKind.CHOICE, byField.getValue(ApplicationField.GENDER).kind)
+        assertEquals(listOf("F", "M"), byField.getValue(ApplicationField.GENDER).options.map { it.value })
+        assertEquals(listOf("1", "2", "3", "4"), byField.getValue(ApplicationField.BAPTIZED).options.map { it.value })
+        assertEquals(listOf("1", "2", "3", "4", "5"), byField.getValue(ApplicationField.BAPTIZE_TYPE).options.map { it.value })
+        assertEquals(FieldKind.CHOICE, byField.getValue(ApplicationField.BAPTIZE_TYPE).kind)
+    }
+
+    @Test
+    fun optionsTheServerSendsWinOverTheKnownOnes() {
+        val options = listOf(FormFieldOption("F", "여성"), FormFieldOption("M", "남성"), FormFieldOption("X", "기타"))
+
+        val form = ApplicationForms.open(course(field("gender", true, options = options)), null)
+
+        assertEquals(options, form.fields.single().options)
+    }
+
+    @Test
+    fun nameAndBirthDateFromTheProfileAreLocked() {
+        val form = ApplicationForms.open(course(field("name", true), field("birthDate", true), field("email", true)), prefill)
+
+        val locked = form.fields.filter { it.locked }.map { it.field }
+        assertEquals(listOf(ApplicationField.NAME, ApplicationField.BIRTH_DATE), locked)
+        assertTrue(form.isLocked(ApplicationField.NAME))
+        assertFalse(form.isLocked(ApplicationField.EMAIL))
+    }
+
+    @Test
+    fun aBirthDateTheProfileLacksStaysEditable() {
+        val form = ApplicationForms.open(course(field("name", true), field("birthDate", true)), prefill.copy(birthDate = null))
+
+        assertTrue(form.isLocked(ApplicationField.NAME))
+        assertFalse(form.isLocked(ApplicationField.BIRTH_DATE), "a locked empty field would make applying impossible")
+        assertEquals(setOf(ApplicationField.BIRTH_DATE), form.missingFromProfile)
+    }
+
+    @Test
+    fun lockedFieldsAreNeitherValidatedNorSent() {
+        val form = ApplicationForms.open(course(field("name", true), field("birthDate", true), field("phone", true)), prefill)
+            .copy(values = mapOf(ApplicationField.NAME to "김한마음", ApplicationField.BIRTH_DATE to "1995.03.14", ApplicationField.PHONE to "+49 170 1234567"))
+
+        assertTrue(ApplicationForms.validate(form).isEmpty())
+        assertEquals(mapOf(ApplicationField.PHONE to "+49 170 1234567"), ApplicationForms.requestValues(form))
     }
 
     @Test
@@ -129,6 +191,7 @@ class ApplicationFormsTest {
 
     @Test
     fun whatIsSentIsTrimmedWithoutBlanksAndTheBirthDateInIsoForm() {
+        // No profile: nothing is locked, so name and birth date are sent as typed.
         val form = ApplicationForms.open(course(field("name", true), field("birthDate", true), field("comment"), field("history")), null)
             .copy(
                 values = mapOf(

@@ -163,7 +163,8 @@ class TrainingRepositoryImpl(
 
     private fun TrainingDetailResponse.toDomain() = TrainingDetail(
         publicId = publicId,
-        name = name,
+        // The catalog name is English for the seeded trainings; members know the Korean one.
+        name = nameKo?.takeIf { it.isNotBlank() } ?: name,
         description = description?.takeIf { it.isNotBlank() },
         startDate = startDate?.toLocalDateOrNull(),
         durationWeeks = durationWeeks,

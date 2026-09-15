@@ -7,9 +7,9 @@ import com.hanmaum.dn.mobile.features.training.domain.model.FormFieldOption
 import com.hanmaum.dn.mobile.features.training.domain.model.TrainingCourse
 
 /*
- * The 양육 application form (#174), kept free of Compose so every rule here is unit-tested.
- * Figma: section `22 · 양육 신청 · Zustände`, boards `Formular`, `Formular-Zustände` and
- * `Dynamische Felder`.
+ * The 양육 application form (#174, #242), kept free of Compose so every rule here is
+ * unit-tested. Figma: section `22 · 양육 신청 · Zustände`, boards `Formular`,
+ * `Formular-Zustände` and `Dynamische Felder`.
  */
 
 /** How a field is edited. Decided by its options and its name; the external API documents only `enum`. */
@@ -21,7 +21,10 @@ data class FormFieldUi(
     val serverLabel: String?,
     val required: Boolean,
     val kind: FieldKind,
+    /** Option labels may be null for the known option sets; the screen names those itself. */
     val options: List<FormFieldOption>,
+    /** A profile value this form may show but not change. */
+    val locked: Boolean = false,
 )
 
 sealed interface FieldError {
@@ -49,6 +52,7 @@ sealed interface FormOutcome {
 
 data class ApplicationFormState(
     val course: TrainingCourse,
+    /** In display order: see [ApplicationField]. */
     val fields: List<FormFieldUi>,
     val values: Map<ApplicationField, String>,
     /** Required fields the profile had nothing for; pointed out before the member sends. */
@@ -66,7 +70,9 @@ data class ApplicationFormState(
         get() = consent && !isSubmitting && !isBlocked &&
             outcome !is FormOutcome.AlreadyApplied && outcome !is FormOutcome.Success
 
-    /** Non-empty sections in display order, each keeping the server's field order. */
+    fun isLocked(field: ApplicationField): Boolean = fields.any { it.field == field && it.locked }
+
+    /** Non-empty sections in display order. */
     fun groups(): List<Pair<ApplicationField.Group, List<FormFieldUi>>> =
         ApplicationField.Group.entries
             .map { group -> group to fields.filter { it.field.group == group } }
@@ -85,6 +91,13 @@ object ApplicationForms {
         ApplicationField.RESIDENCE,
     )
 
+    /**
+     * Shown from the profile and never edited here. When the profile has no value, the field
+     * stays editable: the server needs one, and a locked empty field would make applying
+     * impossible.
+     */
+    private val LOCKABLE = setOf(ApplicationField.NAME, ApplicationField.BIRTH_DATE)
+
     private val MULTILINE = setOf(
         ApplicationField.CHILDREN,
         ApplicationField.HISTORY,
@@ -92,6 +105,18 @@ object ApplicationForms {
         ApplicationField.RUNNING,
         ApplicationField.COMMENT,
     )
+
+    /**
+     * The codes of the legacy application form (application.hanmaum.de `index.php`), which the
+     * documented API uses unchanged. The live deployment sends no options at all, and a field
+     * with a fixed set of values must never turn into free text (#242). Options the server does
+     * send always win. Labels are the screen's: see `optionLabel` in ApplicationSheet.
+     */
+    val KNOWN_OPTIONS: Map<ApplicationField, List<FormFieldOption>> = mapOf(
+        ApplicationField.GENDER to listOf("F", "M"),
+        ApplicationField.BAPTIZED to listOf("1", "2", "3", "4"),
+        ApplicationField.BAPTIZE_TYPE to listOf("1", "2", "3", "4", "5"),
+    ).mapValues { (_, values) -> values.map { FormFieldOption(value = it, label = null) } }
 
     // Deliberately loose: the server and the external API validate the address for real.
     private val EMAIL_PATTERN = Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
@@ -105,18 +130,19 @@ object ApplicationForms {
      * that goes nowhere. If the external API requires it, the server answers INVALID.
      */
     fun open(course: TrainingCourse, prefill: ApplicantPrefill?): ApplicationFormState {
-        val fields = course.formFields.mapNotNull { formField ->
+        val listed = course.formFields.mapNotNull { formField ->
             ApplicationField.fromWire(formField.name)?.let { field ->
+                val options = formField.options.ifEmpty { KNOWN_OPTIONS[field].orEmpty() }
                 FormFieldUi(
                     field = field,
                     serverLabel = formField.label?.takeIf { it.isNotBlank() },
                     required = formField.required,
-                    kind = kindOf(field, formField.options),
-                    options = formField.options,
+                    kind = kindOf(field, options),
+                    options = options,
                 )
             }
-        }.distinctBy { it.field }
-        val asked = fields.map { it.field }.toSet()
+        }.distinctBy { it.field }.sortedBy { it.field.ordinal }
+        val asked = listed.map { it.field }.toSet()
 
         val values = buildMap {
             prefill?.name?.let { put(ApplicationField.NAME, it) }
@@ -127,6 +153,8 @@ object ApplicationForms {
             prefill?.residence?.let { put(ApplicationField.RESIDENCE, it) }
         }.filter { (field, value) -> field in asked && value.isNotBlank() }
 
+        val fields = listed.map { ui -> ui.copy(locked = ui.field in LOCKABLE && ui.field in values) }
+
         val missing = fields
             .filter { it.required && it.field in PREFILLABLE && values[it.field].isNullOrBlank() }
             .map { it.field }
@@ -136,7 +164,7 @@ object ApplicationForms {
     }
 
     fun validate(form: ApplicationFormState): Map<ApplicationField, FieldError> =
-        form.fields.mapNotNull { ui ->
+        form.fields.filterNot { it.locked }.mapNotNull { ui ->
             val value = form.values[ui.field]?.trim().orEmpty()
             val error = when {
                 value.isEmpty() -> FieldError.Required.takeIf { ui.required }
@@ -150,9 +178,13 @@ object ApplicationForms {
             error?.let { ui.field to it }
         }.toMap()
 
-    /** What is sent: trimmed, blanks left to the server's profile fallback, the birth date as YYYY-MM-DD. */
+    /**
+     * What is sent: trimmed, blanks left to the server's profile fallback, the birth date as
+     * YYYY-MM-DD. Locked fields are left out too — they are the profile's values, which the
+     * server takes itself.
+     */
     fun requestValues(form: ApplicationFormState): Map<ApplicationField, String> =
-        form.fields.mapNotNull { ui ->
+        form.fields.filterNot { it.locked }.mapNotNull { ui ->
             val value = form.values[ui.field]?.trim().orEmpty()
             when {
                 value.isEmpty() -> null

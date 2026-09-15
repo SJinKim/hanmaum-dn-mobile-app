@@ -410,6 +410,14 @@ interface AppStrings {
     val nurtureFieldRunning: String
     val nurtureFieldComment: String
     val nurtureFieldHistoryPlaceholder: String
+    // Labels of the known option sets (legacy application form codes), used when the API sends none.
+    val nurtureOptionFemale: String
+    val nurtureOptionMale: String
+    val nurtureOptionInfantBaptism: String
+    val nurtureOptionChildBaptism: String
+    val nurtureOptionConfirmation: String
+    val nurtureOptionBaptism: String
+    val nurtureOptionUnbaptized: String
 }
 
 object EnStrings : AppStrings {
@@ -677,7 +685,7 @@ object EnStrings : AppStrings {
     override fun nurtureMinutes(minutes: Int) = "$minutes min"
 
     override val nurtureFormBasicGroup = "Basic information"
-    override val nurtureFormBasicHint = "Taken from your profile. Changes here do not update your profile."
+    override val nurtureFormBasicHint = "Name and date of birth come from your profile and cannot be changed here. Everything else is used for this application only."
     override val nurtureFormChurchGroup = "Church information"
     override val nurtureFormExperienceGroup = "Discipleship experience"
     override val nurtureFormExperienceHint = "Only fill in what applies to you."
@@ -726,6 +734,13 @@ object EnStrings : AppStrings {
     override val nurtureFieldRunning = "Current discipleship"
     override val nurtureFieldComment = "Anything else"
     override val nurtureFieldHistoryPlaceholder = "e.g. QT basic seminar / May 2017 / Hanmaum Church"
+    override val nurtureOptionFemale = "Female"
+    override val nurtureOptionMale = "Male"
+    override val nurtureOptionInfantBaptism = "Infant baptism"
+    override val nurtureOptionChildBaptism = "Child baptism"
+    override val nurtureOptionConfirmation = "Confirmation"
+    override val nurtureOptionBaptism = "Baptism"
+    override val nurtureOptionUnbaptized = "Not baptized"
 }
 
 object KoStrings : AppStrings {
@@ -993,7 +1008,7 @@ object KoStrings : AppStrings {
     override fun nurtureMinutes(minutes: Int) = "${minutes}분"
 
     override val nurtureFormBasicGroup = "기본 정보"
-    override val nurtureFormBasicHint = "프로필에서 불러왔습니다. 여기서 고친 내용은 프로필에 반영되지 않습니다."
+    override val nurtureFormBasicHint = "이름과 생년월일은 프로필 정보라 여기서 바꿀 수 없습니다. 그 밖의 내용은 이번 신청에만 쓰이고 프로필에는 반영되지 않습니다."
     override val nurtureFormChurchGroup = "교회 정보"
     override val nurtureFormExperienceGroup = "양육 경험"
     override val nurtureFormExperienceHint = "해당하는 내용만 적어 주세요."
@@ -1042,6 +1057,13 @@ object KoStrings : AppStrings {
     override val nurtureFieldRunning = "진행 중인 양육"
     override val nurtureFieldComment = "기타 문의"
     override val nurtureFieldHistoryPlaceholder = "예) 큐베세 / 2017년 5월 / 한마음교회"
+    override val nurtureOptionFemale = "여성"
+    override val nurtureOptionMale = "남성"
+    override val nurtureOptionInfantBaptism = "유아세례"
+    override val nurtureOptionChildBaptism = "아동세례"
+    override val nurtureOptionConfirmation = "입교"
+    override val nurtureOptionBaptism = "세례"
+    override val nurtureOptionUnbaptized = "미세례"
 }
 
 object DeStrings : AppStrings {
@@ -1309,7 +1331,7 @@ object DeStrings : AppStrings {
     override fun nurtureMinutes(minutes: Int) = "$minutes Min."
 
     override val nurtureFormBasicGroup = "Grunddaten"
-    override val nurtureFormBasicHint = "Aus deinem Profil übernommen. Änderungen hier ändern dein Profil nicht."
+    override val nurtureFormBasicHint = "Name und Geburtsdatum stammen aus deinem Profil und lassen sich hier nicht ändern. Alles andere gilt nur für diese Anmeldung."
     override val nurtureFormChurchGroup = "Gemeinde"
     override val nurtureFormExperienceGroup = "Jüngerschaftserfahrung"
     override val nurtureFormExperienceHint = "Trag nur ein, was auf dich zutrifft."
@@ -1358,4 +1380,11 @@ object DeStrings : AppStrings {
     override val nurtureFieldRunning = "Laufende Jüngerschaft"
     override val nurtureFieldComment = "Sonstiges"
     override val nurtureFieldHistoryPlaceholder = "z. B. QT-Grundseminar / Mai 2017 / Hanmaum-Gemeinde"
+    override val nurtureOptionFemale = "Weiblich"
+    override val nurtureOptionMale = "Männlich"
+    override val nurtureOptionInfantBaptism = "Säuglingstaufe"
+    override val nurtureOptionChildBaptism = "Kindertaufe"
+    override val nurtureOptionConfirmation = "Konfirmation"
+    override val nurtureOptionBaptism = "Taufe"
+    override val nurtureOptionUnbaptized = "Nicht getauft"
 }

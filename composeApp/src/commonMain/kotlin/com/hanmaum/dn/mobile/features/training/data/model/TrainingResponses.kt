@@ -30,7 +30,10 @@ data class TrainingResponse(
 @Serializable
 data class TrainingDetailResponse(
     val publicId: String,
+    /** The catalog name, English for the seeded trainings (e.g. "Quiet Time Basic Seminar"). */
     val name: String,
+    /** The Korean name members know (e.g. "큐티베이직세미나"). */
+    val nameKo: String? = null,
     val description: String? = null,
     val startDate: String? = null,
     val durationWeeks: Int? = null,

@@ -251,3 +251,24 @@ TestFlight; im PR steht, dass sie noch aussteht. `iosSimulatorArm64Test` und der
 Swift-Interop-`xcodebuild build` bleiben, denn sie starten nichts. Den Simulator nur
 starten, wenn der User es ausdrücklich verlangt. Einen TestFlight-Build stößt man nie
 selbst an.
+
+## Das Design legt die Form fest, die Server-Daten nur den Inhalt
+
+**2026-09-15.** Auf TestFlight 0.9.0 (86) wich das 양육-Anmeldeformular (#174) vom
+Gewollten ab: 성별 und 거주지 standen unter 교회 정보 statt 기본 정보, 성별 und 세례 waren
+Freitextfelder statt Segment und Auswahl, 이름 und 생년월일 ließen sich bearbeiten (#242).
+
+Die Ursache lag im Ansatz, nicht in einem Tippfehler. Das Formular wurde 1:1 aus
+`formFields` gebaut: Abschnitt und Reihenfolge aus der Liste des Servers, der Eingabetyp
+aus den mitgelieferten Optionen. Die live laufende externe API schickt aber keine
+Optionen, also wurde aus jedem Auswahlfeld ein Textfeld. Alle Tests waren grün, denn sie
+prüften genau diese Ableitung. Dazu kam, dass schon das Figma-Board 성별 und 거주지 falsch
+gruppiert hatte. Das Design war also nicht einmal der Maßstab, an dem der Code hätte
+auffallen können.
+
+**Regel:** Server-Daten bestimmen, *welche* Felder erscheinen. Abschnitt, Reihenfolge,
+Eingabetyp und was gesperrt ist, legt das abgenommene Design fest, und das steht fest im
+Code. Fehlt eine Option vom Server, greift ein bekannter Wertesatz, nie ein Freitextfeld.
+Vor dem PR wird die gebaute UI Zustand für Zustand gegen das Figma-Board gehalten, nicht
+nur die Logik getestet. Und ein Figma-Board, das man selbst zeichnet, wird fachlich
+abgenommen, bevor es als Vorlage gilt.

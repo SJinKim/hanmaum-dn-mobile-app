@@ -330,4 +330,17 @@ class TrainingRepositoryImplTest {
 
         assertEquals(ApplyResult.Invalid(emptyMap(), null), TrainingRepositoryImpl(client).apply("t1", 106, emptyMap()))
     }
+
+    @Test
+    fun theDetailShowsTheKoreanNameMembersKnow() = runTest {
+        // The seeded catalog name is English; nameKo is what the congregation calls it.
+        val json = """
+            {"success":true,"data":{"publicId":"t1","name":"Quiet Time Basic Seminar","nameKo":"큐티베이직세미나",
+              "openForRegistration":false,"isAlwaysOpen":false}}
+        """.trimIndent()
+
+        val result = TrainingRepositoryImpl(mockClient(json)).getTrainingDetail("t1")
+
+        assertEquals("큐티베이직세미나", assertIs<TrainingResult.Success<TrainingDetail>>(result).data.name)
+    }
 }

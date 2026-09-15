@@ -164,6 +164,10 @@ private fun FormField(
     val strings = LocalStrings.current
     val label = ui.serverLabel ?: strings.labelFor(ui.field)
     val value = form.values[ui.field].orEmpty()
+    if (ui.locked) {
+        LockedInput(label, value)
+        return
+    }
     val error = form.errors[ui.field]
     val marker: @Composable () -> Unit = { RequiredMarker(ui.required) }
     val change: (String) -> Unit = { onValueChange(ui.field, it) }
@@ -204,6 +208,7 @@ private fun FormField(
             )
 
             FieldKind.CHOICE -> ChoiceInput(
+                field = ui.field,
                 label = label,
                 marker = marker,
                 options = ui.options,
@@ -228,6 +233,31 @@ private fun RequiredMarker(required: Boolean) {
         NurtureBadge(strings.nurtureFormRequired, c.blueDim, c.blue)
     } else {
         Text(strings.nurtureFormOptional, style = DnTheme.typography.label, color = c.textTertiary)
+    }
+}
+
+/**
+ * A profile value the form shows but may not change (이름, 생년월일), with the lock the
+ * profile screen uses for church-managed fields.
+ */
+@Composable
+private fun LockedInput(label: String, value: String) {
+    val c = DnTheme.colors
+    Column {
+        FieldLabel(label, marker = {})
+        Spacer(Modifier.height(7.dp))
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .clip(DnInnerShape)
+                .background(c.surface2, DnInnerShape)
+                .padding(horizontal = 16.dp, vertical = 15.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(value, style = DnTheme.typography.captionStrong, color = c.textSecondary, modifier = Modifier.weight(1f))
+            Icon(DnIcons.Lock, null, tint = c.textTertiary, modifier = Modifier.size(15.dp))
+        }
     }
 }
 
@@ -283,6 +313,7 @@ private fun MultilineInput(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ChoiceInput(
+    field: ApplicationField,
     label: String,
     marker: @Composable () -> Unit,
     options: List<FormFieldOption>,
@@ -298,7 +329,7 @@ private fun ChoiceInput(
 
         if (options.size <= SEGMENT_MAX_OPTIONS) {
             DnSegmented(
-                options = options.map { it.label ?: it.value },
+                options = options.map { strings.optionLabel(field, it) },
                 selectedIndex = options.indexOfFirst { it.value == value },
                 onSelect = { onValueChange(options[it].value) },
                 modifier = Modifier.fillMaxWidth(),
@@ -319,7 +350,7 @@ private fun ChoiceInput(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                selected?.let { it.label ?: it.value } ?: strings.nurtureFormChoose,
+                selected?.let { strings.optionLabel(field, it) } ?: strings.nurtureFormChoose,
                 style = DnTheme.typography.captionStrong,
                 color = if (selected != null) c.textPrimary else c.textTertiary,
                 modifier = Modifier.weight(1f),
@@ -354,7 +385,7 @@ private fun ChoiceInput(
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             CheckMark(on)
-                            Text(option.label ?: option.value, style = DnTheme.typography.caption, color = c.textPrimary)
+                            Text(strings.optionLabel(field, option), style = DnTheme.typography.caption, color = c.textPrimary)
                         }
                     }
                     Spacer(Modifier.height(32.dp))
@@ -528,6 +559,35 @@ private fun AppStrings.labelFor(field: ApplicationField): String = when (field) 
     ApplicationField.RUNNING -> nurtureFieldRunning
     ApplicationField.COMMENT -> nurtureFieldComment
 }
+
+/**
+ * The server's option label when it sends one; otherwise the app's wording for the known
+ * codes (ApplicationForms.KNOWN_OPTIONS); the bare value as a last resort.
+ */
+private fun AppStrings.optionLabel(field: ApplicationField, option: FormFieldOption): String =
+    option.label ?: when (field) {
+        ApplicationField.GENDER -> when (option.value) {
+            "F" -> nurtureOptionFemale
+            "M" -> nurtureOptionMale
+            else -> null
+        }
+        ApplicationField.BAPTIZED -> when (option.value) {
+            "1" -> nurtureOptionInfantBaptism
+            "2" -> nurtureOptionConfirmation
+            "3" -> nurtureOptionBaptism
+            "4" -> nurtureOptionUnbaptized
+            else -> null
+        }
+        ApplicationField.BAPTIZE_TYPE -> when (option.value) {
+            "1" -> nurtureOptionInfantBaptism
+            "2" -> nurtureOptionChildBaptism
+            "3" -> nurtureOptionConfirmation
+            "4" -> nurtureOptionBaptism
+            "5" -> nurtureOptionUnbaptized
+            else -> null
+        }
+        else -> null
+    } ?: option.value
 
 private fun AppStrings.messageFor(error: FieldError): String = when (error) {
     FieldError.Required -> nurtureFormErrorRequired
