@@ -2,6 +2,7 @@ package com.hanmaum.dn.mobile.features.training.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -34,6 +36,8 @@ import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTileShape
 import com.hanmaum.dn.mobile.core.presentation.theme.typography
 import com.hanmaum.dn.mobile.features.training.domain.model.TrainingApplicationStatus
+import com.hanmaum.dn.mobile.features.training.presentation.detail.CancelOutcome
+import com.hanmaum.dn.mobile.features.training.presentation.detail.CancelPrompt
 
 /*
  * Building blocks of the 양육 list and detail. Figma: section `22 · 양육 신청 · Zustände`.
@@ -111,14 +115,62 @@ internal fun NurtureUnavailableCard(modifier: Modifier = Modifier) {
 }
 
 /**
- * Cancelling has no server endpoint yet, so 신청 취소 explains that instead of calling one.
- * The application stays as it is.
+ * 신청 취소 (#245): asks first, then says what the server answered.
+ *
+ * The wording follows the status — a running 양육 is stopped, an open application withdrawn —
+ * and while the call runs the dialog cannot be dismissed, so a stray tap outside cannot leave
+ * the member wondering whether it went through.
  */
 @Composable
-internal fun NurtureCancelDialog(onDismiss: () -> Unit) {
+internal fun NurtureCancelDialog(
+    prompt: CancelPrompt,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
     val c = DnTheme.colors
     val strings = LocalStrings.current
-    Dialog(onDismissRequest = onDismiss) {
+
+    // Red only for the destructive step and a real failure; amber informs, neutral reports
+    // something already settled elsewhere.
+    val look = when (prompt.outcome) {
+        null -> DialogLook(
+            icon = DnIcons.AlertTriangle,
+            container = c.redDim,
+            ink = c.red,
+            title = if (prompt.isAbort) strings.nurtureAbortConfirmTitle else strings.nurtureCancelConfirmTitle,
+            body = if (prompt.isAbort) strings.nurtureAbortConfirmBody else strings.nurtureCancelConfirmBody,
+        )
+        CancelOutcome.NotCancellable -> DialogLook(
+            icon = DnIcons.AlertTriangle,
+            container = c.amberDim,
+            ink = c.amber,
+            title = strings.nurtureCancelNotAllowedTitle,
+            body = strings.nurtureCancelNotAllowedBody,
+        )
+        CancelOutcome.NotFound -> DialogLook(
+            icon = DnIcons.AlertTriangle,
+            container = c.surface2,
+            ink = c.textSecondary,
+            title = strings.nurtureCancelGoneTitle,
+            body = strings.nurtureCancelGoneBody,
+        )
+        CancelOutcome.Unavailable -> DialogLook(
+            icon = DnIcons.Hourglass,
+            container = c.surface2,
+            ink = c.textSecondary,
+            title = strings.nurtureUnavailable,
+            body = strings.nurtureUnavailableContact,
+        )
+        CancelOutcome.Failed -> DialogLook(
+            icon = DnIcons.AlertTriangle,
+            container = c.redDim,
+            ink = c.red,
+            title = strings.nurtureCancelFailedTitle,
+            body = strings.nurtureCancelFailedBody,
+        )
+    }
+
+    Dialog(onDismissRequest = { if (prompt.isDismissable) onDismiss() }) {
         Column(
             Modifier
                 .fillMaxWidth()
@@ -128,28 +180,92 @@ internal fun NurtureCancelDialog(onDismiss: () -> Unit) {
                 .padding(horizontal = 22.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            IconTile(DnIcons.Hourglass, container = c.surface2)
+            IconTile(look.icon, container = look.container, ink = look.ink)
             Spacer(Modifier.height(14.dp))
-            Text(
-                strings.nurtureUnavailable,
-                style = DnTheme.typography.headline,
-                color = c.textPrimary,
-                textAlign = TextAlign.Center,
-            )
+            Text(look.title, style = DnTheme.typography.headline, color = c.textPrimary, textAlign = TextAlign.Center)
             Spacer(Modifier.height(6.dp))
             Text(
-                strings.nurtureUnavailableContact,
+                look.body,
                 style = DnTheme.typography.caption,
                 color = c.textSecondary,
                 textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(18.dp))
-            DnPrimaryButton(
-                label = strings.confirm,
-                onClick = onDismiss,
-                modifier = Modifier.fillMaxWidth(),
+            CancelActions(prompt = prompt, onConfirm = onConfirm, onDismiss = onDismiss)
+        }
+    }
+}
+
+/**
+ * Before the call: keep or go through with it. After it: 확인 only, unless the failure was one
+ * a retry can fix.
+ */
+@Composable
+private fun CancelActions(prompt: CancelPrompt, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    val c = DnTheme.colors
+    val strings = LocalStrings.current
+    val outcome = prompt.outcome
+
+    if (outcome != null && !outcome.isRetryable) {
+        DnPrimaryButton(label = strings.confirm, onClick = onDismiss, modifier = Modifier.fillMaxWidth())
+        return
+    }
+
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        DialogButton(
+            label = strings.nurtureCancelKeep,
+            container = c.surface2,
+            ink = c.textPrimary,
+            enabled = prompt.isDismissable,
+            onClick = onDismiss,
+            modifier = Modifier.weight(1f),
+        )
+        if (outcome?.isRetryable == true) {
+            DialogButton(
+                label = strings.retry,
+                container = c.lime,
+                ink = c.onLime,
+                enabled = prompt.canConfirm,
+                onClick = onConfirm,
+                modifier = Modifier.weight(1f),
+            )
+        } else {
+            DialogButton(
+                label = when {
+                    prompt.isCancelling -> strings.nurtureCancelBusy
+                    prompt.isAbort -> strings.nurtureAbortConfirmAction
+                    else -> strings.nurtureCancelConfirmAction
+                },
+                container = c.red,
+                ink = c.onRed,
+                enabled = prompt.canConfirm,
+                onClick = onConfirm,
+                modifier = Modifier.weight(1f),
             )
         }
+    }
+}
+
+@Composable
+private fun DialogButton(
+    label: String,
+    container: Color,
+    ink: Color,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier
+            .alpha(if (enabled) 1f else DISABLED_ALPHA)
+            .clip(DnPillShape)
+            .background(container, DnPillShape)
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(vertical = 13.dp, horizontal = 12.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, style = DnTheme.typography.captionStrong, color = ink, textAlign = TextAlign.Center)
     }
 }
 
@@ -198,7 +314,11 @@ internal fun NurtureListSkeleton(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun IconTile(icon: ImageVector, container: Color = DnTheme.colors.surface3) {
+private fun IconTile(
+    icon: ImageVector,
+    container: Color = DnTheme.colors.surface3,
+    ink: Color = DnTheme.colors.textSecondary,
+) {
     Box(
         Modifier
             .size(48.dp)
@@ -206,6 +326,17 @@ private fun IconTile(icon: ImageVector, container: Color = DnTheme.colors.surfac
             .background(container),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, null, tint = DnTheme.colors.textSecondary, modifier = Modifier.size(22.dp))
+        Icon(icon, null, tint = ink, modifier = Modifier.size(22.dp))
     }
 }
+
+/** How one state of the cancel dialog looks; the colour carries the meaning. */
+private data class DialogLook(
+    val icon: ImageVector,
+    val container: Color,
+    val ink: Color,
+    val title: String,
+    val body: String,
+)
+
+private const val DISABLED_ALPHA = 0.4f
