@@ -18,7 +18,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TrainingResponse(
     val publicId: String,
+    /** The catalog name, English for the seeded trainings. */
     val name: String,
+    /** The Korean name members know (hanmaum-dn-server#175). */
+    val nameKo: String? = null,
     val description: String? = null,
     val openForRegistration: Boolean,
     val registrationStartsAt: String? = null,
@@ -90,6 +93,11 @@ data class ApplicantPrefillResponse(
     val phone: String? = null,
     val gender: String? = null,
     val residence: String? = null,
+    val history: String? = null,
+    val waiting: String? = null,
+    val running: String? = null,
+    val baptized: String? = null,
+    val baptizeType: String? = null,
 )
 
 /**

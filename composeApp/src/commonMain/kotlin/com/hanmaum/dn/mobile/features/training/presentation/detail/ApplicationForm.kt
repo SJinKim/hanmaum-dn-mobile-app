@@ -151,6 +151,12 @@ object ApplicationForms {
             prefill?.phone?.let { put(ApplicationField.PHONE, it) }
             prefill?.gender?.let { put(ApplicationField.GENDER, it) }
             prefill?.residence?.let { put(ApplicationField.RESIDENCE, it) }
+            // The member's 양육 records, formatted by the server (hanmaum-dn-server#174).
+            prefill?.history?.let { put(ApplicationField.HISTORY, it) }
+            prefill?.waiting?.let { put(ApplicationField.WAITING, it) }
+            prefill?.running?.let { put(ApplicationField.RUNNING, it) }
+            prefill?.baptized?.let { put(ApplicationField.BAPTIZED, it) }
+            prefill?.baptizeType?.let { put(ApplicationField.BAPTIZE_TYPE, it) }
         }.filter { (field, value) -> field in asked && value.isNotBlank() }
 
         val fields = listed.map { ui -> ui.copy(locked = ui.field in LOCKABLE && ui.field in values) }

@@ -154,7 +154,8 @@ class TrainingRepositoryImpl(
 
     private fun TrainingResponse.toDomain() = Training(
         publicId = publicId,
-        name = name,
+        // The catalog name is English for the seeded trainings; members know the Korean one.
+        name = nameKo?.takeIf { it.isNotBlank() } ?: name,
         description = description?.takeIf { it.isNotBlank() },
         openForRegistration = openForRegistration,
         window = window(registrationStartsAt, registrationEndsAt, isAlwaysOpen),
@@ -205,6 +206,11 @@ class TrainingRepositoryImpl(
         phone = phone?.takeIf { it.isNotBlank() },
         gender = gender?.takeIf { it.isNotBlank() },
         residence = residence?.takeIf { it.isNotBlank() },
+        history = history?.takeIf { it.isNotBlank() },
+        waiting = waiting?.takeIf { it.isNotBlank() },
+        running = running?.takeIf { it.isNotBlank() },
+        baptized = baptized?.takeIf { it.isNotBlank() },
+        baptizeType = baptizeType?.takeIf { it.isNotBlank() },
     )
 
     /**

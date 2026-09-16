@@ -85,7 +85,10 @@ data class FormFieldOption(
     val label: String?,
 )
 
-/** The member's profile data the form starts from. Editing the form never changes the profile. */
+/**
+ * What the form starts from: the member's profile plus their 양육 records, both built by the
+ * server (hanmaum-dn-server#174). Editing the form never changes either.
+ */
 data class ApplicantPrefill(
     val name: String?,
     val birthDate: LocalDate?,
@@ -94,6 +97,16 @@ data class ApplicantPrefill(
     /** "M" or "F". */
     val gender: String?,
     val residence: String?,
+    /** 받은 양육: one line per completed training, e.g. "큐티베이직세미나 / 2017년 5월". */
+    val history: String? = null,
+    /** 신청해 둔 양육: one line per training applied or enrolled for. */
+    val waiting: String? = null,
+    /** 진행 중인 양육: one line per training in progress. */
+    val running: String? = null,
+    /** 세례 여부 as the form's option value: 1 유아세례, 2 입교, 3 세례, 4 미세례. */
+    val baptized: String? = null,
+    /** 세례 구분 as the form's option value: 1 유아세례, 3 입교, 4 세례, 5 미세례. */
+    val baptizeType: String? = null,
 )
 
 /** An application the member made through the app: 신청 현황. */
