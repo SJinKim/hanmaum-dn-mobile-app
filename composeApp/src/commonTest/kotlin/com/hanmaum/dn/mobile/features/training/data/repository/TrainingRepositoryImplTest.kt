@@ -332,6 +332,47 @@ class TrainingRepositoryImplTest {
     }
 
     @Test
+    fun theListShowsTheKoreanNamesMembersKnow() = runTest {
+        // hanmaum-dn-server#175 added nameKo to the list; name stays the English catalog name.
+        val json = """
+            {"success":true,"data":[
+              {"publicId":"t1","name":"Quiet Time Basic Seminar","nameKo":"큐티베이직세미나",
+               "openForRegistration":true,"isAlwaysOpen":false},
+              {"publicId":"t2","name":"Bible Overview Class","nameKo":null,
+               "openForRegistration":false,"isAlwaysOpen":false}
+            ]}
+        """.trimIndent()
+
+        val result = TrainingRepositoryImpl(mockClient(json)).getTrainings()
+
+        val trainings = assertIs<TrainingResult.Success<*>>(result).data as List<*>
+        assertEquals(
+            listOf("큐티베이직세미나", "Bible Overview Class"),
+            trainings.map { (it as com.hanmaum.dn.mobile.features.training.domain.model.Training).name },
+            "nameKo where there is one, the catalog name otherwise",
+        )
+    }
+
+    @Test
+    fun thePrefillCarriesTheMembersTrainingRecords() = runTest {
+        val json = """
+            {"success":true,"data":{"publicId":"t1","name":"큐티베이직세미나","openForRegistration":true,"isAlwaysOpen":false,
+              "applicantPrefill":{"name":"김철수","birthDate":"1995-03-14","email":null,"phone":null,"gender":"M",
+                "residence":null,"history":"큐티베이직세미나 / 2017년 5월","waiting":"일대일제자양육","running":null,
+                "baptized":"3","baptizeType":"4"}}}
+        """.trimIndent()
+
+        val result = TrainingRepositoryImpl(mockClient(json)).getTrainingDetail("t1")
+
+        val prefill = assertNotNull(assertIs<TrainingResult.Success<TrainingDetail>>(result).data.applicantPrefill)
+        assertEquals("큐티베이직세미나 / 2017년 5월", prefill.history)
+        assertEquals("일대일제자양육", prefill.waiting)
+        assertNull(prefill.running)
+        assertEquals("3", prefill.baptized)
+        assertEquals("4", prefill.baptizeType)
+    }
+
+    @Test
     fun theDetailShowsTheKoreanNameMembersKnow() = runTest {
         // The seeded catalog name is English; nameKo is what the congregation calls it.
         val json = """

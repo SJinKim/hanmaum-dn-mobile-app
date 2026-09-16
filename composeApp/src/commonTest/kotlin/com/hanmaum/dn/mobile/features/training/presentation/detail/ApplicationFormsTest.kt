@@ -140,6 +140,31 @@ class ApplicationFormsTest {
     }
 
     @Test
+    fun theMembersTrainingRecordsAndBaptismStartTheForm() {
+        // Built by the server (hanmaum-dn-server#174); the app only puts them in.
+        val withRecords = prefill.copy(
+            history = "큐티베이직세미나 / 2017년 5월\n세례입교 / 2016년 11월",
+            waiting = "일대일제자양육",
+            running = "성경개관 구약",
+            baptized = "3",
+            baptizeType = "4",
+        )
+
+        val form = ApplicationForms.open(
+            course(field("history"), field("waiting"), field("running"), field("baptized"), field("baptizeType", true)),
+            withRecords,
+        )
+
+        assertEquals("큐티베이직세미나 / 2017년 5월\n세례입교 / 2016년 11월", form.values[ApplicationField.HISTORY])
+        assertEquals("일대일제자양육", form.values[ApplicationField.WAITING])
+        assertEquals("성경개관 구약", form.values[ApplicationField.RUNNING])
+        assertEquals("3", form.values[ApplicationField.BAPTIZED])
+        assertEquals("4", form.values[ApplicationField.BAPTIZE_TYPE])
+        assertTrue(ApplicationForms.validate(form).isEmpty(), "a prefilled baptism code is a valid option")
+        assertFalse(form.isLocked(ApplicationField.HISTORY), "the records stay editable")
+    }
+
+    @Test
     fun aRequiredValueTheProfileLacksIsPointedOut() {
         val form = ApplicationForms.open(course(field("phone", true), field("email", true), field("comment", true)), prefill)
 
