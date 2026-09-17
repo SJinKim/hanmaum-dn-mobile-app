@@ -13,6 +13,7 @@ import com.hanmaum.dn.mobile.features.training.data.model.TrainingResponse
 import com.hanmaum.dn.mobile.features.training.domain.model.ApplicantPrefill
 import com.hanmaum.dn.mobile.features.training.domain.model.ApplicationField
 import com.hanmaum.dn.mobile.features.training.domain.model.ApplyResult
+import com.hanmaum.dn.mobile.features.training.domain.model.CancelResult
 import com.hanmaum.dn.mobile.features.training.domain.model.CourseFormField
 import com.hanmaum.dn.mobile.features.training.domain.model.FormFieldOption
 import com.hanmaum.dn.mobile.features.training.domain.model.RegistrationWindow
@@ -25,6 +26,7 @@ import com.hanmaum.dn.mobile.features.training.domain.model.TrainingResult
 import com.hanmaum.dn.mobile.features.training.domain.repository.TrainingRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -78,6 +80,23 @@ class TrainingRepositoryImpl(
         ApplyResult.Failed
     }
 
+    override suspend fun cancel(trainingPublicId: String): CancelResult = try {
+        val response = client.delete("trainings/$trainingPublicId/registrations")
+        if (response.status.isSuccess()) {
+            // 200 means cancelled, so an unreadable body must not turn into a failure: the
+            // caller then reloads instead of showing the application as still running.
+            CancelResult.Success(
+                runCatching { response.body<ApiResponse<MyTrainingApplicationResponse>>().data?.toDomain() }.getOrNull(),
+            )
+        } else {
+            cancelFailure(response.errorBody())
+        }
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        CancelResult.Failed
+    }
+
     /**
      * The client has expectSuccess = false, so non-2xx comes back normally and is mapped here.
      *
@@ -126,6 +145,18 @@ class TrainingRepositoryImpl(
         // technical message in English, which is not for members.
         null -> if (status == 400) ApplyResult.Invalid(emptyMap(), message = null) else ApplyResult.Failed
         else -> ApplyResult.Failed
+    }
+
+    /**
+     * One outcome per code (hanmaum-dn-server#177). The status alone is not enough: 404 is
+     * both "no such training" and "no application of yours", and 409 means 수료 here while it
+     * means full or closed when applying.
+     */
+    private fun cancelFailure(error: ApiErrorResponse?): CancelResult = when (error?.code) {
+        CODE_UNAVAILABLE -> CancelResult.Unavailable
+        "COURSE_APPLICATION_NOT_FOUND" -> CancelResult.NotFound
+        "COURSE_APPLICATION_NOT_CANCELLABLE" -> CancelResult.NotCancellable
+        else -> CancelResult.Failed
     }
 
     // ─── Mappers ─────────────────────────────────────────────────────────────

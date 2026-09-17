@@ -6,8 +6,10 @@ import com.hanmaum.dn.mobile.features.training.FakeTrainingRepository.Companion.
 import com.hanmaum.dn.mobile.features.training.domain.model.ApplicantPrefill
 import com.hanmaum.dn.mobile.features.training.domain.model.ApplicationField
 import com.hanmaum.dn.mobile.features.training.domain.model.ApplyResult
+import com.hanmaum.dn.mobile.features.training.domain.model.CancelResult
 import com.hanmaum.dn.mobile.features.training.domain.model.TrainingApplicationStatus
 import com.hanmaum.dn.mobile.features.training.domain.model.TrainingResult
+import com.hanmaum.dn.mobile.features.training.presentation.detail.CancelOutcome
 import com.hanmaum.dn.mobile.features.training.presentation.detail.FieldError
 import com.hanmaum.dn.mobile.features.training.presentation.detail.FormOutcome
 import com.hanmaum.dn.mobile.features.training.presentation.detail.TrainingDetailViewModel
@@ -186,10 +188,11 @@ class TrainingDetailViewModelTest {
         advanceUntilIdle()
 
         vm.openCancelDialog()
-        assertTrue(vm.uiState.value.showCancelDialog)
+        assertNotNull(vm.uiState.value.cancelPrompt)
 
         vm.dismissCancelDialog()
-        assertFalse(vm.uiState.value.showCancelDialog)
+        assertNull(vm.uiState.value.cancelPrompt)
+        assertEquals(0, repo.cancelCalls, "closing the dialog cancels nothing")
         assertEquals(TrainingApplicationStatus.APPLIED, vm.uiState.value.detail?.myApplication?.status)
     }
 
@@ -383,5 +386,131 @@ class TrainingDetailViewModelTest {
 
         assertNull(vm.uiState.value.form)
         assertEquals(loads + 1, repo.detailCalls)
+    }
+
+    // ─── Cancelling (#245) ───────────────────────────────────────────────────
+
+    private fun applied(status: TrainingApplicationStatus = TrainingApplicationStatus.APPLIED) {
+        repo.detailResult = TrainingResult.Success(detail(application = application(status)))
+    }
+
+    private fun TestScope.promptOpen(status: TrainingApplicationStatus = TrainingApplicationStatus.APPLIED):
+        TrainingDetailViewModel {
+        applied(status)
+        val vm = loaded()
+        advanceUntilIdle()
+        vm.openCancelDialog()
+        return vm
+    }
+
+    @Test
+    fun aFinishedApplicationHasNothingToCancel() = runTest {
+        val vm = promptOpen(TrainingApplicationStatus.COMPLETED)
+        advanceUntilIdle()
+
+        assertNull(vm.uiState.value.cancelPrompt)
+    }
+
+    @Test
+    fun aRunningTrainingIsStoppedRatherThanWithdrawn() = runTest {
+        val vm = promptOpen(TrainingApplicationStatus.IN_PROGRESS)
+        advanceUntilIdle()
+
+        assertTrue(assertNotNull(vm.uiState.value.cancelPrompt).isAbort)
+    }
+
+    @Test
+    fun confirmingCancelsOnceEvenOnASecondTap() = runTest {
+        val vm = promptOpen()
+
+        vm.confirmCancel()
+        vm.confirmCancel()
+        advanceUntilIdle()
+
+        assertEquals(1, repo.cancelCalls)
+        assertEquals("t1", repo.lastCancelId)
+    }
+
+    @Test
+    fun theDialogCannotBeClosedWhileTheCallRuns() = runTest {
+        val vm = promptOpen()
+
+        vm.confirmCancel()
+        vm.dismissCancelDialog()
+
+        assertTrue(assertNotNull(vm.uiState.value.cancelPrompt).isCancelling)
+        advanceUntilIdle()
+    }
+
+    @Test
+    fun aCancelledApplicationClosesTheDialogAndReloadsThePage() = runTest {
+        val vm = promptOpen()
+        val loads = repo.detailCalls
+
+        vm.confirmCancel()
+        advanceUntilIdle()
+
+        assertNull(vm.uiState.value.cancelPrompt)
+        assertEquals(loads + 1, repo.detailCalls)
+    }
+
+    @Test
+    fun aCompletedTrainingIsRefusedAndTheApplicationStays() = runTest {
+        repo.cancelResult = CancelResult.NotCancellable
+        val vm = promptOpen()
+        val loads = repo.detailCalls
+
+        vm.confirmCancel()
+        advanceUntilIdle()
+
+        val prompt = assertNotNull(vm.uiState.value.cancelPrompt)
+        assertEquals(CancelOutcome.NotCancellable, prompt.outcome)
+        assertFalse(prompt.canConfirm, "retrying cannot change a 수료")
+        assertEquals(loads, repo.detailCalls)
+    }
+
+    @Test
+    fun anApplicationThatIsGoneReloadsOnceTheDialogIsClosed() = runTest {
+        repo.cancelResult = CancelResult.NotFound
+        val vm = promptOpen()
+
+        vm.confirmCancel()
+        advanceUntilIdle()
+        assertEquals(CancelOutcome.NotFound, assertNotNull(vm.uiState.value.cancelPrompt).outcome)
+
+        val loads = repo.detailCalls
+        vm.dismissCancelDialog()
+        advanceUntilIdle()
+
+        assertNull(vm.uiState.value.cancelPrompt)
+        assertEquals(loads + 1, repo.detailCalls, "the application shown is gone, so the page is refetched")
+    }
+
+    @Test
+    fun anUnreachableExternalApiSaysComingSoon() = runTest {
+        repo.cancelResult = CancelResult.Unavailable
+        val vm = promptOpen()
+
+        vm.confirmCancel()
+        advanceUntilIdle()
+
+        assertEquals(CancelOutcome.Unavailable, assertNotNull(vm.uiState.value.cancelPrompt).outcome)
+    }
+
+    @Test
+    fun aFailedCancelCanBeTriedAgain() = runTest {
+        repo.cancelResult = CancelResult.Failed
+        val vm = promptOpen()
+
+        vm.confirmCancel()
+        advanceUntilIdle()
+        assertTrue(assertNotNull(vm.uiState.value.cancelPrompt).canConfirm)
+
+        repo.cancelResult = CancelResult.Success(application(TrainingApplicationStatus.DROPPED))
+        vm.confirmCancel()
+        advanceUntilIdle()
+
+        assertEquals(2, repo.cancelCalls)
+        assertNull(vm.uiState.value.cancelPrompt)
     }
 }

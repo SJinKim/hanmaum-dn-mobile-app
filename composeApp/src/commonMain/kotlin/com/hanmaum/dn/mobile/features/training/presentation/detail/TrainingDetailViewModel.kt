@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.features.training.domain.model.ApplicationField
 import com.hanmaum.dn.mobile.features.training.domain.model.ApplyResult
+import com.hanmaum.dn.mobile.features.training.domain.model.CancelResult
 import com.hanmaum.dn.mobile.features.training.domain.model.TrainingCourse
 import com.hanmaum.dn.mobile.features.training.domain.model.TrainingDetail
 import com.hanmaum.dn.mobile.features.training.domain.model.TrainingResult
@@ -20,7 +21,8 @@ data class TrainingDetailUiState(
     val isUnavailable: Boolean = false,
     val hasError: Boolean = false,
     val selectedCourseId: Int? = null,
-    val showCancelDialog: Boolean = false,
+    /** The 신청 취소 dialog; null while it is closed. */
+    val cancelPrompt: CancelPrompt? = null,
     /** The application sheet; null while it is closed. */
     val form: ApplicationFormState? = null,
 ) {
@@ -74,10 +76,58 @@ class TrainingDetailViewModel(
         }
     }
 
-    // Cancelling has no server endpoint yet (hanmaum-dn-server#167): the button only explains that.
-    fun openCancelDialog() = _uiState.update { it.copy(showCancelDialog = true) }
+    // ─── Cancelling (#245, hanmaum-dn-server#177) ────────────────────────────
 
-    fun dismissCancelDialog() = _uiState.update { it.copy(showCancelDialog = false) }
+    /** Only a running application can be cancelled, whatever the UI lets through. */
+    fun openCancelDialog() = _uiState.update { state ->
+        val status = state.detail?.myApplication?.status
+        if (status?.isActive == true) state.copy(cancelPrompt = CancelPrompt(status)) else state
+    }
+
+    /**
+     * Closes the dialog, unless the call is still running. After 404 the page reloads: the
+     * application the member was looking at is gone, and showing it on would be a lie.
+     */
+    fun dismissCancelDialog() {
+        val prompt = _uiState.value.cancelPrompt ?: return
+        if (!prompt.isDismissable) return
+        _uiState.update { it.copy(cancelPrompt = null) }
+        if (prompt.outcome is CancelOutcome.NotFound) load()
+    }
+
+    fun confirmCancel() {
+        val prompt = _uiState.value.cancelPrompt ?: return
+        if (!prompt.canConfirm) return
+
+        // Set before launching, so a second tap in the same frame already finds it running.
+        updatePrompt { it.copy(isCancelling = true, outcome = null) }
+        viewModelScope.launch {
+            when (val result = repository.cancel(publicId)) {
+                is CancelResult.Success -> {
+                    // The server sends the cancelled application back, but 신청 현황 and the
+                    // apply button follow the whole detail, so the page is reloaded.
+                    _uiState.update { it.copy(cancelPrompt = null) }
+                    load()
+                }
+                CancelResult.NotCancellable -> updatePrompt {
+                    it.copy(isCancelling = false, outcome = CancelOutcome.NotCancellable)
+                }
+                CancelResult.NotFound -> updatePrompt {
+                    it.copy(isCancelling = false, outcome = CancelOutcome.NotFound)
+                }
+                CancelResult.Unavailable -> updatePrompt {
+                    it.copy(isCancelling = false, outcome = CancelOutcome.Unavailable)
+                }
+                CancelResult.Failed -> updatePrompt {
+                    it.copy(isCancelling = false, outcome = CancelOutcome.Failed)
+                }
+            }
+        }
+    }
+
+    private fun updatePrompt(transform: (CancelPrompt) -> CancelPrompt) {
+        _uiState.update { state -> state.cancelPrompt?.let { state.copy(cancelPrompt = transform(it)) } ?: state }
+    }
 
     // ─── Application form (#174) ─────────────────────────────────────────────
 

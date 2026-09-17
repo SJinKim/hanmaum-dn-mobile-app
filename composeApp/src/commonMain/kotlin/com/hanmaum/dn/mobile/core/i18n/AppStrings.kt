@@ -341,6 +341,20 @@ interface AppStrings {
     val nurtureStatusCompleted: String
     val nurtureStatusDropped: String
     val nurtureStatusUnknown: String
+    val nurtureCancelConfirmTitle: String
+    val nurtureCancelConfirmBody: String
+    val nurtureCancelConfirmAction: String
+    val nurtureAbortConfirmTitle: String
+    val nurtureAbortConfirmBody: String
+    val nurtureAbortConfirmAction: String
+    val nurtureCancelKeep: String
+    val nurtureCancelBusy: String
+    val nurtureCancelFailedTitle: String
+    val nurtureCancelFailedBody: String
+    val nurtureCancelNotAllowedTitle: String
+    val nurtureCancelNotAllowedBody: String
+    val nurtureCancelGoneTitle: String
+    val nurtureCancelGoneBody: String
     /** Registration window; [start] and [end] come from [nurtureMonthDay]. */
     fun nurtureWindow(start: String, end: String): String
     fun nurtureWindowUntil(end: String): String
@@ -674,6 +688,23 @@ object EnStrings : AppStrings {
     override val nurtureStatusCompleted = "Completed"
     override val nurtureStatusDropped = "Cancelled"
     override val nurtureStatusUnknown = "Checking"
+    override val nurtureCancelConfirmTitle = "Cancel this application?"
+    override val nurtureCancelConfirmBody = "Your place is freed. Taking part later needs a new application."
+    override val nurtureCancelConfirmAction = "Cancel application"
+    override val nurtureAbortConfirmTitle = "Stop this training?"
+    override val nurtureAbortConfirmBody =
+        "Stopping means it will not count as completed. Taking part later needs a new application."
+    override val nurtureAbortConfirmAction = "Stop training"
+    override val nurtureCancelKeep = "Close"
+    override val nurtureCancelBusy = "Cancelling…"
+    override val nurtureCancelFailedTitle = "Could not cancel."
+    override val nurtureCancelFailedBody = "Your application is unchanged. Please try again in a moment."
+    override val nurtureCancelNotAllowedTitle = "You already completed this training."
+    override val nurtureCancelNotAllowedBody =
+        "A completed training cannot be cancelled. Please contact the person in charge."
+    override val nurtureCancelGoneTitle = "No application found."
+    override val nurtureCancelGoneBody =
+        "It looks already cancelled, or handled by the office. Loading the latest state."
     override fun nurtureWindow(start: String, end: String) = "Apply $start – $end"
     override fun nurtureWindowUntil(end: String) = "Apply by $end"
     override fun nurtureWindowFrom(start: String) = "Apply from $start"
@@ -997,6 +1028,20 @@ object KoStrings : AppStrings {
     override val nurtureStatusCompleted = "수료"
     override val nurtureStatusDropped = "취소됨"
     override val nurtureStatusUnknown = "확인중"
+    override val nurtureCancelConfirmTitle = "신청을 취소할까요?"
+    override val nurtureCancelConfirmBody = "자리가 다시 열립니다. 다시 참여하려면 새로 신청해야 합니다."
+    override val nurtureCancelConfirmAction = "취소하기"
+    override val nurtureAbortConfirmTitle = "진행 중인 양육을 중단할까요?"
+    override val nurtureAbortConfirmBody = "중단하면 수료로 기록되지 않습니다. 다시 참여하려면 새로 신청해야 합니다."
+    override val nurtureAbortConfirmAction = "중단하기"
+    override val nurtureCancelKeep = "닫기"
+    override val nurtureCancelBusy = "취소 중…"
+    override val nurtureCancelFailedTitle = "취소하지 못했습니다."
+    override val nurtureCancelFailedBody = "신청 상태는 그대로입니다. 잠시 후 다시 시도해주세요."
+    override val nurtureCancelNotAllowedTitle = "이미 수료한 양육입니다."
+    override val nurtureCancelNotAllowedBody = "수료 기록은 취소할 수 없습니다. 문의는 담당자에게 부탁드립니다."
+    override val nurtureCancelGoneTitle = "신청 내역을 찾을 수 없습니다."
+    override val nurtureCancelGoneBody = "이미 취소되었거나 사무실에서 처리된 것 같습니다. 최신 상태를 다시 불러옵니다."
     override fun nurtureWindow(start: String, end: String) = "신청 $start – $end"
     override fun nurtureWindowUntil(end: String) = "신청 ~ $end"
     override fun nurtureWindowFrom(start: String) = "신청 $start ~"
@@ -1320,6 +1365,25 @@ object DeStrings : AppStrings {
     override val nurtureStatusCompleted = "Abgeschlossen"
     override val nurtureStatusDropped = "Storniert"
     override val nurtureStatusUnknown = "Wird geprüft"
+    override val nurtureCancelConfirmTitle = "Anmeldung stornieren?"
+    override val nurtureCancelConfirmBody =
+        "Der Platz wird wieder frei. Eine erneute Teilnahme braucht eine neue Anmeldung."
+    override val nurtureCancelConfirmAction = "Stornieren"
+    override val nurtureAbortConfirmTitle = "Laufendes Training abbrechen?"
+    override val nurtureAbortConfirmBody =
+        "Ein Abbruch wird nicht als Abschluss gewertet. Eine erneute Teilnahme braucht eine neue Anmeldung."
+    override val nurtureAbortConfirmAction = "Training abbrechen"
+    override val nurtureCancelKeep = "Schließen"
+    override val nurtureCancelBusy = "Wird storniert…"
+    override val nurtureCancelFailedTitle = "Konnte nicht storniert werden."
+    override val nurtureCancelFailedBody =
+        "Deine Anmeldung bleibt unverändert. Bitte versuche es in einem Moment erneut."
+    override val nurtureCancelNotAllowedTitle = "Dieses Training hast du schon abgeschlossen."
+    override val nurtureCancelNotAllowedBody =
+        "Ein Abschluss kann nicht storniert werden. Bitte wende dich an die zuständige Person."
+    override val nurtureCancelGoneTitle = "Keine Anmeldung gefunden."
+    override val nurtureCancelGoneBody =
+        "Sie wurde offenbar schon storniert oder vom Büro bearbeitet. Der aktuelle Stand wird geladen."
     override fun nurtureWindow(start: String, end: String) = "Anmeldung $start – $end"
     override fun nurtureWindowUntil(end: String) = "Anmeldung bis $end"
     override fun nurtureWindowFrom(start: String) = "Anmeldung ab $start"

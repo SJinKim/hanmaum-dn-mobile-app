@@ -3,6 +3,7 @@ package com.hanmaum.dn.mobile.features.training
 import com.hanmaum.dn.mobile.features.training.domain.model.ApplicantPrefill
 import com.hanmaum.dn.mobile.features.training.domain.model.ApplicationField
 import com.hanmaum.dn.mobile.features.training.domain.model.ApplyResult
+import com.hanmaum.dn.mobile.features.training.domain.model.CancelResult
 import com.hanmaum.dn.mobile.features.training.domain.model.CourseFormField
 import com.hanmaum.dn.mobile.features.training.domain.model.RegistrationWindow
 import com.hanmaum.dn.mobile.features.training.domain.model.Training
@@ -22,12 +23,16 @@ class FakeTrainingRepository : TrainingRepository {
     var detailResult: TrainingResult<TrainingDetail> = TrainingResult.Success(detail())
     var applyResult: ApplyResult = ApplyResult.Success("큐베세 직장인/청년 반")
 
+    var cancelResult: CancelResult = CancelResult.Success(application(TrainingApplicationStatus.DROPPED))
+
     var listCalls = 0
     var detailCalls = 0
     var lastDetailId: String? = null
     var applyCalls = 0
     var lastApplyCourseId: Int? = null
     var lastApplyValues: Map<ApplicationField, String> = emptyMap()
+    var cancelCalls = 0
+    var lastCancelId: String? = null
 
     override suspend fun getTrainings(): TrainingResult<List<Training>> {
         listCalls++
@@ -49,6 +54,12 @@ class FakeTrainingRepository : TrainingRepository {
         lastApplyCourseId = externalCourseId
         lastApplyValues = values
         return applyResult
+    }
+
+    override suspend fun cancel(trainingPublicId: String): CancelResult {
+        cancelCalls++
+        lastCancelId = trainingPublicId
+        return cancelResult
     }
 
     companion object {

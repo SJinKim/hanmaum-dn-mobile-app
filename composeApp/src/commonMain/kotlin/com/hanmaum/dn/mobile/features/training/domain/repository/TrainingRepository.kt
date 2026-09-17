@@ -2,6 +2,7 @@ package com.hanmaum.dn.mobile.features.training.domain.repository
 
 import com.hanmaum.dn.mobile.features.training.domain.model.ApplicationField
 import com.hanmaum.dn.mobile.features.training.domain.model.ApplyResult
+import com.hanmaum.dn.mobile.features.training.domain.model.CancelResult
 import com.hanmaum.dn.mobile.features.training.domain.model.Training
 import com.hanmaum.dn.mobile.features.training.domain.model.TrainingDetail
 import com.hanmaum.dn.mobile.features.training.domain.model.TrainingResult
@@ -24,4 +25,14 @@ interface TrainingRepository {
         externalCourseId: Int,
         values: Map<ApplicationField, String>,
     ): ApplyResult
+
+    /**
+     * Cancels the signed-in member's application to this training.
+     *
+     * No application id is sent: the server resolves the member's own. Safe to retry, and
+     * applying again afterwards creates a new application rather than reviving this one.
+     * A 수료 participation is refused ([CancelResult.NotCancellable]); an older 수료 for the
+     * same training is never touched.
+     */
+    suspend fun cancel(trainingPublicId: String): CancelResult
 }

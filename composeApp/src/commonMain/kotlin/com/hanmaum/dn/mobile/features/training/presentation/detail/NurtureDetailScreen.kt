@@ -96,8 +96,12 @@ fun NurtureDetailScreen(
         }
     }
 
-    if (state.showCancelDialog) {
-        NurtureCancelDialog(onDismiss = viewModel::dismissCancelDialog)
+    state.cancelPrompt?.let { prompt ->
+        NurtureCancelDialog(
+            prompt = prompt,
+            onConfirm = viewModel::confirmCancel,
+            onDismiss = viewModel::dismissCancelDialog,
+        )
     }
 
     state.form?.let { form ->

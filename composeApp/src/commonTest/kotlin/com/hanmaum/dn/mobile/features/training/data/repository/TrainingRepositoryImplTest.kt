@@ -2,6 +2,7 @@ package com.hanmaum.dn.mobile.features.training.data.repository
 
 import com.hanmaum.dn.mobile.features.training.domain.model.ApplicationField
 import com.hanmaum.dn.mobile.features.training.domain.model.ApplyResult
+import com.hanmaum.dn.mobile.features.training.domain.model.CancelResult
 import com.hanmaum.dn.mobile.features.training.domain.model.TrainingApplicationStatus
 import com.hanmaum.dn.mobile.features.training.domain.model.TrainingDetail
 import com.hanmaum.dn.mobile.features.training.domain.model.TrainingResult
@@ -383,5 +384,72 @@ class TrainingRepositoryImplTest {
         val result = TrainingRepositoryImpl(mockClient(json)).getTrainingDetail("t1")
 
         assertEquals("큐티베이직세미나", assertIs<TrainingResult.Success<TrainingDetail>>(result).data.name)
+    }
+
+    // ─── Cancelling (#245, hanmaum-dn-server#177) ────────────────────────────
+
+    private val cancelledJson = """
+        {"success":true,"message":"신청이 취소되었습니다.","data":{"trainingPublicId":"t1","externalCourseId":106,
+          "courseName":"큐베세 직장인/청년 반","appliedAt":"2026-09-14T10:00:00Z","status":"DROPPED"}}
+    """.trimIndent()
+
+    private fun errorJson(status: Int, code: String) =
+        """{"status":$status,"message":"…","error":"Error","code":"$code"}"""
+
+    @Test
+    fun cancellingDeletesTheRegistrationOfThatTraining() = runTest {
+        var seen: HttpRequestData? = null
+
+        val result = TrainingRepositoryImpl(mockClient(cancelledJson, onRequest = { seen = it })).cancel("t1")
+
+        assertEquals(HttpMethod.Delete, seen?.method)
+        assertEquals("/trainings/t1/registrations", seen?.url?.encodedPath)
+        val application = assertNotNull(assertIs<CancelResult.Success>(result).application)
+        assertEquals(TrainingApplicationStatus.DROPPED, application.status)
+        assertEquals("큐베세 직장인/청년 반", application.courseName)
+    }
+
+    @Test
+    fun anUnreadableAnswerToACancelIsStillASuccess() = runTest {
+        // 200 means cancelled. Reporting a failure here would offer to cancel something that is gone.
+        val result = TrainingRepositoryImpl(mockClient("not json at all", contentType = ContentType.Text.Plain))
+            .cancel("t1")
+
+        assertNull(assertIs<CancelResult.Success>(result).application)
+    }
+
+    @Test
+    fun aCancelWithoutAnApplicationSaysNotFound() = runTest {
+        val result = TrainingRepositoryImpl(
+            mockClient(errorJson(404, "COURSE_APPLICATION_NOT_FOUND"), HttpStatusCode.NotFound),
+        ).cancel("t1")
+
+        assertEquals(CancelResult.NotFound, result)
+    }
+
+    @Test
+    fun aCompletedTrainingCannotBeCancelled() = runTest {
+        val result = TrainingRepositoryImpl(
+            mockClient(errorJson(409, "COURSE_APPLICATION_NOT_CANCELLABLE"), HttpStatusCode.Conflict),
+        ).cancel("t1")
+
+        assertEquals(CancelResult.NotCancellable, result)
+    }
+
+    @Test
+    fun anUnreachableExternalApiMakesACancelUnavailable() = runTest {
+        val result = TrainingRepositoryImpl(
+            mockClient(errorJson(503, "COURSE_APPLICATION_UNAVAILABLE"), HttpStatusCode.ServiceUnavailable),
+        ).cancel("t1")
+
+        assertEquals(CancelResult.Unavailable, result)
+    }
+
+    @Test
+    fun anErrorWithoutAKnownCodeIsAPlainFailure() = runTest {
+        // A proxy answering 503 while the server restarts must not read as 준비중.
+        val result = TrainingRepositoryImpl(mockClient("", HttpStatusCode.ServiceUnavailable)).cancel("t1")
+
+        assertEquals(CancelResult.Failed, result)
     }
 }
