@@ -6,8 +6,6 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
-import com.hanmaum.dn.mobile.features.ministry.domain.model.RegistrationStatus
-import io.ktor.http.content.TextContent
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
@@ -150,66 +148,5 @@ class MinistryRepositoryImplTest {
         val json = """{"success":true,"data":[]}"""
         MinistryRepositoryImpl(mockClient(json) { url = it.url.toString() }).getMinistries(activeOnly = true)
         assertTrue(url.contains("active=true"), "url was $url")
-    }
-
-    // ── self-registration (#117: had no coverage at all) ─────────────────
-
-    @Test
-    fun myRegistrationMapsItsStatus() = runTest {
-        for ((wire, expected) in listOf(
-            "PENDING" to RegistrationStatus.PENDING,
-            "APPROVED" to RegistrationStatus.APPROVED,
-            // Anything else — REJECTED included — reads as NONE so the member
-            // can apply again, which is what the domain comment promises.
-            "REJECTED" to RegistrationStatus.NONE,
-            "SOMETHING_NEW" to RegistrationStatus.NONE,
-        )) {
-            val json = """
-                {"success":true,"data":{"publicId":"r1","ministryPublicId":"m1","memberPublicId":"p1",
-                 "memberName":"김승진","registrationPeriod":"2026","note":"기타 연주","status":"$wire"}}
-            """.trimIndent()
-            val r = MinistryRepositoryImpl(mockClient(json)).getMyRegistration("m1").getOrThrow()
-            assertEquals(expected, r?.status, "wire status $wire")
-        }
-    }
-
-    @Test
-    fun noRegistrationYetIsNullNotAFailure() = runTest {
-        // 404 means "you have not applied", which is an ordinary state.
-        val client = HttpClient(MockEngine {
-            respond("", HttpStatusCode.NotFound, headersOf(HttpHeaders.ContentType, "application/json"))
-        }) {
-            install(ContentNegotiation) { json(testJson) }
-            defaultRequest {
-                if (url.host.isBlank()) {
-                    val path = url.encodedPath.removePrefix("/")
-                    url.takeFrom("http://localhost"); url.encodedPath = "/$path"
-                }
-            }
-        }
-        val result = MinistryRepositoryImpl(client).getMyRegistration("m1")
-        assertTrue(result.isSuccess)
-        assertEquals(null, result.getOrThrow())
-    }
-
-    @Test
-    fun registeringPostsThePeriodAndTheNote() = runTest {
-        var body = ""
-        var path = ""
-        val json = """
-            {"success":true,"data":{"publicId":"r1","ministryPublicId":"m1","memberPublicId":"p1",
-             "memberName":"김승진","registrationPeriod":"2026","note":"기타 연주","status":"PENDING"}}
-        """.trimIndent()
-        val client = mockClient(json) { req ->
-            path = req.url.encodedPath
-            body = (req.body as TextContent).text
-        }
-        val r = MinistryRepositoryImpl(client).register("m1", "기타 연주").getOrThrow()
-
-        assertEquals("/ministries/m1/registrations", path)
-        assertTrue(body.contains("\"note\":\"기타 연주\""), "body was $body")
-        // The period is the current year — the server keys a registration by it.
-        assertTrue(Regex("\"period\":\"[0-9]{4}\"").containsMatchIn(body), "body was $body")
-        assertEquals(RegistrationStatus.PENDING, r.status)
     }
 }

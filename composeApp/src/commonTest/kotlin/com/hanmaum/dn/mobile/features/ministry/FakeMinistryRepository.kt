@@ -2,8 +2,6 @@ package com.hanmaum.dn.mobile.features.ministry
 
 import com.hanmaum.dn.mobile.features.ministry.domain.model.Ministry
 import com.hanmaum.dn.mobile.features.ministry.domain.model.MinistryDetail
-import com.hanmaum.dn.mobile.features.ministry.domain.model.MyRegistration
-import com.hanmaum.dn.mobile.features.ministry.domain.model.RegistrationStatus
 import com.hanmaum.dn.mobile.features.ministry.domain.repository.MinistryRepository
 
 /** Hand-written, like every other fake here — there is no mocking library. */
@@ -11,31 +9,20 @@ class FakeMinistryRepository : MinistryRepository {
 
     var ministriesResult: Result<List<Ministry>> = Result.success(emptyList())
     var detailResult: Result<MinistryDetail> = Result.success(detail())
-    var registrationResult: Result<MyRegistration?> = Result.success(null)
-    var registerResult: Result<MyRegistration> = Result.success(
-        MyRegistration(publicId = "r1", status = RegistrationStatus.PENDING, note = null),
-    )
 
     var lastActiveOnly: Boolean? = null
-    var registerCalls = 0
-    var lastRegisteredNote: String? = null
-    var lastRegisteredMinistry: String? = null
+    var detailCalls = 0
+    var lastDetailId: String? = null
 
     override suspend fun getMinistries(activeOnly: Boolean): Result<List<Ministry>> {
         lastActiveOnly = activeOnly
         return ministriesResult
     }
 
-    override suspend fun getMinistryDetail(publicId: String): Result<MinistryDetail> = detailResult
-
-    override suspend fun getMyRegistration(ministryPublicId: String): Result<MyRegistration?> =
-        registrationResult
-
-    override suspend fun register(ministryPublicId: String, note: String?): Result<MyRegistration> {
-        registerCalls++
-        lastRegisteredMinistry = ministryPublicId
-        lastRegisteredNote = note
-        return registerResult
+    override suspend fun getMinistryDetail(publicId: String): Result<MinistryDetail> {
+        detailCalls++
+        lastDetailId = publicId
+        return detailResult
     }
 
     companion object {

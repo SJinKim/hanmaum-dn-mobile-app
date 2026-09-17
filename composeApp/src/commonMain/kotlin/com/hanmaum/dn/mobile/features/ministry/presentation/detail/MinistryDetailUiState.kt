@@ -1,21 +1,15 @@
 package com.hanmaum.dn.mobile.features.ministry.presentation.detail
 
 import com.hanmaum.dn.mobile.features.ministry.domain.model.MinistryDetail
-import com.hanmaum.dn.mobile.features.ministry.domain.model.MyRegistration
-import com.hanmaum.dn.mobile.features.ministry.domain.model.RegistrationStatus
 
 sealed class MinistryDetailUiState {
     object Loading : MinistryDetailUiState()
-    data class Success(
-        val detail: MinistryDetail,
-        val registration: MyRegistration?,
-        val showSheet: Boolean = false,
-        val noteInput: String = "",
-        val isRegistering: Boolean = false,
-        val registerError: String? = null,
-    ) : MinistryDetailUiState() {
-        val registrationStatus: RegistrationStatus
-            get() = registration?.status ?: RegistrationStatus.NONE
-    }
+
+    /**
+     * Only the 사역 itself. There is nothing about the member's own standing to hold: 사역
+     * self-registration does not exist on the server yet (hanmaum-dn-server#170, #248).
+     */
+    data class Success(val detail: MinistryDetail) : MinistryDetailUiState()
+
     data class Error(val message: String) : MinistryDetailUiState()
 }

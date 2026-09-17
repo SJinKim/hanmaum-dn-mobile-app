@@ -1,31 +1,25 @@
 package com.hanmaum.dn.mobile.features.ministry.presentation.detail
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.components.DnErrorState
 import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlows
@@ -33,9 +27,7 @@ import com.hanmaum.dn.mobile.core.presentation.components.DnPrimaryButton
 import com.hanmaum.dn.mobile.core.presentation.components.DnTopBar
 import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
-import com.hanmaum.dn.mobile.core.presentation.theme.DnTileShape
 import com.hanmaum.dn.mobile.core.presentation.theme.typography
-import com.hanmaum.dn.mobile.features.ministry.domain.model.RegistrationStatus
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -50,6 +42,7 @@ fun MinistryDetailScreen(
 ) {
     val viewModel: MinistryDetailViewModel = koinViewModel(parameters = { parametersOf(publicId) })
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val strings = LocalStrings.current
     val c = DnTheme.colors
 
     DnBackground(glows = DnGlows.action()) {
@@ -105,50 +98,38 @@ fun MinistryDetailScreen(
 
                     Spacer(Modifier.height(28.dp))
 
-                    when (s.registrationStatus) {
-                        RegistrationStatus.NONE -> DnPrimaryButton(
-                            label = "신청하기",
-                            leading = DnIcons.UserCheck,
-                            onClick = viewModel::openSheet,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-
-                        RegistrationStatus.PENDING -> StatusPill("신청 완료 · 승인 대기", c.amberDim, c.amber)
-                        RegistrationStatus.APPROVED -> StatusPill("이미 함께하고 있습니다", c.limeDim, c.limeInk)
-                    }
+                    // Applying is off until the server can take an application
+                    // (hanmaum-dn-server#170). The button stays where it belongs so the page
+                    // still says what this screen is for, but it is inert and names the way
+                    // round — rather than opening a form whose send silently hit an endpoint
+                    // that was never there (#248).
+                    DnPrimaryButton(
+                        label = "신청하기",
+                        leading = DnIcons.UserCheck,
+                        enabled = false,
+                        onClick = {},
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        strings.ministryApplyUnavailable,
+                        style = DnTheme.typography.captionStrong,
+                        color = c.textSecondary,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Spacer(Modifier.height(3.dp))
+                    Text(
+                        strings.ministryApplyUnavailableContact,
+                        style = DnTheme.typography.caption,
+                        color = c.textTertiary,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
 
                     Spacer(Modifier.height(60.dp))
                 }
             }
         }
-    }
-
-    val success = state as? MinistryDetailUiState.Success
-    if (success?.showSheet == true) {
-        RegistrationSheet(
-            note = success.noteInput,
-            isLoading = success.isRegistering,
-            error = success.registerError,
-            onNoteChange = viewModel::updateNote,
-            onConfirm = viewModel::register,
-            onDismiss = viewModel::closeSheet,
-        )
-    }
-}
-
-@Composable
-private fun StatusPill(label: String, container: androidx.compose.ui.graphics.Color, ink: androidx.compose.ui.graphics.Color) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .clip(DnTileShape)
-            .background(container, DnTileShape)
-            .padding(vertical = 16.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(DnIcons.Check, null, tint = ink, modifier = Modifier.size(18.dp))
-        Spacer(Modifier.size(8.dp))
-        Text(label, style = DnTheme.typography.bodyStrong, color = ink)
     }
 }

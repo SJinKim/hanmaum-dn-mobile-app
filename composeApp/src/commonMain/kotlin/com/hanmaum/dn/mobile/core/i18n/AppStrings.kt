@@ -188,6 +188,12 @@ interface AppStrings {
     val attendanceWindow: String
     val attendanceCheckIn: String
     val attendanceNotInWindow: String
+    /**
+     * 사역 self-registration is off until hanmaum-dn-server#170 builds it (#248): the button
+     * stays visible but inert, and these two lines say so and where to go instead.
+     */
+    val ministryApplyUnavailable: String
+    val ministryApplyUnavailableContact: String
     val ministryAbout: String
     val ministryRequirements: String
     val ministrySchedule: String
@@ -599,6 +605,8 @@ object EnStrings : AppStrings {
     override val attendanceWindow = "Check-in window: {start} – {end}"
     override val attendanceCheckIn = "Check in"
     override val attendanceNotInWindow = "Outside check-in hours"
+    override val ministryApplyUnavailable = "Coming soon."
+    override val ministryApplyUnavailableContact = "Please contact the person in charge."
     override val ministryAbout = "About"
     override val ministryRequirements = "Requirements"
     override val ministrySchedule = "Schedule"
@@ -939,6 +947,8 @@ object KoStrings : AppStrings {
     override val attendanceWindow = "출석 시간: {start} ~ {end}"
     override val attendanceCheckIn = "출석 체크"
     override val attendanceNotInWindow = "출석 시간이 아닙니다"
+    override val ministryApplyUnavailable = "준비중입니다."
+    override val ministryApplyUnavailableContact = "담당자에게 문의 바랍니다."
     override val ministryAbout = "소개"
     override val ministryRequirements = "지원 자격"
     override val ministrySchedule = "일정"
@@ -1276,6 +1286,8 @@ object DeStrings : AppStrings {
     override val attendanceWindow = "Check-in-Zeitraum: {start} – {end}"
     override val attendanceCheckIn = "Einchecken"
     override val attendanceNotInWindow = "Außerhalb der Check-in-Zeit"
+    override val ministryApplyUnavailable = "In Vorbereitung."
+    override val ministryApplyUnavailableContact = "Bitte wende dich an die zuständige Person."
     override val ministryAbout = "Über uns"
     override val ministryRequirements = "Voraussetzungen"
     override val ministrySchedule = "Zeitplan"

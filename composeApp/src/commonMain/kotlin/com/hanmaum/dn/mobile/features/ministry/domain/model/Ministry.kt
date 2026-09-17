@@ -18,15 +18,3 @@ data class MinistryDetail(
     val leaderName: String?,
     val isActive: Boolean,
 )
-
-data class MyRegistration(
-    val publicId: String,
-    val status: RegistrationStatus,
-    val note: String?,
-)
-
-enum class RegistrationStatus {
-    PENDING,
-    APPROVED,
-    NONE, // no record exists, or backend returned REJECTED (treat as re-apply)
-}
