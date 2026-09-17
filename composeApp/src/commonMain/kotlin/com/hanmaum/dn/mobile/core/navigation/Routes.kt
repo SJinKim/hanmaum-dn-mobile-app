@@ -50,3 +50,9 @@ import kotlinx.serialization.Serializable
 }
 
 @Serializable data class NurtureDetailRoute(val publicId: String)
+
+/**
+ * 프로필 → 나의 신청 확인하기: what the member has applied for, 양육 and 사역 in one
+ * screen with a segmented toggle. Entries open the matching detail page.
+ */
+@Serializable object MyApplicationsRoute

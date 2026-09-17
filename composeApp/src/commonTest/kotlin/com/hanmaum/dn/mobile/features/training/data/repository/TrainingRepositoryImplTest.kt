@@ -3,6 +3,7 @@ package com.hanmaum.dn.mobile.features.training.data.repository
 import com.hanmaum.dn.mobile.features.training.domain.model.ApplicationField
 import com.hanmaum.dn.mobile.features.training.domain.model.ApplyResult
 import com.hanmaum.dn.mobile.features.training.domain.model.CancelResult
+import com.hanmaum.dn.mobile.features.training.domain.model.MyApplication
 import com.hanmaum.dn.mobile.features.training.domain.model.TrainingApplicationStatus
 import com.hanmaum.dn.mobile.features.training.domain.model.TrainingDetail
 import com.hanmaum.dn.mobile.features.training.domain.model.TrainingResult
@@ -209,6 +210,63 @@ class TrainingRepositoryImplTest {
         assertNull(application.appliedAt)
     }
 
+    // ─── 나의 신청 (#235) ─────────────────────────────────────────────────────
+
+    /** Response shape of hanmaum-dn-server's MyTrainingApplicationDto (hanmaum-dn-server#169). */
+    private val myApplicationsJson = """
+        {"success":true,"message":null,"data":[
+          {"trainingPublicId":"t-newest","trainingName":"ONE_ON_ONE","trainingNameKo":"일대일 제자양육",
+           "externalCourseId":106,"courseName":"큐베세 직장인/청년 반",
+           "appliedAt":"2026-09-14T10:00:00Z","status":"APPLIED"},
+          {"trainingPublicId":"t-older","trainingName":"New Family","trainingNameKo":null,
+           "externalCourseId":88,"courseName":"새가족반 9월",
+           "appliedAt":"2025-08-20T09:00:00Z","status":"COMPLETED"}
+        ]}
+    """.trimIndent()
+
+    @Test
+    fun myApplicationsComeFromTheMembersOwnEndpoint() = runTest {
+        var path: String? = null
+        val client = mockClient(myApplicationsJson, onRequest = { path = it.url.encodedPath })
+
+        TrainingRepositoryImpl(client).getMyApplications()
+
+        // No member id in the request: the server resolves its own from the JWT.
+        assertEquals("/me/trainings", path)
+    }
+
+    @Test
+    fun myApplicationsKeepTheServerOrderAndPreferTheKoreanName() = runTest {
+        val result = TrainingRepositoryImpl(mockClient(myApplicationsJson)).getMyApplications()
+
+        val applications = (assertIs<TrainingResult.Success<*>>(result).data as List<*>).map { it as MyApplication }
+        assertEquals(listOf("t-newest", "t-older"), applications.map { it.trainingPublicId })
+        assertEquals("일대일 제자양육", applications[0].trainingName)
+        // Nothing Korean in the catalog for this one, so the English name is what the member sees.
+        assertEquals("New Family", applications[1].trainingName)
+        assertEquals("큐베세 직장인/청년 반", applications[0].courseName)
+        assertEquals(106, applications[0].externalCourseId)
+        assertEquals(Instant.parse("2026-09-14T10:00:00Z"), applications[0].appliedAt)
+        assertEquals(TrainingApplicationStatus.APPLIED, applications[0].status)
+        assertEquals(TrainingApplicationStatus.COMPLETED, applications[1].status)
+    }
+
+    @Test
+    fun havingAppliedForNothingIsAnEmptyListAndNotAFailure() = runTest {
+        val client = mockClient("""{"success":true,"message":null,"data":[]}""")
+
+        val result = TrainingRepositoryImpl(client).getMyApplications()
+
+        assertTrue((assertIs<TrainingResult.Success<*>>(result).data as List<*>).isEmpty())
+    }
+
+    @Test
+    fun anUnreachableExternalApiMakesMyApplicationsUnavailable() = runTest {
+        val client = mockClient(errorJson(503, "COURSE_APPLICATION_UNAVAILABLE"), HttpStatusCode.ServiceUnavailable)
+
+        assertEquals(TrainingResult.Unavailable, TrainingRepositoryImpl(client).getMyApplications())
+    }
+
     // ─── Application form (#174) ─────────────────────────────────────────────
 
     @Test
@@ -389,7 +447,7 @@ class TrainingRepositoryImplTest {
     // ─── Cancelling (#245, hanmaum-dn-server#177) ────────────────────────────
 
     private val cancelledJson = """
-        {"success":true,"message":"신청이 취소되었습니다.","data":{"trainingPublicId":"t1","externalCourseId":106,
+        {"success":true,"message":"신청이 취소되었습니다.","data":{"trainingPublicId":"t1","trainingName":"Quiet Time Basic Seminar","trainingNameKo":"큐티베이직세미나","externalCourseId":106,
           "courseName":"큐베세 직장인/청년 반","appliedAt":"2026-09-14T10:00:00Z","status":"DROPPED"}}
     """.trimIndent()
 

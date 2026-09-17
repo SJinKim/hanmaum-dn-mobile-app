@@ -3,6 +3,7 @@ package com.hanmaum.dn.mobile.features.training.domain.repository
 import com.hanmaum.dn.mobile.features.training.domain.model.ApplicationField
 import com.hanmaum.dn.mobile.features.training.domain.model.ApplyResult
 import com.hanmaum.dn.mobile.features.training.domain.model.CancelResult
+import com.hanmaum.dn.mobile.features.training.domain.model.MyApplication
 import com.hanmaum.dn.mobile.features.training.domain.model.Training
 import com.hanmaum.dn.mobile.features.training.domain.model.TrainingDetail
 import com.hanmaum.dn.mobile.features.training.domain.model.TrainingResult
@@ -12,6 +13,14 @@ interface TrainingRepository {
     suspend fun getTrainings(): TrainingResult<List<Training>>
 
     suspend fun getTrainingDetail(publicId: String): TrainingResult<TrainingDetail>
+
+    /**
+     * Every 양육 application of the signed-in member, in the server's order — newest first.
+     *
+     * No member id is sent: the server resolves its own from the JWT. An empty list is a
+     * result, not an error; it means the member has not applied for anything yet.
+     */
+    suspend fun getMyApplications(): TrainingResult<List<MyApplication>>
 
     /**
      * Applies the signed-in member to one course of a training.

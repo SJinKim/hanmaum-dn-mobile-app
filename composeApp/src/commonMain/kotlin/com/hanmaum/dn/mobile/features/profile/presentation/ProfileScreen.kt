@@ -76,6 +76,7 @@ fun ProfileScreen(
     onLogout: () -> Unit,
     onBack: () -> Unit,
     onSettings: () -> Unit,
+    onMyApplications: () -> Unit,
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
     // The same AttendanceViewModel Home already uses, so the 올해 출석 figure
@@ -122,6 +123,7 @@ fun ProfileScreen(
                             verseRecords = verseRecords,
                             onEdit = viewModel::startEditing,
                             onSettings = onSettings,
+                            onMyApplications = onMyApplications,
                             onLogout = viewModel::logout,
                         )
                     }
@@ -141,6 +143,7 @@ private fun ProfileViewContent(
     verseRecords: VerseRecords?,
     onEdit: () -> Unit,
     onSettings: () -> Unit,
+    onMyApplications: () -> Unit,
     onLogout: () -> Unit,
 ) {
     val c = DnTheme.colors
@@ -247,6 +250,14 @@ private fun ProfileViewContent(
 
         MenuRow(DnIcons.User, "프로필 수정", null, onEdit)
         Spacer(Modifier.height(10.dp))
+        MenuRow(
+            icon = DnIcons.ListBulleted,
+            label = strings.myApplicationsTitle,
+            value = null,
+            onClick = onMyApplications,
+            subtitle = strings.myApplicationsMenuSubtitle,
+        )
+        Spacer(Modifier.height(10.dp))
         MenuRow(DnIcons.Settings, strings.settingsTitle, null, onSettings)
 
         Spacer(Modifier.height(18.dp))
@@ -274,8 +285,21 @@ private fun StatTile(label: String, value: String, accent: androidx.compose.ui.g
     }
 }
 
+/**
+ * One row of the account menu.
+ *
+ * [subtitle] is for a row whose name does not say enough on its own — 나의 신청 확인하기 needs
+ * to name what is inside. It grows the icon tile with it, which is how the Figma board draws
+ * the two-line variant; the plain rows keep the size they have always had.
+ */
 @Composable
-private fun MenuRow(icon: ImageVector, label: String, value: String?, onClick: () -> Unit) {
+private fun MenuRow(
+    icon: ImageVector,
+    label: String,
+    value: String?,
+    onClick: () -> Unit,
+    subtitle: String? = null,
+) {
     val c = DnTheme.colors
     Row(
         Modifier
@@ -290,15 +314,24 @@ private fun MenuRow(icon: ImageVector, label: String, value: String?, onClick: (
     ) {
         Box(
             Modifier
-                .size(34.dp)
+                .size(if (subtitle != null) 44.dp else 34.dp)
                 .clip(RoundedCornerShape(13.dp))
                 .background(c.surface2),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(icon, null, tint = c.textSecondary, modifier = Modifier.size(17.dp))
+            Icon(
+                icon,
+                null,
+                tint = c.textSecondary,
+                modifier = Modifier.size(if (subtitle != null) 20.dp else 17.dp),
+            )
         }
-        Text(label, style = DnTheme.typography.captionStrong, color = c.textPrimary)
-        Spacer(Modifier.weight(1f))
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(label, style = DnTheme.typography.captionStrong, color = c.textPrimary)
+            subtitle?.let {
+                Text(it, style = DnTheme.typography.label, color = c.textTertiary)
+            }
+        }
         if (value != null) {
             Text(value, style = DnTheme.typography.caption, color = c.textTertiary)
         }
