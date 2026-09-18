@@ -84,9 +84,19 @@ internal fun NurtureStatusBadge(status: TrainingApplicationStatus) {
     }
 }
 
-/** A centred card with an icon tile and one line: 준비중입니다., or an empty list. */
+/**
+ * A centred card with an icon tile and one line: 준비중입니다., or an empty list.
+ *
+ * [action] adds a button under the message — the 다시 시도 of the 나의 신청 error state. Without
+ * it the card stays what it was: a statement about something the member cannot act on.
+ */
 @Composable
-internal fun NurtureMessageCard(icon: ImageVector, message: String, modifier: Modifier = Modifier) {
+internal fun NurtureMessageCard(
+    icon: ImageVector,
+    message: String,
+    modifier: Modifier = Modifier,
+    action: (@Composable () -> Unit)? = null,
+) {
     val c = DnTheme.colors
     Column(
         modifier
@@ -105,6 +115,7 @@ internal fun NurtureMessageCard(icon: ImageVector, message: String, modifier: Mo
             color = c.textPrimary,
             textAlign = TextAlign.Center,
         )
+        action?.invoke()
     }
 }
 

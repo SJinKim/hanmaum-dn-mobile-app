@@ -313,6 +313,16 @@ interface AppStrings {
      */
     fun verseRecordDaysValue(days: Long): String
 
+    // 나의 신청 (the member's own applications)
+    /** Title of the page and of the 프로필 row that opens it. */
+    val myApplicationsTitle: String
+    /** Second line of that 프로필 row. */
+    val myApplicationsMenuSubtitle: String
+    val myApplicationsEmpty: String
+    val myApplicationsError: String
+    /** The 사역 half, until hanmaum-dn-server#170 gives it anything to show. */
+    val myApplicationsServeComingSoon: String
+
     // 양육 (training list and detail)
     val nurtureTitle: String
     val nurtureEyebrow: String
@@ -668,6 +678,12 @@ object EnStrings : AppStrings {
     override fun verseWeekRange(startMonth: Int, startDay: Int, endMonth: Int, endDay: Int) =
         "${months[startMonth].take(3)} $startDay – ${months[endMonth].take(3)} $endDay"
 
+    override val myApplicationsTitle = "My applications"
+    override val myApplicationsMenuSubtitle = "Discipleship and ministry, and how they stand"
+    override val myApplicationsEmpty = "You have not applied for anything yet."
+    override val myApplicationsError = "Your applications could not be loaded."
+    override val myApplicationsServeComingSoon = "Coming soon."
+
     override val nurtureTitle = "Discipleship"
     override val nurtureEyebrow = "Growing in the Word"
     override val nurtureOpen = "Open"
@@ -1010,6 +1026,12 @@ object KoStrings : AppStrings {
     override fun verseWeekRange(startMonth: Int, startDay: Int, endMonth: Int, endDay: Int) =
         "${months[startMonth]} ${startDay}일 ~ ${months[endMonth]} ${endDay}일"
 
+    override val myApplicationsTitle = "나의 신청 확인하기"
+    override val myApplicationsMenuSubtitle = "양육 · 사역 신청 내역과 진행 상황"
+    override val myApplicationsEmpty = "아직 신청한 내역이 없습니다."
+    override val myApplicationsError = "신청 내역을 불러오지 못했습니다."
+    override val myApplicationsServeComingSoon = "준비중입니다."
+
     override val nurtureTitle = "양육"
     override val nurtureEyebrow = "말씀 안에서 자라기"
     override val nurtureOpen = "신청 가능"
@@ -1348,6 +1370,12 @@ object DeStrings : AppStrings {
     override fun verseWeeklyRemembered(reference: String) = "Letzter Vers · $reference"
     override fun verseWeekRange(startMonth: Int, startDay: Int, endMonth: Int, endDay: Int) =
         "$startDay. ${months[startMonth].take(3)} – $endDay. ${months[endMonth].take(3)}"
+
+    override val myApplicationsTitle = "Meine Anmeldungen"
+    override val myApplicationsMenuSubtitle = "Jüngerschaft und Dienst und ihr Stand"
+    override val myApplicationsEmpty = "Du hast dich noch für nichts angemeldet."
+    override val myApplicationsError = "Die Anmeldungen konnten nicht geladen werden."
+    override val myApplicationsServeComingSoon = "In Vorbereitung."
 
     override val nurtureTitle = "Jüngerschaft"
     override val nurtureEyebrow = "Im Wort wachsen"

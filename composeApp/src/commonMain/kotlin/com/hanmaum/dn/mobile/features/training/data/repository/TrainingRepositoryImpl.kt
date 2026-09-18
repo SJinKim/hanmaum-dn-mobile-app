@@ -16,6 +16,7 @@ import com.hanmaum.dn.mobile.features.training.domain.model.ApplyResult
 import com.hanmaum.dn.mobile.features.training.domain.model.CancelResult
 import com.hanmaum.dn.mobile.features.training.domain.model.CourseFormField
 import com.hanmaum.dn.mobile.features.training.domain.model.FormFieldOption
+import com.hanmaum.dn.mobile.features.training.domain.model.MyApplication
 import com.hanmaum.dn.mobile.features.training.domain.model.RegistrationWindow
 import com.hanmaum.dn.mobile.features.training.domain.model.Training
 import com.hanmaum.dn.mobile.features.training.domain.model.TrainingApplication
@@ -56,6 +57,14 @@ class TrainingRepositoryImpl(
     override suspend fun getTrainingDetail(publicId: String): TrainingResult<TrainingDetail> = call(
         request = { client.get("trainings/$publicId") },
         read = { response -> response.body<ApiResponse<TrainingDetailResponse>>().data?.toDomain() },
+    )
+
+    override suspend fun getMyApplications(): TrainingResult<List<MyApplication>> = call(
+        request = { client.get("me/trainings") },
+        read = { response ->
+            response.body<ApiResponse<List<MyTrainingApplicationResponse>>>().data.orEmpty()
+                .map { it.toMyApplication() }
+        },
     )
 
     override suspend fun apply(
@@ -248,6 +257,19 @@ class TrainingRepositoryImpl(
      * An unreadable appliedAt keeps the application and drops only the date. Dropping the
      * whole application would offer 신청하기 to a member who has already applied.
      */
+    /**
+     * The same wire shape read for 나의 신청, where the training is not already on screen and
+     * its name therefore has to come along. Korean first, like everywhere else in 양육.
+     */
+    private fun MyTrainingApplicationResponse.toMyApplication() = MyApplication(
+        trainingPublicId = trainingPublicId,
+        trainingName = trainingNameKo?.takeIf { it.isNotBlank() } ?: trainingName,
+        externalCourseId = externalCourseId,
+        courseName = courseName.takeIf { it.isNotBlank() },
+        appliedAt = appliedAt.toInstantOrNull(),
+        status = TrainingApplicationStatus.fromWire(status),
+    )
+
     private fun MyTrainingApplicationResponse.toDomain() = TrainingApplication(
         externalCourseId = externalCourseId,
         courseName = courseName,

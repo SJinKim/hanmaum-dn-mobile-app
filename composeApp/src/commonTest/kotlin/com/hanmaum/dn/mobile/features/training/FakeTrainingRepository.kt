@@ -5,6 +5,7 @@ import com.hanmaum.dn.mobile.features.training.domain.model.ApplicationField
 import com.hanmaum.dn.mobile.features.training.domain.model.ApplyResult
 import com.hanmaum.dn.mobile.features.training.domain.model.CancelResult
 import com.hanmaum.dn.mobile.features.training.domain.model.CourseFormField
+import com.hanmaum.dn.mobile.features.training.domain.model.MyApplication
 import com.hanmaum.dn.mobile.features.training.domain.model.RegistrationWindow
 import com.hanmaum.dn.mobile.features.training.domain.model.Training
 import com.hanmaum.dn.mobile.features.training.domain.model.TrainingApplication
@@ -20,12 +21,14 @@ import kotlin.time.Instant
 class FakeTrainingRepository : TrainingRepository {
 
     var listResult: TrainingResult<List<Training>> = TrainingResult.Success(emptyList())
+    var myApplicationsResult: TrainingResult<List<MyApplication>> = TrainingResult.Success(emptyList())
     var detailResult: TrainingResult<TrainingDetail> = TrainingResult.Success(detail())
     var applyResult: ApplyResult = ApplyResult.Success("큐베세 직장인/청년 반")
 
     var cancelResult: CancelResult = CancelResult.Success(application(TrainingApplicationStatus.DROPPED))
 
     var listCalls = 0
+    var myApplicationsCalls = 0
     var detailCalls = 0
     var lastDetailId: String? = null
     var applyCalls = 0
@@ -37,6 +40,11 @@ class FakeTrainingRepository : TrainingRepository {
     override suspend fun getTrainings(): TrainingResult<List<Training>> {
         listCalls++
         return listResult
+    }
+
+    override suspend fun getMyApplications(): TrainingResult<List<MyApplication>> {
+        myApplicationsCalls++
+        return myApplicationsResult
     }
 
     override suspend fun getTrainingDetail(publicId: String): TrainingResult<TrainingDetail> {
@@ -100,6 +108,21 @@ class FakeTrainingRepository : TrainingRepository {
             window = NO_WINDOW,
             isEligible = eligible,
             formFields = formFields,
+        )
+
+        /** One row of 나의 신청. */
+        fun myApplication(
+            status: TrainingApplicationStatus = TrainingApplicationStatus.APPLIED,
+            trainingPublicId: String = "t1",
+            trainingName: String = "큐티베이직세미나",
+            externalCourseId: Int = 106,
+        ) = MyApplication(
+            trainingPublicId = trainingPublicId,
+            trainingName = trainingName,
+            externalCourseId = externalCourseId,
+            courseName = "큐베세 직장인/청년 반",
+            appliedAt = Instant.parse("2026-09-14T10:00:00Z"),
+            status = status,
         )
 
         fun application(status: TrainingApplicationStatus) = TrainingApplication(

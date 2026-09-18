@@ -136,6 +136,10 @@ data class TrainingRegistrationResponse(
 @Serializable
 data class MyTrainingApplicationResponse(
     val trainingPublicId: String,
+    /** The catalog name, English for the seeded trainings. Always sent. */
+    val trainingName: String,
+    /** The Korean name members know; null where the catalog has none. */
+    val trainingNameKo: String? = null,
     val externalCourseId: Int,
     val courseName: String,
     val appliedAt: String,

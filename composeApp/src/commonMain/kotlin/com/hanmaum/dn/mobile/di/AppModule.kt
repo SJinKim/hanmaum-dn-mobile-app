@@ -61,6 +61,7 @@ import com.hanmaum.dn.mobile.features.training.data.repository.TrainingRepositor
 import com.hanmaum.dn.mobile.features.training.domain.repository.TrainingRepository
 import com.hanmaum.dn.mobile.features.training.presentation.detail.TrainingDetailViewModel
 import com.hanmaum.dn.mobile.features.training.presentation.list.TrainingListViewModel
+import com.hanmaum.dn.mobile.features.training.presentation.myapplications.MyApplicationsViewModel
 import com.hanmaum.dn.mobile.features.album.data.repository.AlbumCacheRepositoryImpl
 import com.hanmaum.dn.mobile.features.album.data.repository.AlbumDetailRepositoryImpl
 import com.hanmaum.dn.mobile.features.album.data.repository.AlbumsRepositoryImpl
@@ -142,6 +143,7 @@ val appModule = module {
     // Training (양육)
     single<TrainingRepository> { TrainingRepositoryImpl(get()) }
     viewModel { TrainingListViewModel(get()) }
+    viewModel { MyApplicationsViewModel(get()) }
     viewModel { (publicId: String) -> TrainingDetailViewModel(publicId, get()) }
 
     // Attendance
