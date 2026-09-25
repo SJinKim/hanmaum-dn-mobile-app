@@ -99,14 +99,14 @@ fun ParticipationScreen(
     DnBackground(glows = DnGlows.action()) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
             DnTopBar(
-                title = if (tab == 0) "양육" else "사역",
+                title = if (tab == 0) strings.nurtureTitle else strings.ministryListTitle,
                 onBack = onBackClick,
             )
 
             Spacer(Modifier.height(14.dp))
 
             DnSegmented(
-                options = listOf("양육", "사역"),
+                options = listOf(strings.nurtureTitle, strings.ministryListTitle),
                 selectedIndex = tab,
                 onSelect = { tab = it },
                 counts = listOf(nurtureCount?.toString(), ministries.size.toString()),
@@ -117,14 +117,13 @@ fun ParticipationScreen(
 
             Column(Modifier.padding(horizontal = 20.dp)) {
                 Text(
-                    if (tab == 0) "함께 자랄 과정" else "함께 섬길 자리",
+                    if (tab == 0) strings.participationNurtureHeadline else strings.participationMinistryHeadline,
                     style = DnTheme.typography.titleLg,
                     color = c.textPrimary,
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    if (tab == 0) "말씀 안에서 한 걸음 더 나아가는 과정들입니다."
-                    else "은사를 나누며 교회를 함께 세워가는 팀들입니다.",
+                    if (tab == 0) strings.participationNurtureCaption else strings.participationMinistryCaption,
                     style = DnTheme.typography.caption,
                     color = c.textSecondary,
                 )
