@@ -47,7 +47,7 @@ fun MinistryDetailScreen(
 
     DnBackground(glows = DnGlows.action()) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
-            DnTopBar(title = "사역", onBack = onBackClick)
+            DnTopBar(title = strings.ministryDetailTitle, onBack = onBackClick)
 
             when (val s = state) {
                 is MinistryDetailUiState.Loading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
@@ -69,7 +69,7 @@ fun MinistryDetailScreen(
                         icon = DnIcons.Users,
                         container = c.limeDim,
                         ink = c.limeInk,
-                        eyebrow = "함께 섬기는 자리",
+                        eyebrow = strings.ministryDetailEyebrow,
                         name = s.detail.name,
                     )
 
@@ -95,13 +95,17 @@ fun MinistryDetailScreen(
                                     add(Triple(if (fact.isPlace) DnIcons.MapPin else DnIcons.Clock, fact.label, fact.value))
                                 }
                             }
-                            add(Triple(DnIcons.Users, "상태", if (s.detail.isActive) "모집 중" else "모집 마감"))
+                            add(Triple(
+                                    DnIcons.Users,
+                                    strings.ministryFactStatus,
+                                    if (s.detail.isActive) strings.ministryRecruiting else strings.ministryRecruitingClosed,
+                                ))
                         }
                     )
 
                     Spacer(Modifier.height(22.dp))
                     DetailSection(
-                        title = "우리의 마음",
+                        title = strings.ministryHeartTitle,
                         body = s.detail.longDescription ?: s.detail.shortDescription,
                     )
 
@@ -113,7 +117,7 @@ fun MinistryDetailScreen(
                     // round — rather than opening a form whose send silently hit an endpoint
                     // that was never there (#248).
                     DnPrimaryButton(
-                        label = "신청하기",
+                        label = strings.ministryApply,
                         leading = DnIcons.UserCheck,
                         enabled = false,
                         onClick = {},
