@@ -7,6 +7,7 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.DayOfWeek
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -148,5 +149,59 @@ class MinistryRepositoryImplTest {
         val json = """{"success":true,"data":[]}"""
         MinistryRepositoryImpl(mockClient(json) { url = it.url.toString() }).getMinistries(activeOnly = true)
         assertTrue(url.contains("active=true"), "url was $url")
+    }
+
+    // ── fields added with the ops contract sync (#252) ───────────────────
+
+    @Test
+    fun theServerLeaderWinsOverTheFirstContact() = runTest {
+        val json = """
+            {"success":true,"data":[
+              {"publicId":"m1","title":"찬양","subtitle":"예배",
+               "contacts":[{"name":"외부 강사","role":"문의"}],"isActive":true,
+               "leaderPublicId":"p1","leaderName":"김승진","memberCount":12}
+            ]}
+        """.trimIndent()
+
+        val m = MinistryRepositoryImpl(mockClient(json)).getMinistries().getOrThrow().single()
+
+        assertEquals("김승진", m.leaderName)
+        assertEquals(12, m.memberCount)
+    }
+
+    @Test
+    fun theFirstContactStandsInWhileNoMemberLeads() = runTest {
+        val json = """
+            {"success":true,"data":[
+              {"publicId":"m1","title":"찬양","subtitle":"예배",
+               "contacts":[{"name":"이하나","role":"리더"}],"isActive":true}
+            ]}
+        """.trimIndent()
+
+        val m = MinistryRepositoryImpl(mockClient(json)).getMinistries().getOrThrow().single()
+
+        assertEquals("이하나", m.leaderName)
+        assertEquals(0, m.memberCount)
+    }
+
+    @Test
+    fun getMinistryDetailMapsLeaderAndSchedules() = runTest {
+        val json = """
+            {"success":true,"data":
+              {"publicId":"m1","title":"찬양","subtitle":"예배","about":"",
+               "contacts":[],"requirements":[],"isActive":true,"leaderName":"김승진",
+               "schedules":[{"description":"주일 연습","startTime":"07:00:00","endTime":"09:00:00","location":"본당","dayOfWeek":"SUNDAY"}]}
+            }
+        """.trimIndent()
+
+        val d = MinistryRepositoryImpl(mockClient(json)).getMinistryDetail("m1").getOrThrow()
+
+        assertEquals("김승진", d.leaderName)
+        val schedule = d.schedules.single()
+        assertEquals("주일 연습", schedule.description)
+        assertEquals("07:00:00", schedule.startTime)
+        assertEquals(DayOfWeek.SUNDAY, schedule.dayOfWeek)
+        assertEquals("09:00:00", schedule.endTime)
+        assertEquals("본당", schedule.location)
     }
 }

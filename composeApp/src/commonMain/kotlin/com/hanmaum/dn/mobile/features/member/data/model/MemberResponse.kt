@@ -9,6 +9,12 @@ data class MemberResponse(
     val firstName: String,
     val lastName: String,
     val email: String? = null,
+    /**
+     * Keycloak's email_verified claim, echoed by the server. Nullable so an
+     * absent field reads as "unknown" and shows nothing, rather than
+     * defaulting to false and calling every address unverified.
+     */
+    val emailVerified: Boolean? = null,
     val status: MemberStatus,
     val churchRole: String? = null,
     val groupName: String? = null,

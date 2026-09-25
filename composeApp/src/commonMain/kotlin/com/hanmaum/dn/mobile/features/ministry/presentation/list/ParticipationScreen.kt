@@ -79,6 +79,7 @@ fun ParticipationScreen(
     val trainingViewModel: TrainingListViewModel = koinViewModel()
     val nurture by trainingViewModel.uiState.collectAsStateWithLifecycle()
     val c = DnTheme.colors
+    val strings = LocalStrings.current
 
     // rememberSaveable, not remember: navigating into a detail takes this
     // screen out of composition, and a plain remember loses the tab. On the way
@@ -153,7 +154,10 @@ fun ParticipationScreen(
                                 name = m.name,
                                 description = m.shortDescription,
                                 metaIcon = DnIcons.User,
-                                meta = m.leaderName?.let { "$it 리더" } ?: "리더 미정",
+                                meta = listOf(
+                                    m.leaderName?.let(strings::ministryLeaderName) ?: strings.ministryNoLeader,
+                                    strings.ministryMemberCount(m.memberCount),
+                                ).joinToString(" · "),
                                 badge = null,
                                 onClick = { onMinistryClick(m.publicId) },
                             )

@@ -198,6 +198,16 @@ interface AppStrings {
     val ministryRequirements: String
     val ministrySchedule: String
     val ministryContact: String
+    /** Meta line on a 사역 card and the detail's leader row. */
+    fun ministryLeaderName(name: String): String
+    val ministryNoLeader: String
+    val ministryFactLeader: String
+    val ministryMeetingTime: String
+    val ministryPlace: String
+    /** Active members of a 사역, from MinistrySummaryDto.memberCount. */
+    fun ministryMemberCount(count: Int): String
+    /** Shown after the email when Keycloak has not verified it (MemberResponse.emailVerified). */
+    val profileEmailUnverified: String
     // Pending screen
     val checkStatus: String
     // Album
@@ -621,6 +631,13 @@ object EnStrings : AppStrings {
     override val ministryRequirements = "Requirements"
     override val ministrySchedule = "Schedule"
     override val ministryContact = "Contact"
+    override fun ministryLeaderName(name: String) = "Led by $name"
+    override val ministryNoLeader = "No leader yet"
+    override val ministryFactLeader = "Leader"
+    override val ministryMeetingTime = "Meeting time"
+    override val ministryPlace = "Place"
+    override fun ministryMemberCount(count: Int) = if (count == 1) "1 member" else "$count members"
+    override val profileEmailUnverified = "Not verified"
     override val checkStatus = "Check Status"
     override val albumEmpty = "No photos yet"
     override val albumsEmpty = "No albums"
@@ -969,6 +986,13 @@ object KoStrings : AppStrings {
     override val ministryRequirements = "지원 자격"
     override val ministrySchedule = "일정"
     override val ministryContact = "문의"
+    override fun ministryLeaderName(name: String) = "$name 리더"
+    override val ministryNoLeader = "리더 미정"
+    override val ministryFactLeader = "리더"
+    override val ministryMeetingTime = "모임 시간"
+    override val ministryPlace = "장소"
+    override fun ministryMemberCount(count: Int) = "${count}명"
+    override val profileEmailUnverified = "미인증"
     override val checkStatus = "승인 상태 확인"
     override val albumEmpty = "아직 사진이 없습니다"
     override val albumsEmpty = "앨범이 없습니다"
@@ -1314,6 +1338,13 @@ object DeStrings : AppStrings {
     override val ministryRequirements = "Voraussetzungen"
     override val ministrySchedule = "Zeitplan"
     override val ministryContact = "Kontakt"
+    override fun ministryLeaderName(name: String) = "Leitung: $name"
+    override val ministryNoLeader = "Noch keine Leitung"
+    override val ministryFactLeader = "Leitung"
+    override val ministryMeetingTime = "Treffzeit"
+    override val ministryPlace = "Ort"
+    override fun ministryMemberCount(count: Int) = if (count == 1) "1 Mitglied" else "$count Mitglieder"
+    override val profileEmailUnverified = "Nicht bestätigt"
     override val checkStatus = "Status prüfen"
     override val albumEmpty = "Noch keine Fotos"
     override val albumsEmpty = "Keine Alben"

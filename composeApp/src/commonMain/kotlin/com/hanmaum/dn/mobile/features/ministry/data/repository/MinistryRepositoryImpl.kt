@@ -5,10 +5,12 @@ import com.hanmaum.dn.mobile.features.ministry.data.model.MinistryDetailResponse
 import com.hanmaum.dn.mobile.features.ministry.data.model.MinistrySummaryResponse
 import com.hanmaum.dn.mobile.features.ministry.domain.model.Ministry
 import com.hanmaum.dn.mobile.features.ministry.domain.model.MinistryDetail
+import com.hanmaum.dn.mobile.features.ministry.domain.model.MinistrySchedule
 import com.hanmaum.dn.mobile.features.ministry.domain.repository.MinistryRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import kotlinx.datetime.DayOfWeek
 
 class MinistryRepositoryImpl(
     private val client: HttpClient,
@@ -33,8 +35,9 @@ class MinistryRepositoryImpl(
         name = name,
         shortDescription = shortDescription,
         imageUrl = imageUrl,
-        leaderName = contacts.firstOrNull()?.name,
+        leaderName = leaderName ?: contacts.firstOrNull()?.name,
         isActive = isActive,
+        memberCount = memberCount,
     )
 
     private fun MinistryDetailResponse.toDomain() = MinistryDetail(
@@ -43,7 +46,16 @@ class MinistryRepositoryImpl(
         shortDescription = shortDescription,
         longDescription = longDescription,
         imageUrl = imageUrl,
-        leaderName = contacts.firstOrNull()?.name,
+        leaderName = leaderName ?: contacts.firstOrNull()?.name,
         isActive = isActive,
+        schedules = schedules.map {
+            MinistrySchedule(
+                description = it.description,
+                dayOfWeek = it.dayOfWeek?.let { wire -> DayOfWeek.entries.firstOrNull { day -> day.name == wire } },
+                startTime = it.startTime,
+                endTime = it.endTime,
+                location = it.location,
+            )
+        },
     )
 }

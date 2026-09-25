@@ -27,11 +27,20 @@ data class MinistrySummaryResponse(
     val imageUrl: String? = null,
     val contacts: List<MinistryContactResponse> = emptyList(),
     val isActive: Boolean,
+    /** Active assignments only; the server defaults it to 0. */
+    val memberCount: Int = 0,
+    /** The member assigned the LEADER role; null while nobody is. */
+    val leaderName: String? = null,
 )
 
-/** The server has no single leader field; the first contact plays that role. */
+/**
+ * A named contact. Contacts may name people outside the member table, so
+ * they are not the leader — [MinistrySummaryResponse.leaderName] is. The first
+ * contact is only the fallback while no member holds the LEADER role.
+ */
 @Serializable
 data class MinistryContactResponse(
     val name: String? = null,
     val role: String? = null,
 )
+
