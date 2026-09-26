@@ -19,6 +19,12 @@ data class MemberResponse(
     val churchRole: String? = null,
     val groupName: String? = null,
     val division: String? = null,
+    /**
+     * Names of the ministries the member is actively in, feeding the
+     * profile's "소속 사역" count (#160). Defaults to empty so an older server
+     * without the field still decodes.
+     */
+    val activeMinistries: List<String> = emptyList(),
     val street: String? = null,
     val houseNumber: String? = null,
     val zipCode: String? = null,
