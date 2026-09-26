@@ -31,6 +31,12 @@ pre-commit:
 
 commit-msg:
   commands:
+    no-ai-attribution:
+      run: |
+        if grep -qiE 'co-authored-by:.*(claude|anthropic)|generated with \[?claude' {1}; then
+          echo "✋ AI attribution is not allowed (Co-Authored-By: Claude, Generated with Claude Code)"
+          exit 1
+        fi
     conventional-format:
       run: |
         first_line="$(head -1 {1})"
