@@ -14,11 +14,8 @@ data class EventRsvpResponse(
     val myStatus: String? = null,
     val respondedAt: String? = null,
     /**
-     * Next MAYBE reminder, or null when none is pending.
-     *
-     * NOT part of the server contract yet — it belongs to the reminder job in
-     * hanmaum-dn-server#123 and is requested there. Until that ships the field
-     * simply stays absent, and the reminder line is not drawn.
+     * Next MAYBE reminder, or null when none is pending — the reminder line is
+     * drawn only when it is set. Shipped with hanmaum-dn-server#148.
      */
     val nextReminderAt: String? = null,
 )
