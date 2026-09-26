@@ -129,6 +129,17 @@ class MemberRepositoryImplTest {
     }
 
     @Test
+    fun getMyProfile_mapsActiveMinistries() = runTest {
+        // Feeds the profile's "소속 사역" count (#160).
+        val json = """
+            {"success":true,"data":{"publicId":"u1","firstName":"Seungjin","lastName":"Kim",
+             "status":"ACTIVE","activeMinistries":["찬양팀","미디어팀"]}}
+        """.trimIndent()
+        val p = MemberRepositoryImpl(mockClient(json)).getMyProfile().getOrThrow()
+        assertEquals(listOf("찬양팀", "미디어팀"), p.activeMinistries)
+    }
+
+    @Test
     fun getMyProfile_mapsRegistrationDate() = runTest {
         // Feeds the profile's "함께한 시간" tile (#114). The server sends it as
         // an ISO date under exactly this name — MemberResponse.registrationDate.
@@ -149,6 +160,7 @@ class MemberRepositoryImplTest {
         assertEquals(null, p.division)
         assertEquals(null, p.birthDate)
         assertEquals(null, p.registrationDate)
+        assertEquals(emptyList(), p.activeMinistries)
     }
 
     @Test

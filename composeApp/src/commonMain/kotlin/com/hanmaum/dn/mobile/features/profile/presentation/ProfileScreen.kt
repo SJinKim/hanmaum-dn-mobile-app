@@ -202,8 +202,6 @@ private fun ProfileViewContent(
         val together = remember(profile.registrationDate, today) {
             membershipDuration(profile.registrationDate, today)
         }
-        // TODO(#160): the ministry count still has no client-side source;
-        // GET /api/v1/members/{publicId}/ministries exists but nothing reads it.
         Row(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -215,7 +213,7 @@ private fun ProfileViewContent(
                 c.limeInk,
                 Modifier.weight(1f),
             )
-            StatTile("소속 사역", "–", c.blue, Modifier.weight(1f))
+            StatTile("소속 사역", profile.activeMinistries.size.toString(), c.blue, Modifier.weight(1f))
             StatTile(
                 label = strings.profileTimeTogether,
                 value = together?.let { strings.profileTimeTogetherValue(it.years, it.months) } ?: "–",
