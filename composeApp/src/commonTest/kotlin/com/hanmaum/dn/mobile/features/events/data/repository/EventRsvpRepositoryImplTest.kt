@@ -20,6 +20,7 @@ import com.hanmaum.dn.mobile.features.events.domain.model.RsvpStatus
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.time.Instant
 
 private val testJson = Json { ignoreUnknownKeys = true }
 
@@ -182,5 +183,25 @@ class EventRsvpRepositoryImplTest {
             .respond("e1", RsvpStatus.GOING)
 
         assertTrue(result is RespondResult.Failed)
+    }
+
+    @Test
+    fun getActiveRsvps_parsesTheNextMaybeReminder() = runTest {
+        // Raw server JSON rather than an encoded DTO, so the wire name is pinned too.
+        val payload = """
+            {"success":true,"data":[
+              {"publicId":"e1","title":"여름 수련회",
+               "windowStart":"2026-08-20T09:00:00+09:00","windowEnd":"2026-08-30T23:59:00+09:00",
+               "myStatus":"MAYBE","respondedAt":"2026-08-24T10:00:00+09:00",
+               "nextReminderAt":"2026-08-27T09:00:00+09:00"},
+              {"publicId":"e2","title":"가을 체육대회",
+               "windowStart":"2026-08-20T09:00:00+09:00","windowEnd":"2026-09-05T23:59:00+09:00",
+               "myStatus":"GOING","nextReminderAt":null}
+            ]}
+        """.trimIndent()
+        val list = EventRsvpRepositoryImpl(mockClient(payload)).getActiveRsvps().getOrThrow()
+
+        assertEquals(Instant.parse("2026-08-27T00:00:00Z"), list[0].nextReminderAt)
+        assertNull(list[1].nextReminderAt)
     }
 }
