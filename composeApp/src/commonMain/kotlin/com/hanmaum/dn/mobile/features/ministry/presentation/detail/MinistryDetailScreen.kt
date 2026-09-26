@@ -81,13 +81,22 @@ fun MinistryDetailScreen(
                     )
 
                     Spacer(Modifier.height(20.dp))
-                    // MinistryDto also carries schedules and contacts; the client
-                    // model does not map them yet, so only the leader is shown.
                     DetailFacts(
-                        rows = listOf(
-                            Triple(DnIcons.User, "리더", s.detail.leaderName ?: "미정"),
-                            Triple(DnIcons.Users, "상태", if (s.detail.isActive) "모집 중" else "모집 마감"),
-                        )
+                        rows = buildList {
+                            add(
+                                Triple(
+                                    DnIcons.User,
+                                    strings.ministryFactLeader,
+                                    s.detail.leaderName ?: strings.ministryNoLeader,
+                                )
+                            )
+                            s.detail.schedules.forEach { schedule ->
+                                schedule.facts(strings).forEach { fact ->
+                                    add(Triple(if (fact.isPlace) DnIcons.MapPin else DnIcons.Clock, fact.label, fact.value))
+                                }
+                            }
+                            add(Triple(DnIcons.Users, "상태", if (s.detail.isActive) "모집 중" else "모집 마감"))
+                        }
                     )
 
                     Spacer(Modifier.height(22.dp))

@@ -13,5 +13,7 @@ data class MinistryDetailResponse(
     val imageUrl: String? = null,
     val contacts: List<MinistryContactResponse> = emptyList(),
     val requirements: List<String> = emptyList(),
+    val schedules: List<ScheduleResponse> = emptyList(),
+    val leaderName: String? = null,
     val isActive: Boolean,
 )

@@ -398,7 +398,9 @@ private fun ProfileEditContent(
         LockedGroup(
             rows = listOf(
                 strings.labelName to "${p.lastName}${p.firstName}",
-                strings.labelEmail to (p.email ?: "—"),
+                strings.labelEmail to (
+                    p.email?.let { if (p.emailVerified == false) "$it · ${strings.profileEmailUnverified}" else it } ?: "—"
+                ),
                 strings.labelDivision to (p.division ?: "—"),
                 strings.labelGroup to (p.groupName ?: "—"),
                 strings.labelChurchRole to (p.churchRole ?: "—"),
