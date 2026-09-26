@@ -204,6 +204,17 @@ interface AppStrings {
     val ministryFactLeader: String
     val ministryMeetingTime: String
     val ministryPlace: String
+    val ministryDetailTitle: String
+    val ministryDetailEyebrow: String
+    val ministryFactStatus: String
+    val ministryRecruiting: String
+    val ministryRecruitingClosed: String
+    val ministryHeartTitle: String
+    val ministryApply: String
+    val participationNurtureHeadline: String
+    val participationMinistryHeadline: String
+    val participationNurtureCaption: String
+    val participationMinistryCaption: String
     /** Active members of a 사역, from MinistrySummaryDto.memberCount. */
     fun ministryMemberCount(count: Int): String
     /** Shown after the email when Keycloak has not verified it (MemberResponse.emailVerified). */
@@ -636,6 +647,17 @@ object EnStrings : AppStrings {
     override val ministryFactLeader = "Leader"
     override val ministryMeetingTime = "Meeting time"
     override val ministryPlace = "Place"
+    override val ministryDetailTitle = "Ministry"
+    override val ministryDetailEyebrow = "Serving together"
+    override val ministryFactStatus = "Status"
+    override val ministryRecruiting = "Open"
+    override val ministryRecruitingClosed = "Closed"
+    override val ministryHeartTitle = "Our heart"
+    override val ministryApply = "Apply"
+    override val participationNurtureHeadline = "Courses to grow together"
+    override val participationMinistryHeadline = "Places to serve together"
+    override val participationNurtureCaption = "Courses that take you one step further in the Word."
+    override val participationMinistryCaption = "Teams that share their gifts and build the church together."
     override fun ministryMemberCount(count: Int) = if (count == 1) "1 member" else "$count members"
     override val profileEmailUnverified = "Not verified"
     override val checkStatus = "Check Status"
@@ -991,6 +1013,17 @@ object KoStrings : AppStrings {
     override val ministryFactLeader = "리더"
     override val ministryMeetingTime = "모임 시간"
     override val ministryPlace = "장소"
+    override val ministryDetailTitle = "사역"
+    override val ministryDetailEyebrow = "함께 섬기는 자리"
+    override val ministryFactStatus = "상태"
+    override val ministryRecruiting = "모집 중"
+    override val ministryRecruitingClosed = "모집 마감"
+    override val ministryHeartTitle = "우리의 마음"
+    override val ministryApply = "신청하기"
+    override val participationNurtureHeadline = "함께 자랄 과정"
+    override val participationMinistryHeadline = "함께 섬길 자리"
+    override val participationNurtureCaption = "말씀 안에서 한 걸음 더 나아가는 과정들입니다."
+    override val participationMinistryCaption = "은사를 나누며 교회를 함께 세워가는 팀들입니다."
     override fun ministryMemberCount(count: Int) = "${count}명"
     override val profileEmailUnverified = "미인증"
     override val checkStatus = "승인 상태 확인"
@@ -1343,6 +1376,17 @@ object DeStrings : AppStrings {
     override val ministryFactLeader = "Leitung"
     override val ministryMeetingTime = "Treffzeit"
     override val ministryPlace = "Ort"
+    override val ministryDetailTitle = "Dienst"
+    override val ministryDetailEyebrow = "Gemeinsam dienen"
+    override val ministryFactStatus = "Status"
+    override val ministryRecruiting = "Offen"
+    override val ministryRecruitingClosed = "Geschlossen"
+    override val ministryHeartTitle = "Unser Herz"
+    override val ministryApply = "Anmelden"
+    override val participationNurtureHeadline = "Gemeinsam wachsen"
+    override val participationMinistryHeadline = "Wo wir gemeinsam dienen"
+    override val participationNurtureCaption = "Kurse, die dich im Wort einen Schritt weiterbringen."
+    override val participationMinistryCaption = "Teams, die ihre Gaben teilen und gemeinsam Gemeinde bauen."
     override fun ministryMemberCount(count: Int) = if (count == 1) "1 Mitglied" else "$count Mitglieder"
     override val profileEmailUnverified = "Nicht bestätigt"
     override val checkStatus = "Status prüfen"
