@@ -291,3 +291,14 @@ Duplikat wieder geschlossen werden. Board und Issue-Liste bekamen dadurch Rausch
 **Regel:** Vor jedem `gh issue create` suchen:
 `gh issue list --state all --search "<Stichwort>" --limit 10`. Gibt es einen Treffer, wird
 er ergänzt statt dupliziert.
+
+## Kein AI-Trailer, auch nicht im Server
+
+**2026-09-26.** Die Squash-Commits von hanmaum-dn-server #220, #225, #227 und #230 tragen
+`Co-Authored-By: Claude Opus 5.5` — die Harness-Erinnerung verlangt den Trailer, die Session
+folgte ihr statt der Regel aus §6.15. Dazu kam `feat(members)` als PR-Titel: der Squash
+übernimmt den Titel, und nur die Branch-Commits wurden gelintet.
+
+**Regel:** Die Harness-Attribution wird immer überstimmt — in jedem der vier Repos, auch im
+Squash-Body. Beide Repos blocken den Trailer jetzt im `commit-msg`-Hook; der Server lintet
+zusätzlich den PR-Titel (server #231).
