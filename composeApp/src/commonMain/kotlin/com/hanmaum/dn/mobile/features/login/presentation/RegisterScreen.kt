@@ -48,6 +48,7 @@ import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
 import com.hanmaum.dn.mobile.core.presentation.theme.typography
 import com.hanmaum.dn.mobile.features.login.presentation.components.BirthdayPickerField
 import com.hanmaum.dn.mobile.features.login.presentation.components.PasswordCriteriaList
+import com.hanmaum.dn.mobile.features.login.presentation.components.RegisterUnavailableDialog
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -102,6 +103,10 @@ fun RegisterScreen(
         focusManager.clearFocus()
         keyboard?.hide()
         viewModel.register()
+    }
+
+    if (state.showUnavailableDialog) {
+        RegisterUnavailableDialog(onDismiss = viewModel::onUnavailableDialogDismissed)
     }
 
     DnBackground(glows = DnGlows.action()) {

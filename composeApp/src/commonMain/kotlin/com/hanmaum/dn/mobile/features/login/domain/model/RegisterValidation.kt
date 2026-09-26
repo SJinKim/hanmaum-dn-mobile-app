@@ -37,5 +37,11 @@ object RegisterValidation {
  * Raised when registration fails on the backend. [userMessage] is a clean,
  * user-facing message extracted from the API response when available — never a
  * raw status dump. A null/blank message means "show a generic localized error".
+ *
+ * [isServerError] marks a 5xx: the backend itself broke, so nothing the member
+ * types will fix it and its message is an internal detail, not an instruction.
  */
-class RegisterException(val userMessage: String?) : Exception(userMessage)
+class RegisterException(
+    val userMessage: String?,
+    val isServerError: Boolean = false,
+) : Exception(userMessage)

@@ -4,6 +4,7 @@ import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.navigation.LoginRoute
 import com.hanmaum.dn.mobile.features.login.domain.model.LoginException
+import com.hanmaum.dn.mobile.features.login.domain.model.RegisterException
 import com.hanmaum.dn.mobile.core.data.repository.AuthPreferencesImpl
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.russhwolf.settings.MapSettings
@@ -27,6 +28,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -414,5 +416,45 @@ class RegisterViewModelTest {
 
         assertEquals(0, auth.registerCalls)
         assertEquals(RegisterFieldError.DATE_INVALID, vm.uiState.value.birthDateError)
+    }
+
+    @Test
+    fun aServerFailureOpensTheUnavailableDialogAndKeepsTheForm() = runTest {
+        // A 5xx is nothing the member can fix by editing the form (#156).
+        auth.registerResult = Result.failure(RegisterException("Internal error", isServerError = true))
+        fillMinimumValidForm()
+        vm.register()
+        advanceUntilIdle()
+
+        val s = vm.uiState.value
+        assertTrue(s.showUnavailableDialog)
+        assertNull(s.bannerError, "the dialog replaces the banner, it does not stack on it")
+        assertFalse(s.isLoading)
+        assertEquals("hello@hanmaum.de", s.email, "what was typed survives the failure")
+        assertEquals(0, auth.loginCalls)
+    }
+
+    @Test
+    fun aRefusalWithAMessageStaysABannerNotADialog() = runTest {
+        auth.registerResult = Result.failure(RegisterException("Email already registered"))
+        fillMinimumValidForm()
+        vm.register()
+        advanceUntilIdle()
+
+        val s = vm.uiState.value
+        assertFalse(s.showUnavailableDialog)
+        assertEquals(RegisterBanner.ServerMessage("Email already registered"), s.bannerError)
+    }
+
+    @Test
+    fun dismissingTheUnavailableDialogClosesIt() = runTest {
+        auth.registerResult = Result.failure(RegisterException(null, isServerError = true))
+        fillMinimumValidForm()
+        vm.register()
+        advanceUntilIdle()
+
+        vm.onUnavailableDialogDismissed()
+
+        assertFalse(vm.uiState.value.showUnavailableDialog)
     }
 }

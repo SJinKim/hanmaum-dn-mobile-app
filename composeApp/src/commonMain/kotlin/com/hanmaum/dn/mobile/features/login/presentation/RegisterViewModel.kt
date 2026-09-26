@@ -229,6 +229,15 @@ class RegisterViewModel(
                 // --> Erfolg! Jetzt Auto-Login
                 performAutoLogin(s.email, s.password)
             }.onFailure { exception ->
+                if ((exception as? RegisterException)?.isServerError == true) {
+                    // Not the member's input: no banner pointing at the form,
+                    // and the server's message stays out of sight. The fields
+                    // are kept so a later retry needs no retyping.
+                    _uiState.update {
+                        it.copy(isLoading = false, bannerError = null, showUnavailableDialog = true)
+                    }
+                    return@onFailure
+                }
                 // Show a clean backend message if we have one, else a localized generic.
                 val banner = (exception as? RegisterException)?.userMessage
                     ?.takeIf { it.isNotBlank() }
@@ -333,6 +342,10 @@ class RegisterViewModel(
 
     fun onNavigationHandled() {
         _uiState.update { it.copy(navigateTo = null, loginNotice = null) }
+    }
+
+    fun onUnavailableDialogDismissed() {
+        _uiState.update { it.copy(showUnavailableDialog = false) }
     }
 
     /** Called by the UI once it has focused/scrolled to the invalid field. */
