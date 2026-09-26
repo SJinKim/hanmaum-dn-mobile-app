@@ -272,3 +272,22 @@ Code. Fehlt eine Option vom Server, greift ein bekannter Wertesatz, nie ein Frei
 Vor dem PR wird die gebaute UI Zustand für Zustand gegen das Figma-Board gehalten, nicht
 nur die Logik getestet. Und ein Figma-Board, das man selbst zeichnet, wird fachlich
 abgenommen, bevor es als Vorlage gilt.
+
+## Ein gestapelter PR stirbt mit seiner Basis
+
+**2026-09-26.** #256 war auf den Branch von #255 gestapelt. `gh pr merge 255 --squash
+--delete-branch` löschte diesen Branch, und GitHub schloss #256 automatisch, weil seine
+Basis nicht mehr existierte. Ein geschlossener PR lässt sich danach nicht mehr auf `main`
+umhängen; er musste als #259 neu eröffnet werden.
+
+**Regel:** Vor dem Merge der Basis den gestapelten PR umhängen:
+`gh pr edit <stacked> --base main`. Erst danach die Basis mit `--delete-branch` mergen.
+
+## Erst suchen, dann ein Issue anlegen
+
+**2026-09-26.** In dieser Session entstanden Issues, die es schon gab, und mussten als
+Duplikat wieder geschlossen werden. Board und Issue-Liste bekamen dadurch Rauschen.
+
+**Regel:** Vor jedem `gh issue create` suchen:
+`gh issue list --state all --search "<Stichwort>" --limit 10`. Gibt es einen Treffer, wird
+er ergänzt statt dupliziert.
