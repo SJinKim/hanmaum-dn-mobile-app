@@ -53,6 +53,12 @@ data class RegisterUiState(
      */
     val loginNotice: String? = null,
     val bannerError: RegisterBanner? = null,
+    /**
+     * The backend failed on its side (5xx), so registration is not possible
+     * right now. A dialog rather than a banner: retrying the form will not help,
+     * and the member needs the way to reach the team (#156).
+     */
+    val showUnavailableDialog: Boolean = false,
 
     // Formular Felder
     val firstName: String = "",

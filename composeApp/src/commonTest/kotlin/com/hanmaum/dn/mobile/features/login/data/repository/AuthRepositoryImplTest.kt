@@ -11,7 +11,11 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
+import com.hanmaum.dn.mobile.features.login.domain.model.RegisterException
+import com.hanmaum.dn.mobile.features.login.domain.model.RegisterRequest
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 private const val TOKEN_BODY = """
@@ -40,6 +44,26 @@ private class CapturingEngine {
     ) {
         install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
     }
+}
+
+private val REGISTER_REQUEST = RegisterRequest(
+    firstName = "승진",
+    lastName = "김",
+    email = "hello@hanmaum.de",
+    city = "Düsseldorf",
+    password = "Passwort1!",
+)
+
+private fun registerClient(status: HttpStatusCode, body: String) = HttpClient(
+    MockEngine {
+        respond(
+            content = body,
+            status = status,
+            headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+        )
+    },
+) {
+    install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
 }
 
 class AuthRepositoryImplTest {
@@ -80,5 +104,32 @@ class AuthRepositoryImplTest {
 
         assertEquals("refresh_token", engine.lastForm["grant_type"])
         assertEquals(null, engine.lastForm["scope"])
+    }
+
+    @Test
+    fun `a server failure on register is marked as one`() = runTest {
+        val client = registerClient(
+            HttpStatusCode.InternalServerError,
+            """{"success":false,"message":"Internal error","data":null}""",
+        )
+
+        val error = AuthRepositoryImpl(client).register(REGISTER_REQUEST).exceptionOrNull()
+
+        assertIs<RegisterException>(error)
+        assertTrue(error.isServerError)
+    }
+
+    @Test
+    fun `a refused register keeps its message and is not a server failure`() = runTest {
+        val client = registerClient(
+            HttpStatusCode.Conflict,
+            """{"success":false,"message":"Email already registered","data":null}""",
+        )
+
+        val error = AuthRepositoryImpl(client).register(REGISTER_REQUEST).exceptionOrNull()
+
+        assertIs<RegisterException>(error)
+        assertFalse(error.isServerError)
+        assertEquals("Email already registered", error.userMessage)
     }
 }

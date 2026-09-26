@@ -59,6 +59,12 @@ interface AppStrings {
     val registerSubtitle: String
     val registerRequiredLegend: String
     val registerMissingRequired: String
+    val registerUnavailableTitle: String
+    val registerUnavailableBody: String
+    /** Contact sentence around the team link: prefix + [registerUnavailableTeam] + suffix. */
+    val registerUnavailableContactPrefix: String
+    val registerUnavailableTeam: String
+    val registerUnavailableContactSuffix: String
     val registerSubmit: String
     val registerSubmitting: String
     val fieldLastName: String
@@ -528,6 +534,11 @@ object EnStrings : AppStrings {
     override val registerSubtitle = "After you apply, a leader reviews your request before you can use the app."
     override val registerRequiredLegend = "* marks a required field"
     override val registerMissingRequired = "Please fill in every required field"
+    override val registerUnavailableTitle = "Registration isn't possible right now"
+    override val registerUnavailableBody = "Something went wrong and your registration couldn't be completed. Please try again later."
+    override val registerUnavailableContactPrefix = "If the problem persists, please contact "
+    override val registerUnavailableTeam = "the DN Youth dev team"
+    override val registerUnavailableContactSuffix = "."
     override val registerSubmit = "Apply"
     override val registerSubmitting = "Submitting…"
     override val fieldLastName = "Last name"
@@ -894,6 +905,11 @@ object KoStrings : AppStrings {
     override val registerSubtitle = "가입 신청 후 담당자의 승인을 거쳐 이용하실 수 있습니다."
     override val registerRequiredLegend = "* 표시는 필수 항목입니다"
     override val registerMissingRequired = "필수 항목을 모두 입력해 주세요"
+    override val registerUnavailableTitle = "현재 가입 신청이 불가능합니다"
+    override val registerUnavailableBody = "오류가 발생하여 가입 신청을 완료할 수 없습니다. 잠시 후 다시 시도해 주세요."
+    override val registerUnavailableContactPrefix = "문제가 계속되면 "
+    override val registerUnavailableTeam = "DN 청년부 개발팀"
+    override val registerUnavailableContactSuffix = "에 문의해 주세요."
     override val registerSubmit = "가입 신청하기"
     override val registerSubmitting = "신청 중…"
     override val fieldLastName = "성"
@@ -1257,6 +1273,11 @@ object DeStrings : AppStrings {
     override val registerSubtitle = "Nach der Anmeldung prüft ein Verantwortlicher deine Anfrage, bevor du die App nutzen kannst."
     override val registerRequiredLegend = "* kennzeichnet ein Pflichtfeld"
     override val registerMissingRequired = "Bitte fülle alle Pflichtfelder aus"
+    override val registerUnavailableTitle = "Registrierung derzeit nicht möglich"
+    override val registerUnavailableBody = "Es ist ein Fehler aufgetreten, deine Registrierung konnte nicht abgeschlossen werden. Bitte versuche es später erneut."
+    override val registerUnavailableContactPrefix = "Wenn das Problem bleibt, wende dich an "
+    override val registerUnavailableTeam = "das DN-Jugend-Entwicklerteam"
+    override val registerUnavailableContactSuffix = "."
     override val registerSubmit = "Anmeldung absenden"
     override val registerSubmitting = "Wird gesendet…"
     override val fieldLastName = "Nachname"

@@ -121,7 +121,9 @@ class AuthRepositoryImpl(
                     lenientJson.decodeFromString<ApiResponse<Unit>>(errorText).message
                 }.getOrNull()
                 // null/blank -> ViewModel zeigt eine generische, lokalisierte Meldung.
-                Result.failure(RegisterException(message))
+                Result.failure(
+                    RegisterException(message, isServerError = response.status.value >= 500),
+                )
             }
 
         } catch (e: Exception) {
