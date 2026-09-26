@@ -51,8 +51,8 @@ import com.hanmaum.dn.mobile.features.events.presentation.components.EventRsvpSh
  * 소식 detail.
  *
  * The hero image was dropped from the design — the article opens straight
- * into its content. The key-facts block shows the date the model carries;
- * place and deadline are placeholders until hanmaum-dn-server#112 lands.
+ * into its content. The key-facts block shows the date and, when the
+ * announcement names one, the place.
  */
 @Composable
 fun AnnouncementDetailScreen(
@@ -134,11 +134,10 @@ fun AnnouncementDetailScreen(
 
                         Spacer(Modifier.height(20.dp))
                         KeyFacts(
-                            rows = listOf(
+                            rows = listOfNotNull(
                                 Triple(DnIcons.Calendar, "일시", formatRange(item.startAt, item.endAt)),
-                                // TODO(#111): AnnouncementDto carries location now;
-                                // this row is still placeholder text.
-                                Triple(DnIcons.MapPin, "장소", "Lorem ipsum dolor"),
+                                // No row rather than a dash: most announcements name no place.
+                                item.location?.let { Triple(DnIcons.MapPin, "장소", it) },
                                 Triple(DnIcons.Clock, "문의", "교회 사무실"),
                             )
                         )

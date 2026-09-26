@@ -30,9 +30,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
 import com.hanmaum.dn.mobile.core.presentation.components.DnErrorState
 import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
 import com.hanmaum.dn.mobile.core.presentation.components.DnChip
@@ -52,8 +55,8 @@ import org.koin.compose.viewmodel.koinViewModel
  * 소식 — the announcement list.
  *
  * Filtering happens on the category the model already carries, so the chips
- * need no extra endpoint. The thumbnail is a placeholder until the backend
- * ships an image (see hanmaum-dn-server#112).
+ * need no extra endpoint. An announcement without an image keeps the
+ * dashed placeholder.
  */
 @Composable
 fun AnnouncementListScreen(
@@ -137,9 +140,7 @@ private fun NewsRow(item: Announcement, onClick: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            // TODO(#111): AnnouncementDto carries imageUrl now; the client
-            // does not map or render it yet.
-            DnImagePlaceholder(Modifier.size(92.dp), cornerRadius = 20.dp)
+            AnnouncementImage(item.imageUrl, Modifier.size(92.dp), cornerRadius = 20.dp)
 
             Column(
                 Modifier.weight(1f),
@@ -206,4 +207,30 @@ private fun NewsRow(item: Announcement, onClick: () -> Unit) {
             }
         }
     }
+}
+
+/**
+ * The announcement's cover image, or the dashed placeholder when it has none —
+ * shared by the list thumbnail and the home carousel.
+ */
+@Composable
+internal fun AnnouncementImage(
+    imageUrl: String?,
+    modifier: Modifier = Modifier,
+    cornerRadius: Dp = 20.dp,
+    label: String? = null,
+) {
+    if (imageUrl == null) {
+        DnImagePlaceholder(modifier, cornerRadius = cornerRadius, label = label)
+        return
+    }
+    val shape = RoundedCornerShape(cornerRadius)
+    AsyncImage(
+        model = imageUrl,
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        modifier = modifier
+            .clip(shape)
+            .background(DnTheme.colors.surface2, shape),
+    )
 }

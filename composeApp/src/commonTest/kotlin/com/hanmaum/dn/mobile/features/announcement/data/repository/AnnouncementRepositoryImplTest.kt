@@ -63,6 +63,32 @@ class AnnouncementRepositoryImplTest {
     }
 
     @Test
+    fun getAnnouncements_mapsImageUrlAndLocation() = runTest {
+        // Wire names from the ops AnnouncementDto schema (#111).
+        val json = """
+            {"success":true,"data":[{"id":"1","title":"t","body":"b","category":"EVENT",
+             "startAt":"2026-10-01T10:00:00","endAt":null,"isPinned":false,"viewCount":3,
+             "imageUrl":"https://img.example/a.jpg","location":"본당"}]}
+        """.trimIndent()
+        val result = AnnouncementRepositoryImpl(mockClient(json)).getAnnouncements()
+
+        assertEquals("https://img.example/a.jpg", result.single().imageUrl)
+        assertEquals("본당", result.single().location)
+    }
+
+    @Test
+    fun getAnnouncements_absentImageAndLocationDecodeToNull() = runTest {
+        val json = """
+            {"success":true,"data":[{"id":"1","title":"t","body":"b","category":"NOTICE",
+             "startAt":"2026-10-01T10:00:00","endAt":null,"isPinned":false}]}
+        """.trimIndent()
+        val result = AnnouncementRepositoryImpl(mockClient(json)).getAnnouncements()
+
+        assertEquals(null, result.single().imageUrl)
+        assertEquals(null, result.single().location)
+    }
+
+    @Test
     fun getAnnouncements_returnsEmptyList() = runTest {
         val client = mockClient(encodeAnnouncements(emptyList()))
         val result = AnnouncementRepositoryImpl(client).getAnnouncements()

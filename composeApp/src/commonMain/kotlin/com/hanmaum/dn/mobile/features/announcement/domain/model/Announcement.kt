@@ -10,7 +10,11 @@ data class Announcement(
     val startAt: String,
     val endAt: String?,
     val isPinned: Boolean,
-    val category: String
+    val category: String,
+    /** Cover image; null when the announcement has none. */
+    val imageUrl: String? = null,
+    /** Free-text place; null when the announcement names none. */
+    val location: String? = null,
 ) {
     fun getAnnouncementCategoryName(): String {
         return when(category) {

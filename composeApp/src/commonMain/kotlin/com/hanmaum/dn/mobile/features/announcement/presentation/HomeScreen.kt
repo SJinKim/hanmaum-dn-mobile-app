@@ -56,7 +56,6 @@ import kotlinx.datetime.toLocalDateTime
 import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlassIconButton
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlows
-import com.hanmaum.dn.mobile.core.presentation.components.DnImagePlaceholder
 import com.hanmaum.dn.mobile.core.presentation.components.DnDock
 import com.hanmaum.dn.mobile.core.presentation.components.DnScrollEdge
 import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
@@ -348,9 +347,8 @@ private fun NewsCarousel(
                     .padding(14.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                // TODO(#111): AnnouncementDto carries imageUrl now; the client
-                // does not map or render it yet.
-                DnImagePlaceholder(
+                AnnouncementImage(
+                    item.imageUrl,
                     Modifier
                         .fillMaxWidth()
                         .height(120.dp),
