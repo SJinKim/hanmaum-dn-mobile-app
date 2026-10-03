@@ -5,7 +5,7 @@ import com.russhwolf.settings.Settings
 
 class LocationPreferencesImpl(private val settings: Settings) : LocationPreferences {
 
-    override fun isSharingEnabled(): Boolean = settings.getBoolean(KEY_ENABLED, false)
+    override fun isSharingEnabled(): Boolean = settings.getBoolean(KEY_ENABLED, true)
 
     override fun setSharingEnabled(value: Boolean) = settings.putBoolean(KEY_ENABLED, value)
 
