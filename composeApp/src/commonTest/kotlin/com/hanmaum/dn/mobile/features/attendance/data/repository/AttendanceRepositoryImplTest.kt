@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.attendance.data.repository
 
+import com.hanmaum.dn.mobile.core.location.DeviceLocation
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceCheckInResult
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
@@ -10,10 +11,14 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.double
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 private val testJson = Json { ignoreUnknownKeys = true }
@@ -89,6 +94,38 @@ class AttendanceRepositoryImplTest {
         ).checkIn()
 
         assertEquals(AttendanceCheckInResult.Failed, result)
+    }
+
+    @Test
+    fun checkInSendsAllThreeLocationFieldsWhenGiven() = runTest {
+        // The server answers a body with only two of the three fields with a
+        // 400, so all three must travel together under these exact names.
+        var request: HttpRequestData? = null
+        val client = mockClient("""{"success":true,"data":null}""") { request = it }
+
+        AttendanceRepositoryImpl(client).checkIn(
+            DeviceLocation(latitude = 49.4521, longitude = 11.0767, accuracyMeters = 12.5),
+        )
+
+        val sent = assertNotNull(request)
+        assertEquals("/attendance/check-in", sent.url.encodedPath)
+        assertEquals(ContentType.Application.Json, sent.body.contentType?.withoutParameters())
+        val body = testJson.parseToJsonElement(sent.body.toByteArray().decodeToString()).jsonObject
+        assertEquals(setOf("latitude", "longitude", "accuracyMeters"), body.keys)
+        assertEquals(49.4521, body.getValue("latitude").jsonPrimitive.double)
+        assertEquals(11.0767, body.getValue("longitude").jsonPrimitive.double)
+        assertEquals(12.5, body.getValue("accuracyMeters").jsonPrimitive.double)
+    }
+
+    @Test
+    fun checkInSendsNoBodyWithoutLocation() = runTest {
+        var request: HttpRequestData? = null
+        val client = mockClient("""{"success":true,"data":null}""") { request = it }
+
+        AttendanceRepositoryImpl(client).checkIn(location = null)
+
+        val sent = assertNotNull(request)
+        assertTrue(sent.body.toByteArray().isEmpty())
     }
 
     // ── summary ──────────────────────────────────────────────────────────

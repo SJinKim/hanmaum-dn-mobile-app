@@ -8,20 +8,22 @@ import kotlin.test.assertTrue
 class LocationPreferencesImplTest {
 
     @Test
-    fun sharingIsDisabledByDefault() {
+    fun sharingIsEnabledByDefault() {
+        // Opt-out since #146: the check-in sends the location unless the
+        // member turned it off in the profile.
         val preferences = LocationPreferencesImpl(MapSettings())
 
-        assertFalse(preferences.isSharingEnabled())
+        assertTrue(preferences.isSharingEnabled())
     }
 
     @Test
     fun sharingChoiceSurvivesRepositoryRecreation() {
         val settings = MapSettings()
-        LocationPreferencesImpl(settings).setSharingEnabled(true)
+        LocationPreferencesImpl(settings).setSharingEnabled(false)
 
         val recreatedPreferences = LocationPreferencesImpl(settings)
 
-        assertTrue(recreatedPreferences.isSharingEnabled())
+        assertFalse(recreatedPreferences.isSharingEnabled())
     }
 
     @Test

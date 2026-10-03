@@ -4,22 +4,31 @@ package com.hanmaum.dn.mobile.features.attendance.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.repository.AttendancePreferences
+import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
+import com.hanmaum.dn.mobile.core.location.CurrentLocationProvider
+import com.hanmaum.dn.mobile.core.location.DeviceLocation
+import com.hanmaum.dn.mobile.core.location.LOCATION_TIMEOUT_MS
+import com.hanmaum.dn.mobile.core.location.LocationResult
 import com.hanmaum.dn.mobile.core.domain.repository.RecordedAttendanceCheckIn
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceDefinition
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceCheckInResult
 import com.hanmaum.dn.mobile.features.attendance.domain.repository.AttendanceRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
 class AttendanceViewModel(
     private val repository: AttendanceRepository,
     private val preferences: AttendancePreferences,
+    private val locationProvider: CurrentLocationProvider,
+    private val locationPreferences: LocationPreferences,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AttendanceUiState())
@@ -104,7 +113,7 @@ class AttendanceViewModel(
         if (_uiState.value.isCheckedIn || _uiState.value.isCheckingIn) return
         _uiState.update { it.copy(isCheckingIn = true, checkInError = null) }
         viewModelScope.launch {
-            when (val result = repository.checkIn()) {
+            when (val result = repository.checkIn(currentLocationOrNull())) {
                 is AttendanceCheckInResult.Success -> {
                     val checkIn = result.checkIn
                     preferences.markCheckedIn(checkIn.definitionPublicId, checkIn.attendanceDate)
@@ -120,6 +129,24 @@ class AttendanceViewModel(
                     _uiState.update { it.copy(isCheckingIn = false, checkInError = "출석 처리에 실패했습니다") }
             }
         }
+    }
+
+    /**
+     * The position to send with the check-in, or null to send none. Never
+     * fails and never surfaces anything: without a fix the check-in goes out
+     * without a body and the server records presence as unconfirmed (#146).
+     * The outer timeout guards against a provider that does not honour its own.
+     */
+    private suspend fun currentLocationOrNull(): DeviceLocation? {
+        if (!locationPreferences.isSharingEnabled()) return null
+        val result = try {
+            withTimeoutOrNull(LOCATION_TIMEOUT_MS) { locationProvider.getCurrentLocation() }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            null
+        }
+        return (result as? LocationResult.Success)?.location
     }
 
     private fun observeSharedCheckInStatus() {

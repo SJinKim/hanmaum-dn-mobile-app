@@ -1,5 +1,7 @@
 package com.hanmaum.dn.mobile.features.attendance
 
+import com.hanmaum.dn.mobile.core.location.DeviceLocation
+import com.hanmaum.dn.mobile.core.location.LocationResult
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceCheckIn
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceCheckInResult
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceDefinition
@@ -10,6 +12,7 @@ import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceViewMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -31,12 +34,16 @@ class AttendanceViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var fakeRepo: FakeAttendanceRepository
     private lateinit var fakePrefs: FakeAttendancePreferences
+    private lateinit var fakeLocationProvider: FakeCurrentLocationProvider
+    private lateinit var fakeLocationPrefs: FakeLocationPreferences
 
     @BeforeTest
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         fakeRepo = FakeAttendanceRepository()
         fakePrefs = FakeAttendancePreferences()
+        fakeLocationProvider = FakeCurrentLocationProvider()
+        fakeLocationPrefs = FakeLocationPreferences()
     }
 
     @AfterTest
@@ -64,7 +71,8 @@ class AttendanceViewModelTest {
         windowEnd = "23:59:59",
     )
 
-    private fun newViewModel() = AttendanceViewModel(fakeRepo, fakePrefs)
+    private fun newViewModel() =
+        AttendanceViewModel(fakeRepo, fakePrefs, fakeLocationProvider, fakeLocationPrefs)
 
     @Test
     fun initial_state_has_no_definition_and_is_not_checked_in() = runTest(testDispatcher) {
@@ -334,7 +342,7 @@ class AttendanceViewModelTest {
         fakeRepo.summaryResult = Result.success(
             AttendanceSummary(monthAttended = 3, monthTotal = 4, yearAttended = 30, yearToDateTotal = 36, rate = 0.8333),
         )
-        val vm = AttendanceViewModel(fakeRepo, fakePrefs)
+        val vm = newViewModel()
         advanceUntilIdle()
 
         val s = assertNotNull(vm.uiState.value.summary)
@@ -355,7 +363,7 @@ class AttendanceViewModelTest {
                 ),
             ),
         )
-        val vm = AttendanceViewModel(fakeRepo, fakePrefs)
+        val vm = newViewModel()
         advanceUntilIdle()
 
         assertEquals(2, vm.uiState.value.history.size)
@@ -368,7 +376,7 @@ class AttendanceViewModelTest {
         // The screen may only say "nothing recorded" once the call came back.
         fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
         fakeRepo.historyResult = Result.success(AttendanceHistory("2026-06-06", "2026-09-04", emptyList()))
-        val vm = AttendanceViewModel(fakeRepo, fakePrefs)
+        val vm = newViewModel()
         advanceUntilIdle()
 
         assertTrue(vm.uiState.value.history.isEmpty())
@@ -380,7 +388,7 @@ class AttendanceViewModelTest {
         // Otherwise a network failure would read as "you never attended".
         fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
         fakeRepo.historyResult = Result.failure(IllegalStateException("offline"))
-        val vm = AttendanceViewModel(fakeRepo, fakePrefs)
+        val vm = newViewModel()
         advanceUntilIdle()
 
         assertTrue(vm.uiState.value.history.isEmpty())
@@ -393,11 +401,85 @@ class AttendanceViewModelTest {
         // must not cost the user the ability to check in.
         fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
         fakeRepo.summaryResult = Result.failure(IllegalStateException("boom"))
-        val vm = AttendanceViewModel(fakeRepo, fakePrefs)
+        val vm = newViewModel()
         advanceUntilIdle()
 
         assertNull(vm.uiState.value.summary)
         assertNotNull(vm.uiState.value.definition)
         assertTrue(vm.uiState.value.isInWindow)
+    }
+
+    // ── location sent with the check-in (#146) ───────────────────────────
+
+    private val churchFix = DeviceLocation(latitude = 49.4521, longitude = 11.0767, accuracyMeters = 12.5)
+
+    private fun TestScope.checkInOnce(): AttendanceViewModel {
+        fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
+        fakeRepo.checkInResult = AttendanceCheckInResult.Success(
+            AttendanceCheckIn("def-1", "Sunday Service", todayIso()),
+        )
+        val vm = newViewModel()
+        advanceUntilIdle()
+        vm.checkIn()
+        advanceUntilIdle()
+        return vm
+    }
+
+    @Test
+    fun checkInSendsTheFixWhenSharingIsOn() = runTest(testDispatcher) {
+        fakeLocationProvider.result = LocationResult.Success(churchFix)
+
+        val vm = checkInOnce()
+
+        assertEquals(churchFix, fakeRepo.lastCheckInLocation)
+        assertTrue(vm.uiState.value.isCheckedIn)
+    }
+
+    @Test
+    fun checkInNeverAsksForAFixWhenSharingIsOff() = runTest(testDispatcher) {
+        fakeLocationPrefs.setSharingEnabled(false)
+        fakeLocationProvider.result = LocationResult.Success(churchFix)
+
+        val vm = checkInOnce()
+
+        assertEquals(0, fakeLocationProvider.callCount)
+        assertNull(fakeRepo.lastCheckInLocation)
+        assertTrue(vm.uiState.value.isCheckedIn)
+    }
+
+    @Test
+    fun checkInWithoutPermissionStillSucceedsWithoutLocation() = runTest(testDispatcher) {
+        fakeLocationProvider.result = LocationResult.PermissionDenied
+
+        val vm = checkInOnce()
+
+        assertEquals(1, fakeRepo.checkInCallCount)
+        assertNull(fakeRepo.lastCheckInLocation)
+        assertTrue(vm.uiState.value.isCheckedIn)
+        assertNull(vm.uiState.value.checkInError)
+    }
+
+    @Test
+    fun checkInAfterAProviderTimeoutStillSucceedsWithoutLocation() = runTest(testDispatcher) {
+        fakeLocationProvider.result = LocationResult.Timeout
+
+        val vm = checkInOnce()
+
+        assertNull(fakeRepo.lastCheckInLocation)
+        assertTrue(vm.uiState.value.isCheckedIn)
+        assertNull(vm.uiState.value.checkInError)
+    }
+
+    @Test
+    fun aHangingProviderCannotBlockTheCheckIn() = runTest(testDispatcher) {
+        // The platform providers time out themselves, but the check-in must not
+        // depend on every implementation getting that right.
+        fakeLocationProvider.hangs = true
+
+        val vm = checkInOnce()
+
+        assertEquals(1, fakeRepo.checkInCallCount)
+        assertNull(fakeRepo.lastCheckInLocation)
+        assertTrue(vm.uiState.value.isCheckedIn)
     }
 }

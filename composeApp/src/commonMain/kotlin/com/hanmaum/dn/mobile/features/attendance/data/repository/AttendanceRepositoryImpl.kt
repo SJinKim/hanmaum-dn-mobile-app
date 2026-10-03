@@ -1,6 +1,8 @@
 package com.hanmaum.dn.mobile.features.attendance.data.repository
 
 import com.hanmaum.dn.mobile.core.domain.model.ApiResponse
+import com.hanmaum.dn.mobile.core.location.DeviceLocation
+import com.hanmaum.dn.mobile.features.attendance.data.model.AttendanceCheckInRequest
 import com.hanmaum.dn.mobile.features.attendance.data.model.AttendanceCheckInResponse
 import com.hanmaum.dn.mobile.features.attendance.data.model.AttendanceDefinitionResponse
 import com.hanmaum.dn.mobile.features.attendance.data.model.AttendanceEntryResponse
@@ -19,7 +21,10 @@ import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.get
 import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
 
 class AttendanceRepositoryImpl(
     private val client: HttpClient,
@@ -31,8 +36,20 @@ class AttendanceRepositoryImpl(
         body.data?.map { it.toDomain() } ?: emptyList()
     }
 
-    override suspend fun checkIn(): AttendanceCheckInResult = try {
-        val response = client.post("attendance/check-in") { expectSuccess = true }
+    override suspend fun checkIn(location: DeviceLocation?): AttendanceCheckInResult = try {
+        val response = client.post("attendance/check-in") {
+            expectSuccess = true
+            if (location != null) {
+                contentType(ContentType.Application.Json)
+                setBody(
+                    AttendanceCheckInRequest(
+                        latitude = location.latitude,
+                        longitude = location.longitude,
+                        accuracyMeters = location.accuracyMeters,
+                    ),
+                )
+            }
+        }
         val body = response.body<ApiResponse<AttendanceCheckInResponse>>()
         body.data?.toDomain()
             ?.let(AttendanceCheckInResult::Success)

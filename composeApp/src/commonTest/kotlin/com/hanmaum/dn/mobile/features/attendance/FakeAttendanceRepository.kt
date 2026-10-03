@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.attendance
 
+import com.hanmaum.dn.mobile.core.location.DeviceLocation
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceCheckIn
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceCheckInResult
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceDefinition
@@ -14,6 +15,7 @@ class FakeAttendanceRepository : AttendanceRepository {
     )
     var checkInCallCount = 0
     var onCheckIn: (() -> Unit)? = null
+    var lastCheckInLocation: DeviceLocation? = null
 
     var summaryResult: Result<AttendanceSummary> = Result.success(
         AttendanceSummary(monthAttended = 0, monthTotal = 0, yearAttended = 0, yearToDateTotal = 0, rate = 0.0),
@@ -25,8 +27,9 @@ class FakeAttendanceRepository : AttendanceRepository {
     var historyCallCount = 0
 
     override suspend fun getActiveDefinitions(): Result<List<AttendanceDefinition>> = definitionsResult
-    override suspend fun checkIn(): AttendanceCheckInResult {
+    override suspend fun checkIn(location: DeviceLocation?): AttendanceCheckInResult {
         checkInCallCount++
+        lastCheckInLocation = location
         onCheckIn?.invoke()
         return checkInResult
     }
