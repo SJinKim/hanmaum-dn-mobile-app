@@ -13,6 +13,7 @@ import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterException
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterRequest
+import com.hanmaum.dn.mobile.features.login.domain.model.LoginException
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
@@ -69,28 +70,27 @@ private fun registerClient(status: HttpStatusCode, body: String) = HttpClient(
 class AuthRepositoryImplTest {
 
     @Test
-    fun `signing in asks for an offline session`() = runTest {
-        // Without it the refresh token dies with the SSO session — 30 minutes
-        // idle in this realm — and the Face ID vault seals exactly that token,
-        // so a night is enough to make Face ID useless (#231).
+    fun `code exchange sends no password or client secret`() = runTest {
         val engine = CapturingEngine()
 
-        AuthRepositoryImpl(engine.client).login("member@example.org", "secret")
+        AuthRepositoryImpl(engine.client).exchangeAuthorizationCode("one-use-code", "verifier")
 
-        val scope = engine.lastForm["scope"].orEmpty()
-        assertTrue("offline_access" in scope, "scope was '$scope'")
+        assertEquals(null, engine.lastForm["password"])
+        assertEquals(null, engine.lastForm["username"])
+        assertEquals(null, engine.lastForm["client_secret"])
     }
 
     @Test
-    fun `signing in still sends the password grant unchanged`() = runTest {
+    fun `signing in exchanges the code and PKCE verifier`() = runTest {
         val engine = CapturingEngine()
 
-        AuthRepositoryImpl(engine.client).login("member@example.org", "secret")
+        AuthRepositoryImpl(engine.client).exchangeAuthorizationCode("one-use-code", "verifier")
 
-        assertEquals("password", engine.lastForm["grant_type"])
+        assertEquals("authorization_code", engine.lastForm["grant_type"])
         assertEquals("hanmaum-mobile", engine.lastForm["client_id"])
-        assertEquals("member@example.org", engine.lastForm["username"])
-        assertEquals("secret", engine.lastForm["password"])
+        assertEquals("one-use-code", engine.lastForm["code"])
+        assertEquals("verifier", engine.lastForm["code_verifier"])
+        assertEquals("com.hanmaum.dn.mobile:/oauth2redirect", engine.lastForm["redirect_uri"])
     }
 
     @Test
@@ -104,6 +104,17 @@ class AuthRepositoryImplTest {
 
         assertEquals("refresh_token", engine.lastForm["grant_type"])
         assertEquals(null, engine.lastForm["scope"])
+    }
+
+    @Test
+    fun `rejected code keeps structured invalid grant without saving a session`() = runTest {
+        val client = registerClient(HttpStatusCode.BadRequest,
+            """{"error":"invalid_grant","error_description":"Code expired"}""")
+        val error = runCatching { AuthRepositoryImpl(client).exchangeAuthorizationCode("old-code", "v") }.exceptionOrNull()
+        assertIs<LoginException>(error)
+        assertEquals("invalid_grant", error.error)
+        assertEquals(400, error.status)
+        client.close()
     }
 
     @Test

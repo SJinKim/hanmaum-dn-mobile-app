@@ -34,6 +34,8 @@ buildkonfig {
         buildConfigField(STRING, "BACKEND_URL", "http://10.0.2.2:8080")
         buildConfigField(STRING, "KEYCLOAK_URL", "http://10.0.2.2:8091")
         buildConfigField(STRING, "KEYCLOAK_REALM", "hanmaum")
+        buildConfigField(STRING, "KEYCLOAK_CLIENT_ID", "hanmaum-mobile")
+        buildConfigField(STRING, "KEYCLOAK_REDIRECT_URI", "com.hanmaum.dn.mobile:/oauth2redirect")
         buildConfigField(STRING, "GOOGLE_CALENDAR_ID",    envProps["GOOGLE_CALENDAR_ID"]    ?: "")
         buildConfigField(STRING, "GOOGLE_CALENDAR_API_KEY", envProps["GOOGLE_CALENDAR_API_KEY"] ?: "")
         buildConfigField(STRING, "PCLOUD_FOLDER_ENDPOINT",   envProps["PCLOUD_FOLDER_ENDPOINT"]   ?: "")
@@ -199,6 +201,8 @@ internal actual object BuildKonfig {
   public actual val BACKEND_URL: String get() = com.hanmaum.dn.mobile.BuildConfig.BACKEND_URL
   public actual val KEYCLOAK_URL: String get() = com.hanmaum.dn.mobile.BuildConfig.KEYCLOAK_URL
   public actual val KEYCLOAK_REALM: String get() = com.hanmaum.dn.mobile.BuildConfig.KEYCLOAK_REALM
+  public actual val KEYCLOAK_CLIENT_ID: String get() = com.hanmaum.dn.mobile.BuildConfig.KEYCLOAK_CLIENT_ID
+  public actual val KEYCLOAK_REDIRECT_URI: String get() = com.hanmaum.dn.mobile.BuildConfig.KEYCLOAK_REDIRECT_URI
   public actual val GOOGLE_CALENDAR_ID: String get() = com.hanmaum.dn.mobile.BuildConfig.GOOGLE_CALENDAR_ID
   public actual val GOOGLE_CALENDAR_API_KEY: String get() = com.hanmaum.dn.mobile.BuildConfig.GOOGLE_CALENDAR_API_KEY
   public actual val PCLOUD_FOLDER_ENDPOINT: String get() = com.hanmaum.dn.mobile.BuildConfig.PCLOUD_FOLDER_ENDPOINT
@@ -257,6 +261,8 @@ android {
     }
 
     defaultConfig {
+        buildConfigField("String", "KEYCLOAK_CLIENT_ID", "\"hanmaum-mobile\"")
+        buildConfigField("String", "KEYCLOAK_REDIRECT_URI", "\"com.hanmaum.dn.mobile:/oauth2redirect\"")
         applicationId = "com.hanmaum.dn.mobile"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()

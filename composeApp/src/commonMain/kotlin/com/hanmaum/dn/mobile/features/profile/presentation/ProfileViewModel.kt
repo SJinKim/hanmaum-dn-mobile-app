@@ -6,6 +6,8 @@ import com.hanmaum.dn.mobile.core.domain.repository.AuthPreferences
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.core.push.PushManager
 import com.hanmaum.dn.mobile.core.security.BiometricVault
+import com.hanmaum.dn.mobile.core.network.invalidateBearerCache
+import io.ktor.client.HttpClient
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import com.hanmaum.dn.mobile.features.verse.domain.model.VerseRecords
 import com.hanmaum.dn.mobile.features.verse.domain.repository.VerseRecordRepository
@@ -23,6 +25,7 @@ class ProfileViewModel(
     private val pushManager: PushManager,
     private val authPreferences: AuthPreferences,
     private val verseRecordRepository: VerseRecordRepository,
+    private val httpClient: HttpClient,
 ) : ViewModel() {
 
     private val _loggedOut = MutableStateFlow(false)
@@ -133,6 +136,7 @@ class ProfileViewModel(
             // Must run before the token clear or the call goes out unauthenticated.
             pushManager.currentToken()?.let { notificationRepository.deleteDeviceToken(it) }
             tokenStorage.clear()
+            httpClient.invalidateBearerCache()
             // The Face ID arming deliberately survives. Signing out and back in
             // is the ordinary way to end a session, and disarming here left the
             // member with a login screen that never offered Face ID — there was

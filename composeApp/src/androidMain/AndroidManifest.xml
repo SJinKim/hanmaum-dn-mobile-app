@@ -27,6 +27,19 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".core.security.BrowserLoginActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="com.hanmaum.dn.mobile" />
+            </intent-filter>
+        </activity>
+
         <receiver
             android:name=".core.geofence.GeofenceBroadcastReceiver"
             android:exported="false" />

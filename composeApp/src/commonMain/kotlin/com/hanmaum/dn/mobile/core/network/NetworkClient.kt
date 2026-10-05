@@ -2,8 +2,13 @@ package com.hanmaum.dn.mobile.core.network
 
 import com.hanmaum.dn.mobile.BuildKonfig
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
+import com.hanmaum.dn.mobile.core.security.MobileAuthConfig
 import io.ktor.client.*
 import io.ktor.client.call.body
+import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.plugins.HttpSend
+import io.ktor.client.plugins.plugin
+import io.ktor.client.statement.request
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -15,6 +20,7 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.coroutines.CancellationException
 
 
 @Serializable
@@ -56,15 +62,8 @@ internal fun shouldSendBearer(
     return isBackend && !isAuthEndpoint
 }
 
-fun createHttpClient(tokenStorage: TokenStorage): HttpClient {
-    // Separate plain client for token refresh — no auth interceptor (avoids circular calls)
-    val refreshClient = HttpClient {
-        install(ContentNegotiation) {
-            json(Json { ignoreUnknownKeys = true; isLenient = true })
-        }
-    }
-
-    return HttpClient {
+fun createHttpClient(tokenStorage: TokenStorage, engine: HttpClientEngine? = null): HttpClient {
+    val clientConfig: HttpClientConfig<*>.() -> Unit = {
         install(ContentNegotiation) {
             json(Json {
                 ignoreUnknownKeys = true
@@ -75,6 +74,8 @@ fun createHttpClient(tokenStorage: TokenStorage): HttpClient {
         install(Logging) {
             level = LogLevel.INFO
             logger = Logger.DEFAULT
+            sanitizeHeader { it == HttpHeaders.Authorization }
+            filter { !it.url.encodedPath.contains("openid-connect") }
         }
 
         defaultRequest {
@@ -86,6 +87,11 @@ fun createHttpClient(tokenStorage: TokenStorage): HttpClient {
         }
 
         install(Auth) {
+            reAuthorizeOnResponse { response ->
+                response.status == HttpStatusCode.Unauthorized && shouldSendBearer(
+                    response.request.url.host, response.request.url.encodedPath, Url(BuildKonfig.BACKEND_URL).host,
+                )
+            }
             bearer {
                 loadTokens {
                     val access = tokenStorage.getAccessToken()
@@ -95,17 +101,19 @@ fun createHttpClient(tokenStorage: TokenStorage): HttpClient {
                 }
 
                 refreshTokens {
+                    if (!shouldSendBearer(response.request.url.host, response.request.url.encodedPath,
+                            Url(BuildKonfig.BACKEND_URL).host)) return@refreshTokens null
                     val refreshToken = tokenStorage.getRefreshToken()
                         ?: return@refreshTokens null
                     try {
-                        val response = refreshClient.submitForm(
-                            url = "${BuildKonfig.KEYCLOAK_URL}/realms/${BuildKonfig.KEYCLOAK_REALM}/protocol/openid-connect/token",
+                        val response = client.submitForm(
+                            url = MobileAuthConfig.tokenEndpoint,
                             formParameters = parameters {
-                                append("client_id", "hanmaum-mobile")
+                                append("client_id", MobileAuthConfig.clientId)
                                 append("grant_type", "refresh_token")
                                 append("refresh_token", refreshToken)
                             }
-                        )
+                        ) { markAsRefreshTokenRequest() }
                         if (response.status == HttpStatusCode.OK) {
                             val tokens = response.body<RefreshTokenResponse>()
                             tokenStorage.saveAccessToken(tokens.accessToken)
@@ -118,6 +126,8 @@ fun createHttpClient(tokenStorage: TokenStorage): HttpClient {
                             // to the caller, which decides whether to re-auth.
                             null
                         }
+                    } catch (e: CancellationException) {
+                        throw e
                     } catch (e: Exception) {
                         null
                     }
@@ -131,6 +141,16 @@ fun createHttpClient(tokenStorage: TokenStorage): HttpClient {
                     )
                 }
             }
+        }
+    }
+    return (if (engine == null) HttpClient(clientConfig) else HttpClient(engine, clientConfig)).apply {
+        // sendWithoutRequest controls preemptive auth only. A foreign server can
+        // challenge with WWW-Authenticate; strip again on every send/retry.
+        plugin(HttpSend).intercept { request ->
+            if (!shouldSendBearer(request.url.host, request.url.encodedPath, Url(BuildKonfig.BACKEND_URL).host)) {
+                request.headers.remove(HttpHeaders.Authorization)
+            }
+            execute(request)
         }
     }
 }

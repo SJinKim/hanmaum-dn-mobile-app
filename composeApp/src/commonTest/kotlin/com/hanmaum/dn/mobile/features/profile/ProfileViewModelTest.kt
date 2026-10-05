@@ -15,6 +15,7 @@ import com.hanmaum.dn.mobile.features.notification.domain.repository.Notificatio
 import com.hanmaum.dn.mobile.features.profile.presentation.ProfileUiState
 import com.hanmaum.dn.mobile.features.profile.presentation.ProfileViewModel
 import kotlinx.coroutines.Dispatchers
+import io.ktor.client.engine.mock.respondOk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -144,6 +145,7 @@ class ProfileViewModelTest {
         pushManager,
         authPreferences,
         FakeVerseRecordRepository(),
+        io.ktor.client.HttpClient(io.ktor.client.engine.mock.MockEngine { respondOk() }),
     )
 
     private fun success(viewModel: ProfileViewModel) =
