@@ -1,18 +1,8 @@
 package com.hanmaum.dn.mobile.features.login.presentation
 
-import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.navigation.LoginRoute
-import com.hanmaum.dn.mobile.features.login.domain.model.LoginException
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterException
-import com.hanmaum.dn.mobile.core.data.repository.AuthPreferencesImpl
-import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
-import com.russhwolf.settings.MapSettings
-import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
-import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.mock.MockEngine
-import io.ktor.client.engine.mock.respondOk
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterRequest
 import com.hanmaum.dn.mobile.features.login.domain.model.TokenResponse
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
@@ -39,18 +29,15 @@ private class FakeAuthRepository : AuthRepository {
     var registerResult: Result<Unit> = Result.success(Unit)
     var loginCalls = 0
     var lastLogin: Pair<String, String>? = null
-    /** null = succeed; set a throwable to make the auto-login fail. */
-    var loginFailure: Throwable? = null
 
-    override suspend fun login(user: String, pass: String): TokenResponse {
+    override suspend fun exchangeAuthorizationCode(code: String, verifier: String): TokenResponse {
         loginCalls++
-        lastLogin = user to pass
-        loginFailure?.let { throw it }
+        lastLogin = code to verifier
         return TokenResponse(accessToken = "at", expiresIn = 300, refreshToken = "rt", tokenType = "Bearer")
     }
 
     override suspend fun refresh(refreshToken: String): TokenResponse =
-        login("", "")
+        exchangeAuthorizationCode("", "")
 
     override suspend fun register(request: RegisterRequest): Result<Unit> {
         registerCalls++
@@ -63,28 +50,6 @@ private class FakeCityLookupRepository : CityLookupRepository {
     override suspend fun cityForPostalCode(postalCode: String): String? = null
 }
 
-private class FakeMemberRepository : MemberRepository {
-    var status: MemberStatus = MemberStatus.PENDING
-    var profileFailure: Throwable? = null
-    override suspend fun getMyProfile(): Result<MemberResponse> =
-        profileFailure?.let { Result.failure(it) }
-            ?: Result.success(MemberResponse(publicId = "p1", firstName = "승진", lastName = "김", status = status))
-
-    override suspend fun updateMyProfile(
-        phoneNumber: String?, profileImageUrl: String?, birthDate: String?,
-        street: String?, houseNumber: String?, zipCode: String?, city: String?,
-    ): Result<MemberResponse> = getMyProfile()
-}
-
-private class FakeTokenStorage : TokenStorage {
-    private var access: String? = null
-    private var refresh: String? = null
-    override fun saveAccessToken(token: String) { access = token }
-    override fun getAccessToken(): String? = access
-    override fun saveRefreshToken(token: String?) { refresh = token }
-    override fun getRefreshToken(): String? = refresh
-    override fun clear() { access = null; refresh = null }
-}
 
 /**
  * The bug this guards against: the v2 screen had no house number field, so
@@ -97,21 +62,13 @@ class RegisterViewModelTest {
 
     private val dispatcher = StandardTestDispatcher()
     private lateinit var auth: FakeAuthRepository
-    private lateinit var members: FakeMemberRepository
-    private lateinit var tokens: FakeTokenStorage
-    private lateinit var authPrefs: AuthPreferencesImpl
     private lateinit var vm: RegisterViewModel
 
     @BeforeTest
     fun setUp() {
         Dispatchers.setMain(dispatcher)
         auth = FakeAuthRepository()
-        members = FakeMemberRepository()
-        tokens = FakeTokenStorage()
-        authPrefs = AuthPreferencesImpl(MapSettings())
-        // A bare client is enough: invalidateBearerCache is a no-op without the
-        // Auth plugin installed, and no test here makes an HTTP call.
-        vm = RegisterViewModel(auth, tokens, FakeCityLookupRepository(), members, HttpClient(MockEngine { respondOk() }), authPrefs)
+        vm = RegisterViewModel(auth, FakeCityLookupRepository())
     }
 
     @AfterTest
@@ -263,116 +220,27 @@ class RegisterViewModelTest {
         assertNull(vm.uiState.value.bannerError)
     }
 
-    // ── auto-login after registration (#168) ─────────────────────────────
-
+    // Registration hands over to browser login (#268), never a password grant.
     @Test
-    fun aSuccessfulRegistrationSignsTheMemberInWithTheSameCredentials() = runTest {
+    fun successfulRegistrationOpensLoginWithVerificationNoticeWithoutTokenExchange() = runTest {
         fillMinimumValidForm()
         vm.register()
         advanceUntilIdle()
-
-        assertEquals(1, auth.loginCalls, "registration must be followed by a login")
-        assertEquals("hello@hanmaum.de" to "Passwort1!", auth.lastLogin)
-        assertTrue(authPrefs.isKeepSignedInEnabled(), "the session must survive the next app start")
-    }
-
-    @Test
-    fun aFreshRegistrationLandsOnThePendingScreen() = runTest {
-        // The bug: this used to stop at a banner because the auto-login threw
-        // and nothing said why.
-        members.status = MemberStatus.PENDING
-        fillMinimumValidForm()
-        vm.register()
-        advanceUntilIdle()
-
-        assertEquals(NavRoute.PendingApproval, vm.uiState.value.navigateTo)
-        assertNull(vm.uiState.value.bannerError, "a working auto-login shows no banner")
-    }
-
-    @Test
-    fun anAlreadyActiveAccountGoesHomeInsteadOfPending() = runTest {
-        // Registering onto an existing active account must not send the member
-        // to a screen telling them to wait for an approval they already have.
-        members.status = MemberStatus.ACTIVE
-        fillMinimumValidForm()
-        vm.register()
-        advanceUntilIdle()
-
-        assertEquals(NavRoute.Home, vm.uiState.value.navigateTo)
-    }
-
-    @Test
-    fun aRefusedAccountGoesToTheRejectedScreen() = runTest {
-        members.status = MemberStatus.REJECTED
-        fillMinimumValidForm()
-        vm.register()
-        advanceUntilIdle()
-
-        assertEquals(NavRoute.Rejected, vm.uiState.value.navigateTo)
-    }
-
-    @Test
-    fun aFailedProfileCallStillLandsOnPendingRatherThanTheLoginForm() = runTest {
-        // The token is valid and the account exists — only the profile fetch
-        // failed. Sending them back to log in again would be a regression.
-        members.profileFailure = IllegalStateException("offline")
-        fillMinimumValidForm()
-        vm.register()
-        advanceUntilIdle()
-
-        assertEquals(NavRoute.PendingApproval, vm.uiState.value.navigateTo)
-    }
-
-    @Test
-    fun aFailedAutoLoginStillLeavesTheForm() = runTest {
-        // The account exists, so leaving the member on a filled-in form invites
-        // them to send it a second time.
-        auth.loginFailure = IllegalStateException("401 from keycloak")
-        fillMinimumValidForm()
-        vm.register()
-        advanceUntilIdle()
-
-        val s = vm.uiState.value
+        val state = vm.uiState.value
         assertEquals(1, auth.registerCalls)
-        assertTrue(s.isSuccess, "registration itself succeeded")
-        assertEquals(NavRoute.Login, s.navigateTo, "and the member is taken to the login screen")
-        assertEquals(LoginRoute.NOTICE_REGISTERED, s.loginNotice)
-        assertNull(s.bannerError, "a banner on a screen nobody stays on is pointless")
-    }
-
-    @Test
-    fun anUnconfirmedEmailSaysSoInsteadOfAskingForALogin() = runTest {
-        // Keycloak refuses the grant while a required action is pending. Telling
-        // this member to "please log in" aims them at a door that will not open.
-        auth.loginFailure = LoginException(
-            status = 400,
-            error = "invalid_grant",
-            description = "Account is not fully set up",
-        )
-        fillMinimumValidForm()
-        vm.register()
-        advanceUntilIdle()
-
-        val s = vm.uiState.value
-        assertEquals(NavRoute.Login, s.navigateTo)
-        assertEquals(LoginRoute.NOTICE_VERIFY_EMAIL, s.loginNotice)
-    }
-
-    @Test
-    fun anOrdinaryRefusalIsNotMistakenForAnUnconfirmedEmail() = runTest {
-        auth.loginFailure = LoginException(400, "invalid_grant", "Invalid user credentials")
-        fillMinimumValidForm()
-        vm.register()
-        advanceUntilIdle()
-
-        assertEquals(LoginRoute.NOTICE_REGISTERED, vm.uiState.value.loginNotice)
+        assertEquals(0, auth.loginCalls)
+        assertNull(auth.lastLogin)
+        assertTrue(state.isSuccess)
+        assertEquals(NavRoute.Login, state.navigateTo)
+        assertEquals(LoginRoute.NOTICE_VERIFY_EMAIL, state.loginNotice)
+        assertEquals("", state.password)
+        assertNull(state.bannerError)
     }
 
     @Test
     fun aBlockedSubmitNeverReachesTheLogin() = runTest {
         vm.register()
         advanceUntilIdle()
-
         assertEquals(0, auth.registerCalls)
         assertEquals(0, auth.loginCalls)
     }

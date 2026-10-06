@@ -158,7 +158,7 @@ Always use the OpenAI developer documentation MCP server if work involves OpenAI
 
 ## Git Rules
 
-- Never work on `main` or `develop`. `develop` is the integration branch; branch `feature/<short-name>` from a fresh `develop` and PR back into it. Direct commits to `main`/`develop`/`dev` are blocked by lefthook (`lefthook.yml`).
+- `main` is the integration branch. Never work directly on `main`; branch `feature/<short-name>` from a fresh `main` and PR back into it. Direct commits to `main` are blocked by lefthook (`lefthook.yml`).
 - Never add `Co-Authored-By:` trailers to commits, or any other AI/tool identity in authorship, trailers, or committer fields.
 - Do not rebase, reset, discard, or overwrite user work without explicit permission.
 - Commit messages: `<type>(<scope>): <imperative summary max 72 chars>`.

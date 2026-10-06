@@ -236,12 +236,15 @@ fun DnPrimaryButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     leading: ImageVector? = null,
+    shape: androidx.compose.ui.graphics.Shape = DnPillShape,
+    disabledContainer: Color = DnTheme.colors.surface3,
+    disabledContent: Color = DnTheme.colors.textTertiary,
 ) {
     val c = DnTheme.colors
     Row(
         modifier
-            .clip(DnPillShape)
-            .background(if (enabled) c.lime else c.surface3, DnPillShape)
+            .clip(shape)
+            .background(if (enabled) c.lime else disabledContainer, shape)
             .clickable(enabled = enabled, onClick = onClick)
             .padding(vertical = 16.dp, horizontal = 24.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
@@ -253,7 +256,7 @@ fun DnPrimaryButton(
         Text(
             text = label,
             style = DnTheme.typography.bodyStrong,
-            color = if (enabled) c.onLime else c.textTertiary,
+            color = if (enabled) c.onLime else disabledContent,
         )
     }
 }
@@ -268,18 +271,22 @@ fun DnTintedButton(
     container: Color = DnTheme.colors.redDim,
     /** Sits left of the label. Face ID is found by its mark, not by its word. */
     icon: ImageVector? = null,
+    enabled: Boolean = true,
+    shape: androidx.compose.ui.graphics.Shape = DnPillShape,
+    showBorder: Boolean = true,
+    iconSize: androidx.compose.ui.unit.Dp = 20.dp,
 ) {
     Row(
         modifier
-            .clip(DnPillShape)
-            .background(container, DnPillShape)
-            .border(1.dp, tint, DnPillShape)
-            .clickable(onClick = onClick)
+            .clip(shape)
+            .background(container, shape)
+            .then(if (showBorder) Modifier.border(1.dp, tint, shape) else Modifier)
+            .clickable(enabled = enabled, onClick = onClick)
             .padding(vertical = 16.dp, horizontal = 24.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        icon?.let { Icon(it, null, tint = tint, modifier = Modifier.size(20.dp)) }
+        icon?.let { Icon(it, null, tint = tint, modifier = Modifier.size(iconSize)) }
         Text(label, style = DnTheme.typography.bodyStrong, color = tint)
     }
 }

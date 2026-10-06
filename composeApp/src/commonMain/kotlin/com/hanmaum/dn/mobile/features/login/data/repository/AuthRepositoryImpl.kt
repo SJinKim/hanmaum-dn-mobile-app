@@ -1,6 +1,6 @@
 package com.hanmaum.dn.mobile.features.login.data.repository
 
-import com.hanmaum.dn.mobile.BuildKonfig
+import com.hanmaum.dn.mobile.core.security.MobileAuthConfig
 import com.hanmaum.dn.mobile.core.domain.model.ApiResponse
 import com.hanmaum.dn.mobile.features.login.domain.model.KeycloakError
 import com.hanmaum.dn.mobile.features.login.domain.model.LoginException
@@ -16,6 +16,7 @@ import io.ktor.client.statement.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.serialization.json.Json
+import kotlinx.coroutines.CancellationException
 
 class AuthRepositoryImpl(
     private val client: HttpClient
@@ -24,7 +25,8 @@ class AuthRepositoryImpl(
     private val lenientJson = Json { ignoreUnknownKeys = true }
 
     /**
-     * Signs in and asks for an *offline* session.
+     * Exchanges the browser code. PkceAuthorization requests the offline scope
+     * on the authorization endpoint, not on this token exchange.
      *
      * Without `offline_access` the refresh token belongs to the SSO session,
      * which the realm ends after 30 minutes idle and 10 hours at the latest. The
@@ -40,18 +42,18 @@ class AuthRepositoryImpl(
      * app drops the tokens; what it deliberately keeps is the sealed copy, which
      * only this member's face opens (#220).
      */
-    override suspend fun login(user: String, pass: String): TokenResponse =
+    override suspend fun exchangeAuthorizationCode(code: String, verifier: String): TokenResponse =
         tokenRequest {
-            append("client_id", "hanmaum-mobile")
-            append("grant_type", "password")
-            append("username", user)
-            append("password", pass)
-            append("scope", "openid offline_access")
+            append("client_id", MobileAuthConfig.clientId)
+            append("grant_type", "authorization_code")
+            append("code", code)
+            append("code_verifier", verifier)
+            append("redirect_uri", MobileAuthConfig.redirectUri)
         }
 
     /** Both grants hit the same endpoint and fail the same way. */
     private suspend fun tokenRequest(form: ParametersBuilder.() -> Unit): TokenResponse {
-        val keycloakUrl = "${BuildKonfig.KEYCLOAK_URL}/realms/${BuildKonfig.KEYCLOAK_REALM}/protocol/openid-connect/token"
+        val keycloakUrl = MobileAuthConfig.tokenEndpoint
 
         val response: HttpResponse = client.submitForm(
             url = keycloakUrl,
@@ -61,10 +63,8 @@ class AuthRepositoryImpl(
         if (response.status == HttpStatusCode.OK) {
             return response.body()
         } else {
-            // Keycloak answers a refusal with {error, error_description}. Keeping
-            // the two apart lets the caller tell "wrong password" from "you have
-            // not confirmed your email yet" — the latter is actionable, and used
-            // to arrive as an opaque string (#168).
+            // Preserve invalid_grant separately: an expired biometric refresh
+            // disarms its dead vault, while a transient network error does not.
             val errorBody = response.bodyAsText()
             val parsed = runCatching { lenientJson.decodeFromString<KeycloakError>(errorBody) }.getOrNull()
             throw LoginException(
@@ -77,7 +77,7 @@ class AuthRepositoryImpl(
 
     override suspend fun refresh(refreshToken: String): TokenResponse =
         tokenRequest {
-            append("client_id", "hanmaum-mobile")
+            append("client_id", MobileAuthConfig.clientId)
             append("grant_type", "refresh_token")
             append("refresh_token", refreshToken)
         }
@@ -126,8 +126,9 @@ class AuthRepositoryImpl(
                 )
             }
 
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
             // Netzwerkfehler (Kein Internet, Server down) -> generische Meldung.
             Result.failure(RegisterException(null))
         }

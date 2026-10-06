@@ -9,6 +9,9 @@ import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.core.network.invalidateBearerCache
 import com.hanmaum.dn.mobile.core.security.BiometricVault
 import com.hanmaum.dn.mobile.core.security.VaultResult
+import com.hanmaum.dn.mobile.core.security.BrowserAuthentication
+import com.hanmaum.dn.mobile.core.security.PkceAuthorization
+import com.hanmaum.dn.mobile.features.login.domain.model.LoginException
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import io.ktor.client.HttpClient
@@ -16,8 +19,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 
-// Wir instanziieren das Repo hier direkt (später nutzen wir DI wie Koin)
 class LoginViewModel(
     private val authRepository: AuthRepository,
     private val memberRepository: MemberRepository,
@@ -53,9 +56,10 @@ class LoginViewModel(
         subtitle: String,
         cancelLabel: String,
     ) {
+        if (_uiState.value.isLoading) return
         when (val opened = vault.open(title, subtitle, cancelLabel)) {
             is VaultResult.Success -> exchangeRefreshToken(vault, opened.value)
-            // Dismissing the prompt is a choice: fall back to the form quietly.
+            // Dismissing the prompt is a choice: the browser action stays available.
             VaultResult.Cancelled -> Unit
             VaultResult.Invalidated -> {
                 // Biometrics were re-enrolled; the secret is gone for good.
@@ -70,7 +74,7 @@ class LoginViewModel(
             // up again to get the button back (#212).
             VaultResult.Unavailable -> Unit
             VaultResult.Failed ->
-                _uiState.update { it.copy(error = "생체 인증에 실패했습니다. 비밀번호로 로그인해주세요.") }
+                _uiState.update { it.copy(error = "생체 인증에 실패했습니다. 계정으로 로그인해 주세요.") }
         }
     }
 
@@ -89,10 +93,20 @@ class LoginViewModel(
             }
             httpClient.invalidateBearerCache()
             routeByStatus()
+        } catch (e: CancellationException) {
+            // The composition-bound Face ID job can end while this ViewModel
+            // survives. Release the UI without treating cancellation as expiry
+            // or silently starting another authentication attempt.
+            _uiState.update { it.copy(isLoading = false, statusMessage = "") }
+            throw e
         } catch (e: Exception) {
-            // Keycloak's idle timeout has passed, so the sealed token is spent.
-            // The password form is the way back in; option C in #200 is what
-            // would avoid this, and it needs the server.
+            if (e is LoginException && e.error == "invalid_grant") {
+                vault.clear()
+                authPreferences.setBiometricEnabled(false)
+                _uiState.update { it.copy(biometricExpired = true) }
+            }
+            // Only invalid_grant disarms the vault. Offline/transient failures
+            // retain it and offer browser login without another automatic prompt.
             _uiState.update {
                 it.copy(
                     isLoading = false,
@@ -109,19 +123,20 @@ class LoginViewModel(
      * is already signed in and the refresh token is there to seal — this screen
      * carried an `enableFaceId` flag that nothing ever read (#212).
      */
-    fun onLoginClicked(user: String, pass: String, keepSignedIn: Boolean = true) {
-        if (user.isBlank() || pass.isBlank()) {
-            _uiState.update { it.copy( error = "아이디와 비밀번호를 입력해주세요.") }
-        }
-
+    fun onLoginClicked(browser: BrowserAuthentication, keepSignedIn: Boolean = true) {
+        if (_uiState.value.isLoading) return
+        _uiState.update { it.copy(isLoading = true, browserOpen = true, error = null, biometricExpired = false) }
         viewModelScope.launch {
-            // State Update: Ladebalken an
-            _uiState.update { it.copy(isLoading = true, error = null, statusMessage = "인증하는 중입니다. 잠시만 기다려주세요.") }
-
-
+            val authorization = PkceAuthorization()
             try {
-                // UseCase ausführen
-                val tokenResponse = authRepository.login(user, pass)
+                val callback = browser.authenticate(authorization.begin(), authorization.callbackScheme)
+                if (callback == null) {
+                    _uiState.update { it.copy(isLoading = false, browserOpen = false, statusMessage = "") }
+                    return@launch
+                }
+                val grant = authorization.complete(callback)
+                _uiState.update { it.copy(browserOpen = false, statusMessage = "사용자 정보를 확인하고 있어요.") }
+                val tokenResponse = authRepository.exchangeAuthorizationCode(grant.code, grant.verifier)
 
                 // TOKEN Speichern
                 tokenStorage.saveAccessToken(tokenResponse.accessToken)
@@ -137,16 +152,20 @@ class LoginViewModel(
 
                 routeByStatus()
 
-            } catch (e: Exception) {
-                // login failed
-                e.printStackTrace()
+            } catch (e: CancellationException) {
+                _uiState.update { it.copy(isLoading = false, browserOpen = false) }
+                throw e
+            } catch (_: Exception) {
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = "로그인에 실패했습니다. 아이디나 비밀번호를 확인해주세요.",
+                        browserOpen = false,
+                        error = "연결 상태를 확인하고 다시 시도해 주세요.",
                         statusMessage = ""
                     )
                 }
+            } finally {
+                authorization.cancel()
             }
         }
     }
@@ -154,7 +173,7 @@ class LoginViewModel(
     /**
      * Fetches the profile and routes by member status.
      *
-     * Shared by the password form and Face ID: both end with a session in hand
+     * Shared by browser login and Face ID: both end with a session in hand
      * and the same question — where does this member belong?
      */
     private suspend fun routeByStatus() {
@@ -195,6 +214,7 @@ class LoginViewModel(
             }
             .onFailure {
                 tokenStorage.clear()
+                httpClient.invalidateBearerCache()
                 _uiState.update {
                     it.copy(
                         isLoading = false,
