@@ -1,5 +1,7 @@
 package com.hanmaum.dn.mobile.core.i18n
 
+import kotlinx.datetime.LocalDate
+
 interface AppStrings {
     // Shared actions
     val retry: String
@@ -267,6 +269,11 @@ interface AppStrings {
     val rsvpLater: String
     val rsvpDone: String
     val rsvpAnnouncementCta: String
+    fun rsvpDate(date: LocalDate, includeWeekday: Boolean): String
+    fun rsvpDeadline(date: String): String
+    fun rsvpRespondedOn(date: String): String
+    fun rsvpReminderHint(date: String): String
+    fun rsvpSheetDeadline(date: String): String
     // Settings & personal info screens
     val settingsTitle: String
     val personalInfoTitle: String
@@ -704,6 +711,15 @@ object EnStrings : AppStrings {
     override val rsvpLater = "Later"
     override val rsvpDone = "Attending"
     override val rsvpAnnouncementCta = "RSVP to this event"
+    override fun rsvpDate(date: LocalDate, includeWeekday: Boolean): String {
+        val value = "${months[date.month.ordinal + 1].take(3)} ${date.day}"
+        val weekday = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")[date.dayOfWeek.ordinal]
+        return if (includeWeekday) "$weekday, $value" else value
+    }
+    override fun rsvpDeadline(date: String) = "Reply by $date"
+    override fun rsvpRespondedOn(date: String) = "Replied on $date"
+    override fun rsvpReminderHint(date: String) = "Undecided · One more reminder on $date"
+    override fun rsvpSheetDeadline(date: String) = "Please reply by $date · We need to confirm the headcount"
     override val settingsTitle = "Settings"
     override val personalInfoTitle = "Personal Info"
     override val labelBirthDate = "BIRTH DATE"
@@ -1075,6 +1091,15 @@ object KoStrings : AppStrings {
     override val rsvpLater = "나중에"
     override val rsvpDone = "참석 완료"
     override val rsvpAnnouncementCta = "행사 참석하기"
+    override fun rsvpDate(date: LocalDate, includeWeekday: Boolean): String {
+        val value = "${months[date.month.ordinal + 1]} ${date.day}일"
+        val weekday = listOf("월", "화", "수", "목", "금", "토", "일")[date.dayOfWeek.ordinal]
+        return if (includeWeekday) "$value ($weekday)" else value
+    }
+    override fun rsvpDeadline(date: String) = "응답 마감 $date"
+    override fun rsvpRespondedOn(date: String) = "$date 응답"
+    override fun rsvpReminderHint(date: String) = "미정 · ${date}에 한 번 더 알림"
+    override fun rsvpSheetDeadline(date: String) = "${date}까지 응답해 주세요 · 인원 확정에 필요합니다"
     override val settingsTitle = "설정"
     override val personalInfoTitle = "개인 정보"
     override val labelBirthDate = "생년월일"
@@ -1443,6 +1468,16 @@ object DeStrings : AppStrings {
     override val rsvpLater = "Später"
     override val rsvpDone = "Zugesagt"
     override val rsvpAnnouncementCta = "An Veranstaltung teilnehmen"
+    override fun rsvpDate(date: LocalDate, includeWeekday: Boolean): String {
+        val month = listOf("Jan.", "Feb.", "März", "Apr.", "Mai", "Juni", "Juli", "Aug.", "Sept.", "Okt.", "Nov.", "Dez.")[date.month.ordinal]
+        val value = "${date.day}. $month"
+        val weekday = listOf("Mo.", "Di.", "Mi.", "Do.", "Fr.", "Sa.", "So.")[date.dayOfWeek.ordinal]
+        return if (includeWeekday) "$weekday, $value" else value
+    }
+    override fun rsvpDeadline(date: String) = "Antwort bis $date"
+    override fun rsvpRespondedOn(date: String) = "Geantwortet am $date"
+    override fun rsvpReminderHint(date: String) = "Unentschieden · Eine weitere Erinnerung am $date"
+    override fun rsvpSheetDeadline(date: String) = "Bitte bis $date antworten · Wir benötigen die Teilnehmerzahl"
     override val settingsTitle = "Einstellungen"
     override val personalInfoTitle = "Persönliche Daten"
     override val labelBirthDate = "GEBURTSDATUM"

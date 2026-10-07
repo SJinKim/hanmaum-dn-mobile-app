@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.events.presentation.components
 
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -78,7 +79,7 @@ fun EventRsvpSheet(
             Text(event.title, style = DnTheme.typography.title, color = c.textPrimary)
             Spacer(Modifier.height(4.dp))
             Text(
-                "${RsvpFormat.date(event.windowEnd)}까지 응답해 주세요 · 인원 확정에 필요합니다",
+                LocalStrings.current.rsvpSheetDeadline(RsvpFormat.date(event.windowEnd, LocalStrings.current)),
                 style = DnTheme.typography.caption,
                 color = c.textSecondary,
             )

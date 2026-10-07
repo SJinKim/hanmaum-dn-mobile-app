@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.events.presentation
 
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -194,7 +195,7 @@ private fun PendingCard(
                 ) {
                     Icon(DnIcons.Clock, null, tint = c.textTertiary, modifier = Modifier.size(14.dp))
                     Text(
-                        RsvpFormat.deadline(event.windowEnd),
+                        RsvpFormat.deadline(event.windowEnd, LocalStrings.current),
                         style = DnTheme.typography.caption,
                         color = c.textTertiary,
                     )
@@ -222,7 +223,7 @@ private fun PendingCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(DnIcons.Bell, null, tint = c.amber, modifier = Modifier.size(13.dp))
-                Text(RsvpFormat.reminderHint(at), style = DnTheme.typography.caption, color = c.amber)
+                Text(RsvpFormat.reminderHint(at, LocalStrings.current), style = DnTheme.typography.caption, color = c.amber)
             }
         }
 
@@ -286,8 +287,8 @@ private fun AnsweredRow(
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(event.title, style = DnTheme.typography.captionStrong, color = c.textPrimary)
                 Text(
-                    event.respondedAt?.let { RsvpFormat.respondedOn(it) }
-                        ?: RsvpFormat.deadline(event.windowEnd),
+                    event.respondedAt?.let { RsvpFormat.respondedOn(it, LocalStrings.current) }
+                        ?: RsvpFormat.deadline(event.windowEnd, LocalStrings.current),
                     style = DnTheme.typography.caption,
                     color = c.textTertiary,
                 )
