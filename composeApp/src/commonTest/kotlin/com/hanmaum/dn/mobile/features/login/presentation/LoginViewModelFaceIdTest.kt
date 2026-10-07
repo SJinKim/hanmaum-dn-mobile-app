@@ -326,6 +326,24 @@ class LoginViewModelFaceIdTest {
         assertTrue(vm.uiState.value.biometricExpired)
     }
 
+    @Test fun browserReceivesSelectedResetLanguageAndCancellationLeavesLoginUsable() = runTest(dispatcher) {
+        val auth = FaceIdAuthRepository()
+        val vm = viewModel(auth)
+        val capture = object : BrowserAuthentication {
+            override suspend fun authenticate(url: String, callbackScheme: String): String? {
+                assertEquals("de", Url(url).parameters["ui_locales"])
+                return null
+            }
+        }
+        vm.onLoginClicked(capture, uiLocale = "de")
+        advanceUntilIdle()
+        assertFalse(vm.uiState.value.isLoading)
+        assertEquals(0, auth.exchanges)
+        vm.onLoginClicked(browser(), uiLocale = "de")
+        advanceUntilIdle()
+        assertEquals(1, auth.exchanges)
+    }
+
     @Test fun browserCancellationIsSilent() = runTest(dispatcher) {
         val auth = FaceIdAuthRepository()
         val vm = viewModel(auth)

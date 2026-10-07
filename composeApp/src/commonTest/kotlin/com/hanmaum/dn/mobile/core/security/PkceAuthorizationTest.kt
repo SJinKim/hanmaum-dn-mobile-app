@@ -12,6 +12,16 @@ class PkceAuthorizationTest {
     private val redirect = "com.hanmaum.dn.mobile:/oauth2redirect"
     private fun transaction() = PkceAuthorization(issuer, "mobile", redirect)
 
+    @Test fun authorizationCarriesTheChosenResetPageLanguage() {
+        listOf("ko", "en", "de").forEach { locale ->
+            val params = Url(transaction().begin(locale)).parameters
+            assertEquals(locale, params["ui_locales"])
+            assertEquals("S256", params["code_challenge_method"])
+            assertEquals(redirect, params["redirect_uri"])
+        }
+        assertEquals(null, Url(transaction().begin()).parameters["ui_locales"])
+    }
+
     @Test fun s256MatchesRfc7636Vector() {
         assertEquals("E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
             base64Url(sha256("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk".encodeToByteArray())))

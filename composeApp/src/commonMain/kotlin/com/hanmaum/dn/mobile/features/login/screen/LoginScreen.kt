@@ -130,7 +130,7 @@ fun LoginScreen(
                         state.error != null -> "다시 시도"
                         else -> "계정으로 로그인"
                     },
-                    onClick = { viewModel.onLoginClicked(browser) },
+                    onClick = { viewModel.onLoginClicked(browser, uiLocale = strings.languageTag) },
                     enabled = !state.isLoading && !promptRunning,
                     shape = DnInnerShape,
                     disabledContainer = c.surface2,
@@ -138,7 +138,7 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth().heightIn(min = AuthLayout.actionHeight),
                 )
                 if (!state.isLoading || state.browserOpen) {
-                    Text("안전한 로그인 창에서 이메일과\n비밀번호를 입력해 주세요.",
+                    Text(strings.loginBrowserHelp,
                         style = DnTheme.typography.caption, color = c.textSecondary,
                         textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                     if (faceIdArmed) {

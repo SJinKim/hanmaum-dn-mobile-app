@@ -25,7 +25,7 @@ class PkceAuthorization(
     private var verifier: String? = null
     private var state: String? = null
 
-    fun begin(): String {
+    fun begin(uiLocale: String? = null): String {
         check(state == null) { "Authorization already running" }
         val nextVerifier = base64Url(random(32))
         val nextState = base64Url(random(32))
@@ -42,6 +42,7 @@ class PkceAuthorization(
             // A local logout must not silently sign the next person in via browser SSO.
             // Offline/Face ID sessions remain usable; no server-wide logout is issued.
             parameters.append("prompt", "login")
+            uiLocale?.let { parameters.append("ui_locales", it) }
         }.buildString()
     }
 
