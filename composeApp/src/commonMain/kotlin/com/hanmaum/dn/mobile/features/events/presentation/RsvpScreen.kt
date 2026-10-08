@@ -1,6 +1,5 @@
 package com.hanmaum.dn.mobile.features.events.presentation
 
-import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
 import com.hanmaum.dn.mobile.core.presentation.components.DnErrorState
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlows

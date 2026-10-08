@@ -1,6 +1,5 @@
 package com.hanmaum.dn.mobile.features.events.presentation.components
 
-import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -27,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTileShape

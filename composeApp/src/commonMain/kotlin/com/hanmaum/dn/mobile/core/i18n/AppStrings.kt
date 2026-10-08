@@ -711,10 +711,10 @@ object EnStrings : AppStrings {
     override val rsvpLater = "Later"
     override val rsvpDone = "Attending"
     override val rsvpAnnouncementCta = "RSVP to this event"
+    private val rsvpWeekdays = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
     override fun rsvpDate(date: LocalDate, includeWeekday: Boolean): String {
         val value = "${months[date.month.ordinal + 1].take(3)} ${date.day}"
-        val weekday = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")[date.dayOfWeek.ordinal]
-        return if (includeWeekday) "$weekday, $value" else value
+        return if (includeWeekday) "${rsvpWeekdays[date.dayOfWeek.ordinal]}, $value" else value
     }
     override fun rsvpDeadline(date: String) = "Reply by $date"
     override fun rsvpRespondedOn(date: String) = "Replied on $date"
@@ -1091,10 +1091,10 @@ object KoStrings : AppStrings {
     override val rsvpLater = "나중에"
     override val rsvpDone = "참석 완료"
     override val rsvpAnnouncementCta = "행사 참석하기"
+    private val rsvpWeekdays = listOf("월", "화", "수", "목", "금", "토", "일")
     override fun rsvpDate(date: LocalDate, includeWeekday: Boolean): String {
         val value = "${months[date.month.ordinal + 1]} ${date.day}일"
-        val weekday = listOf("월", "화", "수", "목", "금", "토", "일")[date.dayOfWeek.ordinal]
-        return if (includeWeekday) "$value ($weekday)" else value
+        return if (includeWeekday) "$value (${rsvpWeekdays[date.dayOfWeek.ordinal]})" else value
     }
     override fun rsvpDeadline(date: String) = "응답 마감 $date"
     override fun rsvpRespondedOn(date: String) = "$date 응답"
@@ -1468,11 +1468,15 @@ object DeStrings : AppStrings {
     override val rsvpLater = "Später"
     override val rsvpDone = "Zugesagt"
     override val rsvpAnnouncementCta = "An Veranstaltung teilnehmen"
+    private val rsvpMonths = listOf(
+        "Jan.", "Feb.", "März", "Apr.", "Mai", "Juni",
+        "Juli", "Aug.", "Sept.", "Okt.", "Nov.", "Dez.",
+    )
+    private val rsvpWeekdays = listOf("Mo.", "Di.", "Mi.", "Do.", "Fr.", "Sa.", "So.")
     override fun rsvpDate(date: LocalDate, includeWeekday: Boolean): String {
-        val month = listOf("Jan.", "Feb.", "März", "Apr.", "Mai", "Juni", "Juli", "Aug.", "Sept.", "Okt.", "Nov.", "Dez.")[date.month.ordinal]
+        val month = rsvpMonths[date.month.ordinal]
         val value = "${date.day}. $month"
-        val weekday = listOf("Mo.", "Di.", "Mi.", "Do.", "Fr.", "Sa.", "So.")[date.dayOfWeek.ordinal]
-        return if (includeWeekday) "$weekday, $value" else value
+        return if (includeWeekday) "${rsvpWeekdays[date.dayOfWeek.ordinal]}, $value" else value
     }
     override fun rsvpDeadline(date: String) = "Antwort bis $date"
     override fun rsvpRespondedOn(date: String) = "Geantwortet am $date"
