@@ -1,0 +1,65 @@
+package com.hanmaum.dn.mobile.core.i18n
+
+/** App chrome is translated; names, section titles and editorial content remain server-owned. */
+data class BulletinStrings(
+    val title: String,
+    val current: String,
+    val history: String,
+    val worshipOrder: String,
+    val sermonSharing: String,
+    val sermon: String,
+    val scripture: String,
+    val openingPrayer: String,
+    val songs: String,
+    val openingSongs: String,
+    val offeringSong: String,
+    val announcements: String,
+    val scriptureReading: String,
+    val sermonProclamation: String,
+    val responsePrayer: String,
+    val responseSong: String,
+    val closing: String,
+    val viewSharing: String,
+    val emptyTitle: String,
+    val emptyBody: String,
+    val unavailable: String,
+    val errorTitle: String,
+    val errorBody: String,
+    val historyEmpty: String,
+    val sharingEmpty: String,
+    val refresh: String,
+    val refreshing: String,
+    val loading: String,
+    val loadMore: String,
+    val published: String,
+    val offline: String,
+    val sunday: String,
+    val question: String,
+)
+
+val EnBulletinStrings = BulletinStrings(
+    "Bulletin", "Latest bulletin", "Past bulletins", "Order of worship", "Sermon sharing",
+    "Today's message", "Scripture", "Opening prayer", "Songs", "Opening praise", "Offering song",
+    "Church news", "Scripture reading", "Sermon", "Response prayer", "Response song", "Closing",
+    "Read sermon sharing", "No bulletin published yet", "The bulletin will appear here once it is published. You can still read past editions.",
+    "This bulletin is no longer available", "Couldn't load the bulletin", "Check your connection and try again.",
+    "No past bulletins yet", "Sermon sharing hasn't been added yet.", "Refresh", "Refreshing…", "Loading bulletin…",
+    "Load more", "Published", "Saved copy · saved on", "SUN", "Question",
+)
+val KoBulletinStrings = BulletinStrings(
+    "주보", "이번 주 주보", "지난 주보 보기", "예배 순서", "설교 나눔", "오늘의 말씀", "본문", "대표기도", "찬양",
+    "예배를 여는 찬양", "헌금송", "교회소식", "성경봉독", "말씀선포", "응답기도", "응답찬양", "마침", "설교 나눔 보기",
+    "아직 게시된 주보가 없어요", "주보가 게시되면 여기에서 볼 수 있어요. 지난 주보는 언제든 다시 볼 수 있어요.",
+    "이 주보는 더 이상 볼 수 없어요", "주보를 불러오지 못했어요", "인터넷 연결을 확인한 뒤 다시 시도해 주세요.",
+    "지난 주보가 아직 없어요", "설교 나눔이 아직 등록되지 않았어요.", "새로고침", "새로고침 중…", "주보를 불러오는 중…",
+    "더 보기", "게시", "저장된 주보 · 저장일", "SUN", "질문",
+)
+val DeBulletinStrings = BulletinStrings(
+    "Gemeindebrief", "Aktueller Gemeindebrief", "Frühere Ausgaben", "Gottesdienstablauf", "Predigtgespräch",
+    "Die heutige Predigt", "Bibeltext", "Anfangsgebet", "Lieder", "Lobpreis", "Lied zur Kollekte", "Gemeindenachrichten",
+    "Bibellesung", "Predigt", "Antwortgebet", "Antwortlied", "Abschluss", "Predigtgespräch lesen",
+    "Noch kein Gemeindebrief veröffentlicht", "Nach der Veröffentlichung findest du den Gemeindebrief hier. Frühere Ausgaben bleiben lesbar.",
+    "Diese Ausgabe ist nicht mehr verfügbar", "Gemeindebrief konnte nicht geladen werden", "Prüfe deine Verbindung und versuche es erneut.",
+    "Noch keine früheren Ausgaben", "Das Predigtgespräch wurde noch nicht ergänzt.", "Aktualisieren", "Wird aktualisiert…",
+    "Gemeindebrief wird geladen…", "Mehr laden", "Veröffentlicht", "Gespeicherte Ausgabe · gespeichert am", "SO", "Frage",
+)

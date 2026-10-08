@@ -141,6 +141,13 @@ fun BoxScope.DnScrollEdge(
 /** The glow sets used across the app, so screens stay visually related. */
 object DnGlows {
     @Composable
+    fun bulletin(): List<DnGlow> = listOf(
+        DnGlow(DnTheme.colors.blue, 0.85f, -0.1f, 1.1f, 0.10f),
+        DnGlow(DnTheme.colors.amber, -0.2f, 0.5f, 0.9f, 0.06f),
+        DnGlow(DnTheme.colors.lime, 0.85f, 0.8f, 0.9f, 0.06f),
+    )
+
+    @Composable
     fun action(): List<DnGlow> = listOf(
         DnGlow(DnTheme.colors.lime, 0.75f, -0.1f, 1.1f, 0.10f),
         DnGlow(DnTheme.colors.amber, -0.2f, 0.5f, 0.9f, 0.06f),

@@ -7,6 +7,10 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
@@ -24,6 +28,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import com.hanmaum.dn.mobile.core.presentation.theme.BulletinLayout
+import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
+import com.hanmaum.dn.mobile.core.presentation.theme.typography
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.theme.AppMotion
 import com.hanmaum.dn.mobile.core.presentation.theme.AppSpacing
@@ -52,6 +61,8 @@ fun AppScreen(
     onBack: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
     snackbarHost: @Composable () -> Unit = {},
+    /** Compact Figma header for content-led detail screens such as the weekly bulletin. */
+    compact: Boolean = false,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val strings = LocalStrings.current
@@ -61,15 +72,33 @@ fun AppScreen(
         snapAnimationSpec = AppMotion.screenPush,
     )
 
-    Scaffold(
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = MaterialTheme.colorScheme.background,
-        // App.kt already applies statusBarsPadding() around the whole NavHost — re-applying
-        // insets here would double them.
+    val scaffold: @Composable () -> Unit = { Scaffold(
+        // A fixed compact header must not consume scroll through the collapsing-bar behavior.
+        modifier = if (compact) modifier else modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        containerColor = if (compact) Color.Transparent else MaterialTheme.colorScheme.background,
+        // The compact v2 branch below owns safe drawing. Keep Scaffold's own insets empty.
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = snackbarHost,
         topBar = {
-            LargeTopAppBar(
+            if (compact) {
+                Row(
+                    Modifier.fillMaxWidth().padding(horizontal = AppSpacing.md, vertical = AppSpacing.xs),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (onBack != null) {
+                        DnGlassIconButton(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, strings.back, onBack)
+                    } else Box(Modifier.size(BulletinLayout.touchTarget))
+                    Text(
+                        title,
+                        modifier = Modifier.weight(1f).padding(horizontal = AppSpacing.sm),
+                        style = DnTheme.typography.title,
+                        color = DnTheme.colors.textPrimary,
+                        textAlign = TextAlign.Center,
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically, content = actions)
+                }
+            } else LargeTopAppBar(
                 title = { Text(title) },
                 navigationIcon = {
                     if (onBack != null) {
@@ -98,7 +127,11 @@ fun AppScreen(
             )
         },
         content = content,
-    )
+    ) }
+    if (compact) {
+        // The v2 NavHost has no inset wrapper: the shared scaffold owns safe drawing here.
+        DnBackground(glows = DnGlows.bulletin(), insetContent = true) { scaffold() }
+    } else scaffold()
 }
 
 /**

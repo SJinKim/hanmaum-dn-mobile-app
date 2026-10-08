@@ -1,6 +1,7 @@
 package com.hanmaum.dn.mobile.core.i18n
 
 interface AppStrings {
+    val bulletin: BulletinStrings
     // Shared actions
     val retry: String
     val back: String
@@ -478,6 +479,7 @@ interface AppStrings {
 }
 
 object EnStrings : AppStrings {
+    override val bulletin = EnBulletinStrings
     override val retry = "Retry"
     override val back = "Back"
     override val save = "Save"
@@ -849,6 +851,7 @@ object EnStrings : AppStrings {
 }
 
 object KoStrings : AppStrings {
+    override val bulletin = KoBulletinStrings
     override val retry = "다시 시도"
     override val back = "뒤로"
     override val save = "저장"
@@ -1217,6 +1220,7 @@ object KoStrings : AppStrings {
 }
 
 object DeStrings : AppStrings {
+    override val bulletin = DeBulletinStrings
     override val retry = "Erneut versuchen"
     override val back = "Zurück"
     override val save = "Speichern"

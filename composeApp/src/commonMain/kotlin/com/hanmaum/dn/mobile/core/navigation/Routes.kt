@@ -20,6 +20,7 @@ import kotlinx.serialization.Serializable
 @Serializable object PendingRoute
 @Serializable object RejectedRoute
 @Serializable object HomeRoute
+@Serializable object BulletinRoute
 @Serializable object AnnouncementListRoute
 @Serializable data class AnnouncementDetailRoute(val id: String)
 @Serializable object ProfileRoute
