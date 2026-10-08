@@ -87,6 +87,7 @@ import org.koin.dsl.module
 import org.koin.core.module.dsl.viewModel
 
 val appModule = module {
+    single<Settings> { Settings() }
     // Repositories
     single<AnnouncementRepository> { AnnouncementRepositoryImpl(get()) }
     single<AuthRepository> { AuthRepositoryImpl(get()) }
@@ -94,10 +95,10 @@ val appModule = module {
     single<MemberRepository> { MemberRepositoryImpl(get()) }
     single<VerseRepository> { VerseRepositoryImpl(get(), get()) }
     single<VerseRecordRepository> { VerseRecordRepositoryImpl(get()) }
-    single<BulletinRepository> { BulletinRepositoryImpl(get(), Settings(), get()) }
+    single<BulletinRepository> { BulletinRepositoryImpl(get(), get(), get()) }
     viewModel { BulletinViewModel(get()) }
     single { createHttpClient(get()) } // Client
-    single<TokenStorage> { TokenStorageImpl(get(), Settings()) }
+    single<TokenStorage> { TokenStorageImpl(get(), get()) }
     single { InstallationGuard(Settings(), get(), get(), get()) }
     single<LocaleRepository> { LocaleRepositoryImpl(Settings()) }
     single<ThemeRepository> { ThemeRepositoryImpl(Settings()) }

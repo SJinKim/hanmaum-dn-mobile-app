@@ -30,7 +30,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
-import com.hanmaum.dn.mobile.core.presentation.theme.BulletinLayout
+import com.hanmaum.dn.mobile.core.presentation.theme.AppSize
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
 import com.hanmaum.dn.mobile.core.presentation.theme.typography
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
@@ -63,6 +63,8 @@ fun AppScreen(
     snackbarHost: @Composable () -> Unit = {},
     /** Compact Figma header for content-led detail screens such as the weekly bulletin. */
     compact: Boolean = false,
+    /** Feature-provided ambience; Core does not choose a feature's glow palette. */
+    glows: List<DnGlow> = emptyList(),
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val strings = LocalStrings.current
@@ -88,7 +90,7 @@ fun AppScreen(
                 ) {
                     if (onBack != null) {
                         DnGlassIconButton(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, strings.back, onBack)
-                    } else Box(Modifier.size(BulletinLayout.touchTarget))
+                    } else Box(Modifier.size(AppSize.touchTarget))
                     Text(
                         title,
                         modifier = Modifier.weight(1f).padding(horizontal = AppSpacing.sm),
@@ -130,7 +132,7 @@ fun AppScreen(
     ) }
     if (compact) {
         // The v2 NavHost has no inset wrapper: the shared scaffold owns safe drawing here.
-        DnBackground(glows = DnGlows.bulletin(), insetContent = true) { scaffold() }
+        DnBackground(glows = glows, insetContent = true) { scaffold() }
     } else scaffold()
 }
 

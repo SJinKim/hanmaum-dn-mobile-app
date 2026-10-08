@@ -9,6 +9,8 @@ import io.ktor.http.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
+import com.hanmaum.dn.mobile.features.bulletin.domain.model.BulletinSectionKey
 import kotlin.test.*
 import kotlin.time.Instant
 
@@ -36,8 +38,8 @@ class BulletinRepositoryImplTest {
         assertEquals(LocalDate(2026, 10, 11), edition.serviceDate)
         assertEquals(41, edition.volume)
         assertEquals("3부 예배", edition.serviceName)
-        assertEquals("14:00:00", edition.serviceStartTime)
-        assertEquals("Custom worship title", edition.sectionTitle("SECTION_WORSHIP"))
+        assertEquals(LocalTime(14, 0), edition.serviceStartTime)
+        assertEquals("Custom worship title", edition.sectionTitle(BulletinSectionKey.SECTION_WORSHIP))
         assertEquals(listOf("First song", "Second song"), edition.songs)
         assertEquals(listOf("First notice", "Second notice"), edition.announcements.map { it.title })
         assertEquals("John 21:16", edition.sharingBlocks[2].reference)
@@ -115,10 +117,10 @@ class BulletinRepositoryImplTest {
     @Test fun `draft withdrawn and unknown states are rejected`() = runTest {
         listOf("DRAFT", "WITHDRAWN", "UNKNOWN").forEach { state ->
             body = """{"success":true,"data":${bulletinJson.replace("PUBLISHED", state)}}"""
-            assertTrue(repo().getCurrent().isFailure)
+            assertNull(repo().getCurrent().getOrThrow())
         }
         body = """{"success":true,"data":${bulletinJson.replace("\"withdrawnAt\":null", "\"withdrawnAt\":\"2026-10-10T12:00:00Z\"")}}"""
-        assertTrue(repo().getCurrent().isFailure)
+        assertNull(repo().getCurrent().getOrThrow())
     }
 
     @Test fun `invalid 200 response does not become no published bulletin or fallback`() = runTest {
@@ -188,7 +190,7 @@ class BulletinRepositoryImplTest {
         val repository = repo()
         repository.getCurrent().getOrThrow()
         body = body.replace("PUBLISHED", "WITHDRAWN")
-        assertTrue(repository.getCurrent().isFailure)
+        assertNull(repository.getCurrent().getOrThrow())
         status = HttpStatusCode.ServiceUnavailable
         assertTrue(repository.getCurrent().isFailure)
     }
@@ -197,5 +199,13 @@ class BulletinRepositoryImplTest {
         body = body.replace("\"HEADING\"", "\"FUTURE_BLOCK\"")
         val edition = repo().getCurrent().getOrThrow()!!.bulletin
         assertEquals(listOf("Paragraph", "Scripture text", "First question"), edition.sharingBlocks.map { it.text })
+    }
+
+    @Test fun `blank section title uses the server default and future keys are ignored`() = runTest {
+        body = body.replace("Custom worship title", "")
+            .replace("\"SECTION_OFFERING\"", "\"FUTURE_SECTION\"")
+        val edition = repo().getCurrent().getOrThrow()!!.bulletin
+        assertEquals("경배와 찬양", edition.sectionTitle(BulletinSectionKey.SECTION_WORSHIP))
+        assertFalse(edition.sectionTitles.containsKey(BulletinSectionKey.UNKNOWN))
     }
 }

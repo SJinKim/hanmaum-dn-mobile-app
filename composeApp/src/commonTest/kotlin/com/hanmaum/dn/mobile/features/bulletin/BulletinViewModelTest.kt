@@ -4,7 +4,8 @@ import com.hanmaum.dn.mobile.features.bulletin.domain.model.*
 import com.hanmaum.dn.mobile.features.bulletin.domain.repository.BulletinRepository
 import com.hanmaum.dn.mobile.features.bulletin.domain.repository.BulletinAccessDenied
 import com.hanmaum.dn.mobile.features.bulletin.presentation.BulletinViewModel
-import com.hanmaum.dn.mobile.features.bulletin.presentation.bulletinDate
+import com.hanmaum.dn.mobile.core.i18n.KoBulletinStrings
+import com.hanmaum.dn.mobile.features.bulletin.presentation.BulletinTab
 import com.hanmaum.dn.mobile.features.bulletin.presentation.numberedSharingBlocks
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CompletableDeferred
@@ -14,6 +15,7 @@ import kotlin.test.*
 import kotlin.time.Instant
 
 private class FakeBulletinRepository : BulletinRepository {
+    var currentCalls = 0
     var current: Result<BulletinRead?> = Result.success(BulletinRead(bulletin()))
     var dated = current
     var waitForCurrent: CompletableDeferred<Unit>? = null
@@ -21,6 +23,7 @@ private class FakeBulletinRepository : BulletinRepository {
     var historyResult = Result.success(BulletinPage(emptyList(), false))
     val pages = mutableListOf<Int>()
     override suspend fun getCurrent(): Result<BulletinRead?> {
+        currentCalls++
         waitForCurrent?.await()
         return current
     }
@@ -35,7 +38,7 @@ class BulletinViewModelTest {
     @AfterTest fun cleanup() { Dispatchers.resetMain() }
 
     @Test fun `initial load never flashes the empty state`() = runTest(dispatcher) {
-        val vm = BulletinViewModel(FakeBulletinRepository())
+        val vm = BulletinViewModel(FakeBulletinRepository()).also { it.refreshIfStale() }
         assertTrue(vm.uiState.value.isLoading)
         advanceUntilIdle()
         assertFalse(vm.uiState.value.isLoading)
@@ -44,7 +47,7 @@ class BulletinViewModelTest {
 
     @Test fun `no publication is different from failure and retry recovers`() = runTest(dispatcher) {
         val repository = FakeBulletinRepository().apply { current = Result.success(null) }
-        val vm = BulletinViewModel(repository)
+        val vm = BulletinViewModel(repository).also { it.refreshIfStale() }
         advanceUntilIdle()
         assertNull(vm.uiState.value.content)
         assertFalse(vm.uiState.value.failed)
@@ -61,7 +64,7 @@ class BulletinViewModelTest {
 
     @Test fun `refresh keeps content while in flight but removes it on definitive failure`() = runTest(dispatcher) {
         val repository = FakeBulletinRepository()
-        val vm = BulletinViewModel(repository)
+        val vm = BulletinViewModel(repository).also { it.refreshIfStale() }
         advanceUntilIdle()
         repository.waitForCurrent = CompletableDeferred()
         repository.current = Result.failure(Exception("access denied"))
@@ -78,7 +81,7 @@ class BulletinViewModelTest {
     @Test fun `cached response carries its date without pretending refresh succeeded online`() = runTest(dispatcher) {
         val saved = Instant.parse("2026-10-10T11:00:00Z")
         val repository = FakeBulletinRepository().apply { current = Result.success(BulletinRead(bulletin(), saved)) }
-        val vm = BulletinViewModel(repository)
+        val vm = BulletinViewModel(repository).also { it.refreshIfStale() }
         advanceUntilIdle()
         assertEquals(saved, vm.uiState.value.content?.cachedAt)
         assertFalse(vm.uiState.value.failed)
@@ -86,22 +89,22 @@ class BulletinViewModelTest {
 
     @Test fun `selecting history closes selector and refresh keeps that selection`() = runTest(dispatcher) {
         val repository = FakeBulletinRepository()
-        val vm = BulletinViewModel(repository)
+        val vm = BulletinViewModel(repository).also { it.refreshIfStale() }
         advanceUntilIdle()
         vm.openHistory()
         advanceUntilIdle()
         val date = LocalDate(2026, 10, 4)
-        vm.selectTab(1)
+        vm.selectTab(BulletinTab.SHARING)
         vm.selectEdition(date)
         advanceUntilIdle()
         assertFalse(vm.uiState.value.historyOpen)
-        assertEquals(0, vm.uiState.value.selectedTab)
+        assertEquals(BulletinTab.ORDER, vm.uiState.value.selectedTab)
         assertEquals(date, vm.uiState.value.selectedDate)
-        vm.selectTab(1)
+        vm.selectTab(BulletinTab.SHARING)
         vm.refresh()
         advanceUntilIdle()
         assertEquals(listOf(date, date), repository.dates)
-        assertEquals(1, vm.uiState.value.selectedTab)
+        assertEquals(BulletinTab.SHARING, vm.uiState.value.selectedTab)
         vm.selectEdition(null)
         advanceUntilIdle()
         assertNull(vm.uiState.value.selectedDate)
@@ -109,7 +112,7 @@ class BulletinViewModelTest {
 
     @Test fun `slow current load cannot overwrite a later history selection`() = runTest(dispatcher) {
         val repository = FakeBulletinRepository().apply { waitForCurrent = CompletableDeferred() }
-        val vm = BulletinViewModel(repository)
+        val vm = BulletinViewModel(repository).also { it.refreshIfStale() }
         runCurrent()
         val date = LocalDate(2026, 10, 4)
         repository.dated = Result.success(BulletinRead(bulletin().copy(serviceDate = date)))
@@ -123,7 +126,7 @@ class BulletinViewModelTest {
     @Test fun `history pagination deduplicates and failed pages retry without skipping`() = runTest(dispatcher) {
         val row = BulletinSummary("one", LocalDate(2026, 10, 11), 41, "First")
         val repository = FakeBulletinRepository().apply { historyResult = Result.success(BulletinPage(listOf(row), true)) }
-        val vm = BulletinViewModel(repository)
+        val vm = BulletinViewModel(repository).also { it.refreshIfStale() }
         vm.openHistory()
         vm.loadMoreHistory()
         advanceUntilIdle()
@@ -151,7 +154,7 @@ class BulletinViewModelTest {
 
     @Test fun `losing history permission clears previously displayed member content`() = runTest(dispatcher) {
         val repository = FakeBulletinRepository()
-        val vm = BulletinViewModel(repository)
+        val vm = BulletinViewModel(repository).also { it.refreshIfStale() }
         advanceUntilIdle()
         assertNotNull(vm.uiState.value.content)
         repository.historyResult = Result.failure(BulletinAccessDenied())
@@ -163,7 +166,53 @@ class BulletinViewModelTest {
     }
 
     @Test fun `cover date matches Figma and keeps leading zeros`() {
-        assertEquals("10.11", bulletinDate(LocalDate(2026, 10, 11)))
-        assertEquals("01.04", bulletinDate(LocalDate(2026, 1, 4)))
+        assertEquals("10.11", KoBulletinStrings.date(LocalDate(2026, 10, 11)))
+        assertEquals("01.04", KoBulletinStrings.date(LocalDate(2026, 1, 4)))
+    }
+
+    @Test fun `entry and immediate resume cause one request and fresh resumes reuse it`() = runTest(dispatcher) {
+        val repository = FakeBulletinRepository()
+        var now = Instant.parse("2026-10-10T11:00:00Z")
+        val vm = BulletinViewModel(repository) { now }
+        assertEquals(0, repository.currentCalls)
+        vm.refreshIfStale()
+        vm.refreshIfStale()
+        advanceUntilIdle()
+        assertEquals(1, repository.currentCalls)
+        now = Instant.fromEpochSeconds(now.epochSeconds + 299)
+        vm.refreshIfStale()
+        advanceUntilIdle()
+        assertEquals(1, repository.currentCalls)
+        now = Instant.fromEpochSeconds(now.epochSeconds + 1)
+        vm.refreshIfStale()
+        advanceUntilIdle()
+        assertEquals(2, repository.currentCalls)
+        vm.refresh()
+        advanceUntilIdle()
+        assertEquals(3, repository.currentCalls)
+    }
+
+    @Test fun `resume retries a failure without waiting for the freshness window`() = runTest(dispatcher) {
+        val repository = FakeBulletinRepository().apply { current = Result.failure(Exception("offline")) }
+        val vm = BulletinViewModel(repository)
+        vm.refreshIfStale()
+        advanceUntilIdle()
+        repository.current = Result.success(BulletinRead(bulletin()))
+        vm.refreshIfStale()
+        advanceUntilIdle()
+        assertEquals(2, repository.currentCalls)
+        assertNotNull(vm.uiState.value.content)
+    }
+
+    @Test fun `unavailable historic edition does not render a connection error or previous content`() = runTest(dispatcher) {
+        val repository = FakeBulletinRepository().apply { dated = Result.success(null) }
+        val vm = BulletinViewModel(repository).also { it.refreshIfStale() }
+        advanceUntilIdle()
+        vm.selectEdition(LocalDate(2026, 10, 4))
+        assertNull(vm.uiState.value.content)
+        advanceUntilIdle()
+        assertFalse(vm.uiState.value.failed)
+        assertFalse(vm.uiState.value.isLoading)
+        assertNull(vm.uiState.value.content)
     }
 }

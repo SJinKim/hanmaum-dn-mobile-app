@@ -11,13 +11,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
+import kotlin.time.Clock
+import kotlin.time.Instant
+
+enum class BulletinTab { ORDER, SHARING }
 
 data class BulletinUiState(
     val isLoading: Boolean = true,
     val content: BulletinRead? = null,
     val failed: Boolean = false,
     val selectedDate: LocalDate? = null,
-    val selectedTab: Int = 0,
+    val selectedTab: BulletinTab = BulletinTab.ORDER,
     val historyOpen: Boolean = false,
     val historyLoading: Boolean = false,
     val historyFailed: Boolean = false,
@@ -25,14 +29,24 @@ data class BulletinUiState(
     val historyHasNext: Boolean = false,
 )
 
-class BulletinViewModel(private val repository: BulletinRepository) : ViewModel() {
+class BulletinViewModel(
+    private val repository: BulletinRepository,
+    private val now: () -> Instant = { Clock.System.now() },
+) : ViewModel() {
     private val _uiState = MutableStateFlow(BulletinUiState())
     val uiState = _uiState.asStateFlow()
     private var loadJob: Job? = null
     private var historyJob: Job? = null
     private var nextPage = 0
 
-    init { refresh() }
+    private var lastLoadedAt: Instant? = null
+
+    /** Screens own entry/resume loads. Coalesce active calls and reuse data for five minutes. */
+    fun refreshIfStale() {
+        if (loadJob?.isActive == true) return
+        val age = lastLoadedAt?.let { now().epochSeconds - it.epochSeconds }
+        if (age == null || age !in 0 until REFRESH_SECONDS) refresh()
+    }
 
     fun refresh() {
         loadJob?.cancel()
@@ -41,16 +55,22 @@ class BulletinViewModel(private val repository: BulletinRepository) : ViewModel(
         loadJob = viewModelScope.launch {
             val result = if (date == null) repository.getCurrent() else repository.getByDate(date)
             result.fold(
-                onSuccess = { value -> _uiState.update { it.copy(isLoading = false, content = value, failed = false) } },
+                onSuccess = { value ->
+                    lastLoadedAt = now()
+                    _uiState.update { it.copy(isLoading = false, content = value, failed = false) }
+                },
                 // Repository alone decides whether a cached copy is still safe to display.
-                onFailure = { _uiState.update { it.copy(isLoading = false, content = null, failed = true) } },
+                onFailure = {
+                    lastLoadedAt = null
+                    _uiState.update { it.copy(isLoading = false, content = null, failed = true) }
+                },
             )
         }
     }
 
-    fun selectTab(tab: Int) { _uiState.update { it.copy(selectedTab = tab.coerceIn(0, 1)) } }
+    fun selectTab(tab: BulletinTab) { _uiState.update { it.copy(selectedTab = tab) } }
     fun selectEdition(date: LocalDate?) {
-        _uiState.update { it.copy(selectedDate = date, selectedTab = 0, content = null, historyOpen = false) }
+        _uiState.update { it.copy(selectedDate = date, selectedTab = BulletinTab.ORDER, content = null, historyOpen = false) }
         refresh()
     }
     fun openHistory() {
@@ -78,6 +98,7 @@ class BulletinViewModel(private val repository: BulletinRepository) : ViewModel(
                 onFailure = { cause ->
                     if (cause is BulletinAccessDenied) {
                         loadJob?.cancel()
+                        lastLoadedAt = null
                         _uiState.update { it.copy(content = null, failed = true, isLoading = false, history = emptyList()) }
                     }
                     _uiState.update { it.copy(historyLoading = false, historyFailed = true) }
@@ -85,4 +106,6 @@ class BulletinViewModel(private val repository: BulletinRepository) : ViewModel(
             )
         }
     }
+
+    companion object { private const val REFRESH_SECONDS = 5 * 60L }
 }

@@ -17,6 +17,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
@@ -27,6 +28,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
+import com.hanmaum.dn.mobile.core.domain.model.ChurchTimeZone
+import com.hanmaum.dn.mobile.core.presentation.components.DnGlow
 import com.hanmaum.dn.mobile.core.presentation.components.AppScreen
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlassIconButton
 import com.hanmaum.dn.mobile.core.presentation.components.DnPrimaryButton
@@ -34,13 +37,13 @@ import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
 import com.hanmaum.dn.mobile.core.presentation.theme.*
 import com.hanmaum.dn.mobile.features.bulletin.domain.model.*
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun BulletinScreen(onBack: () -> Unit, viewModel: BulletinViewModel = koinViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(viewModel) { viewModel.refreshIfStale() }
     BulletinContent(state, onBack, viewModel::refresh, viewModel::selectTab, viewModel::openHistory)
     if (state.historyOpen) {
         BulletinHistorySheet(state, viewModel::closeHistory, viewModel::selectEdition, viewModel::loadMoreHistory)
@@ -52,14 +55,14 @@ internal fun BulletinContent(
     state: BulletinUiState,
     onBack: () -> Unit,
     onRefresh: () -> Unit,
-    onSelectTab: (Int) -> Unit,
+    onSelectTab: (BulletinTab) -> Unit,
     onHistory: () -> Unit,
 ) {
     val strings = LocalStrings.current
     val b = strings.bulletin
     val c = DnTheme.colors
     AppScreen(
-        title = b.title, onBack = onBack, compact = true,
+        title = b.title, onBack = onBack, compact = true, glows = bulletinGlows(),
         actions = { DnGlassIconButton(DnIcons.Calendar, b.history, onHistory) },
     ) { padding ->
         when {
@@ -80,7 +83,7 @@ internal fun BulletinContent(
                             Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
                                 Icon(DnIcons.Clock, null, tint = c.amber, modifier = Modifier.size(BulletinLayout.smallIcon))
                                 Text(
-                                    "${b.offline} ${read.cachedAt.toLocalDateTime(TimeZone.of("Europe/Berlin")).date}",
+                                    b.offlineSince(b.date(read.cachedAt.toLocalDateTime(ChurchTimeZone).date, full = true)),
                                     style = DnTheme.typography.captionStrong, color = c.amber,
                                     modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                                 )
@@ -90,18 +93,18 @@ internal fun BulletinContent(
                             }
                         }
                     }
-                    item("cover") { BulletinCover(edition, showSermon = state.selectedTab == 0) }
-                    if (state.selectedTab == 0) item("info") {
+                    item("cover") { BulletinCover(edition, showSermon = state.selectedTab == BulletinTab.ORDER) }
+                    if (state.selectedTab == BulletinTab.ORDER) item("info") {
                         Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
                             InfoTile(b.scripture, edition.scriptureReference.orEmpty(), Modifier.weight(1f))
                             InfoTile(b.openingPrayer, edition.openingPrayerBy.orEmpty(), Modifier.weight(1f))
-                            InfoTile(b.songs, edition.songs.size.toString(), Modifier.weight(1f))
+                            InfoTile(b.songs, b.songCount(edition.songs.size), Modifier.weight(1f))
                         }
                     }
                     item("tabs") { BulletinTabs(state.selectedTab, onSelectTab) }
-                    if (state.selectedTab == 0) {
+                    if (state.selectedTab == BulletinTab.ORDER) {
                         item("worship") {
-                            Movement("01", edition.sectionTitle("SECTION_WORSHIP")) {
+                            Movement("01", edition.sectionTitle(BulletinSectionKey.SECTION_WORSHIP)) {
                                 TimelineStep(b.openingSongs, last = edition.openingPrayerBy.isNullOrBlank()) {
                                     edition.songs.forEachIndexed { index, song ->
                                         Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
@@ -116,7 +119,7 @@ internal fun BulletinContent(
                             }
                         }
                         item("offering") {
-                            Movement("02", edition.sectionTitle("SECTION_OFFERING")) {
+                            Movement("02", edition.sectionTitle(BulletinSectionKey.SECTION_OFFERING)) {
                                 edition.offeringSongBy?.takeIf(String::isNotBlank)?.let {
                                     TimelineStep(b.offeringSong) { EditorialText(it) }
                                 }
@@ -138,7 +141,7 @@ internal fun BulletinContent(
                                 }
                                 TimelineStep(b.sermonProclamation, amber = true, last = edition.responsePrayerBy.isNullOrBlank()) {
                                     Column(
-                                        Modifier.fillMaxWidth().background(c.amberDim, DnTileShape).bulletinClick { onSelectTab(1) }.padding(AppSpacing.md),
+                                        Modifier.fillMaxWidth().background(c.amberDim, DnTileShape).bulletinClick { onSelectTab(BulletinTab.SHARING) }.padding(AppSpacing.md),
                                         verticalArrangement = Arrangement.spacedBy(AppSpacing.sm),
                                     ) {
                                         Text(edition.sermonTitle, style = DnTheme.typography.title, color = c.textPrimary)
@@ -155,11 +158,11 @@ internal fun BulletinContent(
                             }
                         }
                         item("sending") {
-                            Movement("03", edition.sectionTitle("SECTION_SENDING")) {
+                            Movement("03", edition.sectionTitle(BulletinSectionKey.SECTION_SENDING)) {
                                 edition.responseSong?.takeIf(String::isNotBlank)?.let {
                                     TimelineStep(b.responseSong) { EditorialText(it) }
                                 }
-                                val blessing = edition.sectionTitle("FIXED_BLESSING_PRAYER")
+                                val blessing = edition.sectionTitle(BulletinSectionKey.FIXED_BLESSING_PRAYER)
                                 if (blessing.isNotBlank()) TimelineStep(b.closing, last = true) { EditorialText(blessing) }
                             }
                         }
@@ -168,7 +171,7 @@ internal fun BulletinContent(
                             Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
                                 Text(edition.sermonTitle, style = DnTheme.typography.titleLg, color = c.textPrimary, modifier = Modifier.semantics { heading() })
                                 val questionCount = blocks.count { it.question != null }
-                                Text(listOfNotNull(edition.scriptureReference, "$questionCount ${b.question}").joinToString(" · "),
+                                Text(b.sharingSummary(edition.scriptureReference, questionCount),
                                     style = DnTheme.typography.caption, color = c.textSecondary)
                             }
                         }
@@ -178,7 +181,7 @@ internal fun BulletinContent(
                     item("footer") {
                         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                             edition.publishedAt?.let {
-                                Text("${b.published} · ${it.toLocalDateTime(TimeZone.of("Europe/Berlin")).date}", style = DnTheme.typography.caption, color = c.textTertiary)
+                                Text(b.publishedOn(b.date(it.toLocalDateTime(ChurchTimeZone).date, full = true)), style = DnTheme.typography.caption, color = c.textTertiary)
                             }
                             TextButton(onClick = onRefresh, enabled = !state.isLoading) { Text(if (state.isLoading) b.refreshing else b.refresh) }
                         }
@@ -204,8 +207,12 @@ internal fun BulletinContent(
     }
 }
 
-internal fun bulletinDate(date: LocalDate): String =
-    "${date.monthNumber.toString().padStart(2, '0')}.${date.day.toString().padStart(2, '0')}"
+@Composable
+private fun bulletinGlows(): List<DnGlow> = listOf(
+    DnGlow(DnTheme.colors.blue, 0.85f, -0.1f, 1.1f, 0.10f),
+    DnGlow(DnTheme.colors.amber, -0.2f, 0.5f, 0.9f, 0.06f),
+    DnGlow(DnTheme.colors.lime, 0.85f, 0.8f, 0.9f, 0.06f),
+)
 
 @Composable
 private fun BulletinCover(edition: Bulletin, showSermon: Boolean) {
@@ -213,22 +220,22 @@ private fun BulletinCover(edition: Bulletin, showSermon: Boolean) {
     val c = DnTheme.colors
     Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.md)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("HANMAUM D+N · WEEKLY", style = DnTheme.typography.label, color = c.textTertiary)
-            edition.volume?.let { Text("VOL. $it", style = DnTheme.typography.label, color = c.textTertiary) }
+            Text(b.masthead, style = DnTheme.typography.label, color = c.textTertiary)
+            edition.volume?.let { Text(b.volume(it), style = DnTheme.typography.label, color = c.textTertiary) }
         }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
-            Text(bulletinDate(edition.serviceDate), style = DnTheme.typography.display, color = c.textPrimary,
-                modifier = Modifier.semantics { contentDescription = edition.serviceDate.toString() })
+            Text(b.date(edition.serviceDate), style = DnTheme.typography.display, color = c.textPrimary,
+                modifier = Modifier.semantics { contentDescription = b.date(edition.serviceDate, full = true) })
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
                 Text(b.sunday, style = DnTheme.typography.label, color = c.limeInk)
-                Text(listOfNotNull(edition.serviceName, edition.serviceStartTime?.take(5)).joinToString(" · "), style = DnTheme.typography.caption, color = c.textSecondary)
+                Text(b.serviceLine(edition.serviceName, edition.serviceStartTime), style = DnTheme.typography.caption, color = c.textSecondary)
             }
         }
         if (showSermon) {
             Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
                 Text(b.sermon, style = DnTheme.typography.label, color = c.amber)
                 Text(edition.sermonTitle, style = DnTheme.typography.titleLg, color = c.textPrimary, modifier = Modifier.semantics { heading() })
-                Text(listOfNotNull(edition.sermonPreacher, edition.scriptureReference).joinToString(" · "), style = DnTheme.typography.caption, color = c.textSecondary)
+                Text(b.metadata(edition.sermonPreacher, edition.scriptureReference), style = DnTheme.typography.caption, color = c.textSecondary)
             }
         }
     }
@@ -243,16 +250,17 @@ private fun InfoTile(label: String, value: String, modifier: Modifier) {
 }
 
 @Composable
-private fun BulletinTabs(selected: Int, onSelect: (Int) -> Unit) {
+private fun BulletinTabs(selected: BulletinTab, onSelect: (BulletinTab) -> Unit) {
     val b = LocalStrings.current.bulletin
     val c = DnTheme.colors
     Row(Modifier.fillMaxWidth().background(c.surface2, DnPillShape).padding(AppSpacing.xs).selectableGroup()) {
-        listOf(b.worshipOrder, b.sermonSharing).forEachIndexed { index, title ->
-            Box(Modifier.weight(1f).heightIn(min = BulletinLayout.touchTarget).clip(DnPillShape)
-                .background(if (index == selected) c.lime else Color.Transparent)
-                .selectable(index == selected, role = Role.Tab, onClick = { onSelect(index) })
+        BulletinTab.entries.forEach { tab ->
+            val title = if (tab == BulletinTab.ORDER) b.worshipOrder else b.sermonSharing
+            Box(Modifier.weight(1f).heightIn(min = AppSize.touchTarget).clip(DnPillShape)
+                .background(if (tab == selected) c.lime else Color.Transparent)
+                .selectable(tab == selected, role = Role.Tab, onClick = { onSelect(tab) })
                 .padding(AppSpacing.sm), contentAlignment = Alignment.Center) {
-                Text(title, style = DnTheme.typography.captionStrong, color = if (index == selected) c.onLime else c.textSecondary, textAlign = TextAlign.Center)
+                Text(title, style = DnTheme.typography.captionStrong, color = if (tab == selected) c.onLime else c.textSecondary, textAlign = TextAlign.Center)
             }
         }
     }
@@ -301,8 +309,9 @@ internal fun numberedSharingBlocks(blocks: List<BulletinSharingBlock>): List<Num
 private fun SharingBlock(item: NumberedSharingBlock) {
     val c = DnTheme.colors
     val block = item.block
-    val questionLabel = LocalStrings.current.bulletin.question
+    val b = LocalStrings.current.bulletin
     when (block.type) {
+        SharingBlockType.UNKNOWN -> Unit
         SharingBlockType.HEADING -> Text(block.text, style = DnTheme.typography.headline, color = c.textPrimary, modifier = Modifier.semantics { heading() })
         SharingBlockType.PARAGRAPH -> Text(block.text, style = DnTheme.typography.body, color = c.textSecondary)
         SharingBlockType.SCRIPTURE -> Column(Modifier.fillMaxWidth().background(c.amberDim, DnTileShape).padding(AppSpacing.md), verticalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
@@ -311,8 +320,8 @@ private fun SharingBlock(item: NumberedSharingBlock) {
             block.reference?.takeIf(String::isNotBlank)?.let { Text(it, style = DnTheme.typography.captionStrong, color = c.amber) }
         }
         SharingBlockType.QUESTION -> Column(Modifier.fillMaxWidth().background(c.surface, DnTileShape).padding(AppSpacing.md), verticalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
-            Text("Q${item.question}", style = DnTheme.typography.stat, color = c.limeInk,
-                modifier = Modifier.semantics { contentDescription = "$questionLabel ${item.question}" })
+            Text(b.questionBadge(requireNotNull(item.question)), style = DnTheme.typography.stat, color = c.limeInk,
+                modifier = Modifier.semantics { contentDescription = b.questionNumber(requireNotNull(item.question)) })
             EditorialText(block.text)
         }
     }
@@ -328,7 +337,7 @@ private fun BulletinSkeleton(modifier: Modifier) {
         Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
             repeat(3) { Box(Modifier.weight(1f).height(BulletinLayout.dateTile).background(DnTheme.colors.surface, DnInnerShape)) }
         }
-        repeat(4) { Box(Modifier.fillMaxWidth().height(BulletinLayout.touchTarget).background(DnTheme.colors.surface2, DnInnerShape)) }
+        repeat(4) { Box(Modifier.fillMaxWidth().height(AppSize.touchTarget).background(DnTheme.colors.surface2, DnInnerShape)) }
     }
 }
 
@@ -343,8 +352,8 @@ private fun BulletinHistorySheet(state: BulletinUiState, onDismiss: () -> Unit, 
             item("title") { Text(b.history, style = DnTheme.typography.title, modifier = Modifier.semantics { heading() }) }
             item("current") { TextButton(onClick = { onSelect(null) }) { Text(b.current) } }
             items(state.history, key = BulletinSummary::publicId) { edition ->
-                Column(Modifier.fillMaxWidth().heightIn(min = BulletinLayout.touchTarget).clip(DnInnerShape).background(c.surface2).bulletinClick { onSelect(edition.serviceDate) }.padding(AppSpacing.md)) {
-                    Text(listOfNotNull(edition.serviceDate.toString(), edition.volume?.let { "VOL. $it" }).joinToString(" · "), style = DnTheme.typography.caption, color = c.textSecondary)
+                Column(Modifier.fillMaxWidth().heightIn(min = AppSize.touchTarget).clip(DnInnerShape).background(c.surface2).bulletinClick { onSelect(edition.serviceDate) }.padding(AppSpacing.md)) {
+                    Text(b.historyCaption(edition.serviceDate, edition.volume), style = DnTheme.typography.caption, color = c.textSecondary)
                     edition.sermonTitle?.let { Text(it, style = DnTheme.typography.bodyStrong) }
                 }
             }
@@ -372,21 +381,20 @@ fun BulletinHomeCard(read: BulletinRead, onClick: () -> Unit, modifier: Modifier
         horizontalArrangement = Arrangement.spacedBy(AppSpacing.md), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.size(BulletinLayout.dateTile).background(c.limeDim, DnInnerShape), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
             Text(b.sunday, style = DnTheme.typography.label, color = c.limeInk)
-            Text(bulletinDate(edition.serviceDate), style = DnTheme.typography.captionStrong, color = c.limeInk)
+            Text(b.date(edition.serviceDate), style = DnTheme.typography.captionStrong, color = c.limeInk)
         }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
-            Text(if (read.cachedAt == null) b.current else "${b.offline} ${read.cachedAt.toLocalDateTime(TimeZone.of("Europe/Berlin")).date}", style = DnTheme.typography.label, color = c.limeInk)
+            Text(if (read.cachedAt == null) b.current else b.offlineSince(b.date(read.cachedAt.toLocalDateTime(ChurchTimeZone).date, full = true)), style = DnTheme.typography.label, color = c.limeInk)
             Text(edition.sermonTitle, style = DnTheme.typography.bodyStrong, color = c.textPrimary, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            Text(listOfNotNull(edition.serviceName, edition.sermonPreacher).joinToString(" · "), style = DnTheme.typography.caption, color = c.textSecondary)
+            Text(b.metadata(edition.serviceName, edition.sermonPreacher), style = DnTheme.typography.caption, color = c.textSecondary)
         }
         Icon(DnIcons.ChevronRight, null, tint = c.textTertiary, modifier = Modifier.size(BulletinLayout.smallIcon))
     }
 }
 
-@Composable
-private fun Modifier.bulletinClick(onClick: () -> Unit): Modifier {
+private fun Modifier.bulletinClick(onClick: () -> Unit): Modifier = composed {
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
-    val scale by animateFloatAsState(if (pressed) 0.97f else 1f, AppMotion.screenPush)
-    return scale(scale).clickable(interactionSource = interaction, indication = null, role = Role.Button, onClick = onClick)
+    val scale by animateFloatAsState(if (pressed) AppMotion.PRESS_SCALE else 1f, AppMotion.press)
+    scale(scale).clickable(interactionSource = interaction, indication = ripple(), role = Role.Button, onClick = onClick)
 }

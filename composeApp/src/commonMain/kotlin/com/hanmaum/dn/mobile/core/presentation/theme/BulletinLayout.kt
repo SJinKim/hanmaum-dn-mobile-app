@@ -4,7 +4,6 @@ import androidx.compose.ui.unit.dp
 
 /** Geometry of the bulletin's date tiles and timeline, from Figma section 23. */
 object BulletinLayout {
-    val touchTarget = 44.dp
     val icon = 24.dp
     val smallIcon = 18.dp
     val dateTile = 64.dp

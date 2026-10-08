@@ -1,6 +1,6 @@
 package com.hanmaum.dn.mobile.features.bulletin.data.repository
 
-import com.hanmaum.dn.mobile.BuildKonfig
+import com.hanmaum.dn.mobile.core.security.currentSessionScope
 import com.hanmaum.dn.mobile.core.domain.model.ApiResponse
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.features.bulletin.data.model.*
@@ -22,9 +22,6 @@ import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
-import kotlin.io.encoding.Base64
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -69,8 +66,11 @@ class BulletinRepositoryImpl(
                     val envelope = response.body<ApiResponse<BulletinResponse>>()
                     check(envelope.success) { "Bulletin response failed" }
                     val dto = requireNotNull(envelope.data) { "Missing bulletin content" }
-                    if (dto.status != "PUBLISHED" || dto.withdrawnAt != null) invalidate(owner, date)
-                    val bulletin = dto.toDomain()
+                    val bulletin = dto.toDomainOrNull()
+                    if (bulletin == null) {
+                        invalidate(owner, date)
+                        return@withLock Result.success(null)
+                    }
                     check(date == null || bulletin.serviceDate == date) { "Unexpected bulletin date" }
                     save(owner, dto, date == null)
                     Result.success(BulletinRead(bulletin))
@@ -104,7 +104,7 @@ class BulletinRepositoryImpl(
             check(envelope.success) { "Bulletin history response failed" }
             val data = requireNotNull(envelope.data)
             Result.success(BulletinPage(
-                data.content.filter { it.status == "PUBLISHED" }.map {
+                data.content.filter { it.status == BulletinStatus.PUBLISHED }.map {
                     BulletinSummary(it.publicId, LocalDate.parse(it.serviceDate), it.volume, it.sermonTitle)
                 }, !data.last,
             ))
@@ -119,14 +119,7 @@ class BulletinRepositoryImpl(
         }
     }
 
-    // Reads identity for cache partitioning only; authentication is owned by NetworkClient.
-    private fun owner(): String? = runCatching {
-        val payload = tokenStorage.getAccessToken()?.split('.')?.getOrNull(1) ?: return null
-        val padded = payload.padEnd((payload.length + 3) / 4 * 4, '=')
-        val claims = json.parseToJsonElement(Base64.UrlSafe.decode(padded).decodeToString()).jsonObject
-        val subject = claims["sub"]?.jsonPrimitive?.content?.takeIf { it.isNotBlank() } ?: return null
-        "${BuildKonfig.BACKEND_URL}|${claims["iss"]?.jsonPrimitive?.content}|$subject"
-    }.getOrNull()
+    private fun owner(): String? = tokenStorage.currentSessionScope()
 
     private fun cache(owner: String?): BulletinCache? = runCatching {
         settings.getStringOrNull(CACHE_KEY)?.let { json.decodeFromString<BulletinCache>(it) }
@@ -141,7 +134,7 @@ class BulletinRepositoryImpl(
         val savedAt = Instant.parse(entry.savedAt)
         val age = now().epochSeconds - savedAt.epochSeconds
         if (age !in 0..CACHE_SECONDS) return null
-        BulletinRead(entry.response.toDomain(), savedAt)
+        entry.response.toDomainOrNull()?.let { BulletinRead(it, savedAt) }
     }.getOrNull()
 
     private fun save(owner: String?, dto: BulletinResponse, current: Boolean) {

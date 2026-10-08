@@ -16,12 +16,12 @@ internal val bulletinJson = """
      "sharingBlocks":[{"type":"HEADING","text":"Heading"},{"type":"PARAGRAPH","text":"Paragraph"},
        {"type":"SCRIPTURE","text":"Scripture text","reference":"John 21:16"},{"type":"QUESTION","text":"First question"}],
      "sectionTitles":[{"key":"SECTION_WORSHIP","title":"Custom worship title","defaultTitle":"경배와 찬양"},
-       {"key":"SECTION_OFFERING","title":"Offering"},{"key":"SECTION_SENDING","title":"Sending"},
-       {"key":"FIXED_BLESSING_PRAYER","title":"Blessing prayer"}],
+       {"key":"SECTION_OFFERING","title":"Offering","defaultTitle":"봉헌"},{"key":"SECTION_SENDING","title":"Sending","defaultTitle":"축복과 파송"},
+       {"key":"FIXED_BLESSING_PRAYER","title":"Blessing prayer","defaultTitle":"봉헌 및 축복기도"}],
      "publishedAt":"2026-10-10T10:00:00Z","withdrawnAt":null,"version":7}
 """.trimIndent()
 
-internal fun bulletin() = Json.decodeFromString<BulletinResponse>(bulletinJson).toDomain()
+internal fun bulletin() = Json.decodeFromString<BulletinResponse>(bulletinJson).toDomainOrNull()!!
 
 internal class BulletinTokens(subject: String = "member-1") : TokenStorage {
     var subject: String? = subject

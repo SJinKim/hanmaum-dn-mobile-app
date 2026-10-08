@@ -97,7 +97,7 @@ fun HomeScreen(
     val bulletinViewModel: BulletinViewModel = koinViewModel()
     val bulletin by bulletinViewModel.uiState.collectAsStateWithLifecycle()
     LifecycleResumeEffect(bulletinViewModel) {
-        bulletinViewModel.refresh()
+        bulletinViewModel.refreshIfStale()
         onPauseOrDispose { }
     }
 

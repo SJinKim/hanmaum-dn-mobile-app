@@ -21,7 +21,8 @@ the coming Sunday's edition. In particular, an older current edition is valid.
 time come from the response. Songs, notices and sharing blocks retain server
 order. Questions are numbered only among QUESTION blocks.
 
-404 is an empty/unavailable state. Other failed requests show retry. Malformed
+404 and known unpublished/withdrawn responses are empty/unavailable states.
+Other failed requests show retry. Malformed
 200 responses are errors, not empty states. Only `PUBLISHED` content without a
 withdrawal timestamp is accepted. Unknown sharing block types are skipped.
 No HTML, WebView, remote attachments, admin endpoints or production dependencies
@@ -56,6 +57,23 @@ repository's spacing/shape tokens, chevron-back rule, and surface separation
 instead of reproducing the mock's thin horizontal dividers. No mock status-bar
 artwork is rendered: the system owns it. Light-mode accent text uses the
 existing accessible ink/colors.
+
+Entry/resume loading is screen-owned. In-flight loads are coalesced, and Home
+reuses a successful result for five minutes; explicit refresh bypasses this
+freshness window. Failed loads can be retried immediately. Switching editions
+clears the previous content so the selected date never labels another edition.
+
+Wire enums have UNKNOWN fallbacks; unknown blocks and section keys are skipped.
+Service time uses `LocalTime`, and blank section titles fall back to the server's
+required `defaultTitle`. Core owns session-cache identity decoding, generic
+touch-target sizing and the explicitly documented Berlin church time zone.
+The compact scaffold accepts the feature's glow palette instead of selecting it.
+Click surfaces retain standard ripple/focus indication and `AppMotion.press`.
+
+Branding and date/count/saved-copy/publication formatting live in
+`BulletinStrings`, with named translation arguments. SUN and VOL remain the
+shared Figma labels; the history date uses the cover's localized ordering and
+also includes the year.
 
 The history selector composes the existing themed Material bottom-sheet/list
 patterns. The unavailable and sharing-empty copy handles optional/missing data.
