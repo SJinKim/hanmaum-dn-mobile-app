@@ -1,6 +1,8 @@
 package com.hanmaum.dn.mobile.core.i18n
 
 interface AppStrings {
+    val languageTag: String
+    val loginBrowserHelp: String
     // Shared actions
     val retry: String
     val back: String
@@ -478,6 +480,8 @@ interface AppStrings {
 }
 
 object EnStrings : AppStrings {
+    override val languageTag = "en"
+    override val loginBrowserHelp get() = "Enter your email and password in the secure sign-in window. Use ‘$loginForgotPassword’ there to reset your password."
     override val retry = "Retry"
     override val back = "Back"
     override val save = "Save"
@@ -613,7 +617,7 @@ object EnStrings : AppStrings {
     override val biometricsUnavailableNow = "Biometrics are not available right now"
     override val faceIdSetupTitle = "Confirm your password"
     override val faceIdSetupSubtitle = "Enter it once so Face ID can sign you in from now on."
-    override val loginForgotPassword = "Forgot?"
+    override val loginForgotPassword = "Forgot your password?"
     override val loginUseFaceId = "Enable Face ID sign-in"
     override val loginSignInWithFaceId = "Sign in with Face ID"
     override val profileKeepSignedIn = "Keep me signed in"
@@ -849,6 +853,8 @@ object EnStrings : AppStrings {
 }
 
 object KoStrings : AppStrings {
+    override val languageTag = "ko"
+    override val loginBrowserHelp get() = "안전한 로그인 창에서 이메일과 비밀번호를 입력해 주세요. 비밀번호를 잊으셨다면 그 창에서 ‘$loginForgotPassword’를 선택해 주세요."
     override val retry = "다시 시도"
     override val back = "뒤로"
     override val save = "저장"
@@ -984,7 +990,7 @@ object KoStrings : AppStrings {
     override val biometricsUnavailableNow = "지금은 생체 인증을 사용할 수 없습니다"
     override val faceIdSetupTitle = "비밀번호 확인"
     override val faceIdSetupSubtitle = "한 번만 입력하면 다음부터 Face ID로 로그인합니다."
-    override val loginForgotPassword = "비밀번호 찾기"
+    override val loginForgotPassword = "비밀번호를 잊으셨나요?"
     override val loginUseFaceId = "다음에 Face ID로 로그인"
     override val loginSignInWithFaceId = "Face ID로 로그인"
     override val profileKeepSignedIn = "로그인 상태 유지"
@@ -1217,6 +1223,8 @@ object KoStrings : AppStrings {
 }
 
 object DeStrings : AppStrings {
+    override val languageTag = "de"
+    override val loginBrowserHelp get() = "Gib E-Mail und Passwort im sicheren Anmeldefenster ein. Nutze dort ‘$loginForgotPassword’ zum Zurücksetzen."
     override val retry = "Erneut versuchen"
     override val back = "Zurück"
     override val save = "Speichern"
@@ -1352,7 +1360,7 @@ object DeStrings : AppStrings {
     override val biometricsUnavailableNow = "Biometrie ist gerade nicht verfügbar"
     override val faceIdSetupTitle = "Passwort bestätigen"
     override val faceIdSetupSubtitle = "Einmal eingeben, danach meldet Face ID dich an."
-    override val loginForgotPassword = "Vergessen?"
+    override val loginForgotPassword = "Passwort vergessen?"
     override val loginUseFaceId = "Face-ID-Anmeldung aktivieren"
     override val loginSignInWithFaceId = "Mit Face ID anmelden"
     override val profileKeepSignedIn = "Angemeldet bleiben"
