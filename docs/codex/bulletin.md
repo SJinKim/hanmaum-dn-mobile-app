@@ -15,8 +15,13 @@ Member requests use the injected shared client:
 
 The contract is the server's `BulletinEditionResponse` from server PR #294 and
 the synchronized ops OpenAPI spec. Fields are camel-case. The server chooses the
-current edition in Europe/Berlin; the client does not infer a Sunday or require
-the coming Sunday's edition. In particular, an older current edition is valid.
+current edition in Europe/Berlin: the latest published Sunday no later than
+Berlin's current date plus two calendar days. A Sunday opens Friday at 00:00;
+Thursday still shows the latest older published edition. The same cutoff applies
+to direct date requests and history, including database pagination/counts.
+Admin publication may happen earlier and does not grant members early access.
+An older current edition remains valid. The mobile repository mirrors the cutoff
+for responses from an older server and for previously saved offline copies.
 `serviceName`, `serviceStartTime`, the four section titles, VOL and publication
 time come from the response. Songs, notices and sharing blocks retain server
 order. Questions are numbered only among QUESTION blocks.

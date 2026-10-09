@@ -9,6 +9,10 @@
 ## Lessons
 <!-- Claude appends here after each correction -->
 
+### 주보-Veröffentlichung und Member-Sichtbarkeit sind getrennt
+- **Mistake**: Veröffentlichte zukünftige Ausgaben waren in der Historie auswählbar; die aktuelle Ausgabe konnte bereits vor Freitag erscheinen.
+- **Rule**: Sonntagsausgaben sind für Mitglieder erst ab Freitag 00:00 Europe/Berlin sichtbar (`serviceDate <= Berliner Heute + 2 Kalendertage`). Die Regel gilt für aktuelle Ausgabe, Direktabruf, Historie und bereits gespeicherte Offline-Kopien. Veröffentlichung durch Admins allein reicht nicht; Grenzen und alle Zugriffspfade testen.
+
 ### Bearer token leaking to external APIs
 - **Mistake**: Ktor's `sendWithoutRequest` only skipped auth for paths containing "register" or "openid-connect". Every other request — including pCloud and Google Calendar — received the Keycloak `Authorization: Bearer` header. pCloud returned error 2094 (invalid token); Google Calendar would also reject it.
 - **Rule**: `sendWithoutRequest` must check the **host**, not just the path. Only send the bearer token when the request targets our own backend host (`BuildKonfig.BACKEND_URL`). External APIs (pCloud, Google Calendar, any third-party) must never receive our auth header. Pattern:

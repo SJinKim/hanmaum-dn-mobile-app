@@ -2,6 +2,7 @@ package com.hanmaum.dn.mobile.features.bulletin.data.repository
 
 import com.hanmaum.dn.mobile.core.security.currentSessionScope
 import com.hanmaum.dn.mobile.core.domain.model.ApiResponse
+import com.hanmaum.dn.mobile.core.domain.model.ChurchTimeZone
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.features.bulletin.data.model.*
 import com.hanmaum.dn.mobile.features.bulletin.domain.model.*
@@ -19,6 +20,9 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.plus
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -52,6 +56,10 @@ class BulletinRepositoryImpl(
 
     private suspend fun read(date: LocalDate?): Result<BulletinRead?> = mutex.withLock {
         val owner = owner()
+        if (date != null && !isVisible(date)) {
+            invalidate(owner, date)
+            return@withLock Result.success(null)
+        }
         try {
             val response = client.get(if (date == null) "bulletins/current" else "bulletins") {
                 date?.let { parameter("date", it.toString()) }
@@ -67,7 +75,7 @@ class BulletinRepositoryImpl(
                     check(envelope.success) { "Bulletin response failed" }
                     val dto = requireNotNull(envelope.data) { "Missing bulletin content" }
                     val bulletin = dto.toDomainOrNull()
-                    if (bulletin == null) {
+                    if (bulletin == null || !isVisible(bulletin.serviceDate)) {
                         invalidate(owner, date)
                         return@withLock Result.success(null)
                     }
@@ -104,7 +112,7 @@ class BulletinRepositoryImpl(
             check(envelope.success) { "Bulletin history response failed" }
             val data = requireNotNull(envelope.data)
             Result.success(BulletinPage(
-                data.content.filter { it.status == BulletinStatus.PUBLISHED }.map {
+                data.content.filter { it.status == BulletinStatus.PUBLISHED && isVisible(LocalDate.parse(it.serviceDate)) }.map {
                     BulletinSummary(it.publicId, LocalDate.parse(it.serviceDate), it.volume, it.sermonTitle)
                 }, !data.last,
             ))
@@ -121,6 +129,10 @@ class BulletinRepositoryImpl(
 
     private fun owner(): String? = tokenStorage.currentSessionScope()
 
+    // Defense in depth for old server responses and cache records written before this rule.
+    private fun isVisible(date: LocalDate): Boolean =
+        date <= now().toLocalDateTime(ChurchTimeZone).date.plus(2, DateTimeUnit.DAY)
+
     private fun cache(owner: String?): BulletinCache? = runCatching {
         settings.getStringOrNull(CACHE_KEY)?.let { json.decodeFromString<BulletinCache>(it) }
             ?.takeIf { owner != null && it.owner == owner }
@@ -134,7 +146,7 @@ class BulletinRepositoryImpl(
         val savedAt = Instant.parse(entry.savedAt)
         val age = now().epochSeconds - savedAt.epochSeconds
         if (age !in 0..CACHE_SECONDS) return null
-        entry.response.toDomainOrNull()?.let { BulletinRead(it, savedAt) }
+        entry.response.toDomainOrNull()?.takeIf { isVisible(it.serviceDate) }?.let { BulletinRead(it, savedAt) }
     }.getOrNull()
 
     private fun save(owner: String?, dto: BulletinResponse, current: Boolean) {
