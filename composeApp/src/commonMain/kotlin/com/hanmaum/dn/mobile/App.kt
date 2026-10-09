@@ -45,6 +45,8 @@ import com.hanmaum.dn.mobile.features.notification.presentation.NotificationList
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementDetailScreen
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementListScreen
 import com.hanmaum.dn.mobile.features.announcement.presentation.HomeScreen
+import com.hanmaum.dn.mobile.features.bulletin.presentation.BulletinScreen
+import com.hanmaum.dn.mobile.core.navigation.BulletinRoute
 import com.hanmaum.dn.mobile.features.album.presentation.AlbumDetailScreen
 import com.hanmaum.dn.mobile.features.album.presentation.PhotoViewerScreen
 import com.hanmaum.dn.mobile.features.album.presentation.albums.AlbumsScreen
@@ -245,7 +247,12 @@ fun App() {
                             },
                             onAttendanceClick = { navController.navigate(AttendanceRoute) },
                             onCommunityClick = { navController.navigate(CommunityRoute) },
+                            onBulletinClick = { navController.navigate(BulletinRoute) },
                         )
+                    }
+
+                    composable<BulletinRoute> {
+                        BulletinScreen(onBack = { navController.popBackStack() })
                     }
 
                     composable<SettingsRoute> {

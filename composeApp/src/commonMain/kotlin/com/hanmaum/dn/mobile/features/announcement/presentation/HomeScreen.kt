@@ -64,6 +64,9 @@ import com.hanmaum.dn.mobile.core.presentation.theme.DnPillShape
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTileShape
 import com.hanmaum.dn.mobile.core.presentation.theme.typography
+import com.hanmaum.dn.mobile.core.presentation.theme.AppSpacing
+import com.hanmaum.dn.mobile.features.bulletin.presentation.BulletinViewModel
+import com.hanmaum.dn.mobile.features.bulletin.presentation.BulletinHomeCard
 import com.hanmaum.dn.mobile.features.announcement.domain.model.Announcement
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceSummary
 import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceViewModel
@@ -87,9 +90,16 @@ fun HomeScreen(
     onServeClick: () -> Unit,
     onAttendanceClick: () -> Unit,
     onCommunityClick: () -> Unit,
+    onBulletinClick: () -> Unit,
 ) {
     val viewModel: HomeViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val bulletinViewModel: BulletinViewModel = koinViewModel()
+    val bulletin by bulletinViewModel.uiState.collectAsStateWithLifecycle()
+    LifecycleResumeEffect(bulletinViewModel) {
+        bulletinViewModel.refreshIfStale()
+        onPauseOrDispose { }
+    }
 
     // Nothing else asks for the content: the ViewModel's init only wires up the
     // push-token collector. Without this, banners, announcements and the
@@ -144,7 +154,13 @@ fun HomeScreen(
                 onFloorPlanClick = onFloorPlanClick,
                 onAttendanceClick = onAttendanceClick,
                 onCommunityClick = onCommunityClick,
+                onBulletinClick = onBulletinClick,
             )
+
+            bulletin.content?.let { read ->
+                Spacer(Modifier.height(AppSpacing.md))
+                BulletinHomeCard(read, onBulletinClick, Modifier.padding(horizontal = AppSpacing.md))
+            }
 
             Spacer(Modifier.height(20.dp))
 
@@ -288,9 +304,11 @@ private fun QuickMenuRow(
     onFloorPlanClick: () -> Unit,
     onAttendanceClick: () -> Unit,
     onCommunityClick: () -> Unit,
+    onBulletinClick: () -> Unit,
 ) {
     val c = DnTheme.colors
     val entries = listOf(
+        LocalStrings.current.bulletin.title to onBulletinClick,
         "양육" to onNurtureClick,
         "사역" to onServeClick,
         "교회 지도" to onFloorPlanClick,

@@ -20,6 +20,9 @@ import com.hanmaum.dn.mobile.core.network.createHttpClient
 import com.hanmaum.dn.mobile.core.push.PushPreferences
 import com.hanmaum.dn.mobile.core.push.PushPreferencesImpl
 import com.russhwolf.settings.Settings
+import com.hanmaum.dn.mobile.features.bulletin.data.repository.BulletinRepositoryImpl
+import com.hanmaum.dn.mobile.features.bulletin.domain.repository.BulletinRepository
+import com.hanmaum.dn.mobile.features.bulletin.presentation.BulletinViewModel
 import com.hanmaum.dn.mobile.features.announcement.data.repository.AnnouncementRepositoryImpl
 import com.hanmaum.dn.mobile.features.announcement.domain.repository.AnnouncementRepository
 import com.hanmaum.dn.mobile.features.announcement.presentation.AnnouncementDetailViewModel
@@ -84,6 +87,7 @@ import org.koin.dsl.module
 import org.koin.core.module.dsl.viewModel
 
 val appModule = module {
+    single<Settings> { Settings() }
     // Repositories
     single<AnnouncementRepository> { AnnouncementRepositoryImpl(get()) }
     single<AuthRepository> { AuthRepositoryImpl(get()) }
@@ -91,8 +95,10 @@ val appModule = module {
     single<MemberRepository> { MemberRepositoryImpl(get()) }
     single<VerseRepository> { VerseRepositoryImpl(get(), get()) }
     single<VerseRecordRepository> { VerseRecordRepositoryImpl(get()) }
+    single<BulletinRepository> { BulletinRepositoryImpl(get(), get(), get()) }
+    viewModel { BulletinViewModel(get()) }
     single { createHttpClient(get()) } // Client
-    single<TokenStorage> { TokenStorageImpl(get(), Settings()) }
+    single<TokenStorage> { TokenStorageImpl(get(), get()) }
     single { InstallationGuard(Settings(), get(), get(), get()) }
     single<LocaleRepository> { LocaleRepositoryImpl(Settings()) }
     single<ThemeRepository> { ThemeRepositoryImpl(Settings()) }

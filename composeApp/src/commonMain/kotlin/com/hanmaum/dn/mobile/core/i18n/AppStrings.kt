@@ -3,6 +3,7 @@ package com.hanmaum.dn.mobile.core.i18n
 import kotlinx.datetime.LocalDate
 
 interface AppStrings {
+    val bulletin: BulletinStrings
     val languageTag: String
     val loginBrowserHelp: String
     // Shared actions
@@ -487,6 +488,7 @@ interface AppStrings {
 }
 
 object EnStrings : AppStrings {
+    override val bulletin = EnBulletinStrings
     override val languageTag = "en"
     override val loginBrowserHelp get() = "Enter your email and password in the secure sign-in window. Use ‘$loginForgotPassword’ there to reset your password."
     override val retry = "Retry"
@@ -869,6 +871,7 @@ object EnStrings : AppStrings {
 }
 
 object KoStrings : AppStrings {
+    override val bulletin = KoBulletinStrings
     override val languageTag = "ko"
     override val loginBrowserHelp get() = "안전한 로그인 창에서 이메일과 비밀번호를 입력해 주세요. 비밀번호를 잊으셨다면 그 창에서 ‘$loginForgotPassword’를 선택해 주세요."
     override val retry = "다시 시도"
@@ -1248,6 +1251,7 @@ object KoStrings : AppStrings {
 }
 
 object DeStrings : AppStrings {
+    override val bulletin = DeBulletinStrings
     override val languageTag = "de"
     override val loginBrowserHelp get() = "Gib E-Mail und Passwort im sicheren Anmeldefenster ein. Nutze dort ‘$loginForgotPassword’ zum Zurücksetzen."
     override val retry = "Erneut versuchen"
