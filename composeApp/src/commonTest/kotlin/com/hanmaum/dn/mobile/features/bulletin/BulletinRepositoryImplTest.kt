@@ -179,6 +179,82 @@ class BulletinRepositoryImplTest {
         assertTrue(repo().getCurrent().isFailure)
     }
 
+    @Test fun `Sunday opens at Friday midnight in Berlin rather than UTC`() = runTest {
+        time = Instant.parse("2026-10-08T21:59:59Z")
+        assertNull(repo().getCurrent().getOrThrow())
+        time = Instant.parse("2026-10-08T22:00:00Z")
+        assertEquals(LocalDate(2026, 10, 11), repo().getCurrent().getOrThrow()?.bulletin?.serviceDate)
+    }
+
+    @Test fun `a published later Sunday from an old server is not shown or cached`() = runTest {
+        body = body.replace("2026-10-11", "2026-10-18")
+        assertNull(repo().getCurrent().getOrThrow())
+        status = HttpStatusCode.ServiceUnavailable
+        assertTrue(repo().getCurrent().isFailure)
+    }
+
+    @Test fun `future current from an old server preserves a valid older offline copy`() = runTest {
+        val repository = repo()
+        repository.getCurrent().getOrThrow()
+        body = body.replace("2026-10-11", "2026-10-18")
+        assertNull(repository.getCurrent().getOrThrow())
+        status = HttpStatusCode.ServiceUnavailable
+        val read = repository.getCurrent().getOrThrow()!!
+        assertEquals(LocalDate(2026, 10, 11), read.bulletin.serviceDate)
+        assertNotNull(read.cachedAt)
+    }
+
+    @Test fun `all history entries use one visibility cutoff across Friday midnight`() = runTest {
+        body = """{"success":true,"data":{"content":[
+          {"publicId":"one","serviceDate":"2026-10-11","status":"PUBLISHED"},
+          {"publicId":"two","serviceDate":"2026-10-11","status":"PUBLISHED"}],"last":true}}"""
+        var clockCalls = 0
+        val repository = BulletinRepositoryImpl(client, settings, tokens) {
+            clockCalls++
+            Instant.parse(if (clockCalls == 1) "2026-10-08T21:59:59Z" else "2026-10-08T22:00:00Z")
+        }
+        assertTrue(repository.getHistory(0).getOrThrow().editions.isEmpty())
+        assertEquals(1, clockCalls)
+    }
+
+    @Test fun `a history page of only future editions retains its next page flag`() = runTest {
+        body = """{"success":true,"data":{"content":[
+          {"publicId":"future","serviceDate":"2026-10-18","status":"PUBLISHED"}],"last":false}}"""
+        val page = repo().getHistory(0).getOrThrow()
+        assertTrue(page.editions.isEmpty())
+        assertTrue(page.hasNext)
+    }
+
+    @Test fun `a future date cannot be requested even while offline`() = runTest {
+        failure = kotlinx.io.IOException("offline")
+        assertNull(repo().getByDate(LocalDate(2026, 10, 18)).getOrThrow())
+        assertTrue(requests.isEmpty())
+    }
+
+    @Test fun `legacy future cache is not replayed after upgrading the app`() = runTest {
+        repo().getCurrent().getOrThrow()
+        val cache = settings.getString("bulletin_cache_v1", "")
+        assertTrue(cache.contains("2026-10-11"))
+        settings.putString("bulletin_cache_v1", cache.replace("2026-10-11", "2026-10-18"))
+        status = HttpStatusCode.ServiceUnavailable
+        assertTrue(repo().getCurrent().isFailure)
+        assertNull(repo().getByDate(LocalDate(2026, 10, 18)).getOrThrow())
+    }
+
+    @Test fun `history excludes later Sundays and preserves older editions and pagination`() = runTest {
+        time = Instant.parse("2026-10-09T08:00:00Z")
+        body = """{"success":true,"data":{"content":[
+          {"publicId":"future","serviceDate":"2026-10-18","status":"PUBLISHED"},
+          {"publicId":"this-week","serviceDate":"2026-10-11","status":"PUBLISHED"},
+          {"publicId":"past","serviceDate":"2026-10-04","status":"PUBLISHED"}],"last":false}}"""
+        val repository = repo()
+        val friday = repository.getHistory(0).getOrThrow()
+        assertEquals(listOf("this-week", "past"), friday.editions.map { it.publicId })
+        assertTrue(friday.hasNext)
+        time = Instant.parse("2026-10-08T08:00:00Z")
+        assertEquals(listOf("past"), repository.getHistory(0).getOrThrow().editions.map { it.publicId })
+    }
+
     @Test fun `cancellation propagates instead of rendering offline content`() = runTest {
         val repository = repo()
         repository.getCurrent().getOrThrow()

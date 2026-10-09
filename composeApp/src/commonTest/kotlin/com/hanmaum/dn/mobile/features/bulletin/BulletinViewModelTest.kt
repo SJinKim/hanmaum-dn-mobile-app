@@ -152,6 +152,25 @@ class BulletinViewModelTest {
         assertEquals(blocks, numbered.map { it.block })
     }
 
+    @Test fun `an empty filtered history page offers loading the next page without a stuck loading state`() = runTest(dispatcher) {
+        val repository = FakeBulletinRepository().apply { historyResult = Result.success(BulletinPage(emptyList(), true)) }
+        val vm = BulletinViewModel(repository)
+        vm.openHistory()
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.history.isEmpty())
+        assertTrue(vm.uiState.value.historyHasNext)
+        assertFalse(vm.uiState.value.historyLoading)
+        assertFalse(vm.uiState.value.historyFailed)
+        val row = BulletinSummary("past", LocalDate(2026, 10, 4), 40, "Previous")
+        repository.historyResult = Result.success(BulletinPage(listOf(row), false))
+        vm.loadMoreHistory()
+        advanceUntilIdle()
+        assertEquals(listOf(0, 1), repository.pages)
+        assertEquals(listOf(row), vm.uiState.value.history)
+        assertFalse(vm.uiState.value.historyHasNext)
+        assertFalse(vm.uiState.value.historyLoading)
+    }
+
     @Test fun `losing history permission clears previously displayed member content`() = runTest(dispatcher) {
         val repository = FakeBulletinRepository()
         val vm = BulletinViewModel(repository).also { it.refreshIfStale() }
