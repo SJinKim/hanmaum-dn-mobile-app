@@ -193,6 +193,38 @@ class BulletinRepositoryImplTest {
         assertTrue(repo().getCurrent().isFailure)
     }
 
+    @Test fun `future current from an old server preserves a valid older offline copy`() = runTest {
+        val repository = repo()
+        repository.getCurrent().getOrThrow()
+        body = body.replace("2026-10-11", "2026-10-18")
+        assertNull(repository.getCurrent().getOrThrow())
+        status = HttpStatusCode.ServiceUnavailable
+        val read = repository.getCurrent().getOrThrow()!!
+        assertEquals(LocalDate(2026, 10, 11), read.bulletin.serviceDate)
+        assertNotNull(read.cachedAt)
+    }
+
+    @Test fun `all history entries use one visibility cutoff across Friday midnight`() = runTest {
+        body = """{"success":true,"data":{"content":[
+          {"publicId":"one","serviceDate":"2026-10-11","status":"PUBLISHED"},
+          {"publicId":"two","serviceDate":"2026-10-11","status":"PUBLISHED"}],"last":true}}"""
+        var clockCalls = 0
+        val repository = BulletinRepositoryImpl(client, settings, tokens) {
+            clockCalls++
+            Instant.parse(if (clockCalls == 1) "2026-10-08T21:59:59Z" else "2026-10-08T22:00:00Z")
+        }
+        assertTrue(repository.getHistory(0).getOrThrow().editions.isEmpty())
+        assertEquals(1, clockCalls)
+    }
+
+    @Test fun `a history page of only future editions retains its next page flag`() = runTest {
+        body = """{"success":true,"data":{"content":[
+          {"publicId":"future","serviceDate":"2026-10-18","status":"PUBLISHED"}],"last":false}}"""
+        val page = repo().getHistory(0).getOrThrow()
+        assertTrue(page.editions.isEmpty())
+        assertTrue(page.hasNext)
+    }
+
     @Test fun `a future date cannot be requested even while offline`() = runTest {
         failure = kotlinx.io.IOException("offline")
         assertNull(repo().getByDate(LocalDate(2026, 10, 18)).getOrThrow())

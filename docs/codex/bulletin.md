@@ -22,6 +22,16 @@ to direct date requests and history, including database pagination/counts.
 Admin publication may happen earlier and does not grant members early access.
 An older current edition remains valid. The mobile repository mirrors the cutoff
 for responses from an older server and for previously saved offline copies.
+It computes one cutoff per repository operation, so a page cannot mix dates from
+both sides of Berlin midnight. `MEMBER_VISIBILITY_LEAD_DAYS` mirrors the server's
+named constant; any policy change must update both sides.
+
+Merge/rollout order: server #297 (deployed to ST) → ops #56 → mobile #275.
+If an old server still returns a future current edition, the app hides it as
+unavailable without discarding a valid older cached edition. That cache remains
+usable only during transport/5xx failures, not as an online substitute for the
+server's selection. An entirely filtered history page keeps its next-page flag;
+the selector offers Load more and does not remain in a loading state.
 `serviceName`, `serviceStartTime`, the four section titles, VOL and publication
 time come from the response. Songs, notices and sharing blocks retain server
 order. Questions are numbered only among QUESTION blocks.

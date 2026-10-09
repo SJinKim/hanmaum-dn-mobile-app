@@ -56,7 +56,8 @@ class BulletinRepositoryImpl(
 
     private suspend fun read(date: LocalDate?): Result<BulletinRead?> = mutex.withLock {
         val owner = owner()
-        if (date != null && !isVisible(date)) {
+        val limit = visibleThrough()
+        if (date != null && date > limit) {
             invalidate(owner, date)
             return@withLock Result.success(null)
         }
@@ -75,8 +76,15 @@ class BulletinRepositoryImpl(
                     check(envelope.success) { "Bulletin response failed" }
                     val dto = requireNotNull(envelope.data) { "Missing bulletin content" }
                     val bulletin = dto.toDomainOrNull()
-                    if (bulletin == null || !isVisible(bulletin.serviceDate)) {
+                    if (bulletin == null) {
                         invalidate(owner, date)
+                        return@withLock Result.success(null)
+                    }
+                    if (bulletin.serviceDate > limit) {
+                        // The server must roll out first to select the latest eligible older edition.
+                        // An old server's future result is hidden, but says nothing about a valid
+                        // older cached edition. Preserve it for transport failures; do not replay it
+                        // as an online success or treat this unrelated response as a withdrawal.
                         return@withLock Result.success(null)
                     }
                     check(date == null || bulletin.serviceDate == date) { "Unexpected bulletin date" }
@@ -94,13 +102,14 @@ class BulletinRepositoryImpl(
             }
             val transient = (e is BulletinHttpFailure && e.status >= 500) ||
                 e is kotlinx.io.IOException || e is HttpRequestTimeoutException
-            val cached = if (transient && owner == owner()) cached(owner, date) else null
+            val cached = if (transient && owner == owner()) cached(owner, date, limit) else null
             cached?.let { Result.success(it) } ?: Result.failure(e)
         }
     }
 
     private suspend fun history(page: Int): Result<BulletinPage> = mutex.withLock {
         val owner = owner()
+        val limit = visibleThrough()
         try {
             val response = client.get("bulletins/history") {
                 parameter("page", page.coerceAtLeast(0))
@@ -112,7 +121,7 @@ class BulletinRepositoryImpl(
             check(envelope.success) { "Bulletin history response failed" }
             val data = requireNotNull(envelope.data)
             Result.success(BulletinPage(
-                data.content.filter { it.status == BulletinStatus.PUBLISHED && isVisible(LocalDate.parse(it.serviceDate)) }.map {
+                data.content.filter { it.status == BulletinStatus.PUBLISHED && LocalDate.parse(it.serviceDate) <= limit }.map {
                     BulletinSummary(it.publicId, LocalDate.parse(it.serviceDate), it.volume, it.sermonTitle)
                 }, !data.last,
             ))
@@ -129,16 +138,16 @@ class BulletinRepositoryImpl(
 
     private fun owner(): String? = tokenStorage.currentSessionScope()
 
-    // Defense in depth for old server responses and cache records written before this rule.
-    private fun isVisible(date: LocalDate): Boolean =
-        date <= now().toLocalDateTime(ChurchTimeZone).date.plus(2, DateTimeUnit.DAY)
+    // One cutoff per operation also keeps a history page consistent across Berlin midnight.
+    private fun visibleThrough(): LocalDate =
+        now().toLocalDateTime(ChurchTimeZone).date.plus(MEMBER_VISIBILITY_LEAD_DAYS, DateTimeUnit.DAY)
 
     private fun cache(owner: String?): BulletinCache? = runCatching {
         settings.getStringOrNull(CACHE_KEY)?.let { json.decodeFromString<BulletinCache>(it) }
             ?.takeIf { owner != null && it.owner == owner }
     }.getOrNull()
 
-    private fun cached(owner: String?, date: LocalDate?): BulletinRead? = runCatching {
+    private fun cached(owner: String?, date: LocalDate?, limit: LocalDate): BulletinRead? = runCatching {
         val cache = cache(owner) ?: return null
         val entry = cache.editions.find {
             if (date == null) it.response.publicId == cache.currentId else it.response.serviceDate == date.toString()
@@ -146,7 +155,7 @@ class BulletinRepositoryImpl(
         val savedAt = Instant.parse(entry.savedAt)
         val age = now().epochSeconds - savedAt.epochSeconds
         if (age !in 0..CACHE_SECONDS) return null
-        entry.response.toDomainOrNull()?.takeIf { isVisible(it.serviceDate) }?.let { BulletinRead(it, savedAt) }
+        entry.response.toDomainOrNull()?.takeIf { it.serviceDate <= limit }?.let { BulletinRead(it, savedAt) }
     }.getOrNull()
 
     private fun save(owner: String?, dto: BulletinResponse, current: Boolean) {
@@ -175,6 +184,9 @@ class BulletinRepositoryImpl(
     private fun clear() { runCatching { settings.remove(CACHE_KEY) } }
 
     companion object {
+        // Mirrors server BulletinEditionService.MEMBER_VISIBILITY_LEAD_DAYS (#296).
+        // For Sunday editions, two Berlin calendar days means Friday at 00:00.
+        private const val MEMBER_VISIBILITY_LEAD_DAYS = 2
         private const val CACHE_KEY = "bulletin_cache_v1"
         private const val CACHE_SECONDS = 24 * 60 * 60L
     }
