@@ -1,7 +1,11 @@
 package com.hanmaum.dn.mobile.core.i18n
 
+import kotlinx.datetime.LocalDate
+
 interface AppStrings {
     val bulletin: BulletinStrings
+    val languageTag: String
+    val loginBrowserHelp: String
     // Shared actions
     val retry: String
     val back: String
@@ -268,6 +272,11 @@ interface AppStrings {
     val rsvpLater: String
     val rsvpDone: String
     val rsvpAnnouncementCta: String
+    fun rsvpDate(date: LocalDate, includeWeekday: Boolean): String
+    fun rsvpDeadline(date: String): String
+    fun rsvpRespondedOn(date: String): String
+    fun rsvpReminderHint(date: String): String
+    fun rsvpSheetDeadline(date: String): String
     // Settings & personal info screens
     val settingsTitle: String
     val personalInfoTitle: String
@@ -480,6 +489,8 @@ interface AppStrings {
 
 object EnStrings : AppStrings {
     override val bulletin = EnBulletinStrings
+    override val languageTag = "en"
+    override val loginBrowserHelp get() = "Enter your email and password in the secure sign-in window. Use ‘$loginForgotPassword’ there to reset your password."
     override val retry = "Retry"
     override val back = "Back"
     override val save = "Save"
@@ -615,7 +626,7 @@ object EnStrings : AppStrings {
     override val biometricsUnavailableNow = "Biometrics are not available right now"
     override val faceIdSetupTitle = "Confirm your password"
     override val faceIdSetupSubtitle = "Enter it once so Face ID can sign you in from now on."
-    override val loginForgotPassword = "Forgot?"
+    override val loginForgotPassword = "Forgot your password?"
     override val loginUseFaceId = "Enable Face ID sign-in"
     override val loginSignInWithFaceId = "Sign in with Face ID"
     override val profileKeepSignedIn = "Keep me signed in"
@@ -706,6 +717,15 @@ object EnStrings : AppStrings {
     override val rsvpLater = "Later"
     override val rsvpDone = "Attending"
     override val rsvpAnnouncementCta = "RSVP to this event"
+    private val rsvpWeekdays = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    override fun rsvpDate(date: LocalDate, includeWeekday: Boolean): String {
+        val value = "${months[date.month.ordinal + 1].take(3)} ${date.day}"
+        return if (includeWeekday) "${rsvpWeekdays[date.dayOfWeek.ordinal]}, $value" else value
+    }
+    override fun rsvpDeadline(date: String) = "Reply by $date"
+    override fun rsvpRespondedOn(date: String) = "Replied on $date"
+    override fun rsvpReminderHint(date: String) = "Undecided · One more reminder on $date"
+    override fun rsvpSheetDeadline(date: String) = "Please reply by $date · We need to confirm the headcount"
     override val settingsTitle = "Settings"
     override val personalInfoTitle = "Personal Info"
     override val labelBirthDate = "BIRTH DATE"
@@ -852,6 +872,8 @@ object EnStrings : AppStrings {
 
 object KoStrings : AppStrings {
     override val bulletin = KoBulletinStrings
+    override val languageTag = "ko"
+    override val loginBrowserHelp get() = "안전한 로그인 창에서 이메일과 비밀번호를 입력해 주세요. 비밀번호를 잊으셨다면 그 창에서 ‘$loginForgotPassword’를 선택해 주세요."
     override val retry = "다시 시도"
     override val back = "뒤로"
     override val save = "저장"
@@ -987,7 +1009,7 @@ object KoStrings : AppStrings {
     override val biometricsUnavailableNow = "지금은 생체 인증을 사용할 수 없습니다"
     override val faceIdSetupTitle = "비밀번호 확인"
     override val faceIdSetupSubtitle = "한 번만 입력하면 다음부터 Face ID로 로그인합니다."
-    override val loginForgotPassword = "비밀번호 찾기"
+    override val loginForgotPassword = "비밀번호를 잊으셨나요?"
     override val loginUseFaceId = "다음에 Face ID로 로그인"
     override val loginSignInWithFaceId = "Face ID로 로그인"
     override val profileKeepSignedIn = "로그인 상태 유지"
@@ -1078,6 +1100,15 @@ object KoStrings : AppStrings {
     override val rsvpLater = "나중에"
     override val rsvpDone = "참석 완료"
     override val rsvpAnnouncementCta = "행사 참석하기"
+    private val rsvpWeekdays = listOf("월", "화", "수", "목", "금", "토", "일")
+    override fun rsvpDate(date: LocalDate, includeWeekday: Boolean): String {
+        val value = "${months[date.month.ordinal + 1]} ${date.day}일"
+        return if (includeWeekday) "$value (${rsvpWeekdays[date.dayOfWeek.ordinal]})" else value
+    }
+    override fun rsvpDeadline(date: String) = "응답 마감 $date"
+    override fun rsvpRespondedOn(date: String) = "$date 응답"
+    override fun rsvpReminderHint(date: String) = "미정 · ${date}에 한 번 더 알림"
+    override fun rsvpSheetDeadline(date: String) = "${date}까지 응답해 주세요 · 인원 확정에 필요합니다"
     override val settingsTitle = "설정"
     override val personalInfoTitle = "개인 정보"
     override val labelBirthDate = "생년월일"
@@ -1221,6 +1252,8 @@ object KoStrings : AppStrings {
 
 object DeStrings : AppStrings {
     override val bulletin = DeBulletinStrings
+    override val languageTag = "de"
+    override val loginBrowserHelp get() = "Gib E-Mail und Passwort im sicheren Anmeldefenster ein. Nutze dort ‘$loginForgotPassword’ zum Zurücksetzen."
     override val retry = "Erneut versuchen"
     override val back = "Zurück"
     override val save = "Speichern"
@@ -1356,7 +1389,7 @@ object DeStrings : AppStrings {
     override val biometricsUnavailableNow = "Biometrie ist gerade nicht verfügbar"
     override val faceIdSetupTitle = "Passwort bestätigen"
     override val faceIdSetupSubtitle = "Einmal eingeben, danach meldet Face ID dich an."
-    override val loginForgotPassword = "Vergessen?"
+    override val loginForgotPassword = "Passwort vergessen?"
     override val loginUseFaceId = "Face-ID-Anmeldung aktivieren"
     override val loginSignInWithFaceId = "Mit Face ID anmelden"
     override val profileKeepSignedIn = "Angemeldet bleiben"
@@ -1447,6 +1480,20 @@ object DeStrings : AppStrings {
     override val rsvpLater = "Später"
     override val rsvpDone = "Zugesagt"
     override val rsvpAnnouncementCta = "An Veranstaltung teilnehmen"
+    private val rsvpMonths = listOf(
+        "Jan.", "Feb.", "März", "Apr.", "Mai", "Juni",
+        "Juli", "Aug.", "Sept.", "Okt.", "Nov.", "Dez.",
+    )
+    private val rsvpWeekdays = listOf("Mo.", "Di.", "Mi.", "Do.", "Fr.", "Sa.", "So.")
+    override fun rsvpDate(date: LocalDate, includeWeekday: Boolean): String {
+        val month = rsvpMonths[date.month.ordinal]
+        val value = "${date.day}. $month"
+        return if (includeWeekday) "${rsvpWeekdays[date.dayOfWeek.ordinal]}, $value" else value
+    }
+    override fun rsvpDeadline(date: String) = "Antwort bis $date"
+    override fun rsvpRespondedOn(date: String) = "Geantwortet am $date"
+    override fun rsvpReminderHint(date: String) = "Unentschieden · Eine weitere Erinnerung am $date"
+    override fun rsvpSheetDeadline(date: String) = "Bitte bis $date antworten · Wir benötigen die Teilnehmerzahl"
     override val settingsTitle = "Einstellungen"
     override val personalInfoTitle = "Persönliche Daten"
     override val labelBirthDate = "GEBURTSDATUM"

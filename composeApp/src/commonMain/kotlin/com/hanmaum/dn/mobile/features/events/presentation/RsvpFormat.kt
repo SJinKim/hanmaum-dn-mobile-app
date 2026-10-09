@@ -1,6 +1,6 @@
 package com.hanmaum.dn.mobile.features.events.presentation
 
-import kotlinx.datetime.DayOfWeek
+import com.hanmaum.dn.mobile.core.i18n.AppStrings
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
@@ -15,33 +15,17 @@ import kotlin.time.Instant
  */
 internal object RsvpFormat {
 
-    private val koreanDay = mapOf(
-        DayOfWeek.MONDAY to "월",
-        DayOfWeek.TUESDAY to "화",
-        DayOfWeek.WEDNESDAY to "수",
-        DayOfWeek.THURSDAY to "목",
-        DayOfWeek.FRIDAY to "금",
-        DayOfWeek.SATURDAY to "토",
-        DayOfWeek.SUNDAY to "일",
-    )
+    fun date(instant: Instant, strings: AppStrings, zone: TimeZone = TimeZone.currentSystemDefault()): String =
+        strings.rsvpDate(instant.toLocalDateTime(zone).date, includeWeekday = true)
 
-    /** "8월 30일 (토)" */
-    fun date(instant: Instant): String {
-        val local = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-        return "${local.month.ordinal + 1}월 ${local.day}일 (${koreanDay[local.dayOfWeek].orEmpty()})"
-    }
+    fun shortDate(instant: Instant, strings: AppStrings, zone: TimeZone = TimeZone.currentSystemDefault()): String =
+        strings.rsvpDate(instant.toLocalDateTime(zone).date, includeWeekday = false)
 
-    /** "8월 30일" — no weekday, for the tighter reminder line. */
-    fun shortDate(instant: Instant): String {
-        val local = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-        return "${local.month.ordinal + 1}월 ${local.day}일"
-    }
+    fun deadline(instant: Instant, strings: AppStrings, zone: TimeZone = TimeZone.currentSystemDefault()): String =
+        strings.rsvpDeadline(date(instant, strings, zone))
 
-    /** "응답 마감 8월 30일 (토)" */
-    fun deadline(instant: Instant): String = "응답 마감 ${date(instant)}"
-
-    /** "8월 24일 응답" */
-    fun respondedOn(instant: Instant): String = "${shortDate(instant)} 응답"
+    fun respondedOn(instant: Instant, strings: AppStrings, zone: TimeZone = TimeZone.currentSystemDefault()): String =
+        strings.rsvpRespondedOn(shortDate(instant, strings, zone))
 
     /**
      * "D-3", or "D-DAY" on the closing day.
@@ -57,7 +41,6 @@ internal object RsvpFormat {
         return if (days <= 0) "D-DAY" else "D-$days"
     }
 
-    /** "미정 · 8월 29일에 한 번 더 알림" */
-    fun reminderHint(nextReminderAt: Instant): String =
-        "미정 · ${shortDate(nextReminderAt)}에 한 번 더 알림"
+    fun reminderHint(nextReminderAt: Instant, strings: AppStrings, zone: TimeZone = TimeZone.currentSystemDefault()): String =
+        strings.rsvpReminderHint(shortDate(nextReminderAt, strings, zone))
 }

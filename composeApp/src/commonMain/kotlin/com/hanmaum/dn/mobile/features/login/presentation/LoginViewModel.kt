@@ -123,13 +123,13 @@ class LoginViewModel(
      * is already signed in and the refresh token is there to seal — this screen
      * carried an `enableFaceId` flag that nothing ever read (#212).
      */
-    fun onLoginClicked(browser: BrowserAuthentication, keepSignedIn: Boolean = true) {
+    fun onLoginClicked(browser: BrowserAuthentication, keepSignedIn: Boolean = true, uiLocale: String? = null) {
         if (_uiState.value.isLoading) return
         _uiState.update { it.copy(isLoading = true, browserOpen = true, error = null, biometricExpired = false) }
         viewModelScope.launch {
             val authorization = PkceAuthorization()
             try {
-                val callback = browser.authenticate(authorization.begin(), authorization.callbackScheme)
+                val callback = browser.authenticate(authorization.begin(uiLocale), authorization.callbackScheme)
                 if (callback == null) {
                     _uiState.update { it.copy(isLoading = false, browserOpen = false, statusMessage = "") }
                     return@launch
