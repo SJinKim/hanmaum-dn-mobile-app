@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTileShape
@@ -78,7 +79,7 @@ fun EventRsvpSheet(
             Text(event.title, style = DnTheme.typography.title, color = c.textPrimary)
             Spacer(Modifier.height(4.dp))
             Text(
-                "${RsvpFormat.date(event.windowEnd)}까지 응답해 주세요 · 인원 확정에 필요합니다",
+                LocalStrings.current.rsvpSheetDeadline(RsvpFormat.date(event.windowEnd, LocalStrings.current)),
                 style = DnTheme.typography.caption,
                 color = c.textSecondary,
             )
