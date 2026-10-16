@@ -53,6 +53,7 @@ fun AttendanceScreen(
     onBackClick: () -> Unit,
     onRsvpClick: () -> Unit,
     onHistoryClick: () -> Unit,
+    onNavigateToPending: () -> Unit,
     viewModel: AttendanceViewModel = koinViewModel(),
     rsvpViewModel: EventRsvpViewModel = koinViewModel(),
 ) {
@@ -62,6 +63,12 @@ fun AttendanceScreen(
     LifecycleResumeEffect(viewModel) {
         viewModel.onResume()
         onPauseOrDispose { }
+    }
+    LaunchedEffect(state.navigateToPending) {
+        if (state.navigateToPending) {
+            viewModel.onPendingNavigationHandled()
+            onNavigateToPending()
+        }
     }
     val c = DnTheme.colors
     val strings = com.hanmaum.dn.mobile.core.i18n.LocalStrings.current
@@ -129,7 +136,9 @@ fun AttendanceScreen(
                         )
                     }
 
-                    state.checkInError?.let {
+                    val checkInError =
+                        if (state.checkInNotAllowed) strings.attendanceCheckInNotAllowed else state.checkInError
+                    checkInError?.let {
                         Text(it, style = DnTheme.typography.caption, color = c.red)
                     }
                 }

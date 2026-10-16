@@ -391,6 +391,12 @@ fun App() {
                             onBackClick = { navController.popBackStack() },
                             onRsvpClick = { navController.navigate(RsvpRoute) },
                             onHistoryClick = { navController.navigate(AttendanceHistoryRoute) },
+                            // popUpTo(0): a PENDING member has no Home to go back to.
+                            onNavigateToPending = {
+                                navController.navigate(PendingRoute) {
+                                    popUpTo(0) { inclusive = true }
+                                }
+                            },
                         )
                     }
                     composable<AttendanceHistoryRoute> {

@@ -11,6 +11,10 @@ data class AttendanceUiState(
     val isCheckedIn: Boolean = false,
     val isCheckingIn: Boolean = false,
     val checkInError: String? = null,
+    /** The server refused the check-in with 403; the screen shows the localized hint. */
+    val checkInNotAllowed: Boolean = false,
+    /** One-shot: a refused check-in turned out to be a PENDING account. */
+    val navigateToPending: Boolean = false,
     val checkedInDate: String? = null,            // ISO date of the recorded check-in (server-confirmed)
 
     /** Counters for the three tiles; null while unloaded or after a failure. */

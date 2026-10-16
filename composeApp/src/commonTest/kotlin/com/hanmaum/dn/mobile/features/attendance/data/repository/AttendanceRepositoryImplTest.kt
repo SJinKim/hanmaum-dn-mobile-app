@@ -88,6 +88,15 @@ class AttendanceRepositoryImplTest {
     }
 
     @Test
+    fun checkInMapsForbiddenToNotAllowed() = runTest {
+        val result = AttendanceRepositoryImpl(
+            mockClient("{}", status = HttpStatusCode.Forbidden),
+        ).checkIn()
+
+        assertEquals(AttendanceCheckInResult.NotAllowed, result)
+    }
+
+    @Test
     fun checkInMapsNetworkOrServerFailureToFailed() = runTest {
         val result = AttendanceRepositoryImpl(
             mockClient("{}", status = HttpStatusCode.InternalServerError),
