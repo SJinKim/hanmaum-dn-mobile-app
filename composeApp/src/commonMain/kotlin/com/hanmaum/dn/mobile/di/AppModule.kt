@@ -154,7 +154,7 @@ val appModule = module {
 
     // Attendance
     single<AttendanceRepository> { AttendanceRepositoryImpl(get()) }
-    viewModel { AttendanceViewModel(get(), get(), get(), get()) }
+    viewModel { AttendanceViewModel(get(), get(), get(), get(), get()) }
     viewModel { AttendanceHistoryViewModel(get()) }
 
     // Event RSVP

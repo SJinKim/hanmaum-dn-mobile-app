@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.attendance
 
+import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.location.DeviceLocation
 import com.hanmaum.dn.mobile.core.location.LocationResult
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceCheckIn
@@ -9,6 +10,8 @@ import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceEntry
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceHistory
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceSummary
 import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceViewModel
+import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
+import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -28,6 +31,21 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
+private class FakeMemberRepository : MemberRepository {
+    var status: MemberStatus = MemberStatus.ACTIVE
+    var profileCalls = 0
+
+    override suspend fun getMyProfile(): Result<MemberResponse> {
+        profileCalls++
+        return Result.success(MemberResponse(publicId = "p1", firstName = "길동", lastName = "홍", status = status))
+    }
+
+    override suspend fun updateMyProfile(
+        phoneNumber: String?, profileImageUrl: String?, birthDate: String?,
+        street: String?, houseNumber: String?, zipCode: String?, city: String?,
+    ): Result<MemberResponse> = getMyProfile()
+}
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class AttendanceViewModelTest {
 
@@ -36,6 +54,7 @@ class AttendanceViewModelTest {
     private lateinit var fakePrefs: FakeAttendancePreferences
     private lateinit var fakeLocationProvider: FakeCurrentLocationProvider
     private lateinit var fakeLocationPrefs: FakeLocationPreferences
+    private lateinit var fakeMembers: FakeMemberRepository
 
     @BeforeTest
     fun setUp() {
@@ -44,6 +63,7 @@ class AttendanceViewModelTest {
         fakePrefs = FakeAttendancePreferences()
         fakeLocationProvider = FakeCurrentLocationProvider()
         fakeLocationPrefs = FakeLocationPreferences()
+        fakeMembers = FakeMemberRepository()
     }
 
     @AfterTest
@@ -72,7 +92,7 @@ class AttendanceViewModelTest {
     )
 
     private fun newViewModel() =
-        AttendanceViewModel(fakeRepo, fakePrefs, fakeLocationProvider, fakeLocationPrefs)
+        AttendanceViewModel(fakeRepo, fakePrefs, fakeLocationProvider, fakeLocationPrefs, fakeMembers)
 
     @Test
     fun initial_state_has_no_definition_and_is_not_checked_in() = runTest(testDispatcher) {
@@ -104,6 +124,41 @@ class AttendanceViewModelTest {
 
         assertTrue(viewModel.uiState.value.isCheckedIn)
         assertNull(viewModel.uiState.value.checkInError)
+    }
+
+    @Test
+    fun checkIn_forbidden_shows_not_allowed_hint_and_stays_for_active_member() = runTest(testDispatcher) {
+        fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
+        fakeRepo.checkInResult = AttendanceCheckInResult.NotAllowed
+        fakeMembers.status = MemberStatus.ACTIVE
+
+        val viewModel = newViewModel()
+        advanceUntilIdle()
+        viewModel.checkIn()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.isCheckedIn)
+        assertFalse(state.isCheckingIn)
+        assertTrue(state.checkInNotAllowed)
+        assertFalse(state.navigateToPending)
+        assertEquals(1, fakeMembers.profileCalls)
+    }
+
+    @Test
+    fun checkIn_forbidden_for_pending_member_navigates_to_pending() = runTest(testDispatcher) {
+        fakeRepo.definitionsResult = Result.success(listOf(todayDefinition()))
+        fakeRepo.checkInResult = AttendanceCheckInResult.NotAllowed
+        fakeMembers.status = MemberStatus.PENDING
+
+        val viewModel = newViewModel()
+        advanceUntilIdle()
+        viewModel.checkIn()
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.navigateToPending)
+        viewModel.onPendingNavigationHandled()
+        assertFalse(viewModel.uiState.value.navigateToPending)
     }
 
     @Test

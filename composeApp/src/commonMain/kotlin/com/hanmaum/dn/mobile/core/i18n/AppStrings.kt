@@ -56,6 +56,8 @@ interface AppStrings {
     val attendanceCount: String
     val attendanceNoneThisDay: String
     val attendanceLoadFailed: String
+    // Check-in refused with 403 (#278)
+    val attendanceCheckInNotAllowed: String
     val attendanceRetry: String
     val attendanceCheckedInAt: String
     // Register form — chrome, field labels and the password checklist
@@ -539,6 +541,7 @@ object EnStrings : AppStrings {
     override val attendanceCount = "{n}"
     override val attendanceNoneThisDay = "No attendance on this day"
     override val attendanceLoadFailed = "Could not load your attendance record"
+    override val attendanceCheckInNotAllowed = "Your account cannot check in right now. Please contact your group leader or an admin."
     override val attendanceRetry = "Retry"
     override val attendanceCheckedInAt = "Attended at {time}"
     // Register form — chrome, field labels and the password checklist
@@ -922,6 +925,7 @@ object KoStrings : AppStrings {
     override val attendanceCount = "{n}건"
     override val attendanceNoneThisDay = "이 날은 출석 기록이 없습니다"
     override val attendanceLoadFailed = "출석 기록을 불러오지 못했습니다"
+    override val attendanceCheckInNotAllowed = "출석 체크를 할 수 없는 계정 상태입니다. 담당 순장이나 관리자에게 문의하세요."
     override val attendanceRetry = "다시 시도"
     override val attendanceCheckedInAt = "{time} 출석"
     // Register form — chrome, field labels and the password checklist
@@ -1302,6 +1306,7 @@ object DeStrings : AppStrings {
     override val attendanceCount = "{n}"
     override val attendanceNoneThisDay = "An diesem Tag keine Anwesenheit"
     override val attendanceLoadFailed = "Anwesenheit konnte nicht geladen werden"
+    override val attendanceCheckInNotAllowed = "Mit diesem Kontostatus ist keine Anwesenheitsmeldung möglich. Bitte wenden Sie sich an Ihre Gruppenleitung oder einen Admin."
     override val attendanceRetry = "Erneut versuchen"
     override val attendanceCheckedInAt = "Anwesend um {time}"
     // Register form — chrome, field labels and the password checklist

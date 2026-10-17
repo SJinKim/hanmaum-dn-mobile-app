@@ -58,6 +58,8 @@ class AttendanceRepositoryImpl(
         when (error.response.status) {
             HttpStatusCode.Conflict -> AttendanceCheckInResult.AlreadyCheckedIn
             HttpStatusCode.BadRequest -> AttendanceCheckInResult.OutsideWindow
+            // TODO(hanmaum-dn-server#314): tell the causes apart by error code once the server sends one.
+            HttpStatusCode.Forbidden -> AttendanceCheckInResult.NotAllowed
             else -> AttendanceCheckInResult.Failed
         }
     } catch (_: Exception) {

@@ -3,6 +3,7 @@ package com.hanmaum.dn.mobile.features.attendance.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.domain.repository.AttendancePreferences
 import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
 import com.hanmaum.dn.mobile.core.location.CurrentLocationProvider
@@ -13,6 +14,7 @@ import com.hanmaum.dn.mobile.core.domain.repository.RecordedAttendanceCheckIn
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceDefinition
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceCheckInResult
 import com.hanmaum.dn.mobile.features.attendance.domain.repository.AttendanceRepository
+import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,6 +31,7 @@ class AttendanceViewModel(
     private val preferences: AttendancePreferences,
     private val locationProvider: CurrentLocationProvider,
     private val locationPreferences: LocationPreferences,
+    private val memberRepository: MemberRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AttendanceUiState())
@@ -111,7 +114,7 @@ class AttendanceViewModel(
 
     fun checkIn() {
         if (_uiState.value.isCheckedIn || _uiState.value.isCheckingIn) return
-        _uiState.update { it.copy(isCheckingIn = true, checkInError = null) }
+        _uiState.update { it.copy(isCheckingIn = true, checkInError = null, checkInNotAllowed = false) }
         viewModelScope.launch {
             when (val result = repository.checkIn(currentLocationOrNull())) {
                 is AttendanceCheckInResult.Success -> {
@@ -125,10 +128,31 @@ class AttendanceViewModel(
                 }
                 AttendanceCheckInResult.OutsideWindow ->
                     _uiState.update { it.copy(isCheckingIn = false, checkInError = "출석 시간이 아닙니다") }
+                AttendanceCheckInResult.NotAllowed -> {
+                    _uiState.update { it.copy(isCheckingIn = false, checkInNotAllowed = true) }
+                    redirectIfPending()
+                }
                 AttendanceCheckInResult.Failed ->
                     _uiState.update { it.copy(isCheckingIn = false, checkInError = "출석 처리에 실패했습니다") }
             }
         }
+    }
+
+    /**
+     * A 403 usually means the account is no longer ACTIVE. Re-read the status:
+     * a PENDING member belongs on the waiting screen, not on a slider that
+     * keeps refusing. Any other outcome leaves the hint on screen.
+     */
+    private suspend fun redirectIfPending() {
+        memberRepository.getMyProfile().onSuccess { member ->
+            if (member.status == MemberStatus.PENDING) {
+                _uiState.update { it.copy(navigateToPending = true) }
+            }
+        }
+    }
+
+    fun onPendingNavigationHandled() {
+        _uiState.update { it.copy(navigateToPending = false) }
     }
 
     /**
