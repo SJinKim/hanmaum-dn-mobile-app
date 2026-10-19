@@ -41,4 +41,36 @@ class CountryTest {
         assertNull(PhoneNumber.toE164("49", "   "))
         assertNull(PhoneNumber.toE164("49", ""))
     }
+
+    @Test
+    fun toE164DropsTheTrunkZeroOfANationalNumber() {
+        assertEquals("+491512345678", PhoneNumber.toE164("49", "0151 2345678"))
+        assertEquals("+821012345678", PhoneNumber.toE164("82", "010 1234 5678"))
+        assertEquals("+821012345678", PhoneNumber.toE164("82", "10 1234 5678"))
+    }
+
+    @Test
+    fun toE164KeepsTheLeadingZeroWhereItIsPartOfTheNumber() {
+        // Italy and San Marino dial the 0 after the country code.
+        assertEquals("+39061234", PhoneNumber.toE164("39", "06 1234"))
+        assertEquals("+3780549123", PhoneNumber.toE164("378", "0549 123"))
+    }
+
+    @Test
+    fun germanyAndKoreaArePinnedFirstAndSecond() {
+        assertEquals(listOf("DE", "KR"), Countries.pinned.map { it.iso })
+        val rest = Countries.unpinnedSortedBy { it.name }
+        assertTrue(rest.none { it.iso in Countries.PINNED_ISOS })
+        assertEquals(Countries.all.size, rest.size + Countries.pinned.size)
+        assertEquals(rest.map { it.name.lowercase() }.sorted(), rest.map { it.name.lowercase() })
+    }
+
+    @Test
+    fun aSearchFiltersThePinnedCountriesToo() {
+        val korean = mapOf("DE" to "독일", "KR" to "대한민국")
+        val nameOf: (Country) -> String = { korean[it.iso] ?: it.name }
+        assertEquals(listOf("KR"), Countries.pinned.filter { Countries.matches(it, "대한", nameOf) }.map { it.iso })
+        assertTrue(Countries.pinned.none { Countries.matches(it, "france", nameOf) })
+        assertTrue(Countries.matches(Countries.byIsoOrDefault("DE"), "germany", nameOf))
+    }
 }

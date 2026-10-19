@@ -298,7 +298,7 @@ fun RowScope.DnSpacer() = Box(Modifier.weight(1f))
 /** Labelled text field used across the auth and profile forms. */
 @Composable
 fun DnTextField(
-    label: String,
+    label: String?,
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -316,20 +316,26 @@ fun DnTextField(
         androidx.compose.foundation.text.KeyboardActions.Default,
     /** Sits right of the label, e.g. a 필수 badge on a form whose fields come from the server. */
     labelTrailing: (@Composable () -> Unit)? = null,
+    /** Sits inside the field before the text, e.g. a tappable dial-code prefix. Wins over [leading]. */
+    leadingContent: (@Composable () -> Unit)? = null,
 ) {
     val c = DnTheme.colors
     // A password field owns its own reveal state: every caller wants the same
     // behaviour, and leaving it to them produced an eye icon that did nothing.
     var revealed by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     androidx.compose.foundation.layout.Column(modifier) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            Text(label, style = DnTheme.typography.label, color = c.textTertiary)
-            labelTrailing?.invoke()
+        // A null label is for a field whose purpose its container already
+        // states, e.g. the search box of a picker dialog.
+        if (label != null) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Text(label, style = DnTheme.typography.label, color = c.textTertiary)
+                labelTrailing?.invoke()
+            }
+            androidx.compose.foundation.layout.Spacer(Modifier.size(7.dp))
         }
-        androidx.compose.foundation.layout.Spacer(Modifier.size(7.dp))
         Row(
             Modifier
                 .fillMaxWidth()
@@ -347,7 +353,11 @@ fun DnTextField(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            leading?.let { Icon(it, null, tint = c.textTertiary, modifier = Modifier.size(18.dp)) }
+            if (leadingContent != null) {
+                leadingContent()
+            } else {
+                leading?.let { Icon(it, null, tint = c.textTertiary, modifier = Modifier.size(18.dp)) }
+            }
             Box(Modifier.weight(1f)) {
                 // Driven by a TextFieldValue rather than a raw String so that a
                 // caller which reformats what it is handed — the birth date

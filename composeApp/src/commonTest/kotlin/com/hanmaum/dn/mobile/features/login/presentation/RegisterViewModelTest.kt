@@ -209,6 +209,29 @@ class RegisterViewModelTest {
     }
 
     @Test
+    fun aKoreanNumberReachesTheBackendWithItsOwnDialCode() = runTest {
+        fillMinimumValidForm()
+        vm.onPhoneCountryChange("KR")
+        vm.onPhoneChange("010 1234 5678")
+
+        vm.register()
+        advanceUntilIdle()
+
+        assertEquals("+821012345678", auth.lastRequest?.phoneNumber)
+    }
+
+    @Test
+    fun theDeviceRegionDoesNotOverrideTheMembersOwnPick() = runTest {
+        vm.setDefaultPhoneCountry("AT")
+        assertEquals("AT", vm.uiState.value.phoneCountryIso)
+
+        vm.onPhoneCountryChange("KR")
+        vm.setDefaultPhoneCountry("AT")
+
+        assertEquals("KR", vm.uiState.value.phoneCountryIso)
+    }
+
+    @Test
     fun editingAFieldClearsItsErrorAndTheBanner() = runTest {
         vm.register()
         advanceUntilIdle()

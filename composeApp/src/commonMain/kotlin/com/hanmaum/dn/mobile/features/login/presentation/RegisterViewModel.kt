@@ -102,11 +102,24 @@ class RegisterViewModel(
     fun onGenderChange(v: String) = _uiState.update { it.copy(gender = v) }
     fun onBirthDateChange(v: String) = _uiState.update { it.copy(birthDate = v, birthDateError = null) }
     fun onPhoneChange(v: String) = _uiState.update { it.copy(phoneNumber = PhoneNumber.sanitizeNational(v)) }
-    fun onPhoneCountryChange(iso: String) = _uiState.update { it.copy(phoneCountryIso = iso) }
-    /** Sets the dial-code country from the device locale on first composition. */
-    fun setDefaultPhoneCountry(iso: String) = _uiState.update {
-        it.copy(phoneCountryIso = Countries.byIsoOrDefault(iso).iso)
+    fun onPhoneCountryChange(iso: String) {
+        phoneCountryDefaulted = true
+        _uiState.update { it.copy(phoneCountryIso = iso) }
     }
+
+    /**
+     * Sets the dial-code country from the device region, once. The screen calls
+     * this on every fresh composition — a rotation included — and the
+     * ViewModel outlives that, so without the guard a rotation would quietly
+     * undo the member's own pick.
+     */
+    fun setDefaultPhoneCountry(iso: String?) {
+        if (phoneCountryDefaulted) return
+        phoneCountryDefaulted = true
+        _uiState.update { it.copy(phoneCountryIso = Countries.byIsoOrDefault(iso.orEmpty()).iso) }
+    }
+    private var phoneCountryDefaulted = false
+
     fun onStreetChange(v: String) = _uiState.update { it.copy(street = v, streetError = null, bannerError = null) }
     fun onHouseNumberChange(v: String) = _uiState.update { it.copy(houseNumber = v, houseNumberError = null, bannerError = null) }
 

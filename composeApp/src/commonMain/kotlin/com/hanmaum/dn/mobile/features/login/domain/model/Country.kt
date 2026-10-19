@@ -241,23 +241,51 @@ object Countries {
     fun byIsoOrDefault(iso: String?): Country =
         byIso[iso?.uppercase()] ?: byIso.getValue(DEFAULT_ISO)
 
-    /** Case-insensitive search over name and dial code (with or without '+'). */
-    fun search(query: String): List<Country> {
+    /** Always listed first, in this order — the dial codes members use most. */
+    val PINNED_ISOS: List<String> = listOf("DE", "KR")
+
+    val pinned: List<Country> = PINNED_ISOS.map { byIso.getValue(it) }
+
+    /** Every unpinned country, sorted by the name the user sees ([nameOf]). */
+    fun unpinnedSortedBy(nameOf: (Country) -> String): List<Country> =
+        all.filter { it.iso !in PINNED_ISOS }
+            .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { nameOf(it) })
+
+    /**
+     * Case-insensitive match on the displayed name, the English name and the
+     * dial code (with or without '+'). A blank query matches everything.
+     */
+    fun matches(country: Country, query: String, nameOf: (Country) -> String = { it.name }): Boolean {
         val q = query.trim().lowercase().removePrefix("+")
-        if (q.isEmpty()) return all
-        return all.filter {
-            it.name.lowercase().contains(q) || it.dialCode.contains(q)
-        }
+        if (q.isEmpty()) return true
+        return nameOf(country).lowercase().contains(q) ||
+            country.name.lowercase().contains(q) ||
+            country.dialCode.contains(q)
     }
+
+    /** Case-insensitive search over name and dial code (with or without '+'). */
+    fun search(query: String): List<Country> = all.filter { matches(it, query) }
 }
 
 /** Pure helpers for assembling/sanitizing phone input — no platform deps. */
 object PhoneNumber {
     fun sanitizeNational(input: String): String = input.filter { it.isDigit() }
 
-    /** Combines a dial code + national digits into E.164, or null when empty. */
+    /**
+     * Dial codes whose numbers keep their leading 0 after the country code.
+     * Italy (and San Marino) never had a trunk prefix: +39 06 is Rome.
+     */
+    private val KEEPS_LEADING_ZERO = setOf("39", "378")
+
+    /**
+     * Combines a dial code + national digits into E.164, or null when empty.
+     * The national trunk 0 is dropped, so "0151 2345678" with +49 becomes
+     * +491512345678 rather than the undialable +4901512345678.
+     */
     fun toE164(dialCode: String, national: String): String? {
-        val digits = sanitizeNational(national)
+        val digits = sanitizeNational(national).let {
+            if (dialCode in KEEPS_LEADING_ZERO) it else it.removePrefix("0")
+        }
         return if (digits.isEmpty()) null else "+$dialCode$digits"
     }
 }
