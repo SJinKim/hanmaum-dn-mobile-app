@@ -22,7 +22,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +35,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.presentation.dismissKeyboardOnTap
@@ -46,8 +50,11 @@ import com.hanmaum.dn.mobile.core.presentation.components.DnTopBar
 import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
 import com.hanmaum.dn.mobile.core.presentation.theme.typography
+import com.hanmaum.dn.mobile.features.login.domain.model.Countries
 import com.hanmaum.dn.mobile.features.login.presentation.components.BirthdayPickerField
 import com.hanmaum.dn.mobile.features.login.presentation.components.PasswordCriteriaList
+import com.hanmaum.dn.mobile.features.login.presentation.components.PhoneCountryPickerDialog
+import com.hanmaum.dn.mobile.features.login.presentation.components.PhoneCountryPrefix
 import com.hanmaum.dn.mobile.features.login.presentation.components.RegisterUnavailableDialog
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -107,6 +114,21 @@ fun RegisterScreen(
 
     if (state.showUnavailableDialog) {
         RegisterUnavailableDialog(onDismiss = viewModel::onUnavailableDialogDismissed)
+    }
+
+    // The device region pre-selects the dial code; #106 dropped this call
+    // along with the selector, and every number went out as +49 (#280).
+    LaunchedEffect(Unit) { viewModel.setDefaultPhoneCountry(Locale.current.region) }
+    var showCountryPicker by rememberSaveable { mutableStateOf(false) }
+    if (showCountryPicker) {
+        PhoneCountryPickerDialog(
+            selectedIso = state.phoneCountryIso,
+            onSelect = {
+                viewModel.onPhoneCountryChange(it)
+                showCountryPicker = false
+            },
+            onDismiss = { showCountryPicker = false },
+        )
     }
 
     DnBackground(glows = DnGlows.action()) {
@@ -180,6 +202,11 @@ fun RegisterScreen(
                     strings.fieldPhone, state.phoneNumber, viewModel::onPhoneChange,
                     Modifier.fillMaxWidth(), placeholder = "151 23456789",
                     keyboardType = KeyboardType.Phone,
+                    leadingContent = {
+                        PhoneCountryPrefix(Countries.byIsoOrDefault(state.phoneCountryIso)) {
+                            showCountryPicker = true
+                        }
+                    },
                 )
 
                 Spacer(Modifier.height(16.dp))

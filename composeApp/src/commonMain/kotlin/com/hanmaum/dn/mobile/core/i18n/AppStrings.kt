@@ -78,6 +78,12 @@ interface AppStrings {
     val fieldFirstName: String
     val fieldEmail: String
     val fieldPhone: String
+    val phoneCountryPickerTitle: String
+    fun phoneCountryPickerPreselected(country: String): String
+    val phoneCountrySearchPlaceholder: String
+    val phoneCountryFrequent: String
+    val phoneCountryAll: String
+    val phoneCountryTapToApply: String
     val fieldPassword: String
     val fieldBirthDate: String
     val fieldStreet: String
@@ -561,6 +567,12 @@ object EnStrings : AppStrings {
     override val fieldFirstName = "First name"
     override val fieldEmail = "Email"
     override val fieldPhone = "Phone"
+    override val phoneCountryPickerTitle = "Country code"
+    override fun phoneCountryPickerPreselected(country: String) = "Preselected from your device region · $country"
+    override val phoneCountrySearchPlaceholder = "Search country or code"
+    override val phoneCountryFrequent = "FREQUENTLY USED"
+    override val phoneCountryAll = "ALL COUNTRIES · A–Z"
+    override val phoneCountryTapToApply = "Tap to apply"
     override val fieldPassword = "Password"
     override val fieldBirthDate = "Date of birth"
     override val fieldStreet = "Street"
@@ -945,6 +957,12 @@ object KoStrings : AppStrings {
     override val fieldFirstName = "이름"
     override val fieldEmail = "이메일"
     override val fieldPhone = "전화번호"
+    override val phoneCountryPickerTitle = "국가번호 선택"
+    override fun phoneCountryPickerPreselected(country: String) = "기기 지역에서 미리 선택됩니다 · $country"
+    override val phoneCountrySearchPlaceholder = "국가명 또는 번호 검색"
+    override val phoneCountryFrequent = "자주 사용"
+    override val phoneCountryAll = "전체 국가 · 가나다순"
+    override val phoneCountryTapToApply = "탭하면 바로 적용됩니다"
     override val fieldPassword = "비밀번호"
     override val fieldBirthDate = "생년월일"
     override val fieldStreet = "도로명"
@@ -1326,6 +1344,12 @@ object DeStrings : AppStrings {
     override val fieldFirstName = "Vorname"
     override val fieldEmail = "E-Mail"
     override val fieldPhone = "Telefon"
+    override val phoneCountryPickerTitle = "Ländervorwahl"
+    override fun phoneCountryPickerPreselected(country: String) = "Aus der Geräteregion vorausgewählt · $country"
+    override val phoneCountrySearchPlaceholder = "Land oder Vorwahl suchen"
+    override val phoneCountryFrequent = "HÄUFIG GENUTZT"
+    override val phoneCountryAll = "ALLE LÄNDER · A–Z"
+    override val phoneCountryTapToApply = "Tippen übernimmt sofort"
     override val fieldPassword = "Passwort"
     override val fieldBirthDate = "Geburtsdatum"
     override val fieldStreet = "Straße"
