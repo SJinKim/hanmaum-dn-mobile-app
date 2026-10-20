@@ -53,6 +53,8 @@ private val REGISTER_REQUEST = RegisterRequest(
     email = "hello@hanmaum.de",
     city = "Düsseldorf",
     password = "Passwort1!",
+    birthDate = "2000-08-16",
+    identityStatus = "UNIVERSITY_STUDENT",
 )
 
 private fun registerClient(status: HttpStatusCode, body: String) = HttpClient(

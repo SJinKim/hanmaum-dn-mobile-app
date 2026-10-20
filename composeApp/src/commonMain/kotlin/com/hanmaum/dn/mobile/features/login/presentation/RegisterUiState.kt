@@ -1,6 +1,7 @@
 package com.hanmaum.dn.mobile.features.login.presentation
 
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
+import com.hanmaum.dn.mobile.features.login.domain.model.IdentityStatus
 import com.hanmaum.dn.mobile.features.login.domain.model.PasswordCriteria
 
 /** Language-independent validation error per field; resolved to text in the UI. */
@@ -23,6 +24,8 @@ enum class RegisterField {
     CITY,
     ZIP_CODE,
     PASSWORD,
+    BIRTH_DATE,
+    IDENTITY_STATUS,
     STREET,
     HOUSE_NUMBER,
 }
@@ -72,6 +75,8 @@ data class RegisterUiState(
     val cityAutofilled: Boolean = false,      // city was set by lookup, not typed — safe to overwrite
     val gender: String = "",
     val birthDate: String = "",
+    val identityStatus: IdentityStatus? = null,
+    val workOrSchool: String = "", // 소속 — optional free text
     val phoneNumber: String = "",      // national digits only; combined with dial code on submit
     val phoneCountryIso: String = "DE", // selected country for the dial-code prefix
     val street: String = "",       // street name only — combined with houseNumber on submit
@@ -86,6 +91,7 @@ data class RegisterUiState(
     val zipCodeError: RegisterFieldError? = null,
     val passwordError: RegisterFieldError? = null,
     val birthDateError: RegisterFieldError? = null,
+    val identityStatusError: RegisterFieldError? = null,
     val streetError: RegisterFieldError? = null,
     val houseNumberError: RegisterFieldError? = null,
 

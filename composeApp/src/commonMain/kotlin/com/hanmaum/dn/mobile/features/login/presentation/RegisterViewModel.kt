@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.navigation.LoginRoute
 import com.hanmaum.dn.mobile.features.login.domain.model.BirthDateInput
+import com.hanmaum.dn.mobile.features.login.domain.model.IdentityStatus
 import com.hanmaum.dn.mobile.features.login.domain.model.Countries
 import com.hanmaum.dn.mobile.features.login.domain.model.PasswordPolicy
 import com.hanmaum.dn.mobile.features.login.domain.model.PhoneNumber
@@ -100,7 +101,14 @@ class RegisterViewModel(
     // Optionale
     fun onBaptismChange(v: String) = _uiState.update { it.copy(baptism = v) }
     fun onGenderChange(v: String) = _uiState.update { it.copy(gender = v) }
-    fun onBirthDateChange(v: String) = _uiState.update { it.copy(birthDate = v, birthDateError = null) }
+    fun onBirthDateChange(v: String) =
+        _uiState.update { it.copy(birthDate = v, birthDateError = null, bannerError = null) }
+
+    fun onIdentityStatusChange(v: IdentityStatus) =
+        _uiState.update { it.copy(identityStatus = v, identityStatusError = null, bannerError = null) }
+
+    // The server caps 소속 at 100 characters; cap the input so it never comes back as a 400.
+    fun onWorkOrSchoolChange(v: String) = _uiState.update { it.copy(workOrSchool = v.take(WORK_OR_SCHOOL_MAX)) }
     fun onPhoneChange(v: String) = _uiState.update { it.copy(phoneNumber = PhoneNumber.sanitizeNational(v)) }
     fun onPhoneCountryChange(iso: String) {
         phoneCountryDefaulted = true
@@ -168,22 +176,24 @@ class RegisterViewModel(
             else -> null
         }
         val birthDateError = validateBirthDate(s.birthDate)
+        val identityStatusError = RegisterFieldError.REQUIRED.takeIf { s.identityStatus == null }
 
         // First invalid field in visual order (last name renders above first name).
         val focusTarget = when {
             lastNameError != null -> RegisterField.LAST_NAME
             firstNameError != null -> RegisterField.FIRST_NAME
             emailError != null -> RegisterField.EMAIL
-            cityError != null -> RegisterField.CITY
-            zipCodeError != null -> RegisterField.ZIP_CODE
             passwordError != null -> RegisterField.PASSWORD
+            birthDateError != null -> RegisterField.BIRTH_DATE
+            identityStatusError != null -> RegisterField.IDENTITY_STATUS
             streetError != null -> RegisterField.STREET
             houseNumberError != null -> RegisterField.HOUSE_NUMBER
+            zipCodeError != null -> RegisterField.ZIP_CODE
+            cityError != null -> RegisterField.CITY
             else -> null
         }
 
-        val hasError = focusTarget != null || birthDateError != null
-        if (hasError) {
+        if (focusTarget != null) {
             _uiState.update {
                 it.copy(
                     firstNameError = firstNameError,
@@ -193,6 +203,7 @@ class RegisterViewModel(
                     zipCodeError = zipCodeError,
                     passwordError = passwordError,
                     birthDateError = birthDateError,
+                    identityStatusError = identityStatusError,
                     streetError = streetError,
                     houseNumberError = houseNumberError,
                     focusTarget = focusTarget,
@@ -214,14 +225,17 @@ class RegisterViewModel(
                 city = s.city,
                 baptism = s.baptism.ifBlank { null },
                 gender = s.gender.ifBlank { null },
-                birthDate = s.birthDate.replace('.', '-').takeIf { it.length == 10 },
+                // Both are validated above, so the non-null forms are safe here.
+                birthDate = s.birthDate.replace('.', '-'),
+                identityStatus = checkNotNull(s.identityStatus).name,
                 phoneNumber = PhoneNumber.toE164(
                     dialCode = Countries.byIsoOrDefault(s.phoneCountryIso).dialCode,
                     national = s.phoneNumber,
                 ),
                 street = s.street.ifBlank { null },
                 houseNumber = s.houseNumber.ifBlank { null },
-                zipCode = s.zipCode.ifBlank { null }
+                zipCode = s.zipCode.ifBlank { null },
+                workOrSchool = s.workOrSchool.trim().ifBlank { null },
             )
 
             // 1. REGISTRIERUNG AUFRUFEN
@@ -254,9 +268,9 @@ class RegisterViewModel(
         }
     }
 
-    // Returns a field error, or null if the (optional) date is valid/empty.
+    // Returns a field error, or null if the date is valid. Required since #282.
     private fun validateBirthDate(date: String): RegisterFieldError? {
-        if (date.isBlank()) return null
+        if (date.isBlank()) return RegisterFieldError.REQUIRED
         if (date.length < 10) return RegisterFieldError.DATE_INCOMPLETE
         return try {
             val parts = date.split(".")
@@ -281,3 +295,5 @@ class RegisterViewModel(
     }
 
 }
+
+private const val WORK_OR_SCHOOL_MAX = 100

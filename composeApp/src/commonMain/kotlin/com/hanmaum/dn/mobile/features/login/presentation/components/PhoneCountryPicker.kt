@@ -175,7 +175,7 @@ private fun CountryRow(country: Country, name: String, selected: Boolean, onClic
     }
 }
 
-private fun Modifier.pressClick(onClick: () -> Unit): Modifier = composed {
+internal fun Modifier.pressClick(onClick: () -> Unit): Modifier = composed {
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) AppMotion.PRESS_SCALE else 1f, AppMotion.press)
