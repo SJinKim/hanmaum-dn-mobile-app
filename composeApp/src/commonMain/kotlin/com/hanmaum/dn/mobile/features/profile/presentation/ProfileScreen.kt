@@ -194,9 +194,9 @@ private fun ProfileViewContent(
             color = c.textPrimary,
         )
 
-        // The chip carries 교구 · 순 · 직분, which is why the 순 has no tile of
+        // The chip carries 교구 · 순, which is why the 순 has no tile of
         // its own — repeating it below the name would say the same twice.
-        val role = listOfNotNull(profile.division, profile.groupName, profile.churchRole)
+        val role = listOfNotNull(profile.division, profile.groupName)
             .filter { it.isNotBlank() }
             .joinToString(" · ")
         if (role.isNotBlank()) {
@@ -443,7 +443,6 @@ private fun ProfileEditContent(
                 ),
                 strings.labelDivision to (p.division ?: "—"),
                 strings.labelGroup to (p.groupName ?: "—"),
-                strings.labelChurchRole to (p.churchRole ?: "—"),
             )
         )
 

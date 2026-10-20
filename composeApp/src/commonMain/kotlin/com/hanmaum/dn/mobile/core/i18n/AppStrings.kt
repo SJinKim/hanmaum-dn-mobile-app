@@ -306,7 +306,6 @@ interface AppStrings {
     val labelDivision: String
     val labelGroup: String
     val labelName: String
-    val labelChurchRole: String
     val lockedFieldHint: String
     val profileSaved: String
     // Date picker (BirthdayField)
@@ -775,7 +774,6 @@ object EnStrings : AppStrings {
     override val labelDivision = "DIVISION"
     override val labelGroup = "GROUP"
     override val labelName = "NAME"
-    override val labelChurchRole = "CHURCH ROLE"
     override val lockedFieldHint = "Managed by the church office"
     override val profileSaved = "Saved"
     override val selectDate = "Select date"
@@ -1179,7 +1177,6 @@ object KoStrings : AppStrings {
     override val labelDivision = "교구"
     override val labelGroup = "순"
     override val labelName = "이름"
-    override val labelChurchRole = "직분"
     override val lockedFieldHint = "교회에서 관리하는 정보입니다"
     override val profileSaved = "저장되었습니다"
     override val selectDate = "날짜 선택"
@@ -1585,7 +1582,6 @@ object DeStrings : AppStrings {
     override val labelDivision = "BEZIRK"
     override val labelGroup = "GRUPPE"
     override val labelName = "NAME"
-    override val labelChurchRole = "KIRCHENROLLE"
     override val lockedFieldHint = "Wird vom Gemeindebüro verwaltet"
     override val profileSaved = "Gespeichert"
     override val selectDate = "Datum wählen"
