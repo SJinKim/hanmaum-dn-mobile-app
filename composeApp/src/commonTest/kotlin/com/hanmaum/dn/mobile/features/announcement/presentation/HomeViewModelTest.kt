@@ -77,6 +77,8 @@ private class FakeMemberRepository : MemberRepository {
         houseNumber: String?,
         zipCode: String?,
         city: String?,
+        identityStatus: String?,
+        workOrSchool: String?,
     ): Result<MemberResponse> = Result.failure(UnsupportedOperationException("not needed for these tests"))
 }
 

@@ -34,7 +34,7 @@ import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTileShape
 import com.hanmaum.dn.mobile.core.presentation.theme.typography
 
-private const val DEV_TEAM_EMAIL = "hanmaum.dev@gmail.com"
+internal const val DEV_TEAM_EMAIL = "hanmaum.dev@gmail.com"
 
 /**
  * 가입 신청 불가 (#156): the backend failed on its side, so the form cannot be

@@ -14,9 +14,29 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
+import com.hanmaum.dn.mobile.core.presentation.components.DnTextField
+import com.hanmaum.dn.mobile.features.login.domain.model.Countries
+import com.hanmaum.dn.mobile.features.login.presentation.FieldError
+import com.hanmaum.dn.mobile.features.login.presentation.messageFor
+import com.hanmaum.dn.mobile.features.login.presentation.required
+import com.hanmaum.dn.mobile.features.login.presentation.components.BirthdayPickerField
+import com.hanmaum.dn.mobile.features.login.presentation.components.DEV_TEAM_EMAIL
+import com.hanmaum.dn.mobile.features.login.presentation.components.IdentityStatusField
+import com.hanmaum.dn.mobile.features.login.presentation.components.IdentityStatusPickerDialog
+import com.hanmaum.dn.mobile.features.login.presentation.components.PhoneCountryPickerDialog
+import com.hanmaum.dn.mobile.features.login.presentation.components.PhoneCountryPrefix
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,7 +53,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.hanmaum.dn.mobile.core.i18n.AppLocale
@@ -348,11 +367,34 @@ private fun ProfileEditContent(
     val strings = LocalStrings.current
     val p = state.profile
 
+    var showCountryPicker by rememberSaveable { mutableStateOf(false) }
+    if (showCountryPicker) {
+        PhoneCountryPickerDialog(
+            selectedIso = state.editPhoneCountryIso,
+            onSelect = {
+                viewModel.updatePhoneCountry(it)
+                showCountryPicker = false
+            },
+            onDismiss = { showCountryPicker = false },
+        )
+    }
+    var showIdentityPicker by rememberSaveable { mutableStateOf(false) }
+    if (showIdentityPicker) {
+        IdentityStatusPickerDialog(
+            selected = state.editIdentityStatus,
+            onSelect = {
+                viewModel.updateIdentityStatus(it)
+                showIdentityPicker = false
+            },
+            onDismiss = { showIdentityPicker = false },
+        )
+    }
+
     Column(
         Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            // Four address fields and a phone number, none of them with a Done
+            // Address fields and a phone number, none of them with a Done
             // key on iOS — tapping off a field is the way out (#218).
             .dismissKeyboardOnTap()
             .padding(horizontal = 20.dp),
@@ -408,15 +450,88 @@ private fun ProfileEditContent(
         Spacer(Modifier.height(24.dp))
 
         Text("직접 수정할 수 있는 정보", style = DnTheme.typography.label, color = c.textTertiary)
+        Spacer(Modifier.height(6.dp))
+        Text(strings.registerRequiredLegend, style = DnTheme.typography.caption, color = c.textSecondary)
         Spacer(Modifier.height(16.dp))
 
-        EditField("전화번호", state.editPhone, viewModel::updatePhone)
+        // Same fields, order and rules as registration (#283, #286): what was
+        // required to sign up stays required here.
+        DnTextField(
+            strings.fieldPhone, state.editPhone, viewModel::updatePhone,
+            Modifier.fillMaxWidth(), placeholder = "151 23456789",
+            keyboardType = KeyboardType.Phone,
+            leadingContent = {
+                PhoneCountryPrefix(Countries.byIsoOrDefault(state.editPhoneCountryIso)) {
+                    showCountryPicker = true
+                }
+            },
+        )
+
         Spacer(Modifier.height(16.dp))
-        EditField("도로명", state.editStreet, viewModel::updateStreet)
+        BirthdayPickerField(
+            required(strings.fieldBirthDate), state.editBirthDate, viewModel::updateBirthDate,
+            Modifier.fillMaxWidth(), placeholder = "2000.01.01",
+            isError = state.birthDateError != null,
+        )
+        FieldError(strings.messageFor(state.birthDateError))
+
         Spacer(Modifier.height(16.dp))
-        EditField("우편번호", state.editZipCode, viewModel::updateZipCode)
+        IdentityStatusField(
+            required(strings.fieldIdentityStatus), state.editIdentityStatus,
+            onClick = { showIdentityPicker = true },
+            modifier = Modifier.fillMaxWidth(),
+            isError = state.identityStatusError != null,
+        )
+        FieldError(strings.messageFor(state.identityStatusError))
+
         Spacer(Modifier.height(16.dp))
-        EditField("도시", state.editCity, viewModel::updateCity)
+        DnTextField(
+            strings.fieldWorkOrSchool, state.editWorkOrSchool, viewModel::updateWorkOrSchool,
+            Modifier.fillMaxWidth(), placeholder = strings.workOrSchoolPlaceholder,
+        )
+
+        // ── address: both halves of the street or neither ──
+        Spacer(Modifier.height(16.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.weight(1f)) {
+                DnTextField(
+                    strings.fieldStreet, state.editStreet, viewModel::updateStreet,
+                    Modifier.fillMaxWidth(), placeholder = "Musterstraße",
+                    isError = state.streetError != null,
+                )
+                FieldError(strings.messageFor(state.streetError))
+            }
+            Column(Modifier.width(104.dp)) {
+                DnTextField(
+                    strings.fieldHouseNumber, state.editHouseNumber, viewModel::updateHouseNumber,
+                    Modifier.fillMaxWidth(), placeholder = "12a",
+                    isError = state.houseNumberError != null,
+                )
+                FieldError(strings.messageFor(state.houseNumberError))
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.width(124.dp)) {
+                DnTextField(
+                    required(strings.fieldZipCode), state.editZipCode, viewModel::updateZipCode,
+                    Modifier.fillMaxWidth(), placeholder = "40210",
+                    keyboardType = KeyboardType.Number,
+                    isError = state.zipCodeError != null,
+                )
+                FieldError(strings.messageFor(state.zipCodeError))
+            }
+            Column(Modifier.weight(1f)) {
+                // filled from the postcode, as on registration
+                DnTextField(
+                    required(strings.fieldCity), state.editCity, viewModel::updateCity,
+                    Modifier.fillMaxWidth(), placeholder = "Düsseldorf",
+                    isError = state.cityError != null,
+                )
+                FieldError(strings.messageFor(state.cityError))
+            }
+        }
 
         state.saveError?.let {
             Spacer(Modifier.height(12.dp))
@@ -485,37 +600,26 @@ private fun LockedGroup(rows: List<Pair<String, String>>) {
             }
         }
         Spacer(Modifier.height(10.dp))
+        // The church office has no inbox the app can point to; the dev team
+        // does. A device without a mail app swallows the tap instead of
+        // crashing, as on the register dialog (#286).
+        val uriHandler = LocalUriHandler.current
         Text(
-            "변경이 필요하면 교회 사무실에 문의해 주세요.",
+            buildAnnotatedString {
+                append("변경이 필요하면\n")
+                withLink(
+                    LinkAnnotation.Clickable(
+                        tag = "mailto",
+                        styles = TextLinkStyles(
+                            SpanStyle(color = c.limeInk, textDecoration = TextDecoration.Underline),
+                        ),
+                    ) { runCatching { uriHandler.openUri("mailto:$DEV_TEAM_EMAIL") } },
+                ) { append(DEV_TEAM_EMAIL) }
+                append("로 문의해 주세요.")
+            },
             style = DnTheme.typography.caption,
             color = c.textTertiary,
         )
-    }
-}
-
-@Composable
-private fun EditField(label: String, value: String, onChange: (String) -> Unit) {
-    val c = DnTheme.colors
-    Column {
-        Text(label, style = DnTheme.typography.label, color = c.textTertiary)
-        Spacer(Modifier.height(7.dp))
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .clip(DnInnerShape)
-                .background(c.surface, DnInnerShape)
-                .border(1.dp, c.strokeStrong, DnInnerShape)
-                .padding(horizontal = 16.dp, vertical = 15.dp),
-        ) {
-            BasicTextField(
-                value = value,
-                onValueChange = onChange,
-                singleLine = true,
-                textStyle = DnTheme.typography.captionStrong.copy(color = c.textPrimary),
-                cursorBrush = SolidColor(c.lime),
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
     }
 }
 

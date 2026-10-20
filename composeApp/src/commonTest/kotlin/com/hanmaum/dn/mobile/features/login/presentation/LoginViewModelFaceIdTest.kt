@@ -68,6 +68,7 @@ private class FaceIdMemberRepository(private val status: MemberStatus = MemberSt
     override suspend fun updateMyProfile(
         phoneNumber: String?, profileImageUrl: String?, birthDate: String?,
         street: String?, houseNumber: String?, zipCode: String?, city: String?,
+        identityStatus: String?, workOrSchool: String?,
     ): Result<MemberResponse> = getMyProfile()
 }
 

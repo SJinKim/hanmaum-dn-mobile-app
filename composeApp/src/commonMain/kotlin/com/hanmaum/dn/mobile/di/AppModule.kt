@@ -138,7 +138,7 @@ val appModule = module {
     viewModel { LoginViewModel(get(), get(), get(), get(), get(), get()) }
 
     // Profile VM
-    viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { FaceIdSetupViewModel(get(), get(), get()) }
 
     // Ministry

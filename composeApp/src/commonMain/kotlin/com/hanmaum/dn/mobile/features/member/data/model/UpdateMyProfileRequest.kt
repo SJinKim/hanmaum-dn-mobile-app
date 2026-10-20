@@ -17,4 +17,8 @@ data class UpdateMyProfileRequest(
     val houseNumber: String? = null,
     val zipCode: String? = null,
     val city: String? = null,
+    /** IdentityStatus enum name. */
+    val identityStatus: String? = null,
+    /** Trimmed by the server; a blank value clears it. */
+    val workOrSchool: String? = null,
 )

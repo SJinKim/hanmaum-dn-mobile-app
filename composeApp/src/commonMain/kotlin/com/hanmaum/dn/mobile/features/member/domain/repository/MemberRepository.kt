@@ -12,5 +12,7 @@ interface MemberRepository {
         houseNumber: String?,
         zipCode: String?,
         city: String?,
+        identityStatus: String?,
+        workOrSchool: String?,
     ): Result<MemberResponse>
 }

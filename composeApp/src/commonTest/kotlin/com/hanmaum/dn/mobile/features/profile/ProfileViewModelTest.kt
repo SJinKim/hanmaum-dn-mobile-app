@@ -7,6 +7,9 @@ import com.russhwolf.settings.MapSettings
 import com.hanmaum.dn.mobile.core.push.PushManager
 import com.hanmaum.dn.mobile.core.security.FakeBiometricVault
 import com.hanmaum.dn.mobile.core.security.SecureStore
+import com.hanmaum.dn.mobile.features.login.domain.model.IdentityStatus
+import com.hanmaum.dn.mobile.features.login.domain.repository.CityLookupRepository
+import com.hanmaum.dn.mobile.features.login.presentation.RegisterFieldError
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import com.hanmaum.dn.mobile.features.verse.FakeVerseRecordRepository
@@ -39,6 +42,7 @@ private class FakeMemberRepository : MemberRepository {
         zipCode = "50667",
         city = "Köln",
         birthDate = "1992-12-07",
+        identityStatus = "EMPLOYEE",
     )
 
     data class UpdateArgs(
@@ -49,6 +53,8 @@ private class FakeMemberRepository : MemberRepository {
         val houseNumber: String?,
         val zipCode: String?,
         val city: String?,
+        val identityStatus: String?,
+        val workOrSchool: String?,
     )
 
     var lastUpdate: UpdateArgs? = null
@@ -63,8 +69,12 @@ private class FakeMemberRepository : MemberRepository {
         houseNumber: String?,
         zipCode: String?,
         city: String?,
+        identityStatus: String?,
+        workOrSchool: String?,
     ): Result<MemberResponse> {
-        lastUpdate = UpdateArgs(phoneNumber, profileImageUrl, birthDate, street, houseNumber, zipCode, city)
+        lastUpdate = UpdateArgs(
+            phoneNumber, profileImageUrl, birthDate, street, houseNumber, zipCode, city, identityStatus, workOrSchool,
+        )
         // Mirror backend PATCH semantics: null keeps the old value.
         profile = profile.copy(
             phoneNumber = phoneNumber ?: profile.phoneNumber,
@@ -74,9 +84,15 @@ private class FakeMemberRepository : MemberRepository {
             houseNumber = houseNumber ?: profile.houseNumber,
             zipCode = zipCode ?: profile.zipCode,
             city = city ?: profile.city,
+            identityStatus = identityStatus ?: profile.identityStatus,
+            workOrSchool = workOrSchool?.let { it.trim().ifBlank { null } } ?: profile.workOrSchool,
         )
         return Result.success(profile)
     }
+}
+
+private class FakeCityLookupRepository(private val cities: Map<String, String> = emptyMap()) : CityLookupRepository {
+    override suspend fun cityForPostalCode(postalCode: String): String? = cities[postalCode]
 }
 
 private class FakeTokenStorage : TokenStorage {
@@ -137,6 +153,7 @@ class ProfileViewModelTest {
         pushManager: FakePushManager = FakePushManager(),
         vault: FakeBiometricVault = FakeBiometricVault(),
         authPreferences: AuthPreferencesImpl = AuthPreferencesImpl(MapSettings()),
+        cityLookup: CityLookupRepository = FakeCityLookupRepository(),
     ) = ProfileViewModel(
         repo,
         FakeTokenStorage(),
@@ -146,6 +163,7 @@ class ProfileViewModelTest {
         authPreferences,
         FakeVerseRecordRepository(),
         io.ktor.client.HttpClient(io.ktor.client.engine.mock.MockEngine { respondOk() }),
+        cityLookup,
     )
 
     private fun success(viewModel: ProfileViewModel) =
@@ -182,14 +200,15 @@ class ProfileViewModelTest {
     }
 
     @Test
-    fun `save sends null when house number is blank`() = runTest {
+    fun `save sends null for an address that was never set`() = runTest {
         val repo = FakeMemberRepository()
-        repo.profile = repo.profile.copy(houseNumber = null)
+        repo.profile = repo.profile.copy(street = null, houseNumber = null)
         val viewModel = vm(repo)
         viewModel.loadProfile()
         dispatcher.scheduler.advanceUntilIdle()
         viewModel.saveProfile()
         dispatcher.scheduler.advanceUntilIdle()
+        assertNull(repo.lastUpdate?.street)
         assertNull(repo.lastUpdate?.houseNumber)
     }
 
@@ -242,23 +261,145 @@ class ProfileViewModelTest {
         val viewModel = vm(FakeMemberRepository())
         viewModel.loadProfile()
         dispatcher.scheduler.advanceUntilIdle()
-        viewModel.updatePhone("+49 111")
+        viewModel.updatePhone("0151 111")
         viewModel.loadProfile()
         dispatcher.scheduler.advanceUntilIdle()
-        assertEquals("+49 111", success(viewModel).editPhone)
+        assertEquals("0151111", success(viewModel).editPhone)
+    }
+
+    private suspend fun loaded(
+        repo: FakeMemberRepository = FakeMemberRepository(),
+        cityLookup: CityLookupRepository = FakeCityLookupRepository(),
+    ): ProfileViewModel {
+        val viewModel = vm(repo, cityLookup = cityLookup)
+        viewModel.loadProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        viewModel.startEditing()
+        return viewModel
     }
 
     @Test
-    fun `partial birth date is invalid full or empty birth date is valid`() = runTest {
-        val viewModel = vm(FakeMemberRepository())
-        viewModel.loadProfile()
-        dispatcher.scheduler.advanceUntilIdle()
+    fun `save is blocked and shows an error for a partial birth date`() = runTest {
+        val repo = FakeMemberRepository()
+        val viewModel = loaded(repo)
         viewModel.updateBirthDate("1992.1")
-        assertEquals(false, success(viewModel).isBirthDateValid)
-        viewModel.updateBirthDate("1992.01.07")
-        assertEquals(true, success(viewModel).isBirthDateValid)
+        viewModel.saveProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        assertNull(repo.lastUpdate)
+        assertEquals(RegisterFieldError.DATE_INCOMPLETE, success(viewModel).birthDateError)
+    }
+
+    @Test
+    fun `fields required at registration stay required`() = runTest {
+        val repo = FakeMemberRepository()
+        repo.profile = repo.profile.copy(identityStatus = null)
+        val viewModel = loaded(repo)
         viewModel.updateBirthDate("")
-        assertEquals(true, success(viewModel).isBirthDateValid)
+        viewModel.updateZipCode("")
+        viewModel.updateCity("")
+        viewModel.saveProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        assertNull(repo.lastUpdate)
+        val state = success(viewModel)
+        assertEquals(RegisterFieldError.REQUIRED, state.birthDateError)
+        assertEquals(RegisterFieldError.REQUIRED, state.identityStatusError)
+        assertEquals(RegisterFieldError.REQUIRED, state.zipCodeError)
+        assertEquals(RegisterFieldError.REQUIRED, state.cityError)
+    }
+
+    @Test
+    fun `street and house number are required as a pair`() = runTest {
+        val repo = FakeMemberRepository()
+        val viewModel = loaded(repo)
+        viewModel.updateHouseNumber("")
+        viewModel.saveProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        assertNull(repo.lastUpdate)
+        assertEquals(RegisterFieldError.REQUIRED, success(viewModel).houseNumberError)
+    }
+
+    @Test
+    fun `editing a field clears its error`() = runTest {
+        val repo = FakeMemberRepository()
+        repo.profile = repo.profile.copy(identityStatus = null)
+        val viewModel = loaded(repo)
+        viewModel.saveProfile()
+        assertEquals(RegisterFieldError.REQUIRED, success(viewModel).identityStatusError)
+        viewModel.updateIdentityStatus(IdentityStatus.UNIVERSITY_STUDENT)
+        assertNull(success(viewModel).identityStatusError)
+    }
+
+    @Test
+    fun `load seeds identity status work or school and the split phone number`() = runTest {
+        val repo = FakeMemberRepository()
+        repo.profile = repo.profile.copy(phoneNumber = "+821012345678", workOrSchool = "TU Berlin")
+        val viewModel = loaded(repo)
+        val state = success(viewModel)
+        assertEquals(IdentityStatus.EMPLOYEE, state.editIdentityStatus)
+        assertEquals("TU Berlin", state.editWorkOrSchool)
+        assertEquals("KR", state.editPhoneCountryIso)
+        assertEquals("1012345678", state.editPhone)
+        assertEquals(false, state.isDirty)
+    }
+
+    @Test
+    fun `save sends identity status work or school and the phone as E164`() = runTest {
+        val repo = FakeMemberRepository()
+        val viewModel = loaded(repo)
+        viewModel.updateIdentityStatus(IdentityStatus.UNIVERSITY_STUDENT)
+        viewModel.updateWorkOrSchool("  Siemens  ")
+        viewModel.updatePhoneCountry("DE")
+        viewModel.updatePhone("0151 2345678")
+        viewModel.saveProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        val sent = repo.lastUpdate!!
+        assertEquals("UNIVERSITY_STUDENT", sent.identityStatus)
+        assertEquals("Siemens", sent.workOrSchool)
+        assertEquals("+491512345678", sent.phoneNumber)
+    }
+
+    @Test
+    fun `clearing stored optional fields sends empty strings`() = runTest {
+        val repo = FakeMemberRepository()
+        repo.profile = repo.profile.copy(phoneNumber = "+491512345678", workOrSchool = "TU Berlin")
+        val viewModel = loaded(repo)
+        viewModel.updatePhone("")
+        viewModel.updateWorkOrSchool("")
+        viewModel.updateStreet("")
+        viewModel.updateHouseNumber("")
+        viewModel.saveProfile()
+        dispatcher.scheduler.advanceUntilIdle()
+        val sent = repo.lastUpdate!!
+        assertEquals("", sent.phoneNumber)
+        assertEquals("", sent.workOrSchool)
+        assertEquals("", sent.street)
+        assertEquals("", sent.houseNumber)
+    }
+
+    @Test
+    fun `a new postcode replaces the city loaded from the profile`() = runTest {
+        val viewModel = loaded(cityLookup = FakeCityLookupRepository(mapOf("10115" to "Berlin")))
+        viewModel.updateZipCode("10115")
+        dispatcher.scheduler.advanceUntilIdle()
+        assertEquals("Berlin", success(viewModel).editCity)
+        assertEquals(false, success(viewModel).isCityLookupLoading)
+    }
+
+    @Test
+    fun `a city typed by hand is not overwritten by the lookup`() = runTest {
+        val viewModel = loaded(cityLookup = FakeCityLookupRepository(mapOf("10115" to "Berlin")))
+        viewModel.updateCity("Potsdam")
+        viewModel.updateZipCode("10115")
+        dispatcher.scheduler.advanceUntilIdle()
+        assertEquals("Potsdam", success(viewModel).editCity)
+    }
+
+    @Test
+    fun `a failed lookup leaves the city alone`() = runTest {
+        val viewModel = loaded()
+        viewModel.updateZipCode("10115")
+        dispatcher.scheduler.advanceUntilIdle()
+        assertEquals("Köln", success(viewModel).editCity)
     }
 
     @Test
