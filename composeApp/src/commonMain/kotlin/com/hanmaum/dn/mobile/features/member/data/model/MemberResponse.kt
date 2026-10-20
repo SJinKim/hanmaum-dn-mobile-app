@@ -16,7 +16,6 @@ data class MemberResponse(
      */
     val emailVerified: Boolean? = null,
     val status: MemberStatus,
-    val churchRole: String? = null,
     val groupName: String? = null,
     val division: String? = null,
     /**
