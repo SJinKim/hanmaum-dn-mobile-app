@@ -32,6 +32,10 @@ data class MemberResponse(
     val phoneNumber: String? = null,
     val profileImageUrl: String? = null,
     val birthDate: String? = null,
+    /** IdentityStatus enum name (HDN-332); null for a member who registered before it existed. */
+    val identityStatus: String? = null,
+    /** 소속 — school or employer, free text. */
+    val workOrSchool: String? = null,
     /**
      * ISO date the member joined, feeding the profile's "함께한 시간" tile.
      * Nullable because it is nullable on the server too (an older record may

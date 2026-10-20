@@ -268,19 +268,6 @@ class RegisterViewModel(
         }
     }
 
-    // Returns a field error, or null if the date is valid. Required since #282.
-    private fun validateBirthDate(date: String): RegisterFieldError? {
-        if (date.isBlank()) return RegisterFieldError.REQUIRED
-        if (date.length < 10) return RegisterFieldError.DATE_INCOMPLETE
-        return try {
-            val parts = date.split(".")
-            LocalDate(parts[0].toInt(), parts[1].toInt(), parts[2].toInt())
-            null // date is valid, no error
-        } catch (e: Exception) {
-            RegisterFieldError.DATE_INVALID
-        }
-    }
-
     fun onNavigationHandled() {
         _uiState.update { it.copy(navigateTo = null, loginNotice = null) }
     }
@@ -296,4 +283,21 @@ class RegisterViewModel(
 
 }
 
-private const val WORK_OR_SCHOOL_MAX = 100
+internal const val WORK_OR_SCHOOL_MAX = 100
+
+/**
+ * Returns a field error, or null if the date is valid. Required since #282, and
+ * shared with the profile edit so both forms reject the same input (#283).
+ */
+internal fun validateBirthDate(date: String): RegisterFieldError? {
+    if (date.isBlank()) return RegisterFieldError.REQUIRED
+    if (date.length < 10) return RegisterFieldError.DATE_INCOMPLETE
+    return try {
+        val parts = date.split(".")
+        LocalDate(parts[0].toInt(), parts[1].toInt(), parts[2].toInt())
+        null // date is valid, no error
+    } catch (e: Exception) {
+        RegisterFieldError.DATE_INVALID
+    }
+}
+

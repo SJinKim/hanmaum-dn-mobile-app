@@ -44,6 +44,8 @@ class MemberRepositoryImpl(
         houseNumber: String?,
         zipCode: String?,
         city: String?,
+        identityStatus: String?,
+        workOrSchool: String?,
     ): Result<MemberResponse> {
         return try {
             val response = client.patch("members/me") {
@@ -56,6 +58,8 @@ class MemberRepositoryImpl(
                     houseNumber = houseNumber,
                     zipCode = zipCode,
                     city = city,
+                    identityStatus = identityStatus,
+                    workOrSchool = workOrSchool,
                 ))
             }
             if (response.status == HttpStatusCode.OK) {

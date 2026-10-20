@@ -322,7 +322,7 @@ fun RegisterScreen(
 }
 
 /** Marks a label as required with a glyph, never with colour alone. */
-private fun required(label: String): String = "$label *"
+internal fun required(label: String): String = "$label *"
 
 /**
  * Top-of-form banner. Distinct from the per-field messages because the field
@@ -371,14 +371,14 @@ private fun FormBanner(banner: RegisterBanner, strings: AppStrings) {
  * which quietly dropped the other seven the ViewModel already produces.
  */
 @Composable
-private fun FieldError(message: String?) {
+internal fun FieldError(message: String?) {
     if (message == null) return
     Spacer(Modifier.height(6.dp))
     Text(message, style = DnTheme.typography.caption, color = DnTheme.colors.red)
 }
 
 /** Resolves a language-independent field error to localized text. */
-private fun AppStrings.messageFor(error: RegisterFieldError?): String? = when (error) {
+internal fun AppStrings.messageFor(error: RegisterFieldError?): String? = when (error) {
     RegisterFieldError.REQUIRED -> errorRequired
     RegisterFieldError.INVALID_EMAIL -> errorInvalidEmail
     RegisterFieldError.PASSWORD_REQUIREMENTS -> errorPasswordRequirements

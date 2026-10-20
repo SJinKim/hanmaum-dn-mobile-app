@@ -73,4 +73,36 @@ class CountryTest {
         assertTrue(Countries.pinned.none { Countries.matches(it, "france", nameOf) })
         assertTrue(Countries.matches(Countries.byIsoOrDefault("DE"), "germany", nameOf))
     }
+
+    @Test
+    fun splitE164ReadsTheDialCodeBack() {
+        assertEquals("DE" to "1631234567", PhoneNumber.splitE164("+491631234567"))
+        assertEquals("KR" to "1012345678", PhoneNumber.splitE164("+821012345678"))
+        assertEquals("US" to "2025550123", PhoneNumber.splitE164("+12025550123"))
+        assertEquals("RU" to "9161234567", PhoneNumber.splitE164("+79161234567"))
+    }
+
+    @Test
+    fun splitE164PrefersTheLongestDialCode() {
+        // +353 must not be read as a shorter code that happens to prefix it.
+        assertEquals("IE" to "871234567", PhoneNumber.splitE164("+353871234567"))
+    }
+
+    @Test
+    fun splitE164ReadsALegacyNumberAsGerman() {
+        assertEquals("DE" to "01631234567", PhoneNumber.splitE164("0163 1234567"))
+        assertEquals("+491631234567", PhoneNumber.toE164("49", "01631234567"))
+    }
+
+    @Test
+    fun splitE164IsNullWithoutDigits() {
+        assertNull(PhoneNumber.splitE164(null))
+        assertNull(PhoneNumber.splitE164("  "))
+    }
+
+    @Test
+    fun splitE164RoundTripsThroughToE164() {
+        val (iso, national) = PhoneNumber.splitE164("+491631234567")!!
+        assertEquals("+491631234567", PhoneNumber.toE164(Countries.byIsoOrDefault(iso).dialCode, national))
+    }
 }

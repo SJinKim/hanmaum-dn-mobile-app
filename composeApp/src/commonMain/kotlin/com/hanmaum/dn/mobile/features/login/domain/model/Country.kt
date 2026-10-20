@@ -288,4 +288,29 @@ object PhoneNumber {
         }
         return if (digits.isEmpty()) null else "+$dialCode$digits"
     }
+
+    /** Which country a dial code shared by several countries resolves to. */
+    private val PREFERRED_FOR_SHARED_DIAL_CODE = mapOf("1" to "US", "7" to "RU")
+
+    /**
+     * The inverse of [toE164], for prefilling an edit form: splits a stored
+     * number into (ISO, national digits), or null when it holds no digits.
+     * The longest matching dial code wins, so +353 is not read as a shorter one.
+     * A number without a '+' predates E.164 storage and is read as German
+     * national digits; [toE164] then drops its trunk 0 on the next save.
+     */
+    fun splitE164(stored: String?): Pair<String, String>? {
+        val raw = stored?.trim().orEmpty()
+        val digits = sanitizeNational(raw)
+        if (digits.isEmpty()) return null
+        if (!raw.startsWith("+")) return Countries.DEFAULT_ISO to digits
+        val dialCode = (minOf(digits.length - 1, 4) downTo 1)
+            .map { digits.take(it) }
+            .firstOrNull { code -> Countries.all.any { it.dialCode == code } }
+            ?: return Countries.DEFAULT_ISO to digits
+        val iso = Countries.PINNED_ISOS.firstOrNull { Countries.byIsoOrDefault(it).dialCode == dialCode }
+            ?: PREFERRED_FOR_SHARED_DIAL_CODE[dialCode]
+            ?: Countries.all.first { it.dialCode == dialCode }.iso
+        return iso to digits.drop(dialCode.length)
+    }
 }

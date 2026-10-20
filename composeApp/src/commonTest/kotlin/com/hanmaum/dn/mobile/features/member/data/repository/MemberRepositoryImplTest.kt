@@ -78,6 +78,7 @@ class MemberRepositoryImplTest {
         MemberRepositoryImpl(client).updateMyProfile(
             phoneNumber = null, profileImageUrl = null, birthDate = null,
             street = "Musterstraße", houseNumber = "12", zipCode = "50667", city = "Köln",
+            identityStatus = null, workOrSchool = null,
         )
         assertEquals(HttpMethod.Patch, method)
         assertEquals("/members/me", path)
@@ -95,6 +96,7 @@ class MemberRepositoryImplTest {
         MemberRepositoryImpl(client).updateMyProfile(
             phoneNumber = null, profileImageUrl = null, birthDate = null,
             street = "Musterstraße", houseNumber = "12", zipCode = "50667", city = "Köln",
+            identityStatus = null, workOrSchool = null,
         )
         assertTrue(body.contains("\"houseNumber\":\"12\""), "body was $body")
         assertTrue(body.contains("\"zipCode\":\"50667\""), "body was $body")
@@ -111,6 +113,7 @@ class MemberRepositoryImplTest {
         MemberRepositoryImpl(client).updateMyProfile(
             phoneNumber = null, profileImageUrl = null, birthDate = null,
             street = null, houseNumber = null, zipCode = null, city = "Köln",
+            identityStatus = null, workOrSchool = null,
         )
         assertFalse(body.contains("houseNumber"), "body was $body")
         assertFalse(body.contains("street"), "body was $body")
@@ -171,6 +174,7 @@ class MemberRepositoryImplTest {
         MemberRepositoryImpl(client).updateMyProfile(
             phoneNumber = null, profileImageUrl = null, birthDate = "1992-12-07",
             street = null, houseNumber = null, zipCode = null, city = null,
+            identityStatus = null, workOrSchool = null,
         )
         assertTrue(body.contains("\"birthDate\":\"1992-12-07\""), "body was $body")
     }
@@ -183,7 +187,34 @@ class MemberRepositoryImplTest {
         MemberRepositoryImpl(client).updateMyProfile(
             phoneNumber = null, profileImageUrl = null, birthDate = null,
             street = null, houseNumber = null, zipCode = null, city = "Köln",
+            identityStatus = null, workOrSchool = null,
         )
         assertFalse(body.contains("birthDate"), "body was $body")
+    }
+
+    @Test
+    fun updateMyProfile_sendsIdentityStatusAndWorkOrSchool() = runTest {
+        // #283: 신분 and 소속 are editable from 프로필 수정 under these wire names.
+        var body = ""
+        val json = testJson.encodeToString(ApiResponse(success = true, data = member))
+        val client = mockClient(json) { req -> body = (req.body as TextContent).text }
+        MemberRepositoryImpl(client).updateMyProfile(
+            phoneNumber = null, profileImageUrl = null, birthDate = null,
+            street = null, houseNumber = null, zipCode = null, city = null,
+            identityStatus = "UNIVERSITY_STUDENT", workOrSchool = "TU Berlin",
+        )
+        assertTrue(body.contains("\"identityStatus\":\"UNIVERSITY_STUDENT\""), "body was $body")
+        assertTrue(body.contains("\"workOrSchool\":\"TU Berlin\""), "body was $body")
+    }
+
+    @Test
+    fun getMyProfile_mapsIdentityStatusAndWorkOrSchool() = runTest {
+        val json = """
+            {"success":true,"data":{"publicId":"u1","firstName":"Seungjin","lastName":"Kim",
+             "status":"ACTIVE","identityStatus":"EMPLOYEE","workOrSchool":"Siemens"}}
+        """.trimIndent()
+        val p = MemberRepositoryImpl(mockClient(json)).getMyProfile().getOrThrow()
+        assertEquals("EMPLOYEE", p.identityStatus)
+        assertEquals("Siemens", p.workOrSchool)
     }
 }

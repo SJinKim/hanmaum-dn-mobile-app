@@ -34,6 +34,7 @@ private class SessionMemberRepository(var publicId: String? = "member-1") : Memb
     override suspend fun updateMyProfile(
         phoneNumber: String?, profileImageUrl: String?, birthDate: String?,
         street: String?, houseNumber: String?, zipCode: String?, city: String?,
+        identityStatus: String?, workOrSchool: String?,
     ): Result<MemberResponse> = getMyProfile()
 }
 
