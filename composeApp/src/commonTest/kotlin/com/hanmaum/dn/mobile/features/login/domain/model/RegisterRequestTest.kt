@@ -19,6 +19,8 @@ class RegisterRequestTest {
                 email = "seungjin@example.com",
                 city = "Berlin",
                 password = "Secret123!",
+                birthDate = "2000-08-16",
+                identityStatus = "UNIVERSITY_STUDENT",
                 street = "Hauptstraße",
                 houseNumber = "12a",
                 zipCode = "10115",

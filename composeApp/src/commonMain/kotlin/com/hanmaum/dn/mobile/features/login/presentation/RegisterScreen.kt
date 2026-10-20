@@ -52,6 +52,8 @@ import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
 import com.hanmaum.dn.mobile.core.presentation.theme.typography
 import com.hanmaum.dn.mobile.features.login.domain.model.Countries
 import com.hanmaum.dn.mobile.features.login.presentation.components.BirthdayPickerField
+import com.hanmaum.dn.mobile.features.login.presentation.components.IdentityStatusField
+import com.hanmaum.dn.mobile.features.login.presentation.components.IdentityStatusPickerDialog
 import com.hanmaum.dn.mobile.features.login.presentation.components.PasswordCriteriaList
 import com.hanmaum.dn.mobile.features.login.presentation.components.PhoneCountryPickerDialog
 import com.hanmaum.dn.mobile.features.login.presentation.components.PhoneCountryPrefix
@@ -128,6 +130,17 @@ fun RegisterScreen(
                 showCountryPicker = false
             },
             onDismiss = { showCountryPicker = false },
+        )
+    }
+    var showIdentityPicker by rememberSaveable { mutableStateOf(false) }
+    if (showIdentityPicker) {
+        IdentityStatusPickerDialog(
+            selected = state.identityStatus,
+            onSelect = {
+                viewModel.onIdentityStatusChange(it)
+                showIdentityPicker = false
+            },
+            onDismiss = { showIdentityPicker = false },
         )
     }
 
@@ -227,10 +240,27 @@ fun RegisterScreen(
 
                 Spacer(Modifier.height(16.dp))
                 BirthdayPickerField(
-                    strings.fieldBirthDate, state.birthDate, viewModel::onBirthDateChange,
-                    Modifier.fillMaxWidth(), placeholder = "2000.01.01",
+                    required(strings.fieldBirthDate), state.birthDate, viewModel::onBirthDateChange,
+                    Modifier.fillMaxWidth().focusRequester(requesters.getValue(RegisterField.BIRTH_DATE)),
+                    placeholder = "2000.01.01",
+                    isError = state.birthDateError != null,
                 )
                 FieldError(strings.messageFor(state.birthDateError))
+
+                Spacer(Modifier.height(16.dp))
+                IdentityStatusField(
+                    required(strings.fieldIdentityStatus), state.identityStatus,
+                    onClick = { showIdentityPicker = true },
+                    modifier = Modifier.fillMaxWidth().focusRequester(requesters.getValue(RegisterField.IDENTITY_STATUS)),
+                    isError = state.identityStatusError != null,
+                )
+                FieldError(strings.messageFor(state.identityStatusError))
+
+                Spacer(Modifier.height(16.dp))
+                DnTextField(
+                    strings.fieldWorkOrSchool, state.workOrSchool, viewModel::onWorkOrSchoolChange,
+                    Modifier.fillMaxWidth(), placeholder = strings.workOrSchoolPlaceholder,
+                )
 
                 // ── address: both halves or neither ──
                 Spacer(Modifier.height(16.dp))

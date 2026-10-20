@@ -86,6 +86,20 @@ interface AppStrings {
     val phoneCountryTapToApply: String
     val fieldPassword: String
     val fieldBirthDate: String
+    val fieldIdentityStatus: String
+    val identityStatusPlaceholder: String
+    val identityStatusPickerTitle: String
+    val identityStatusPickerHint: String
+    val identityEmployee: String
+    val identityUniversityStudent: String
+    val identityExamPreparation: String
+    val identityWorkingHoliday: String
+    val identityExchangeStudent: String
+    val identitySelfEmployed: String
+    val identityExpatriate: String
+    val identityJobSeeking: String
+    val fieldWorkOrSchool: String
+    val workOrSchoolPlaceholder: String
     val fieldStreet: String
     val fieldHouseNumber: String
     val fieldZipCode: String
@@ -575,6 +589,20 @@ object EnStrings : AppStrings {
     override val phoneCountryTapToApply = "Tap to apply"
     override val fieldPassword = "Password"
     override val fieldBirthDate = "Date of birth"
+    override val fieldIdentityStatus = "Status"
+    override val identityStatusPlaceholder = "Select"
+    override val identityStatusPickerTitle = "Select status"
+    override val identityStatusPickerHint = "Pick the one closest to your current situation"
+    override val identityEmployee = "Employee"
+    override val identityUniversityStudent = "University / graduate student"
+    override val identityExamPreparation = "Exam preparation"
+    override val identityWorkingHoliday = "Working holiday"
+    override val identityExchangeStudent = "Exchange student"
+    override val identitySelfEmployed = "Self-employed"
+    override val identityExpatriate = "Expatriate"
+    override val identityJobSeeking = "Job seeking"
+    override val fieldWorkOrSchool = "Affiliation"
+    override val workOrSchoolPlaceholder = "School / employer"
     override val fieldStreet = "Street"
     override val fieldHouseNumber = "No."
     override val fieldZipCode = "Postcode"
@@ -965,6 +993,20 @@ object KoStrings : AppStrings {
     override val phoneCountryTapToApply = "탭하면 바로 적용됩니다"
     override val fieldPassword = "비밀번호"
     override val fieldBirthDate = "생년월일"
+    override val fieldIdentityStatus = "신분"
+    override val identityStatusPlaceholder = "선택해 주세요"
+    override val identityStatusPickerTitle = "신분 선택"
+    override val identityStatusPickerHint = "현재 상황에 가장 가까운 항목을 골라 주세요"
+    override val identityEmployee = "직장인"
+    override val identityUniversityStudent = "대학생/대학원생"
+    override val identityExamPreparation = "입시 준비"
+    override val identityWorkingHoliday = "워킹홀리데이"
+    override val identityExchangeStudent = "교환학생"
+    override val identitySelfEmployed = "자영업"
+    override val identityExpatriate = "주재원"
+    override val identityJobSeeking = "구직 중"
+    override val fieldWorkOrSchool = "소속"
+    override val workOrSchoolPlaceholder = "학교명 / 직장명"
     override val fieldStreet = "도로명"
     override val fieldHouseNumber = "번지"
     override val fieldZipCode = "우편번호"
@@ -1352,6 +1394,20 @@ object DeStrings : AppStrings {
     override val phoneCountryTapToApply = "Tippen übernimmt sofort"
     override val fieldPassword = "Passwort"
     override val fieldBirthDate = "Geburtsdatum"
+    override val fieldIdentityStatus = "Status"
+    override val identityStatusPlaceholder = "Auswählen"
+    override val identityStatusPickerTitle = "Status wählen"
+    override val identityStatusPickerHint = "Wähle, was deiner aktuellen Situation am nächsten kommt"
+    override val identityEmployee = "Angestellt"
+    override val identityUniversityStudent = "Studium (Bachelor/Master)"
+    override val identityExamPreparation = "Prüfungsvorbereitung"
+    override val identityWorkingHoliday = "Working Holiday"
+    override val identityExchangeStudent = "Austauschstudium"
+    override val identitySelfEmployed = "Selbstständig"
+    override val identityExpatriate = "Entsandt (Expat)"
+    override val identityJobSeeking = "Arbeitssuchend"
+    override val fieldWorkOrSchool = "Zugehörigkeit"
+    override val workOrSchoolPlaceholder = "Schule / Arbeitgeber"
     override val fieldStreet = "Straße"
     override val fieldHouseNumber = "Nr."
     override val fieldZipCode = "PLZ"
