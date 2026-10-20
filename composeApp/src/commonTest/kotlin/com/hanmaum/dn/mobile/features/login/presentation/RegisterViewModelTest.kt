@@ -261,6 +261,46 @@ class RegisterViewModelTest {
     }
 
     @Test
+    fun focusGoesToTheTopmostErrorInScreenOrder() = runTest {
+        fillMinimumValidForm()
+        vm.onCityChange("")
+        vm.onIdentityStatusChange(IdentityStatus.EMPLOYEE)
+        vm.onBirthDateChange("")
+
+        vm.register()
+        advanceUntilIdle()
+
+        // 생년월일 renders above city, so it wins although both are missing.
+        assertEquals(RegisterField.BIRTH_DATE, vm.uiState.value.focusTarget)
+    }
+
+    @Test
+    fun fillingTheBirthDateClearsTheBanner() = runTest {
+        fillMinimumValidForm()
+        vm.onBirthDateChange("")
+        vm.register()
+        advanceUntilIdle()
+
+        vm.onBirthDateChange("2000.08.16")
+
+        assertNull(vm.uiState.value.bannerError)
+    }
+
+    @Test
+    fun workOrSchoolIsCappedAtTheServerLimit() = runTest {
+        vm.onWorkOrSchoolChange("가".repeat(120))
+        assertEquals(100, vm.uiState.value.workOrSchool.length)
+    }
+
+    @Test
+    fun theBirthDateReachesTheBackendAsIsoDate() = runTest {
+        fillMinimumValidForm()
+        vm.register()
+        advanceUntilIdle()
+        assertEquals("2000-08-16", auth.lastRequest?.birthDate)
+    }
+
+    @Test
     fun theIdentityStatusReachesTheBackendByItsServerName() = runTest {
         fillMinimumValidForm()
         vm.onIdentityStatusChange(IdentityStatus.WORKING_HOLIDAY)

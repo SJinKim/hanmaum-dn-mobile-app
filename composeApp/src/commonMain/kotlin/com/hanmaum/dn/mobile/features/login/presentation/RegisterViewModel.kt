@@ -101,12 +101,14 @@ class RegisterViewModel(
     // Optionale
     fun onBaptismChange(v: String) = _uiState.update { it.copy(baptism = v) }
     fun onGenderChange(v: String) = _uiState.update { it.copy(gender = v) }
-    fun onBirthDateChange(v: String) = _uiState.update { it.copy(birthDate = v, birthDateError = null) }
+    fun onBirthDateChange(v: String) =
+        _uiState.update { it.copy(birthDate = v, birthDateError = null, bannerError = null) }
 
     fun onIdentityStatusChange(v: IdentityStatus) =
         _uiState.update { it.copy(identityStatus = v, identityStatusError = null, bannerError = null) }
 
-    fun onWorkOrSchoolChange(v: String) = _uiState.update { it.copy(workOrSchool = v) }
+    // The server caps 소속 at 100 characters; cap the input so it never comes back as a 400.
+    fun onWorkOrSchoolChange(v: String) = _uiState.update { it.copy(workOrSchool = v.take(WORK_OR_SCHOOL_MAX)) }
     fun onPhoneChange(v: String) = _uiState.update { it.copy(phoneNumber = PhoneNumber.sanitizeNational(v)) }
     fun onPhoneCountryChange(iso: String) {
         phoneCountryDefaulted = true
@@ -181,13 +183,13 @@ class RegisterViewModel(
             lastNameError != null -> RegisterField.LAST_NAME
             firstNameError != null -> RegisterField.FIRST_NAME
             emailError != null -> RegisterField.EMAIL
-            cityError != null -> RegisterField.CITY
-            zipCodeError != null -> RegisterField.ZIP_CODE
             passwordError != null -> RegisterField.PASSWORD
             birthDateError != null -> RegisterField.BIRTH_DATE
             identityStatusError != null -> RegisterField.IDENTITY_STATUS
             streetError != null -> RegisterField.STREET
             houseNumberError != null -> RegisterField.HOUSE_NUMBER
+            zipCodeError != null -> RegisterField.ZIP_CODE
+            cityError != null -> RegisterField.CITY
             else -> null
         }
 
@@ -293,3 +295,5 @@ class RegisterViewModel(
     }
 
 }
+
+private const val WORK_OR_SCHOOL_MAX = 100

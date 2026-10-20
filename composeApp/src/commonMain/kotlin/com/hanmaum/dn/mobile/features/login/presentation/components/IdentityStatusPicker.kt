@@ -19,6 +19,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.hanmaum.dn.mobile.core.i18n.AppStrings
@@ -58,7 +60,9 @@ internal fun IdentityStatusField(
     val c = DnTheme.colors
     val strings = LocalStrings.current
     val shape = RoundedCornerShape(18.dp)
-    Column(modifier) {
+    val shown = value?.let { strings.labelFor(it) } ?: strings.identityStatusPlaceholder
+    // One accessibility node: the field name travels with the value, as in DnTextField.
+    Column(modifier.semantics(mergeDescendants = true) { contentDescription = "$label, $shown" }) {
         Text(label, style = DnTheme.typography.label, color = c.textTertiary)
         Spacer(Modifier.size(7.dp))
         Row(
@@ -80,7 +84,7 @@ internal fun IdentityStatusField(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                value?.let { strings.labelFor(it) } ?: strings.identityStatusPlaceholder,
+                shown,
                 style = DnTheme.typography.captionStrong,
                 color = if (value != null) c.textPrimary else c.textTertiary,
                 modifier = Modifier.weight(1f),
