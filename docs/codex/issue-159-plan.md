@@ -16,9 +16,9 @@ No new dependencies, server/schema changes, account-synced locale or automatic t
 ## Verification and review
 
 - Focused locale, language-state, localization and registration tests passed before the full suite.
-- `./gradlew :composeApp:testDevDebugUnitTest`: passed, 696 tests, 0 failures/errors.
+- `./gradlew :composeApp:testDevDebugUnitTest`: passed, 698 tests, 0 failures/errors.
 - `./gradlew lint`: passed, 0 errors in `lint-results-devDebug.xml` (53 warnings).
-- `./gradlew :composeApp:assembleDevDebug`: passed.
+- `./gradlew :composeApp:assembleDevDebug`: passed, 693 tests.
 - TODO gate: no unreferenced TODOs. `git diff --check`: clean.
 - `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer ./gradlew :composeApp:iosSimulatorArm64Test`: passed.
 - Swift entrypoints (`MainViewController`, Koin initialization) are unchanged; no Swift-called declaration changed.
@@ -26,3 +26,9 @@ No new dependencies, server/schema changes, account-synced locale or automatic t
 Source review covers auth/registration/pending, home/news, attendance/calendar/RSVP, profile/settings, albums/community and the remaining ministry/training/floor-plan/notification screens. App-owned labels use the central strings; visible transient errors use typed messages resolved at render time. Dates/counts respect KO/EN. Backend/user content, including names and editorial text, remains unchanged. A JVM source guard rejects new hardcoded Korean literals outside the localization layer; translation coverage tests check both languages.
 
 Manual visual/accessibility checks on Android and iOS, including large text and light/dark appearance, still require device testing. iOS runtime verification belongs to the user on TestFlight. No simulator app was launched and no distribution was dispatched.
+
+## Final review correction
+
+The Material birthday picker had a separate device-locale default. Use a small expect/actual locale factory (Android Locale / iOS NSLocale), construct its state with the explicit app locale, and localize its title and date formatter/headline. Preserve the existing calendar and typed input. Add cross-platform tests with opposing app/device formatter locales, then rerun the gates for the final code.
+
+Also provide localized Android configuration/context and the iOS AppleLanguages override for library-owned Material labels and accessibility descriptions. Keep the composition identity stable (no locale key), so settings changes preserve navigation. This follows [JetBrains' locale environment approach](https://kotlinlang.org/docs/multiplatform/compose-resource-environment.html); platform locale handling stays behind expect/actual.

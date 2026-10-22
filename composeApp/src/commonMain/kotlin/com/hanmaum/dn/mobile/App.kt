@@ -32,7 +32,7 @@ import com.hanmaum.dn.mobile.core.security.InstallationGuard
 import com.hanmaum.dn.mobile.core.i18n.AppLocale
 import com.hanmaum.dn.mobile.core.i18n.EnStrings
 import com.hanmaum.dn.mobile.core.i18n.KoStrings
-import com.hanmaum.dn.mobile.core.i18n.LocalStrings
+import com.hanmaum.dn.mobile.core.i18n.ProvideAppLanguage
 import com.hanmaum.dn.mobile.core.navigation.*
 import com.hanmaum.dn.mobile.core.notification.NotificationDestination
 import com.hanmaum.dn.mobile.core.notification.NotificationRouter
@@ -96,7 +96,7 @@ fun App() {
             }
         }
 
-        CompositionLocalProvider(LocalStrings provides strings) {
+        ProvideAppLanguage(strings) {
             AppTheme(darkTheme = darkTheme) {
             if (languageState.needsSelection) {
                 Box(Modifier.fillMaxSize().safeDrawingPadding()) {
