@@ -10,6 +10,7 @@ import com.hanmaum.dn.mobile.features.login.domain.model.Countries
 import com.hanmaum.dn.mobile.features.login.domain.model.PasswordPolicy
 import com.hanmaum.dn.mobile.features.login.domain.model.PhoneNumber
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterException
+import com.hanmaum.dn.mobile.features.login.domain.model.RegisterFailureReason
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterRequest
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterValidation
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
@@ -258,9 +259,12 @@ class RegisterViewModel(
                     }
                     return@onFailure
                 }
-                // The backend exposes free-text messages rather than localized error codes.
-                // Keep arbitrary server language and technical details out of the form.
-                val banner = RegisterBanner.Generic
+                // Known business failures remain actionable in the selected app language.
+                // Unknown server messages and technical details stay out of the form.
+                val banner = when ((exception as? RegisterException)?.reason) {
+                    RegisterFailureReason.EMAIL_ALREADY_REGISTERED -> RegisterBanner.EmailAlreadyRegistered
+                    else -> RegisterBanner.Generic
+                }
                 _uiState.update { it.copy(isLoading = false, bannerError = banner) }
             }
         }

@@ -357,6 +357,7 @@ private fun FormBanner(banner: RegisterBanner, strings: AppStrings) {
         }
         Text(
             text = when (banner) {
+                RegisterBanner.EmailAlreadyRegistered -> strings.registerEmailAlreadyRegistered
                 RegisterBanner.Generic -> strings.registerFailed
                 RegisterBanner.RegisteredPleaseLogin -> strings.registerSuccessLogin
                 RegisterBanner.MissingRequired -> strings.registerMissingRequired

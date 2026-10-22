@@ -4,6 +4,7 @@ import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.navigation.LoginRoute
 import com.hanmaum.dn.mobile.features.login.domain.model.IdentityStatus
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterException
+import com.hanmaum.dn.mobile.features.login.domain.model.RegisterFailureReason
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterRequest
 import com.hanmaum.dn.mobile.features.login.domain.model.TokenResponse
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
@@ -466,6 +467,27 @@ class RegisterViewModelTest {
         assertNull(s.bannerError, "the dialog replaces the banner, it does not stack on it")
         assertFalse(s.isLoading)
         assertEquals("hello@hanmaum.de", s.email, "what was typed survives the failure")
+        assertEquals(0, auth.loginCalls)
+    }
+
+    @Test
+    fun anEmailConflictShowsActionableLocalizedGuidanceAndKeepsTheForm() = runTest {
+        auth.registerResult = Result.failure(RegisterException(
+            null,
+            reason = RegisterFailureReason.EMAIL_ALREADY_REGISTERED,
+        ))
+        fillMinimumValidForm()
+        vm.register()
+        advanceUntilIdle()
+
+        val s = vm.uiState.value
+        assertEquals(RegisterBanner.EmailAlreadyRegistered, s.bannerError)
+        assertFalse(s.showUnavailableDialog)
+        assertFalse(s.isLoading)
+        assertFalse(s.isSuccess)
+        assertNull(s.navigateTo)
+        assertEquals("hello@hanmaum.de", s.email)
+        assertEquals("승진", s.firstName)
         assertEquals(0, auth.loginCalls)
     }
 

@@ -33,10 +33,15 @@ object RegisterValidation {
     fun isValidHouseNumber(houseNumber: String): Boolean = houseNumber.any { it.isDigit() }
 }
 
+/** Business failures the registration endpoint identifies independently of its message language. */
+enum class RegisterFailureReason {
+    UNKNOWN,
+    EMAIL_ALREADY_REGISTERED,
+}
+
 /**
- * Raised when registration fails on the backend. [userMessage] is a clean,
- * user-facing message extracted from the API response when available — never a
- * raw status dump. A null/blank message means "show a generic localized error".
+ * Raised when registration fails on the backend. [reason] drives localized UI;
+ * [userMessage] retains the optional API message without displaying it directly.
  *
  * [isServerError] marks a 5xx: the backend itself broke, so nothing the member
  * types will fix it and its message is an internal detail, not an instruction.
@@ -44,4 +49,5 @@ object RegisterValidation {
 class RegisterException(
     val userMessage: String?,
     val isServerError: Boolean = false,
+    val reason: RegisterFailureReason = RegisterFailureReason.UNKNOWN,
 ) : Exception(userMessage)

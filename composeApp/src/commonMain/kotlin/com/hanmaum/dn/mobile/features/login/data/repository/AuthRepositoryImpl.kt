@@ -5,6 +5,7 @@ import com.hanmaum.dn.mobile.core.domain.model.ApiResponse
 import com.hanmaum.dn.mobile.features.login.domain.model.KeycloakError
 import com.hanmaum.dn.mobile.features.login.domain.model.LoginException
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterException
+import com.hanmaum.dn.mobile.features.login.domain.model.RegisterFailureReason
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterRequest
 import com.hanmaum.dn.mobile.features.login.domain.model.TokenResponse
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
@@ -120,9 +121,15 @@ class AuthRepositoryImpl(
                 val message = runCatching {
                     lenientJson.decodeFromString<ApiResponse<Unit>>(errorText).message
                 }.getOrNull()
-                // null/blank -> ViewModel zeigt eine generische, lokalisierte Meldung.
+                // Registration's 409 contract means the email is already in use.
+                // Classify by status even if the body is absent or not JSON.
+                val reason = if (response.status == HttpStatusCode.Conflict) {
+                    RegisterFailureReason.EMAIL_ALREADY_REGISTERED
+                } else {
+                    RegisterFailureReason.UNKNOWN
+                }
                 Result.failure(
-                    RegisterException(message, isServerError = response.status.value >= 500),
+                    RegisterException(message, isServerError = response.status.value >= 500, reason = reason),
                 )
             }
 

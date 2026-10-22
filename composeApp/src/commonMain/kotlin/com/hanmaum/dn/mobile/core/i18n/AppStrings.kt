@@ -91,6 +91,7 @@ interface AppStrings {
     val errorInvalidPostcode: String
     val errorInvalidCity: String
     val errorInvalidHouseNumber: String
+    val registerEmailAlreadyRegistered: String
     val registerFailed: String
     val registerSuccessLogin: String
     // Notice carried to the login screen after registering (#168)
@@ -655,6 +656,7 @@ object EnStrings : AppStrings {
     override val errorInvalidPostcode = "Enter a valid postcode (5 digits)"
     override val errorInvalidCity = "Enter a valid city"
     override val errorInvalidHouseNumber = "Enter a valid house number (e.g. 5, 12a)"
+    override val registerEmailAlreadyRegistered = "This email is already registered. Sign in or use a different email address."
     override val registerFailed = "Registration failed. Please try again."
     override val registerSuccessLogin = "Registration successful. Please log in."
     // Notice carried to the login screen after registering (#168)
@@ -1117,6 +1119,7 @@ object KoStrings : AppStrings {
     override val errorInvalidPostcode = "올바른 우편번호를 입력해주세요 (5자리)"
     override val errorInvalidCity = "올바른 도시명을 입력해주세요"
     override val errorInvalidHouseNumber = "올바른 번지수를 입력해주세요 (예: 5, 12a)"
+    override val registerEmailAlreadyRegistered = "이미 가입된 이메일입니다. 로그인하거나 다른 이메일 주소를 사용해주세요."
     override val registerFailed = "회원가입에 실패했습니다. 다시 시도해주세요."
     override val registerSuccessLogin = "등록 성공했습니다. 로그인 해주세요."
     // Notice carried to the login screen after registering (#168)
