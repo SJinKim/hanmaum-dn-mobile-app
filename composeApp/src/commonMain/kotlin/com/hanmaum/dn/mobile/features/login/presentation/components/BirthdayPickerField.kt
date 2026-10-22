@@ -5,7 +5,10 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.DatePickerState
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerFormatter
+import androidx.compose.material3.CalendarLocale
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,6 +18,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.input.KeyboardType
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
+import com.hanmaum.dn.mobile.core.i18n.appCalendarLocale
+import com.hanmaum.dn.mobile.core.presentation.theme.AppSpacing
+import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
+import com.hanmaum.dn.mobile.core.presentation.theme.typography
+import androidx.compose.foundation.layout.padding
 import com.hanmaum.dn.mobile.core.presentation.components.DnTextField
 import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
 import com.hanmaum.dn.mobile.features.login.domain.model.BirthDateInput
@@ -76,10 +84,17 @@ fun BirthdayPickerField(
         // while the dialog is on screen, so each open re-reads what has been
         // typed. Hoisting it would freeze the selection at whatever the field
         // held the first time the dialog ever appeared.
-        val pickerState = rememberDatePickerState(
-            initialSelectedDateMillis = BirthDateInput.toEpochMillis(value),
-            yearRange = EARLIEST_BIRTH_YEAR..thisYear,
-        )
+        val calendarLocale = remember(strings.languageTag) { appCalendarLocale(strings.languageTag) }
+        val pickerState = remember(calendarLocale) {
+            DatePickerState(
+                locale = calendarLocale,
+                initialSelectedDateMillis = BirthDateInput.toEpochMillis(value),
+                yearRange = EARLIEST_BIRTH_YEAR..thisYear,
+            )
+        }
+        // Material's default headline reads the device locale separately from
+        // DatePickerState. Pin every formatter call to the explicit app choice.
+        val formatter = remember(calendarLocale) { appDatePickerFormatter(calendarLocale) }
 
         DatePickerDialog(
             onDismissRequest = { showPicker = false },
@@ -96,7 +111,37 @@ fun BirthdayPickerField(
                 TextButton(onClick = { showPicker = false }) { Text(strings.cancel) }
             },
         ) {
-            DatePicker(state = pickerState, showModeToggle = false)
+            DatePicker(
+                state = pickerState,
+                dateFormatter = formatter,
+                title = {
+                    Text(strings.selectDate, modifier = Modifier.padding(AppSpacing.md),
+                        style = DnTheme.typography.label)
+                },
+                headline = {
+                    Text(
+                        formatter.formatDate(pickerState.selectedDateMillis, calendarLocale) ?: strings.selectDate,
+                        modifier = Modifier.padding(horizontal = AppSpacing.md),
+                        style = DnTheme.typography.headline,
+                    )
+                },
+                showModeToggle = false,
+            )
         }
+    }
+}
+
+/** Material may pass its device locale for the headline; the app's explicit choice wins. */
+@OptIn(ExperimentalMaterial3Api::class)
+internal fun appDatePickerFormatter(
+    appLocale: CalendarLocale,
+    formatter: DatePickerFormatter = DatePickerDefaults.dateFormatter(),
+): DatePickerFormatter {
+    return object : DatePickerFormatter {
+        override fun formatMonthYear(monthMillis: Long?, locale: CalendarLocale): String? =
+            formatter.formatMonthYear(monthMillis, appLocale)
+
+        override fun formatDate(dateMillis: Long?, locale: CalendarLocale, forContentDescription: Boolean): String? =
+            formatter.formatDate(dateMillis, appLocale, forContentDescription)
     }
 }

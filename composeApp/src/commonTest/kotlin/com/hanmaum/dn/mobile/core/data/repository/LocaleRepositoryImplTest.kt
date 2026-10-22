@@ -4,35 +4,37 @@ import com.hanmaum.dn.mobile.core.i18n.AppLocale
 import com.russhwolf.settings.MapSettings
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
 
 class LocaleRepositoryImplTest {
-
-    private fun repo(settings: MapSettings = MapSettings()) = LocaleRepositoryImpl(settings)
-
-    @Test
-    fun `getLocale returns EN when no value stored`() {
-        assertEquals(AppLocale.EN, repo().getLocale())
-    }
-
-    @Test
-    fun `setLocale persists and getLocale returns the same value`() {
+    @Test fun firstRunDoesNotPersistAnImplicitEnglishChoice() {
         val settings = MapSettings()
-        val r = repo(settings)
-        r.setLocale(AppLocale.KO)
-        assertEquals(AppLocale.KO, repo(settings).getLocale())
+        val repository = LocaleRepositoryImpl(settings)
+        assertEquals(AppLocale.EN, repository.getLocale())
+        assertNull(repository.getSelectedLocale())
+        assertFalse(settings.hasKey("app_locale"))
     }
 
-    @Test
-    fun `setLocale DE round-trips correctly`() {
-        val settings = MapSettings()
-        val r = repo(settings)
-        r.setLocale(AppLocale.DE)
-        assertEquals(AppLocale.DE, repo(settings).getLocale())
+    @Test fun supportedExplicitChoicesSurviveRepositoryRecreation() {
+        AppLocale.entries.forEach { locale ->
+            val settings = MapSettings()
+            LocaleRepositoryImpl(settings).setLocale(locale)
+            assertEquals(locale, LocaleRepositoryImpl(settings).getSelectedLocale())
+        }
     }
 
-    @Test
-    fun `getLocale returns EN for unknown stored value`() {
-        val settings = MapSettings("app_locale" to "xx")
-        assertEquals(AppLocale.EN, repo(settings).getLocale())
+    @Test fun existingExplicitEnglishAndKoreanChoicesNeedNoNewConfirmation() {
+        listOf("en" to AppLocale.EN, "ko" to AppLocale.KO).forEach { (code, locale) ->
+            assertEquals(locale, LocaleRepositoryImpl(MapSettings("app_locale" to code)).getSelectedLocale())
+        }
+    }
+
+    @Test fun germanAndUnknownLegacyValuesRequireAnExplicitChoice() {
+        listOf("de", "xx", "").forEach { code ->
+            val repository = LocaleRepositoryImpl(MapSettings("app_locale" to code))
+            assertNull(repository.getSelectedLocale())
+            assertEquals(AppLocale.EN, repository.getLocale())
+        }
     }
 }

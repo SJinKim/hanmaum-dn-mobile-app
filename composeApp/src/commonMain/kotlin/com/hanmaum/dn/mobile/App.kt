@@ -1,7 +1,11 @@
 package com.hanmaum.dn.mobile
 
+import com.hanmaum.dn.mobile.core.presentation.LanguageSelectionScreen
+import com.hanmaum.dn.mobile.core.presentation.LanguageViewModel
+import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,12 +29,10 @@ import kotlinx.coroutines.launch
 import com.hanmaum.dn.mobile.features.geofence.domain.GeofenceCoordinator
 import com.hanmaum.dn.mobile.core.security.BiometricVault
 import com.hanmaum.dn.mobile.core.security.InstallationGuard
-import com.hanmaum.dn.mobile.core.domain.repository.LocaleRepository
 import com.hanmaum.dn.mobile.core.i18n.AppLocale
-import com.hanmaum.dn.mobile.core.i18n.DeStrings
 import com.hanmaum.dn.mobile.core.i18n.EnStrings
 import com.hanmaum.dn.mobile.core.i18n.KoStrings
-import com.hanmaum.dn.mobile.core.i18n.LocalStrings
+import com.hanmaum.dn.mobile.core.i18n.ProvideAppLanguage
 import com.hanmaum.dn.mobile.core.navigation.*
 import com.hanmaum.dn.mobile.core.notification.NotificationDestination
 import com.hanmaum.dn.mobile.core.notification.NotificationRouter
@@ -76,8 +78,9 @@ fun App() {
         val installationGuard = koinInject<InstallationGuard>()
         remember { installationGuard.enforce() }
 
-        val localeRepo = koinInject<LocaleRepository>()
-        var locale by remember { mutableStateOf(localeRepo.getLocale()) }
+        val languageViewModel = koinViewModel<LanguageViewModel>()
+        val languageState by languageViewModel.uiState.collectAsState()
+        val locale = languageState.locale
 
         val themeRepo = koinInject<ThemeRepository>()
         var themeMode by remember { mutableStateOf(themeRepo.getThemeMode()) }
@@ -90,12 +93,17 @@ fun App() {
             when (locale) {
                 AppLocale.EN -> EnStrings
                 AppLocale.KO -> KoStrings
-                AppLocale.DE -> DeStrings
             }
         }
 
-        CompositionLocalProvider(LocalStrings provides strings) {
+        ProvideAppLanguage(strings) {
             AppTheme(darkTheme = darkTheme) {
+            if (languageState.needsSelection) {
+                Box(Modifier.fillMaxSize().safeDrawingPadding()) {
+                    LanguageSelectionScreen(languageViewModel::select)
+                }
+                return@AppTheme
+            }
             val navController = rememberNavController()
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry?.destination
@@ -272,10 +280,7 @@ fun App() {
                                 themeMode = mode
                             },
                             currentLocale = locale,
-                            onLocaleChange = { newLocale ->
-                                localeRepo.setLocale(newLocale)
-                                locale = newLocale
-                            },
+                            onLocaleChange = languageViewModel::select,
                             keepSignedIn = keepSignedIn,
                             onKeepSignedInChange = { value ->
                                 authPrefs.setKeepSignedInEnabled(value)

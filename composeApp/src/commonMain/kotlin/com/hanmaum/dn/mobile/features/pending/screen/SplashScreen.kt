@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.pending.screen
 
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -49,6 +50,7 @@ fun SplashScreen(
     viewModel: SplashViewModel = koinViewModel(),
     onNavigate: (NavRoute) -> Unit,
 ) {
+    val strings = LocalStrings.current
     val destination by viewModel.navigateTo.collectAsState()
     val c = DnTheme.colors
 
@@ -67,7 +69,7 @@ fun SplashScreen(
         ) {
             Image(
                 painter = painterResource(Res.drawable.logo),
-                contentDescription = "한마음 D+N",
+                contentDescription = strings.appBrand,
                 contentScale = ContentScale.Fit,
                 // the artwork is black; tint it so it survives the dark canvas
                 colorFilter = ColorFilter.tint(c.textPrimary),
@@ -75,7 +77,7 @@ fun SplashScreen(
             )
 
             Spacer(Modifier.height(22.dp))
-            Text("함께 걷는 신앙 공동체", style = DnTheme.typography.caption, color = c.textTertiary)
+            Text(strings.splashTagline, style = DnTheme.typography.caption, color = c.textTertiary)
 
             Spacer(Modifier.height(22.dp))
             LoadingDots()

@@ -1,5 +1,7 @@
 package com.hanmaum.dn.mobile.features.events.presentation
 
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
+import com.hanmaum.dn.mobile.core.i18n.message
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -16,6 +18,7 @@ import org.koin.compose.viewmodel.koinViewModel
  */
 @Composable
 fun EventRsvpHost(viewModel: EventRsvpViewModel = koinViewModel()) {
+    val strings = LocalStrings.current
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -35,7 +38,7 @@ fun EventRsvpHost(viewModel: EventRsvpViewModel = koinViewModel()) {
         EventRsvpSheet(
             event = next,
             isResponding = state.respondingTo == next.publicId,
-            errorMessage = state.rowErrors[next.publicId],
+            errorMessage = state.rowErrors[next.publicId]?.let(strings::message),
             onRespond = { status -> viewModel.respond(next.publicId, status) },
             onDismiss = viewModel::dismissSheet,
         )

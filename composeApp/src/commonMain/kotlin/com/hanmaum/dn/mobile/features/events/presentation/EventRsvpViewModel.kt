@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.events.presentation
 
+import com.hanmaum.dn.mobile.core.i18n.UiMessage
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.repository.EventRsvpPreferences
@@ -48,7 +49,7 @@ class EventRsvpViewModel(
                 onFailure = { err ->
                     // The sheet is a prompt, not a screen: never block Home on it.
                     _uiState.update {
-                        it.copy(isLoading = false, error = err.message ?: LOAD_FAILED_MSG)
+                        it.copy(isLoading = false, error = LOAD_FAILED_MSG)
                     }
                 },
             )
@@ -100,7 +101,7 @@ class EventRsvpViewModel(
     private fun revert(
         publicId: String,
         previous: com.hanmaum.dn.mobile.features.events.domain.model.EventRsvp,
-        message: String,
+        message: UiMessage,
     ) {
         _uiState.update { state ->
             state.copy(
@@ -131,8 +132,8 @@ class EventRsvpViewModel(
     }
 
     private companion object {
-        const val WINDOW_CLOSED_MSG = "응답 기간이 지났습니다"
-        const val FAILED_MSG = "응답을 저장하지 못했습니다"
-        const val LOAD_FAILED_MSG = "행사 목록을 불러오지 못했습니다"
+        val WINDOW_CLOSED_MSG = UiMessage.RSVP_WINDOW_CLOSED
+        val FAILED_MSG = UiMessage.RSVP_SAVE_FAILED
+        val LOAD_FAILED_MSG = UiMessage.RSVP_LOAD_FAILED
     }
 }

@@ -84,7 +84,7 @@ fun MyApplicationsScreen(
             Spacer(Modifier.height(14.dp))
 
             DnSegmented(
-                options = listOf("양육", "사역"),
+                options = listOf(strings.nurtureTitle, strings.ministryDetailTitle),
                 selectedIndex = tab,
                 onSelect = { tab = it },
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),

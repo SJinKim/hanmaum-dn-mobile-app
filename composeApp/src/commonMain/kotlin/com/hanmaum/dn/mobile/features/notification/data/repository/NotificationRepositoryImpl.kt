@@ -24,9 +24,9 @@ class NotificationRepositoryImpl(
 
     override suspend fun getNotifications(page: Int): Result<NotificationPage> = runCatching {
         val response = client.get("me/notifications?page=$page&size=20")
-        check(response.status.isSuccess()) { "알림을 불러오지 못했습니다 (${response.status})" }
+        check(response.status.isSuccess()) { "Notification load failed (${response.status})" }
         val body = response.body<ApiResponse<NotificationPageResponse>>()
-        val data = body.data ?: error("알림 응답이 비어 있습니다")
+        val data = body.data ?: error("Notification response is empty")
         NotificationPage(items = data.items.map { it.toDomain() }, hasNext = data.hasNext)
     }
 

@@ -12,6 +12,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterException
+import com.hanmaum.dn.mobile.features.login.domain.model.RegisterFailureReason
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterRequest
 import com.hanmaum.dn.mobile.features.login.domain.model.LoginException
 import kotlin.test.assertEquals
@@ -130,6 +131,8 @@ class AuthRepositoryImplTest {
 
         assertIs<RegisterException>(error)
         assertTrue(error.isServerError)
+        assertEquals(RegisterFailureReason.UNKNOWN, error.reason)
+        client.close()
     }
 
     @Test
@@ -144,5 +147,36 @@ class AuthRepositoryImplTest {
         assertIs<RegisterException>(error)
         assertFalse(error.isServerError)
         assertEquals("Email already registered", error.userMessage)
+        assertEquals(RegisterFailureReason.EMAIL_ALREADY_REGISTERED, error.reason)
+        client.close()
+    }
+
+    @Test
+    fun `email conflict is classified even without a usable response body`() = runTest {
+        for (body in listOf("", "not JSON", """{"success":false,"message":"이미 사용 중인 이메일입니다.","data":null}""")) {
+            val client = registerClient(HttpStatusCode.Conflict, body)
+
+            val error = AuthRepositoryImpl(client).register(REGISTER_REQUEST).exceptionOrNull()
+
+            assertIs<RegisterException>(error)
+            assertEquals(RegisterFailureReason.EMAIL_ALREADY_REGISTERED, error.reason)
+            assertFalse(error.isServerError)
+            client.close()
+        }
+    }
+
+    @Test
+    fun `other client errors are not inferred from their message`() = runTest {
+        val client = registerClient(
+            HttpStatusCode.BadRequest,
+            """{"success":false,"message":"Email already registered","data":null}""",
+        )
+
+        val error = AuthRepositoryImpl(client).register(REGISTER_REQUEST).exceptionOrNull()
+
+        assertIs<RegisterException>(error)
+        assertEquals(RegisterFailureReason.UNKNOWN, error.reason)
+        assertFalse(error.isServerError)
+        client.close()
     }
 }

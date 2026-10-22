@@ -32,8 +32,8 @@ enum class RegisterField {
 
 /** Top-of-form banner — distinct from per-field errors. */
 sealed interface RegisterBanner {
-    /** A clean message provided by the backend (e.g. "email already exists"). */
-    data class ServerMessage(val text: String) : RegisterBanner
+    /** The member can sign in or register with a different email address. */
+    data object EmailAlreadyRegistered : RegisterBanner
     /** Unexpected/network failure — UI shows a localized generic message. */
     data object Generic : RegisterBanner
     /** Registered, but auto-login failed — UI prompts the user to log in. */

@@ -177,7 +177,7 @@ class AttendanceViewModelTest {
         assertFalse(state.isCheckedIn)
         val checkInError = state.checkInError
         assertNotNull(checkInError)
-        assertTrue(checkInError.isNotEmpty())
+        assertEquals(com.hanmaum.dn.mobile.core.i18n.UiMessage.CHECK_IN_FAILED, checkInError)
     }
 
     @Test

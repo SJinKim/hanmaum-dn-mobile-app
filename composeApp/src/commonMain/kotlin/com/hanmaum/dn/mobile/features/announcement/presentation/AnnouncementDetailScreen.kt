@@ -1,5 +1,9 @@
 package com.hanmaum.dn.mobile.features.announcement.presentation
 
+import com.hanmaum.dn.mobile.core.i18n.AppStrings
+import com.hanmaum.dn.mobile.core.i18n.displayDate
+import com.hanmaum.dn.mobile.core.i18n.message
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -59,6 +63,7 @@ fun AnnouncementDetailScreen(
     announcementId: String,
     onBackClick: () -> Unit,
 ) {
+    val strings = LocalStrings.current
     val viewModel: AnnouncementDetailViewModel = koinViewModel(
         parameters = { parametersOf(announcementId) }
     )
@@ -77,7 +82,7 @@ fun AnnouncementDetailScreen(
 
     DnBackground(glows = DnGlows.information()) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
-            DnTopBar(title = "소식", onBack = onBackClick)
+            DnTopBar(title = strings.navNews, onBack = onBackClick)
 
             when {
                 state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
@@ -109,7 +114,7 @@ fun AnnouncementDetailScreen(
                         ) {
                             CategoryPill(item)
                             Text(
-                                item.startAt.take(10),
+                                strings.displayDate(item.startAt),
                                 style = DnTheme.typography.caption,
                                 color = c.textTertiary,
                             )
@@ -135,10 +140,10 @@ fun AnnouncementDetailScreen(
                         Spacer(Modifier.height(20.dp))
                         KeyFacts(
                             rows = listOfNotNull(
-                                Triple(DnIcons.Calendar, "일시", formatRange(item.startAt, item.endAt)),
+                                Triple(DnIcons.Calendar, strings.labelWhen, formatRange(item.startAt, item.endAt, strings)),
                                 // No row rather than a dash: most announcements name no place.
-                                item.location?.let { Triple(DnIcons.MapPin, "장소", it) },
-                                Triple(DnIcons.Clock, "문의", "교회 사무실"),
+                                item.location?.let { Triple(DnIcons.MapPin, strings.nurturePlace, it) },
+                                Triple(DnIcons.Clock, strings.rejectedContactLabel, strings.churchOffice),
                             )
                         )
 
@@ -159,13 +164,13 @@ fun AnnouncementDetailScreen(
                                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                             ) {
                                 Icon(DnIcons.UserCheck, null, tint = c.limeInk, modifier = Modifier.size(20.dp))
-                                Text("참석 여부 알리기", style = DnTheme.typography.bodyStrong, color = c.limeInk)
+                                Text(strings.rsvpAnnouncementCta, style = DnTheme.typography.bodyStrong, color = c.limeInk)
                             }
                         }
 
                         Spacer(Modifier.height(24.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            listOf("#${item.getAnnouncementCategoryName()}", "#한마음", "#소식").forEach { tag ->
+                            listOf("#${item.categoryLabel(strings)}", "#${strings.churchName}", "#${strings.navNews}").forEach { tag ->
                                 Box(
                                     Modifier
                                         .clip(RoundedCornerShape(percent = 50))
@@ -188,7 +193,7 @@ fun AnnouncementDetailScreen(
             EventRsvpSheet(
                 event = matchingRsvp,
                 isResponding = rsvpState.respondingTo == matchingRsvp.publicId,
-                errorMessage = rsvpState.rowErrors[matchingRsvp.publicId],
+                errorMessage = rsvpState.rowErrors[matchingRsvp.publicId]?.let(strings::message),
                 onRespond = { status -> rsvpViewModel.respond(matchingRsvp.publicId, status) },
                 onDismiss = { rsvpSheetOpen = false },
             )
@@ -198,6 +203,7 @@ fun AnnouncementDetailScreen(
 
 @Composable
 private fun AuthorRow() {
+    val strings = LocalStrings.current
     val c = DnTheme.colors
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -214,8 +220,8 @@ private fun AuthorRow() {
             Icon(DnIcons.User, null, tint = c.textSecondary, modifier = Modifier.size(19.dp))
         }
         Column {
-            Text("한마음 교회", style = DnTheme.typography.captionStrong, color = c.textPrimary)
-            Text("관리자", style = DnTheme.typography.caption, color = c.textTertiary)
+            Text(strings.churchName, style = DnTheme.typography.captionStrong, color = c.textPrimary)
+            Text(strings.authorAdmin, style = DnTheme.typography.caption, color = c.textTertiary)
         }
     }
 }
@@ -258,8 +264,8 @@ internal fun KeyFacts(rows: List<Triple<ImageVector, String, String>>) {
     }
 }
 
-private fun formatRange(startAt: String, endAt: String?): String {
-    val start = startAt.take(10)
-    val end = endAt?.take(10)
+private fun formatRange(startAt: String, endAt: String?, strings: AppStrings): String {
+    val start = strings.displayDate(startAt)
+    val end = endAt?.let(strings::displayDate)
     return if (end == null || end == start) start else "$start – $end"
 }

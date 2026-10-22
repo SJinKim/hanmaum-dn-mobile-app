@@ -5,7 +5,64 @@ import kotlinx.datetime.LocalDate
 interface AppStrings {
     val bulletin: BulletinStrings
     val languageTag: String
+    val homeWelcome: String
+    val attendanceSlideToCheckIn: String
+    val fullWeekdays: List<String>
+    val initialLanguageHint: String
+    val registerKoreanNameHint: String
+    val registerLastNameExample: String
+    val registerFirstNameExample: String
     val loginBrowserHelp: String
+    // App-owned copy shared across screens
+    val appBrand: String
+    val splashTagline: String
+    val loginWelcome: String
+    val loginSubtitle: String
+    val loginCheckingProfile: String
+    val loginAgain: String
+    val loginFailedTitle: String
+    val loginBusy: String
+    val loginWithAccount: String
+    val loginNoAccount: String
+    val newsAll: String
+    val categoryNotice: String
+    val categoryEvent: String
+    val labelWhen: String
+    val churchOffice: String
+    val authorAdmin: String
+    val imageDescription: String
+    val nextService: String
+    val nothingScheduled: String
+    val attendanceThisMonth: String
+    val communityTitle: String
+    val communityBody: String
+    val communityNotify: String
+    val rsvpNeedsAnswer: String
+    val rsvpByDeadline: String
+    val rsvpAnswered: String
+    val rsvpCanChange: String
+    val rsvpNotGoing: String
+    val rsvpMaybe: String
+    val rsvpGoingNote: String
+    val rsvpNotGoingNote: String
+    val rsvpMaybeNote: String
+    val rsvpReminderWeek: String
+    val rsvpEmpty: String
+    val rsvpEmptyBody: String
+    val profileEdit: String
+    val attendanceThisYear: String
+    val profileMinistries: String
+    val profileChangePhoto: String
+    val profileEditable: String
+    val profileChurchManaged: String
+    val profileContactPrefix: String
+    val profileContactSuffix: String
+    val calendarMonthView: String
+    val attendanceYear: String
+    val attendanceRate: String
+    val attendanceRecent: String
+    val hidePassword: String
+    val showPassword: String
     // Shared actions
     val retry: String
     val back: String
@@ -34,6 +91,7 @@ interface AppStrings {
     val errorInvalidPostcode: String
     val errorInvalidCity: String
     val errorInvalidHouseNumber: String
+    val registerEmailAlreadyRegistered: String
     val registerFailed: String
     val registerSuccessLogin: String
     // Notice carried to the login screen after registering (#168)
@@ -149,8 +207,7 @@ interface AppStrings {
 
     /**
      * The "함께한 시간" tile value. Takes years and months rather than a
-     * pre-formatted string because the three languages break differently:
-     * Korean concatenates units, German abbreviates them.
+     * pre-formatted string because Korean and English use different unit labels.
      */
     fun profileTimeTogetherValue(years: Int, months: Int): String
     val profileLanguage: String
@@ -271,6 +328,8 @@ interface AppStrings {
     val rejectedContactLabel: String
     val pendingBody: String
     // Calendar navigation & labels
+    fun calendarDayEvents(day: Int): String
+    fun calendarEventCount(count: Int): String
     val calendarPrevMonth: String
     val calendarNextMonth: String
     val calendarEventsThisMonth: String
@@ -509,6 +568,65 @@ interface AppStrings {
 }
 
 object EnStrings : AppStrings {
+    override val homeWelcome = "Welcome"
+    override val attendanceSlideToCheckIn = "Slide to check in"
+    override val fullWeekdays = listOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+    override fun calendarDayEvents(day: Int) = "Events on day $day"
+    override fun calendarEventCount(count: Int) = "$count ${if (count == 1) "event" else "events"}"
+    override val appBrand = "Hanmaum D+N"
+    override val splashTagline = "A community growing in faith together"
+    override val loginWelcome = "Welcome back"
+    override val loginSubtitle = "Sign in with your Hanmaum D+N account"
+    override val loginCheckingProfile = "Checking your account…"
+    override val loginAgain = "Please sign in again."
+    override val loginFailedTitle = "Couldn't sign you in"
+    override val loginBusy = "Signing in…"
+    override val loginWithAccount = "Sign in with your account"
+    override val loginNoAccount = "Don't have an account yet?"
+    override val newsAll = "All"
+    override val categoryNotice = "Notice"
+    override val categoryEvent = "Event"
+    override val labelWhen = "When"
+    override val churchOffice = "Church office"
+    override val authorAdmin = "Administrator"
+    override val imageDescription = "Image"
+    override val nextService = "Next service"
+    override val nothingScheduled = "Not scheduled"
+    override val attendanceThisMonth = "Attendance this month"
+    override val communityTitle = "Community"
+    override val communityBody = "We're preparing a place to share news and prayer requests with each other."
+    override val communityNotify = "Notify me when it opens"
+    override val rsvpNeedsAnswer = "Response needed"
+    override val rsvpByDeadline = "By deadline"
+    override val rsvpAnswered = "Answered"
+    override val rsvpCanChange = "You can change your answer"
+    override val rsvpNotGoing = "Not attending"
+    override val rsvpMaybe = "Undecided"
+    override val rsvpGoingNote = "I'll be attending"
+    override val rsvpNotGoingNote = "I can't attend this time"
+    override val rsvpMaybeNote = "I haven't decided yet"
+    override val rsvpReminderWeek = "Another reminder one week before the deadline"
+    override val rsvpEmpty = "No upcoming events"
+    override val rsvpEmptyBody = "Events that need your response will appear here"
+    override val profileEdit = "Edit profile"
+    override val attendanceThisYear = "Attendance this year"
+    override val profileMinistries = "My ministries"
+    override val profileChangePhoto = "Change photo"
+    override val profileEditable = "Information you can edit"
+    override val profileChurchManaged = "Information managed by the church"
+    override val profileContactPrefix = "To request a change, contact\n"
+    override val profileContactSuffix = "."
+    override val calendarMonthView = "Month"
+    override val attendanceYear = "This year"
+    override val attendanceRate = "Attendance rate"
+    override val attendanceRecent = "Recent attendance"
+    override val hidePassword = "Hide password"
+    override val showPassword = "Show password"
+
+    override val initialLanguageHint = "Choose the language for the app. You can change it later in Settings."
+    override val registerKoreanNameHint = "Please enter your Korean family name and given name in Hangul, if possible."
+    override val registerLastNameExample = "e.g. 홍"
+    override val registerFirstNameExample = "e.g. 길동"
     override val bulletin = EnBulletinStrings
     override val languageTag = "en"
     override val loginBrowserHelp get() = "Enter your email and password in the secure sign-in window. Use ‘$loginForgotPassword’ there to reset your password."
@@ -538,6 +656,7 @@ object EnStrings : AppStrings {
     override val errorInvalidPostcode = "Enter a valid postcode (5 digits)"
     override val errorInvalidCity = "Enter a valid city"
     override val errorInvalidHouseNumber = "Enter a valid house number (e.g. 5, 12a)"
+    override val registerEmailAlreadyRegistered = "This email is already registered. Sign in or use a different email address."
     override val registerFailed = "Registration failed. Please try again."
     override val registerSuccessLogin = "Registration successful. Please log in."
     // Notice carried to the login screen after registering (#168)
@@ -782,7 +901,7 @@ object EnStrings : AppStrings {
     override val verseWeeklyTitle = "Weekly Memory Verse"
     override val verseSundayServiceTitle = "Sunday service"
     override val verseSundayServiceHint = "Read along with today’s sermon passage"
-    override fun verseRecordsUnavailable(reason: String) = "Could not load your record · $reason"
+    override fun verseRecordsUnavailable(reason: String) = "Could not load your record. Please try again."
     override fun verseStreakRatio(marked: Int, total: Int) = "$marked/$total days"
     override fun verseRecordDaysValue(days: Long) = "$days"
     override val verseWeeklyEmpty = "No memory verse has been published yet"
@@ -912,6 +1031,65 @@ object EnStrings : AppStrings {
 }
 
 object KoStrings : AppStrings {
+    override val homeWelcome = "환영합니다"
+    override val attendanceSlideToCheckIn = "밀어서 출석하기"
+    override val fullWeekdays = listOf("일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일")
+    override fun calendarDayEvents(day: Int) = "${day}일 일정"
+    override fun calendarEventCount(count: Int) = "${count}개"
+    override val appBrand = "한마음 D+N"
+    override val splashTagline = "함께 걷는 신앙 공동체"
+    override val loginWelcome = "다시 만나서 반가워요"
+    override val loginSubtitle = "한마음 D+N 계정으로 로그인하세요"
+    override val loginCheckingProfile = "사용자 정보를 확인하고 있어요."
+    override val loginAgain = "다시 로그인해 주세요."
+    override val loginFailedTitle = "로그인을 완료하지 못했어요."
+    override val loginBusy = "로그인 중…"
+    override val loginWithAccount = "계정으로 로그인"
+    override val loginNoAccount = "아직 계정이 없으신가요?"
+    override val newsAll = "전체"
+    override val categoryNotice = "공지"
+    override val categoryEvent = "행사"
+    override val labelWhen = "일시"
+    override val churchOffice = "교회 사무실"
+    override val authorAdmin = "관리자"
+    override val imageDescription = "이미지"
+    override val nextService = "다음 예배"
+    override val nothingScheduled = "예정 없음"
+    override val attendanceThisMonth = "이번 달 출석"
+    override val communityTitle = "커뮤니티"
+    override val communityBody = "성도들이 서로 소식을 나누고 기도 제목을 올릴 수 있는 공간을 준비하고 있습니다."
+    override val communityNotify = "열리면 알려주세요"
+    override val rsvpNeedsAnswer = "응답 필요"
+    override val rsvpByDeadline = "마감 임박순"
+    override val rsvpAnswered = "응답 완료"
+    override val rsvpCanChange = "변경 가능"
+    override val rsvpNotGoing = "불참"
+    override val rsvpMaybe = "미정"
+    override val rsvpGoingNote = "행사에 참여합니다"
+    override val rsvpNotGoingNote = "이번에는 참여가 어렵습니다"
+    override val rsvpMaybeNote = "아직 정하지 못했어요"
+    override val rsvpReminderWeek = "마감 1주 전 다시 알림"
+    override val rsvpEmpty = "예정된 행사가 없습니다"
+    override val rsvpEmptyBody = "참석 확인이 필요한 행사가 생기면 여기에 표시됩니다"
+    override val profileEdit = "프로필 수정"
+    override val attendanceThisYear = "올해 출석"
+    override val profileMinistries = "소속 사역"
+    override val profileChangePhoto = "사진 변경"
+    override val profileEditable = "직접 수정할 수 있는 정보"
+    override val profileChurchManaged = "교회에서 관리하는 정보"
+    override val profileContactPrefix = "변경이 필요하면\n"
+    override val profileContactSuffix = "로 문의해 주세요."
+    override val calendarMonthView = "월간"
+    override val attendanceYear = "올해"
+    override val attendanceRate = "출석률"
+    override val attendanceRecent = "최근 출석"
+    override val hidePassword = "비밀번호 숨기기"
+    override val showPassword = "비밀번호 표시"
+
+    override val initialLanguageHint = "앱에서 사용할 언어를 선택해 주세요. 나중에 설정에서 변경할 수 있어요."
+    override val registerKoreanNameHint = "가능하면 성과 이름을 한글로 입력해 주세요."
+    override val registerLastNameExample = "예: 홍"
+    override val registerFirstNameExample = "예: 길동"
     override val bulletin = KoBulletinStrings
     override val languageTag = "ko"
     override val loginBrowserHelp get() = "안전한 로그인 창에서 이메일과 비밀번호를 입력해 주세요. 비밀번호를 잊으셨다면 그 창에서 ‘$loginForgotPassword’를 선택해 주세요."
@@ -941,6 +1119,7 @@ object KoStrings : AppStrings {
     override val errorInvalidPostcode = "올바른 우편번호를 입력해주세요 (5자리)"
     override val errorInvalidCity = "올바른 도시명을 입력해주세요"
     override val errorInvalidHouseNumber = "올바른 번지수를 입력해주세요 (예: 5, 12a)"
+    override val registerEmailAlreadyRegistered = "이미 가입된 이메일입니다. 로그인하거나 다른 이메일 주소를 사용해주세요."
     override val registerFailed = "회원가입에 실패했습니다. 다시 시도해주세요."
     override val registerSuccessLogin = "등록 성공했습니다. 로그인 해주세요."
     // Notice carried to the login screen after registering (#168)
@@ -1185,7 +1364,7 @@ object KoStrings : AppStrings {
     override val verseWeeklyTitle = "주간 암송 구절"
     override val verseSundayServiceTitle = "주일 말씀"
     override val verseSundayServiceHint = "설교 본문으로 함께 읽어요"
-    override fun verseRecordsUnavailable(reason: String) = "기록을 불러오지 못했어요 · $reason"
+    override fun verseRecordsUnavailable(reason: String) = "기록을 불러오지 못했어요. 다시 시도해 주세요."
     override fun verseStreakRatio(marked: Int, total: Int) = "$marked/${total}일"
     override fun verseRecordDaysValue(days: Long) = "${days}일"
     override val verseWeeklyEmpty = "아직 등록된 암송 구절이 없습니다"
@@ -1309,414 +1488,4 @@ object KoStrings : AppStrings {
     override val nurtureOptionConfirmation = "입교"
     override val nurtureOptionBaptism = "세례"
     override val nurtureOptionUnbaptized = "미세례"
-}
-
-object DeStrings : AppStrings {
-    override val bulletin = DeBulletinStrings
-    override val languageTag = "de"
-    override val loginBrowserHelp get() = "Gib E-Mail und Passwort im sicheren Anmeldefenster ein. Nutze dort ‘$loginForgotPassword’ zum Zurücksetzen."
-    override val retry = "Erneut versuchen"
-    override val back = "Zurück"
-    override val save = "Speichern"
-    override val cancel = "Abbrechen"
-    override val confirm = "Bestätigen"
-    override val saving = "Wird gespeichert…"
-    override val errorOccurred = "Ein Fehler ist aufgetreten"
-    override val settingsGroupDisplay = "Darstellung"
-    override val settingsGroupSignIn = "Anmeldung"
-    override val settingsGroupPrivacy = "Datenschutz"
-    override val settingsGroupNotifications = "Benachrichtigungen"
-    override val settingsPushDesc = "Ankündigungen, Termine und Anwesenheits-Erinnerungen"
-    override val settingsThemeSubtitle = "Wähle das Erscheinungsbild der App"
-    override val settingsLocationDenied = "Standortzugriff in den Systemeinstellungen erlauben"
-    override val errorTitle = "Etwas ist schiefgelaufen"
-    override val errorBody = "Die Seite konnte nicht geladen werden. Prüfe die Verbindung und versuche es erneut."
-    override val errorRetry = "Erneut versuchen"
-    override val errorGoHome = "Zur Startseite"
-    override val errorRequired = "Dieses Feld ist erforderlich"
-    override val errorInvalidEmail = "Bitte geben Sie eine gültige E-Mail-Adresse ein"
-    override val errorPasswordRequirements = "Passwort erfüllt die Anforderungen nicht"
-    override val errorDateIncomplete = "Bitte geben Sie das vollständige Datum ein (YYYY.MM.DD)"
-    override val errorDateInvalid = "Ungültiges Datum"
-    override val errorInvalidPostcode = "Bitte gültige PLZ eingeben (5 Ziffern)"
-    override val errorInvalidCity = "Bitte gültige Stadt eingeben"
-    override val errorInvalidHouseNumber = "Bitte gültige Hausnummer angeben (z. B. 5, 12a)"
-    override val registerFailed = "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut."
-    override val registerSuccessLogin = "Registrierung erfolgreich. Bitte melden Sie sich an."
-    // Notice carried to the login screen after registering (#168)
-    override val noticeRegisteredTitle = "Deine Anmeldung ist raus"
-    override val noticeVerifyEmailBody = "Bestätige die E-Mail, die wir dir geschickt haben, und melde dich dann an."
-    override val noticeRegisteredBody = "Bitte melde dich an."
-    // Attendance history list (#110)
-    override val attendancePresent = "Anwesend"
-    override val attendanceAbsent = "Gefehlt"
-    override val attendanceNoRecords = "Noch keine Anwesenheit erfasst"
-    // 행사 참석 entry on 출석 현황 (#163)
-    override val rsvpPendingCount = "{n} Veranstaltungen ohne Antwort"
-    override val rsvpAllAnswered = "Du hast auf alle Veranstaltungen geantwortet"
-    override val rsvpPendingHint = "Sag Bescheid, ob du kommst"
-    override val rsvpAllAnsweredHint = "Antippen, um deine Antworten zu sehen"
-    // Attendance history calendar (#164)
-    override val attendanceHistoryTitle = "Anwesenheit"
-    override val attendanceViewAll = "Alle anzeigen"
-    override val attendanceDayServices = "Gottesdienste am {day}. {month}"
-    override val attendanceCount = "{n}"
-    override val attendanceNoneThisDay = "An diesem Tag keine Anwesenheit"
-    override val attendanceLoadFailed = "Anwesenheit konnte nicht geladen werden"
-    override val attendanceCheckInNotAllowed = "Mit diesem Kontostatus ist keine Anwesenheitsmeldung möglich. Bitte wenden Sie sich an Ihre Gruppenleitung oder einen Admin."
-    override val attendanceRetry = "Erneut versuchen"
-    override val attendanceCheckedInAt = "Anwesend um {time}"
-    // Register form — chrome, field labels and the password checklist
-    override val registerTitle = "Registrieren"
-    override val registerHeadline = "Schön, dass du da bist"
-    override val registerSubtitle = "Nach der Anmeldung prüft ein Verantwortlicher deine Anfrage, bevor du die App nutzen kannst."
-    override val registerRequiredLegend = "* kennzeichnet ein Pflichtfeld"
-    override val registerMissingRequired = "Bitte fülle alle Pflichtfelder aus"
-    override val registerUnavailableTitle = "Registrierung derzeit nicht möglich"
-    override val registerUnavailableBody = "Es ist ein Fehler aufgetreten, deine Registrierung konnte nicht abgeschlossen werden. Bitte versuche es später erneut."
-    override val registerUnavailableContactPrefix = "Wenn das Problem bleibt, wende dich an "
-    override val registerUnavailableTeam = "das DN-Jugend-Entwicklerteam"
-    override val registerUnavailableContactSuffix = "."
-    override val registerSubmit = "Anmeldung absenden"
-    override val registerSubmitting = "Wird gesendet…"
-    override val fieldLastName = "Nachname"
-    override val fieldFirstName = "Vorname"
-    override val fieldEmail = "E-Mail"
-    override val fieldPhone = "Telefon"
-    override val phoneCountryPickerTitle = "Ländervorwahl"
-    override fun phoneCountryPickerPreselected(country: String) = "Aus der Geräteregion vorausgewählt · $country"
-    override val phoneCountrySearchPlaceholder = "Land oder Vorwahl suchen"
-    override val phoneCountryFrequent = "HÄUFIG GENUTZT"
-    override val phoneCountryAll = "ALLE LÄNDER · A–Z"
-    override val phoneCountryTapToApply = "Tippen übernimmt sofort"
-    override val fieldPassword = "Passwort"
-    override val fieldBirthDate = "Geburtsdatum"
-    override val fieldIdentityStatus = "Status"
-    override val identityStatusPlaceholder = "Auswählen"
-    override val identityStatusPickerTitle = "Status wählen"
-    override val identityStatusPickerHint = "Wähle, was deiner aktuellen Situation am nächsten kommt"
-    override val identityEmployee = "Angestellt"
-    override val identityUniversityStudent = "Studium (Bachelor/Master)"
-    override val identityExamPreparation = "Prüfungsvorbereitung"
-    override val identityWorkingHoliday = "Working Holiday"
-    override val identityExchangeStudent = "Austauschstudium"
-    override val identitySelfEmployed = "Selbstständig"
-    override val identityExpatriate = "Entsandt (Expat)"
-    override val identityJobSeeking = "Arbeitssuchend"
-    override val fieldWorkOrSchool = "Zugehörigkeit"
-    override val workOrSchoolPlaceholder = "Schule / Arbeitgeber"
-    override val fieldStreet = "Straße"
-    override val fieldHouseNumber = "Nr."
-    override val fieldZipCode = "PLZ"
-    override val fieldCity = "Ort"
-    override val passwordRuleLength = "Mindestens 8 Zeichen"
-    override val passwordRuleCase = "Groß- und Kleinbuchstaben"
-    override val passwordRuleDigit = "Eine Ziffer"
-    override val passwordRuleSpecial = "Ein Sonderzeichen"
-    override val passwordRuleNotEmail = "Nicht die E-Mail-Adresse"
-    override val laterButton = "Später"
-    override val allowPermission = "Erlauben"
-    override val navHome = "Start"
-    override val navNews = "Neuigkeiten"
-    override val navCalendar = "Kalender"
-    override val navAlbum = "Album"
-    override val navProfile = "Profil"
-    override val navAttendance = "Anwesenheit"
-    override val notifications = "Benachrichtigungen"
-    override val notificationsTitle = "Mitteilungen"
-    override val notificationsEmpty = "Neue Mitteilungen erscheinen hier"
-    override val notificationsReadAll = "Alle gelesen"
-    override val notificationsDeleteAll = "Alle löschen"
-    override val notificationsDelete = "Löschen"
-    override val moreOptions = "Weitere Optionen"
-    override val notificationsToday = "Heute"
-    override val notificationsYesterday = "Gestern"
-    override val notificationsEarlier = "Früher"
-    override val notificationsError = "Mitteilungen konnten nicht geladen werden"
-    override val notificationTimeJustNow = "gerade eben"
-    override fun notificationTimeMinutesAgo(minutes: Int) = "vor ${minutes} Min."
-    override fun notificationTimeHoursAgo(hours: Int) = "vor ${hours} Std."
-    override fun notificationTimeDaysAgo(days: Int) = "vor ${days} Tagen"
-    override val pushPrimingTitle = "Verpassen Sie keine Neuigkeiten"
-    override val pushPrimingBody = "Wir benachrichtigen Sie bei neuen Ankündigungen"
-    override val pushPrimingEnable = "Mitteilungen aktivieren"
-    override val settingsPushToggle = "Push-Mitteilungen"
-    override val settingsPushPermissionHint = "Erlauben Sie Mitteilungen in den Systemeinstellungen"
-    override val profileLogout = "Abmelden"
-    override val profileTimeTogether = "Gemeinsame Zeit"
-    override val profileQtRecord = "Stille Zeit"
-    override val profileMemorizationRecord = "Merkverse"
-    override fun profileTimeTogetherValue(years: Int, months: Int) = when {
-        years > 0 && months > 0 -> "${years} J. ${months} Mon."
-        years > 0 -> "${years} J."
-        months > 0 -> "${months} Mon."
-        else -> "Neu"
-    }
-    override val profileLanguage = "SPRACHE"
-    override val selectLanguage = "Sprache auswählen"
-    override val profileTheme = "DARSTELLUNG"
-    override val selectTheme = "Darstellung wählen"
-    override val themeSystem = "System"
-    override val themeLight = "Hell"
-    override val themeDark = "Dunkel"
-    override val profileAppLock = "App-Sperre (Face ID / Touch ID)"
-    override val appLockUnavailable = "Keine Biometrie auf diesem Gerät eingerichtet"
-    override val lockTitle = "Gesperrt"
-    override val lockSubtitle = "Entsperre die DN App, um fortzufahren"
-    override val lockUnlockButton = "Entsperren"
-    override val lockUsePassword = "Stattdessen Passwort verwenden"
-    override val profileFaceIdLogin = "Face-ID-Anmeldung"
-    override val faceIdLoginDesc = "Mit Face ID / Touch ID automatisch anmelden"
-    override val faceIdDenied = "Face ID für diese App in den iPhone-Einstellungen erlauben"
-    override val biometricsUnavailableNow = "Biometrie ist gerade nicht verfügbar"
-    override val faceIdSetupTitle = "Passwort bestätigen"
-    override val faceIdSetupSubtitle = "Einmal eingeben, danach meldet Face ID dich an."
-    override val loginForgotPassword = "Passwort vergessen?"
-    override val loginUseFaceId = "Face-ID-Anmeldung aktivieren"
-    override val loginSignInWithFaceId = "Mit Face ID anmelden"
-    override val profileKeepSignedIn = "Angemeldet bleiben"
-    override val keepSignedInDesc = "Zwischen App-Starts angemeldet bleiben"
-    override val profileLocationSharing = "Standortfreigabe"
-    override val locationSharingDesc = "Dein Standort wird bei jedem Anwesenheits-Check-in mitgesendet"
-    override val sectionThisMonth = "DIESEN MONAT"
-    override val sectionLastMonth = "LETZTEN MONAT"
-    override val sectionEarlier = "FRÜHER"
-    override val announcementUnavailableTitle = "Diese Mitteilung ist nicht mehr verfügbar"
-    override val announcementUnavailableBody = "Sie ist möglicherweise abgelaufen oder wurde entfernt."
-    override val announcementUnavailableAction = "Alle Mitteilungen ansehen"
-    override val labelEmail = "E-MAIL-ADRESSE"
-    override val labelPhone = "TELEFONNUMMER"
-    override val labelStreet = "STRASSE"
-    override val labelHouseNumber = "HAUSNUMMER"
-    override val labelZipCode = "POSTLEITZAHL"
-    override val labelCity = "STADT"
-    override val profileImageUrl = "PROFILBILD-URL"
-    override val ministryListTitle = "Dienste"
-    override val ministryListSubtitle = "Entdecken Sie die Dienste unserer Gemeinde"
-    override val ministryListEmpty = "Noch keine Dienste"
-    override val newsFeatured = "HERVORGEHOBEN"
-    override val newsReadFull = "GANZE STORY →"
-    override val newsDetails = "DETAILS →"
-    override val newsEmpty = "Noch keine Neuigkeiten"
-    override val churchName = "한마음 교회"
-    override val share = "Teilen"
-    override val albumPhotoCount = "{n} Fotos"
-    override val attendanceServiceDayOnly = "Check-in ist nur an einem Gottesdiensttag möglich"
-    override val attendanceWindow = "Check-in-Zeitraum: {start} – {end}"
-    override val attendanceCheckIn = "Einchecken"
-    override val attendanceNotInWindow = "Außerhalb der Check-in-Zeit"
-    override val ministryApplyUnavailable = "In Vorbereitung."
-    override val ministryApplyUnavailableContact = "Bitte wende dich an die zuständige Person."
-    override val ministryAbout = "Über uns"
-    override val ministryRequirements = "Voraussetzungen"
-    override val ministrySchedule = "Zeitplan"
-    override val ministryContact = "Kontakt"
-    override fun ministryLeaderName(name: String) = "Leitung: $name"
-    override val ministryNoLeader = "Noch keine Leitung"
-    override val ministryFactLeader = "Leitung"
-    override val ministryMeetingTime = "Treffzeit"
-    override val ministryPlace = "Ort"
-    override val ministryDetailTitle = "Dienst"
-    override val ministryDetailEyebrow = "Gemeinsam dienen"
-    override val ministryFactStatus = "Status"
-    override val ministryRecruiting = "Offen"
-    override val ministryRecruitingClosed = "Geschlossen"
-    override val ministryHeartTitle = "Unser Herz"
-    override val ministryApply = "Anmelden"
-    override val participationNurtureHeadline = "Gemeinsam wachsen"
-    override val participationMinistryHeadline = "Wo wir gemeinsam dienen"
-    override val participationNurtureCaption = "Kurse, die dich im Wort einen Schritt weiterbringen."
-    override val participationMinistryCaption = "Teams, die ihre Gaben teilen und gemeinsam Gemeinde bauen."
-    override fun ministryMemberCount(count: Int) = if (count == 1) "1 Mitglied" else "$count Mitglieder"
-    override val profileEmailUnverified = "Nicht bestätigt"
-    override val checkStatus = "Status prüfen"
-    override val albumEmpty = "Noch keine Fotos"
-    override val albumsEmpty = "Keine Alben"
-    override val comingSoon = "Demnächst verfügbar"
-    override val list = "Liste"
-    override val months = listOf("", "Januar", "Februar", "März", "April", "Mai", "Juni",
-        "Juli", "August", "September", "Oktober", "November", "Dezember")
-    override val yearSuffix = ""
-    override val pendingTitle = "Genehmigung ausstehend"
-    override val rejectedTitle = "Anmeldung nicht genehmigt"
-    override val rejectedBody = "Sie sind nicht als Mitglied der Gemeinde Hanmaum D+N eingetragen.\nBei Fragen wenden Sie sich bitte an die untenstehende Adresse."
-    override val rejectedContactLabel = "Kontakt"
-    override val pendingBody = "Ihre Anmeldung wurde eingereicht. Ein Administrator wird Ihre Anfrage in Kürze prüfen."
-    override val calendarPrevMonth = "Vorheriger Monat"
-    override val calendarNextMonth = "Nächster Monat"
-    override val calendarEventsThisMonth = "Veranstaltungen diesen Monat"
-    override val calendarNoEvents = "Keine Veranstaltungen"
-    override val calendarNoEventsThisDay = "Keine Veranstaltungen an diesem Tag"
-    override val calendarAllDay = "Ganztägig"
-    override val calendarLoadFailed = "Der Kalender konnte nicht geladen werden."
-    override val dayHeaders = listOf("So", "Mo", "Di", "Mi", "Do", "Fr", "Sa")
-    override val attendanceNoService = "Heute kein Gottesdienst"
-    override val attendanceCheckedIn = "Eingecheckt!"
-    override val attendanceReady = "Bereit zum Einchecken"
-    override val attendanceLocation = "Standort"
-    override val floorPlanTitle = "Kirchenkarte"
-    override val rsvpSheetTitle = "Veranstaltung"
-    override val rsvpMultiHeader = "Teilnahme"
-    override val rsvpAttend = "Teilnehmen"
-    override val rsvpAttendShort = "Teilnehmen"
-    override val rsvpLater = "Später"
-    override val rsvpDone = "Zugesagt"
-    override val rsvpAnnouncementCta = "An Veranstaltung teilnehmen"
-    private val rsvpMonths = listOf(
-        "Jan.", "Feb.", "März", "Apr.", "Mai", "Juni",
-        "Juli", "Aug.", "Sept.", "Okt.", "Nov.", "Dez.",
-    )
-    private val rsvpWeekdays = listOf("Mo.", "Di.", "Mi.", "Do.", "Fr.", "Sa.", "So.")
-    override fun rsvpDate(date: LocalDate, includeWeekday: Boolean): String {
-        val month = rsvpMonths[date.month.ordinal]
-        val value = "${date.day}. $month"
-        return if (includeWeekday) "${rsvpWeekdays[date.dayOfWeek.ordinal]}, $value" else value
-    }
-    override fun rsvpDeadline(date: String) = "Antwort bis $date"
-    override fun rsvpRespondedOn(date: String) = "Geantwortet am $date"
-    override fun rsvpReminderHint(date: String) = "Unentschieden · Eine weitere Erinnerung am $date"
-    override fun rsvpSheetDeadline(date: String) = "Bitte bis $date antworten · Wir benötigen die Teilnehmerzahl"
-    override val settingsTitle = "Einstellungen"
-    override val personalInfoTitle = "Persönliche Daten"
-    override val labelBirthDate = "GEBURTSDATUM"
-    override val labelDivision = "BEZIRK"
-    override val labelGroup = "GRUPPE"
-    override val labelName = "NAME"
-    override val lockedFieldHint = "Wird vom Gemeindebüro verwaltet"
-    override val profileSaved = "Gespeichert"
-    override val selectDate = "Datum wählen"
-    override val verseTodayTitle = "Bibeltext heute"
-    override val verseReadAction = "Lesen"
-    override val verseWeeklyTitle = "Wochenvers"
-    override val verseSundayServiceTitle = "Sonntagsgottesdienst"
-    override val verseSundayServiceHint = "Wir lesen den Predigttext mit"
-    override fun verseRecordsUnavailable(reason: String) = "Aufzeichnung nicht geladen · $reason"
-    override fun verseStreakRatio(marked: Int, total: Int) = "$marked/$total Tage"
-    override fun verseRecordDaysValue(days: Long) = "$days"
-    override val verseWeeklyEmpty = "Noch kein Wochenvers veröffentlicht"
-    override val verseWeeklyUnavailable = "Wochenvers konnte nicht geladen werden"
-    override fun verseWeeklyRemembered(reference: String) = "Letzter Vers · $reference"
-    override fun verseWeekRange(startMonth: Int, startDay: Int, endMonth: Int, endDay: Int) =
-        "$startDay. ${months[startMonth].take(3)} – $endDay. ${months[endMonth].take(3)}"
-
-    override val myApplicationsTitle = "Meine Anmeldungen"
-    override val myApplicationsMenuSubtitle = "Jüngerschaft und Dienst und ihr Stand"
-    override val myApplicationsEmpty = "Du hast dich noch für nichts angemeldet."
-    override val myApplicationsError = "Die Anmeldungen konnten nicht geladen werden."
-    override val myApplicationsServeComingSoon = "In Vorbereitung."
-
-    override val nurtureTitle = "Jüngerschaft"
-    override val nurtureEyebrow = "Im Wort wachsen"
-    override val nurtureOpen = "Offen"
-    override val nurtureClosed = "Geschlossen"
-    override val nurtureAlwaysOpen = "Jederzeit offen"
-    override val nurtureUnavailable = "In Vorbereitung."
-    override val nurtureUnavailableContact = "Bitte wende dich an die zuständige Person."
-    override val nurtureEmpty = "Derzeit ist kein Kurs zur Anmeldung offen."
-    override val nurturePeriod = "Zeitraum"
-    override val nurtureTime = "Zeit"
-    override val nurturePlace = "Ort"
-    override val nurtureLeader = "Leitung"
-    override val nurtureAudience = "Empfohlen für"
-    override val nurtureCourseSelect = "Kurs wählen"
-    override val nurtureSelectedCourse = "Kurs"
-    override val nurtureApply = "Anmelden"
-    override val nurtureClosedHint = "Die Anmeldung ist geschlossen. Bitte warte auf den nächsten Durchgang."
-    override val nurtureCourseNotEligible = "Für diesen Kurs kannst du dich nicht anmelden"
-    override val nurtureStatusTitle = "Deine Anmeldung"
-    override val nurtureStatusCourse = "Kurs"
-    override val nurtureStatusAppliedOn = "Angemeldet am"
-    override val nurtureCancel = "Anmeldung stornieren"
-    override val nurtureStatusApplied = "Angemeldet"
-    override val nurtureStatusEnrolled = "Bestätigt"
-    override val nurtureStatusInProgress = "Läuft"
-    override val nurtureStatusCompleted = "Abgeschlossen"
-    override val nurtureStatusDropped = "Storniert"
-    override val nurtureStatusUnknown = "Wird geprüft"
-    override val nurtureCancelConfirmTitle = "Anmeldung stornieren?"
-    override val nurtureCancelConfirmBody =
-        "Der Platz wird wieder frei. Eine erneute Teilnahme braucht eine neue Anmeldung."
-    override val nurtureCancelConfirmAction = "Stornieren"
-    override val nurtureAbortConfirmTitle = "Laufendes Training abbrechen?"
-    override val nurtureAbortConfirmBody =
-        "Ein Abbruch wird nicht als Abschluss gewertet. Eine erneute Teilnahme braucht eine neue Anmeldung."
-    override val nurtureAbortConfirmAction = "Training abbrechen"
-    override val nurtureCancelKeep = "Schließen"
-    override val nurtureCancelBusy = "Wird storniert…"
-    override val nurtureCancelFailedTitle = "Konnte nicht storniert werden."
-    override val nurtureCancelFailedBody =
-        "Deine Anmeldung bleibt unverändert. Bitte versuche es in einem Moment erneut."
-    override val nurtureCancelNotAllowedTitle = "Dieses Training hast du schon abgeschlossen."
-    override val nurtureCancelNotAllowedBody =
-        "Ein Abschluss kann nicht storniert werden. Bitte wende dich an die zuständige Person."
-    override val nurtureCancelGoneTitle = "Keine Anmeldung gefunden."
-    override val nurtureCancelGoneBody =
-        "Sie wurde offenbar schon storniert oder vom Büro bearbeitet. Der aktuelle Stand wird geladen."
-    override fun nurtureWindow(start: String, end: String) = "Anmeldung $start – $end"
-    override fun nurtureWindowUntil(end: String) = "Anmeldung bis $end"
-    override fun nurtureWindowFrom(start: String) = "Anmeldung ab $start"
-    override fun nurtureMonthDay(month: Int, day: Int) = "$day.$month."
-    override fun nurtureFullDate(year: Int, month: Int, day: Int) = "$day.$month.$year"
-    override fun nurtureStarts(date: String) = "Beginn $date"
-    override fun nurtureWeeks(weeks: Int) = if (weeks == 1) "1 Woche" else "$weeks Wochen"
-    override fun nurtureWeekly(day: String) = "Jeden $day"
-    override fun nurtureMinutes(minutes: Int) = "$minutes Min."
-
-    override val nurtureFormBasicGroup = "Grunddaten"
-    override val nurtureFormBasicHint = "Name und Geburtsdatum stammen aus deinem Profil und lassen sich hier nicht ändern. Alles andere gilt nur für diese Anmeldung."
-    override val nurtureFormChurchGroup = "Gemeinde"
-    override val nurtureFormExperienceGroup = "Jüngerschaftserfahrung"
-    override val nurtureFormExperienceHint = "Trag nur ein, was auf dich zutrifft."
-    override val nurtureFormRequired = "Pflicht"
-    override val nurtureFormOptional = "Optional"
-    override val nurtureFormChoose = "Bitte wählen"
-    override val nurtureFormMissingInProfile = "In deinem Profil fehlt diese Angabe. Bitte hier eintragen."
-    override val nurtureFormErrorRequired = "Pflichtfeld."
-    override val nurtureFormErrorEmail = "Bitte gib eine gültige E-Mail-Adresse ein."
-    override val nurtureFormErrorDate = "Dieses Datum gibt es nicht."
-    override val nurtureFormErrorPhone = "Bitte gib eine Handynummer aus Ziffern ein."
-    override val nurtureFormErrorChoice = "Bitte wähle eine der Möglichkeiten."
-    override val nurtureFormConsent = "Ich stimme der Erhebung und Nutzung meiner Daten zu"
-    override val nurtureFormConsentBody = "Deine Angaben gehen zur Bearbeitung an das Jüngerschaftsteam der Gemeinde."
-    override val nurtureFormSubmitting = "Wird gesendet…"
-    override val nurtureFormRetry = "Erneut anmelden"
-    override val nurtureFormFull = "Kurs voll"
-    override val nurtureFormNotEligible = "Nicht möglich"
-    override val nurtureFormSuccessTitle = "Anmeldung eingegangen"
-    override fun nurtureFormSuccessBody(courseName: String) = "$courseName · Das Team meldet sich bei dir."
-    override val nurtureFormKeptInput = "Deine Eingaben bleiben erhalten."
-    override val nurtureFormFullTitle = "Dieser Kurs ist voll."
-    override val nurtureFormFullBody = "Ist ein anderer Kurs offen, wähle bitte diesen."
-    override val nurtureFormClosedTitle = "Die Anmeldung ist geschlossen."
-    override val nurtureFormClosedBody = "Bitte melde dich beim nächsten Durchgang an."
-    override val nurtureFormAlreadyTitle = "Du bist bereits angemeldet."
-    override val nurtureFormAlreadyBody = "Den Stand siehst du unter Deine Anmeldung."
-    override val nurtureFormNotEligibleTitle = "Für diesen Kurs kannst du dich nicht anmelden."
-    override val nurtureFormInvalidTitle = "Bitte prüfe deine Eingaben."
-    override val nurtureFormInvalidBody = "Korrigiere die markierten Felder und melde dich erneut an."
-    override val nurtureFormFailedTitle = "Anmeldung konnte nicht gesendet werden."
-    override val nurtureFormFailedBody = "Bitte versuche es gleich noch einmal."
-    override val nurtureFieldName = "Name"
-    override val nurtureFieldBirthDate = "Geburtsdatum"
-    override val nurtureFieldEmail = "E-Mail"
-    override val nurtureFieldPhone = "Handy"
-    override val nurtureFieldGender = "Geschlecht"
-    override val nurtureFieldBaptized = "Taufe"
-    override val nurtureFieldBaptizeType = "Art der Taufe"
-    override val nurtureFieldResidence = "Wohnort"
-    override val nurtureFieldGyogu = "Bezirk"
-    override val nurtureFieldSoon = "Zelle"
-    override val nurtureFieldChildren = "Familie"
-    override val nurtureFieldHistory = "Bisherige Jüngerschaft"
-    override val nurtureFieldWaiting = "Offene Anmeldungen"
-    override val nurtureFieldRunning = "Laufende Jüngerschaft"
-    override val nurtureFieldComment = "Sonstiges"
-    override val nurtureFieldHistoryPlaceholder = "z. B. QT-Grundseminar / Mai 2017 / Hanmaum-Gemeinde"
-    override val nurtureOptionFemale = "Weiblich"
-    override val nurtureOptionMale = "Männlich"
-    override val nurtureOptionInfantBaptism = "Säuglingstaufe"
-    override val nurtureOptionChildBaptism = "Kindertaufe"
-    override val nurtureOptionConfirmation = "Konfirmation"
-    override val nurtureOptionBaptism = "Taufe"
-    override val nurtureOptionUnbaptized = "Nicht getauft"
 }

@@ -238,6 +238,14 @@ android {
         buildConfig = true
     }
 
+    // The app language can differ from the device language. Keep Material's
+    // translated resources installed for either choice after Play delivery.
+    bundle {
+        language {
+            enableSplit = false
+        }
+    }
+
     flavorDimensions += "env"
     productFlavors {
         create("dev") {

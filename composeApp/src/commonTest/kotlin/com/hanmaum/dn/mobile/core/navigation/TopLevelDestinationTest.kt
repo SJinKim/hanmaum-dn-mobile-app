@@ -1,7 +1,6 @@
 package com.hanmaum.dn.mobile.core.navigation
 
 import com.hanmaum.dn.mobile.core.i18n.AppStrings
-import com.hanmaum.dn.mobile.core.i18n.DeStrings
 import com.hanmaum.dn.mobile.core.i18n.EnStrings
 import com.hanmaum.dn.mobile.core.i18n.KoStrings
 import kotlin.test.Test
@@ -36,7 +35,7 @@ class TopLevelDestinationTest {
     fun `every locale labels every tab`() {
         // Labels moved out of the destination and into AppStrings, so a new
         // locale that forgets a tab has to fail here.
-        listOf<AppStrings>(EnStrings, KoStrings, DeStrings).forEach { s ->
+        listOf<AppStrings>(EnStrings, KoStrings).forEach { s ->
             listOf(s.navHome, s.navNews, s.navCalendar, s.navAlbum).forEach { label ->
                 assertTrue(label.isNotBlank(), "Blank tab label in $s")
             }

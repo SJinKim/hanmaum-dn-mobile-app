@@ -116,7 +116,7 @@ fun AlbumsScreen(
                                     )
                                     summary.photoCount?.let {
                                         Text(
-                                            "${it}장",
+                                            strings.albumPhotoCount.replace("{n}", it.toString()),
                                             style = DnTheme.typography.caption,
                                             color = c.textTertiary,
                                         )

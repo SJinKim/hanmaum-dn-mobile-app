@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.events.presentation
 
+import com.hanmaum.dn.mobile.core.i18n.message
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -55,6 +56,7 @@ fun RsvpScreen(
     onBackClick: () -> Unit,
     viewModel: EventRsvpViewModel = koinViewModel(),
 ) {
+    val strings = LocalStrings.current
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val c = DnTheme.colors
 
@@ -66,7 +68,7 @@ fun RsvpScreen(
 
     DnBackground(glows = DnGlows.action()) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
-            DnTopBar(title = "행사 참석", onBack = onBackClick, actionIcon = null)
+            DnTopBar(title = strings.rsvpSheetTitle, onBack = onBackClick, actionIcon = null)
 
             when {
                 state.isLoading && state.events.isEmpty() ->
@@ -90,14 +92,14 @@ fun RsvpScreen(
 
                     if (state.pending.isNotEmpty()) {
                         Spacer(Modifier.height(22.dp))
-                        SectionHeader("응답 필요", "마감 임박순")
+                        SectionHeader(strings.rsvpNeedsAnswer, strings.rsvpByDeadline)
                         Spacer(Modifier.height(12.dp))
                         state.pending.forEach { event ->
                             PendingCard(
                                 event = event,
                                 busy = state.respondingTo == event.publicId,
                                 enabled = state.respondingTo == null,
-                                error = state.rowErrors[event.publicId],
+                                error = state.rowErrors[event.publicId]?.let(strings::message),
                                 onRespond = { status -> viewModel.respond(event.publicId, status) },
                             )
                             Spacer(Modifier.height(10.dp))
@@ -106,7 +108,7 @@ fun RsvpScreen(
 
                     if (state.answered.isNotEmpty()) {
                         Spacer(Modifier.height(12.dp))
-                        SectionHeader("응답 완료", "변경 가능")
+                        SectionHeader(strings.rsvpAnswered, strings.rsvpCanChange)
                         Spacer(Modifier.height(12.dp))
                         state.answered.forEach { event ->
                             AnsweredRow(
@@ -127,12 +129,13 @@ fun RsvpScreen(
 
 @Composable
 private fun SummaryRow(state: EventRsvpUiState) {
+    val strings = LocalStrings.current
     val c = DnTheme.colors
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         listOf(
-            Triple("응답 필요", state.pendingCount, c.amber),
-            Triple("참석", state.goingCount, c.limeInk),
-            Triple("불참", state.notGoingCount, c.red),
+            Triple(strings.rsvpNeedsAnswer, state.pendingCount, c.amber),
+            Triple(strings.rsvpAttendShort, state.goingCount, c.limeInk),
+            Triple(strings.rsvpNotGoing, state.notGoingCount, c.red),
         ).forEach { (label, value, accent) ->
             Column(
                 Modifier
@@ -313,6 +316,7 @@ private fun AnsweredRow(
 
 @Composable
 private fun EmptyRsvp() {
+    val strings = LocalStrings.current
     val c = DnTheme.colors
     Box(Modifier.fillMaxSize(), Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -323,10 +327,10 @@ private fun EmptyRsvp() {
                 Icon(DnIcons.Calendar, null, tint = c.limeInk, modifier = Modifier.size(32.dp))
             }
             Spacer(Modifier.height(16.dp))
-            Text("예정된 행사가 없습니다", style = DnTheme.typography.captionStrong, color = c.textSecondary)
+            Text(strings.rsvpEmpty, style = DnTheme.typography.captionStrong, color = c.textSecondary)
             Spacer(Modifier.height(4.dp))
             Text(
-                "참석 확인이 필요한 행사가 생기면 여기에 표시됩니다",
+                strings.rsvpEmptyBody,
                 style = DnTheme.typography.caption,
                 color = c.textTertiary,
             )

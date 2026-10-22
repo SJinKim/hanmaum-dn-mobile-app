@@ -236,7 +236,7 @@ class HomeViewModel(
                 },
                 onFailure = {
                     _uiState.update {
-                        it.copy(verseRecords = before, verseRecordError = "기록하지 못했습니다")
+                        it.copy(verseRecords = before, verseRecordError = "Record save failed")
                     }
                 },
             )

@@ -38,7 +38,7 @@ class AlbumDetailViewModel(
                         }
                     }
                 },
-                onFailure = { _uiState.value = AlbumDetailUiState.Error(it.message ?: "앨범 로딩 실패") },
+                onFailure = { _uiState.value = AlbumDetailUiState.Error(it.message ?: "Album load failed") },
             )
         }
     }

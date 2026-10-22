@@ -44,7 +44,7 @@ class NotificationListViewModel(
                     repository.markAllSeen()
                 }
                 .onFailure { _ ->
-                    _uiState.update { it.copy(isLoading = false, error = "알림을 불러오지 못했습니다") }
+                    _uiState.update { it.copy(isLoading = false, error = "Notification load failed") }
                 }
         }
     }

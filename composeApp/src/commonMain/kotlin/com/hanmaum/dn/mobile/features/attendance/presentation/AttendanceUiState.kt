@@ -1,6 +1,7 @@
 // features/attendance/presentation/AttendanceUiState.kt
 package com.hanmaum.dn.mobile.features.attendance.presentation
 
+import com.hanmaum.dn.mobile.core.i18n.UiMessage
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceDefinition
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceEntry
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceSummary
@@ -10,7 +11,7 @@ data class AttendanceUiState(
     val isInWindow: Boolean = false,              // current time is within windowStart..windowEnd
     val isCheckedIn: Boolean = false,
     val isCheckingIn: Boolean = false,
-    val checkInError: String? = null,
+    val checkInError: UiMessage? = null,
     /** The server refused the check-in with 403; the screen shows the localized hint. */
     val checkInNotAllowed: Boolean = false,
     /** One-shot: a refused check-in turned out to be a PENDING account. */

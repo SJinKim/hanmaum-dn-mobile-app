@@ -4,6 +4,7 @@ import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.navigation.LoginRoute
 import com.hanmaum.dn.mobile.features.login.domain.model.IdentityStatus
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterException
+import com.hanmaum.dn.mobile.features.login.domain.model.RegisterFailureReason
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterRequest
 import com.hanmaum.dn.mobile.features.login.domain.model.TokenResponse
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
@@ -85,6 +86,31 @@ class RegisterViewModelTest {
         vm.onCityChange("Düsseldorf")
         vm.onBirthDateChange("2000.08.16")
         vm.onIdentityStatusChange(IdentityStatus.UNIVERSITY_STUDENT)
+    }
+
+    @Test
+    fun hangulNamesReachTheBackendUnchanged() = runTest {
+        fillMinimumValidForm()
+        vm.onLastNameChange("홍")
+        vm.onFirstNameChange("길동")
+        vm.register()
+        advanceUntilIdle()
+        assertEquals("홍", auth.lastRequest?.lastName)
+        assertEquals("길동", auth.lastRequest?.firstName)
+    }
+
+    @Test
+    fun latinNamesRemainAllowedWithoutHangulValidation() = runTest {
+        fillMinimumValidForm()
+        vm.onLastNameChange("Hong")
+        vm.onFirstNameChange("Gildong")
+        vm.register()
+        advanceUntilIdle()
+        assertEquals(1, auth.registerCalls)
+        assertEquals("Hong", auth.lastRequest?.lastName)
+        assertEquals("Gildong", auth.lastRequest?.firstName)
+        assertNull(vm.uiState.value.firstNameError)
+        assertNull(vm.uiState.value.lastNameError)
     }
 
     @Test
@@ -445,7 +471,28 @@ class RegisterViewModelTest {
     }
 
     @Test
-    fun aRefusalWithAMessageStaysABannerNotADialog() = runTest {
+    fun anEmailConflictShowsActionableLocalizedGuidanceAndKeepsTheForm() = runTest {
+        auth.registerResult = Result.failure(RegisterException(
+            null,
+            reason = RegisterFailureReason.EMAIL_ALREADY_REGISTERED,
+        ))
+        fillMinimumValidForm()
+        vm.register()
+        advanceUntilIdle()
+
+        val s = vm.uiState.value
+        assertEquals(RegisterBanner.EmailAlreadyRegistered, s.bannerError)
+        assertFalse(s.showUnavailableDialog)
+        assertFalse(s.isLoading)
+        assertFalse(s.isSuccess)
+        assertNull(s.navigateTo)
+        assertEquals("hello@hanmaum.de", s.email)
+        assertEquals("승진", s.firstName)
+        assertEquals(0, auth.loginCalls)
+    }
+
+    @Test
+    fun aRefusalUsesLocalizedGenericCopyInsteadOfArbitraryServerLanguage() = runTest {
         auth.registerResult = Result.failure(RegisterException("Email already registered"))
         fillMinimumValidForm()
         vm.register()
@@ -453,7 +500,7 @@ class RegisterViewModelTest {
 
         val s = vm.uiState.value
         assertFalse(s.showUnavailableDialog)
-        assertEquals(RegisterBanner.ServerMessage("Email already registered"), s.bannerError)
+        assertEquals(RegisterBanner.Generic, s.bannerError)
     }
 
     @Test

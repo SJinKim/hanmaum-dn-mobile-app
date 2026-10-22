@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.login.screen
 
+import com.hanmaum.dn.mobile.core.i18n.message
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -96,22 +97,22 @@ fun LoginScreen(
             // Shared background owns auth insets: App.kt's NavHost is edge-to-edge.
             Spacer(Modifier.height(AuthLayout.topGap))
             Image(
-                painterResource(Res.drawable.logo), "한마음 D+N",
+                painterResource(Res.drawable.logo), strings.appBrand,
                 contentScale = ContentScale.Fit,
                 colorFilter = ColorFilter.tint(c.textPrimary),
                 modifier = Modifier.size(AuthLayout.logoWidth, AuthLayout.logoHeight),
             )
             Spacer(Modifier.height(AuthLayout.brandGap))
-            Text("다시 만나서 반가워요", style = DnTheme.typography.titleLg, color = c.textPrimary,
+            Text(strings.loginWelcome, style = DnTheme.typography.titleLg, color = c.textPrimary,
                 textAlign = TextAlign.Center)
             Spacer(Modifier.height(AppSpacing.sm))
-            Text("한마음 D+N 계정으로 로그인하세요", style = DnTheme.typography.body,
+            Text(strings.loginSubtitle, style = DnTheme.typography.body,
                 color = c.textSecondary, textAlign = TextAlign.Center)
             Spacer(Modifier.height(AuthLayout.actionGap))
 
             Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AuthLayout.contentGap)) {
                 if (state.isLoading && !state.browserOpen) {
-                    Text("사용자 정보를 확인하고 있어요.", style = DnTheme.typography.caption,
+                    Text(strings.loginCheckingProfile, style = DnTheme.typography.caption,
                         color = c.textSecondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                 } else {
                     val noticeBody = when (notice) {
@@ -121,14 +122,14 @@ fun LoginScreen(
                     }
                     noticeBody?.let { LoginNotice(strings.noticeRegisteredTitle, it, false) }
                     state.error?.let {
-                        LoginNotice(if (state.biometricExpired) "다시 로그인해 주세요." else "로그인을 완료하지 못했어요.", it, true)
+                        LoginNotice(if (state.biometricExpired) strings.loginAgain else strings.loginFailedTitle, strings.message(it), true)
                     }
                 }
                 DnPrimaryButton(
                     label = when {
-                        state.isLoading -> "로그인 중…"
-                        state.error != null -> "다시 시도"
-                        else -> "계정으로 로그인"
+                        state.isLoading -> strings.loginBusy
+                        state.error != null -> strings.retry
+                        else -> strings.loginWithAccount
                     },
                     onClick = { viewModel.onLoginClicked(browser, uiLocale = strings.languageTag) },
                     enabled = !state.isLoading && !promptRunning,
@@ -156,8 +157,8 @@ fun LoginScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm, Alignment.CenterHorizontally),
                     ) {
-                        Text("아직 계정이 없으신가요?", style = DnTheme.typography.caption, color = c.textSecondary)
-                        Text("회원가입", style = DnTheme.typography.captionStrong, color = c.limeInk)
+                        Text(strings.loginNoAccount, style = DnTheme.typography.caption, color = c.textSecondary)
+                        Text(strings.registerTitle, style = DnTheme.typography.captionStrong, color = c.limeInk)
                     }
                 }
             }

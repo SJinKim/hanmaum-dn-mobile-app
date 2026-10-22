@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.profile.presentation
 
+import com.hanmaum.dn.mobile.core.i18n.UiMessage
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.repository.AuthPreferences
@@ -78,7 +79,7 @@ class ProfileViewModel(
             if (!hadData) _uiState.value = ProfileUiState.Loading
             memberRepository.getMyProfile().fold(
                 onSuccess = { _uiState.value = ProfileUiState.Success(it) },
-                onFailure = { if (!hadData) _uiState.value = ProfileUiState.Error(it.message ?: "프로필 로딩 실패") },
+                onFailure = { if (!hadData) _uiState.value = ProfileUiState.Error(it.message ?: "Profile load failed") },
             )
         }
     }
@@ -218,7 +219,7 @@ class ProfileViewModel(
             ).fold(
                 onSuccess = { updated -> _uiState.value = ProfileUiState.Success(updated).copy(saveSuccess = true) },
                 onFailure = { err ->
-                    _uiState.value = current.copy(isSaving = false, saveError = err.message ?: "저장 실패")
+                    _uiState.value = current.copy(isSaving = false, saveError = UiMessage.SAVE_PROFILE_FAILED)
                 },
             )
         }

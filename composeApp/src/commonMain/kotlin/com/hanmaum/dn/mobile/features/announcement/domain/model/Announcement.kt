@@ -16,15 +16,6 @@ data class Announcement(
     /** Free-text place; null when the announcement names none. */
     val location: String? = null,
 ) {
-    fun getAnnouncementCategoryName(): String {
-        return when(category) {
-            "MINISTRY" -> "사역"
-            "NOTICE"   -> "공지"
-            "EVENT"    -> "행사"
-            else       -> "알림" // Fallback für unbekannte Werte
-        }
-    }
-
     fun getAnnouncementCategoryColor(): Long {
         return when(category) {
             "MINISTRY" -> 0xFFE65100 // Orange

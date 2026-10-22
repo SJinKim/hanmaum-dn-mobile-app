@@ -148,8 +148,7 @@ class FaceIdSetupViewModelTest {
 
         val error = vm.uiState.value.error
         assertNotNull(error)
-        assertTrue("설정" in error, "points to the settings where it is allowed")
-        assertFalse("등록된 생체 인증이 없습니다" in error)
+        assertEquals(com.hanmaum.dn.mobile.core.i18n.UiMessage.BIOMETRICS_DENIED, error)
     }
 
     @Test

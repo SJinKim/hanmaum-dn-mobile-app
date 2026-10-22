@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.community.presentation
 
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -36,10 +37,11 @@ import com.hanmaum.dn.mobile.core.presentation.theme.typography
  */
 @Composable
 fun CommunityStubScreen(onBackClick: () -> Unit) {
+    val strings = LocalStrings.current
     val c = DnTheme.colors
     DnBackground(glows = DnGlows.information()) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
-            DnTopBar(title = "커뮤니티", onBack = onBackClick)
+            DnTopBar(title = strings.communityTitle, onBack = onBackClick)
 
             Column(
                 Modifier.fillMaxSize().padding(horizontal = 40.dp),
@@ -57,11 +59,11 @@ fun CommunityStubScreen(onBackClick: () -> Unit) {
                 }
 
                 Spacer(Modifier.height(18.dp))
-                Text("곧 만나요", style = DnTheme.typography.titleLg, color = c.textPrimary)
+                Text(strings.comingSoon, style = DnTheme.typography.titleLg, color = c.textPrimary)
 
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "성도들이 서로 소식을 나누고 기도 제목을 올릴 수 있는 공간을 준비하고 있습니다.",
+                    strings.communityBody,
                     style = DnTheme.typography.body,
                     color = c.textSecondary,
                     textAlign = TextAlign.Center,
@@ -78,7 +80,7 @@ fun CommunityStubScreen(onBackClick: () -> Unit) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Icon(DnIcons.Bell, null, tint = c.textPrimary, modifier = Modifier.size(17.dp))
-                    Text("열리면 알려주세요", style = DnTheme.typography.captionStrong, color = c.textPrimary)
+                    Text(strings.communityNotify, style = DnTheme.typography.captionStrong, color = c.textPrimary)
                 }
             }
         }

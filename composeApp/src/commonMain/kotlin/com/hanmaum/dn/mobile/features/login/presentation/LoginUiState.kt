@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.login.presentation
 
+import com.hanmaum.dn.mobile.core.i18n.UiMessage
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 
 data class LoginUiState(
@@ -7,8 +8,8 @@ data class LoginUiState(
     val browserOpen: Boolean = false,
     val biometricExpired: Boolean = false,
     val token: String? = null,
-    val error: String? = null,
-    val statusMessage: String = "Bitte einloggen",
+    val error: UiMessage? = null,
+    val statusMessage: UiMessage? = null,
     val isSuccess: Boolean = false,
     val navigateTo: NavRoute? = null
 )

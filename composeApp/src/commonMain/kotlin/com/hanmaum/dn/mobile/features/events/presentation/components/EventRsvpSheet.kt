@@ -51,6 +51,7 @@ fun EventRsvpSheet(
     onRespond: (RsvpStatus) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val strings = LocalStrings.current
     val c = DnTheme.colors
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -72,7 +73,7 @@ fun EventRsvpSheet(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Icon(DnIcons.Calendar, null, tint = c.limeInk, modifier = Modifier.size(15.dp))
-                Text("행사 참석 확인", style = DnTheme.typography.label, color = c.limeInk)
+                Text(strings.rsvpSheetTitle, style = DnTheme.typography.label, color = c.limeInk)
             }
 
             Spacer(Modifier.height(8.dp))
@@ -93,7 +94,7 @@ fun EventRsvpSheet(
                     // MAYBE is the one answer that earns an extra line: it is the
                     // only one the server follows up on, and saying so up front
                     // stops the reminder feeling like it came out of nowhere.
-                    extraNote = if (status == RsvpStatus.MAYBE) "마감 1주 전 다시 알림" else null,
+                    extraNote = if (status == RsvpStatus.MAYBE) strings.rsvpReminderWeek else null,
                     onClick = { onRespond(status) },
                 )
                 Spacer(Modifier.height(8.dp))
@@ -114,7 +115,7 @@ fun EventRsvpSheet(
                     .padding(vertical = 15.dp),
                 horizontalArrangement = Arrangement.Center,
             ) {
-                Text("나중에 답하기", style = DnTheme.typography.captionStrong, color = c.textTertiary)
+                Text(strings.rsvpLater, style = DnTheme.typography.captionStrong, color = c.textTertiary)
             }
         }
     }

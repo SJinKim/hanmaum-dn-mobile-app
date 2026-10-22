@@ -138,7 +138,7 @@ class LoginViewModelFaceIdTest {
         job.cancelAndJoin()
         assertTrue(job.isCancelled, "cancellation must still propagate")
         assertFalse(vm.uiState.value.isLoading, "login must be usable again")
-        assertEquals("", vm.uiState.value.statusMessage)
+        assertNull(vm.uiState.value.statusMessage)
         assertNull(vm.uiState.value.error, "cancellation is silent")
         assertNull(vm.uiState.value.navigateTo)
         assertNull(tokenStorage.getAccessToken())
