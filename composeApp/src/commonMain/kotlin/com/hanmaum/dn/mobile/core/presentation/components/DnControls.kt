@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.core.presentation.components
 
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -73,6 +74,7 @@ fun DnTopBar(
     actionDescription: String? = null,
     onAction: (() -> Unit)? = null,
 ) {
+    val strings = LocalStrings.current
     Row(
         modifier
             .fillMaxWidth()
@@ -81,7 +83,7 @@ fun DnTopBar(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (onBack != null) {
-            DnGlassIconButton(DnIcons.ArrowLeft, "뒤로", onBack)
+            DnGlassIconButton(DnIcons.ArrowLeft, strings.back, onBack)
         } else {
             Box(Modifier.size(44.dp))
         }
@@ -319,6 +321,7 @@ fun DnTextField(
     /** Sits inside the field before the text, e.g. a tappable dial-code prefix. Wins over [leading]. */
     leadingContent: (@Composable () -> Unit)? = null,
 ) {
+    val strings = LocalStrings.current
     val c = DnTheme.colors
     // A password field owns its own reveal state: every caller wants the same
     // behaviour, and leaving it to them produced an eye icon that did nothing.
@@ -437,7 +440,7 @@ fun DnTextField(
                         Icon(
                             glyph,
                             contentDescription = if (isPassword) {
-                                if (revealed) "비밀번호 숨기기" else "비밀번호 표시"
+                                if (revealed) strings.hidePassword else strings.showPassword
                             } else {
                                 null
                             },

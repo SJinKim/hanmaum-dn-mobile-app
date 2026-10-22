@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.profile.presentation
 
+import com.hanmaum.dn.mobile.core.i18n.UiMessage
 import com.hanmaum.dn.mobile.features.login.domain.model.Countries
 import com.hanmaum.dn.mobile.features.login.domain.model.IdentityStatus
 import com.hanmaum.dn.mobile.features.login.domain.model.PhoneNumber
@@ -41,7 +42,7 @@ sealed class ProfileUiState {
          */
         val isEditing: Boolean = false,
         val isSaving: Boolean = false,
-        val saveError: String? = null,
+        val saveError: UiMessage? = null,
         val saveSuccess: Boolean = false,
     ) : ProfileUiState() {
         /** True when any edit field differs from the loaded profile — gates the Save button. */

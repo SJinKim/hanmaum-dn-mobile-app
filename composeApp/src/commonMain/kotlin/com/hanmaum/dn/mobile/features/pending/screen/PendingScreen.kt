@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.pending.screen
 
+import com.hanmaum.dn.mobile.core.i18n.message
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -63,9 +64,9 @@ fun PendingScreen(
             viewModel.onNavigationHandled()
         }
     }
-    LaunchedEffect(state.message) {
+    LaunchedEffect(state.message, strings) {
         state.message?.let {
-            snackbarHostState.showSnackbar(it)
+            snackbarHostState.showSnackbar(strings.message(it))
             viewModel.onNavigationHandled()
         }
     }

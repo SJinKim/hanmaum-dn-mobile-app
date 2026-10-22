@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.pending.presentation
 
+import com.hanmaum.dn.mobile.core.i18n.UiMessage
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
@@ -21,7 +22,7 @@ class PendingViewModel(
 
     fun onCheckStatusClicked() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, message = "계정 상태 확인중입니다.") }
+            _uiState.update { it.copy(isLoading = true, message = UiMessage.CHECKING_STATUS) }
 
             val result = memberRepository.getMyProfile()
 
@@ -35,10 +36,10 @@ class PendingViewModel(
                     MemberStatus.REJECTED ->
                         _uiState.update { it.copy(isLoading = false, navigateTo = NavRoute.Rejected) }
                     else ->
-                        _uiState.update { it.copy(isLoading = false, message = "아직 준비중입니다. 기다려주세요.") }
+                        _uiState.update { it.copy(isLoading = false, message = UiMessage.STILL_PENDING) }
                 }
             }.onFailure {
-                _uiState.update { it.copy(isLoading = false, message = "인증을 실패하였습니다. 로그인 다시 시도해주세요.") }
+                _uiState.update { it.copy(isLoading = false, message = UiMessage.STATUS_CHECK_FAILED) }
             }
         }
     }

@@ -57,7 +57,7 @@ class AlbumsViewModel(
                 onFailure = { err ->
                     _uiState.update { current ->
                         if (current !is AlbumsUiState.Success)
-                            AlbumsUiState.Error(err.message ?: "앨범 목록 로딩 실패")
+                            AlbumsUiState.Error(err.message ?: "Album list load failed")
                         else current
                     }
                 },

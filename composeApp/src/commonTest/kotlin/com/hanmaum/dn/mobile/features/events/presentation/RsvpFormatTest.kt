@@ -1,6 +1,5 @@
 package com.hanmaum.dn.mobile.features.events.presentation
 
-import com.hanmaum.dn.mobile.core.i18n.DeStrings
 import com.hanmaum.dn.mobile.core.i18n.EnStrings
 import com.hanmaum.dn.mobile.core.i18n.KoStrings
 import kotlinx.datetime.TimeZone
@@ -25,12 +24,6 @@ class RsvpFormatTest {
         assertEquals("Undecided · One more reminder on Aug 30", RsvpFormat.reminderHint(date, EnStrings, TimeZone.UTC))
     }
 
-    @Test
-    fun germanLabelsUseGermanDates() {
-        assertEquals("Antwort bis Sa., 30. Aug.", RsvpFormat.deadline(date, DeStrings, TimeZone.UTC))
-        assertEquals("Geantwortet am 30. Aug.", RsvpFormat.respondedOn(date, DeStrings, TimeZone.UTC))
-        assertEquals("Unentschieden · Eine weitere Erinnerung am 30. Aug.", RsvpFormat.reminderHint(date, DeStrings, TimeZone.UTC))
-    }
 
     @Test
     fun dateUsesDeviceZoneRatherThanLanguageCountry() {
@@ -39,9 +32,4 @@ class RsvpFormatTest {
         assertEquals("8월 30일 (토)", RsvpFormat.date(nearMidnight, KoStrings, TimeZone.UTC))
     }
 
-    @Test
-    fun germanMonthNamesAreNotNaivelyTruncated() {
-        assertEquals("1. März", RsvpFormat.shortDate(Instant.parse("2025-03-01T12:00:00Z"), DeStrings, TimeZone.UTC))
-        assertEquals("1. Sept.", RsvpFormat.shortDate(Instant.parse("2025-09-01T12:00:00Z"), DeStrings, TimeZone.UTC))
-    }
 }

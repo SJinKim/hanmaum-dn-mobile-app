@@ -1,6 +1,7 @@
 // features/attendance/presentation/AttendanceViewModel.kt
 package com.hanmaum.dn.mobile.features.attendance.presentation
 
+import com.hanmaum.dn.mobile.core.i18n.UiMessage
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
@@ -127,13 +128,13 @@ class AttendanceViewModel(
                     _uiState.update { it.copy(isCheckedIn = true, isCheckingIn = false, checkedInDate = todayIso()) }
                 }
                 AttendanceCheckInResult.OutsideWindow ->
-                    _uiState.update { it.copy(isCheckingIn = false, checkInError = "출석 시간이 아닙니다") }
+                    _uiState.update { it.copy(isCheckingIn = false, checkInError = UiMessage.CHECK_IN_CLOSED) }
                 AttendanceCheckInResult.NotAllowed -> {
                     _uiState.update { it.copy(isCheckingIn = false, checkInNotAllowed = true) }
                     redirectIfPending()
                 }
                 AttendanceCheckInResult.Failed ->
-                    _uiState.update { it.copy(isCheckingIn = false, checkInError = "출석 처리에 실패했습니다") }
+                    _uiState.update { it.copy(isCheckingIn = false, checkInError = UiMessage.CHECK_IN_FAILED) }
             }
         }
     }

@@ -31,7 +31,7 @@ class MinistryDetailViewModel(
             repository.getMinistryDetail(publicId).fold(
                 onSuccess = { _uiState.value = MinistryDetailUiState.Success(detail = it) },
                 onFailure = {
-                    _uiState.value = MinistryDetailUiState.Error(it.message ?: "부서 정보 로딩 실패")
+                    _uiState.value = MinistryDetailUiState.Error(it.message ?: "Ministry load failed")
                 },
             )
         }

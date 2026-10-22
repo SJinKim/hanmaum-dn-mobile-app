@@ -75,7 +75,7 @@ fun AlbumDetailScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         Text(
-                            "${s.items.size}장",
+                            strings.albumPhotoCount.replace("{n}", s.items.size.toString()),
                             style = DnTheme.typography.caption,
                             color = c.textSecondary,
                         )

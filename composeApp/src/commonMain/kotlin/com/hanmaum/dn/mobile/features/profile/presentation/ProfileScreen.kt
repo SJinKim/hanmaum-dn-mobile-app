@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.profile.presentation
 
+import com.hanmaum.dn.mobile.core.i18n.message
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -98,6 +99,7 @@ fun ProfileScreen(
     onMyApplications: () -> Unit,
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
+    val strings = LocalStrings.current
     // The same AttendanceViewModel Home already uses, so the 올해 출석 figure
     // costs no request of its own here.
     val attendanceViewModel: AttendanceViewModel = koinViewModel()
@@ -120,7 +122,7 @@ fun ProfileScreen(
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
             val editing = (uiState as? ProfileUiState.Success)?.isEditing == true
             DnTopBar(
-                title = if (editing) "프로필 수정" else "프로필",
+                title = if (editing) strings.profileEdit else strings.navProfile,
                 onBack = { if (editing) viewModel.cancelEditing() else onBack() },
             )
 
@@ -227,12 +229,12 @@ private fun ProfileViewContent(
         ) {
             // Dash, not zero, while the summary is unloaded or failed.
             StatTile(
-                "올해 출석",
+                strings.attendanceThisYear,
                 summary?.yearAttended?.toString() ?: "–",
                 c.limeInk,
                 Modifier.weight(1f),
             )
-            StatTile("소속 사역", profile.activeMinistries.size.toString(), c.blue, Modifier.weight(1f))
+            StatTile(strings.profileMinistries, profile.activeMinistries.size.toString(), c.blue, Modifier.weight(1f))
             StatTile(
                 label = strings.profileTimeTogether,
                 value = together?.let { strings.profileTimeTogetherValue(it.years, it.months) } ?: "–",
@@ -265,7 +267,7 @@ private fun ProfileViewContent(
 
         Spacer(Modifier.height(22.dp))
 
-        MenuRow(DnIcons.User, "프로필 수정", null, onEdit)
+        MenuRow(DnIcons.User, strings.profileEdit, null, onEdit)
         Spacer(Modifier.height(10.dp))
         MenuRow(
             icon = DnIcons.ListBulleted,
@@ -279,7 +281,7 @@ private fun ProfileViewContent(
 
         Spacer(Modifier.height(18.dp))
 
-        DnTintedButton("로그아웃", onLogout, Modifier.fillMaxWidth())
+        DnTintedButton(strings.profileLogout, onLogout, Modifier.fillMaxWidth())
 
         Spacer(Modifier.height(60.dp))
     }
@@ -427,7 +429,7 @@ private fun ProfileEditContent(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Icon(DnIcons.Image, null, tint = c.textSecondary, modifier = Modifier.size(15.dp))
-                Text("사진 변경", style = DnTheme.typography.captionStrong, color = c.textSecondary)
+                Text(strings.profileChangePhoto, style = DnTheme.typography.captionStrong, color = c.textSecondary)
             }
         }
 
@@ -448,7 +450,7 @@ private fun ProfileEditContent(
 
         Spacer(Modifier.height(24.dp))
 
-        Text("직접 수정할 수 있는 정보", style = DnTheme.typography.label, color = c.textTertiary)
+        Text(strings.profileEditable, style = DnTheme.typography.label, color = c.textTertiary)
         Spacer(Modifier.height(6.dp))
         Text(strings.registerRequiredLegend, style = DnTheme.typography.caption, color = c.textSecondary)
         Spacer(Modifier.height(16.dp))
@@ -534,7 +536,7 @@ private fun ProfileEditContent(
 
         state.saveError?.let {
             Spacer(Modifier.height(12.dp))
-            Text(it, style = DnTheme.typography.caption, color = c.red)
+            Text(strings.message(it), style = DnTheme.typography.caption, color = c.red)
         }
 
         Spacer(Modifier.height(28.dp))
@@ -545,9 +547,9 @@ private fun ProfileEditContent(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            DnTintedButton("취소", viewModel::cancelEditing, Modifier.weight(1f))
+            DnTintedButton(strings.cancel, viewModel::cancelEditing, Modifier.weight(1f))
             DnPrimaryButton(
-                label = if (state.isSaving) "저장 중…" else "저장",
+                label = if (state.isSaving) strings.saving else strings.save,
                 onClick = viewModel::saveProfile,
                 enabled = !state.isSaving,
                 modifier = Modifier.weight(1f),
@@ -564,6 +566,7 @@ private fun ProfileEditContent(
  */
 @Composable
 private fun LockedGroup(rows: List<Pair<String, String>>) {
+    val strings = LocalStrings.current
     val c = DnTheme.colors
     Column {
         Row(
@@ -571,7 +574,7 @@ private fun LockedGroup(rows: List<Pair<String, String>>) {
             horizontalArrangement = Arrangement.spacedBy(7.dp),
         ) {
             Icon(DnIcons.Lock, null, tint = c.textTertiary, modifier = Modifier.size(13.dp))
-            Text("교회에서 관리하는 정보", style = DnTheme.typography.label, color = c.textTertiary)
+            Text(strings.profileChurchManaged, style = DnTheme.typography.label, color = c.textTertiary)
         }
         Spacer(Modifier.height(10.dp))
         Column(
@@ -605,7 +608,7 @@ private fun LockedGroup(rows: List<Pair<String, String>>) {
         val uriHandler = LocalUriHandler.current
         Text(
             buildAnnotatedString {
-                append("변경이 필요하면\n")
+                append(strings.profileContactPrefix)
                 withLink(
                     LinkAnnotation.Clickable(
                         tag = "mailto",
@@ -614,7 +617,7 @@ private fun LockedGroup(rows: List<Pair<String, String>>) {
                         ),
                     ) { runCatching { uriHandler.openUri("mailto:$DEV_TEAM_EMAIL") } },
                 ) { append(DEV_TEAM_EMAIL) }
-                append("로 문의해 주세요.")
+                append(strings.profileContactSuffix)
             },
             style = DnTheme.typography.caption,
             color = c.textTertiary,

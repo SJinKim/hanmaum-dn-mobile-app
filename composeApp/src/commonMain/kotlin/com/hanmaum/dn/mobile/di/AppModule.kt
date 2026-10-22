@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.di
 
+import com.hanmaum.dn.mobile.core.presentation.LanguageViewModel
 import com.hanmaum.dn.mobile.core.data.repository.LocaleRepositoryImpl
 import com.hanmaum.dn.mobile.core.data.repository.AttendancePreferencesImpl
 import com.hanmaum.dn.mobile.core.security.InstallationGuard
@@ -101,6 +102,7 @@ val appModule = module {
     single<TokenStorage> { TokenStorageImpl(get(), get()) }
     single { InstallationGuard(Settings(), get(), get(), get()) }
     single<LocaleRepository> { LocaleRepositoryImpl(Settings()) }
+    viewModel { LanguageViewModel(get()) }
     single<ThemeRepository> { ThemeRepositoryImpl(Settings()) }
     single<LocationPreferences> { LocationPreferencesImpl(Settings()) }
     single<AuthPreferences> { AuthPreferencesImpl(Settings()) }

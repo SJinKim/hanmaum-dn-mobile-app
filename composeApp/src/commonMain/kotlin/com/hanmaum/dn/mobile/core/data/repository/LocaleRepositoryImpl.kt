@@ -6,8 +6,10 @@ import com.russhwolf.settings.Settings
 
 class LocaleRepositoryImpl(private val settings: Settings) : LocaleRepository {
 
-    override fun getLocale(): AppLocale =
-        AppLocale.entries.find { it.code == settings.getStringOrNull(KEY) } ?: AppLocale.EN
+    override fun getSelectedLocale(): AppLocale? =
+        AppLocale.entries.find { it.code == settings.getStringOrNull(KEY) }
+
+    override fun getLocale(): AppLocale = getSelectedLocale() ?: AppLocale.EN
 
     override fun setLocale(locale: AppLocale) {
         settings.putString(KEY, locale.code)

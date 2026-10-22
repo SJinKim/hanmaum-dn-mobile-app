@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.profile.presentation
 
+import com.hanmaum.dn.mobile.core.i18n.message
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -359,7 +360,7 @@ private fun FaceIdSwitchRow(keepSignedIn: Boolean) {
         )
         state.error?.let {
             Text(
-                it,
+                strings.message(it),
                 style = DnTheme.typography.caption,
                 color = c.red,
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 14.dp),

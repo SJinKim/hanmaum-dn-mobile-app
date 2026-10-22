@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.events.presentation.components
 
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -39,14 +40,15 @@ data class RsvpVisual(
 
 @Composable
 fun visualFor(status: RsvpStatus): RsvpVisual {
+    val strings = LocalStrings.current
     val c = DnTheme.colors
     return when (status) {
         RsvpStatus.GOING ->
-            RsvpVisual("참석", "행사에 참여합니다", DnIcons.Check, c.limeInk, c.limeDim)
+            RsvpVisual(strings.rsvpAttendShort, strings.rsvpGoingNote, DnIcons.Check, c.limeInk, c.limeDim)
         RsvpStatus.NOT_GOING ->
-            RsvpVisual("불참", "이번에는 참여가 어렵습니다", DnIcons.X, c.red, c.redDim)
+            RsvpVisual(strings.rsvpNotGoing, strings.rsvpNotGoingNote, DnIcons.X, c.red, c.redDim)
         RsvpStatus.MAYBE ->
-            RsvpVisual("미정", "아직 정하지 못했어요", DnIcons.Hourglass, c.amber, c.amberDim)
+            RsvpVisual(strings.rsvpMaybe, strings.rsvpMaybeNote, DnIcons.Hourglass, c.amber, c.amberDim)
     }
 }
 

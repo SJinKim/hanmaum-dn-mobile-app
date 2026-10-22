@@ -1,5 +1,8 @@
 package com.hanmaum.dn.mobile.features.attendance.presentation
 
+import com.hanmaum.dn.mobile.core.i18n.AppStrings
+import com.hanmaum.dn.mobile.core.i18n.message
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -71,11 +74,11 @@ fun AttendanceScreen(
         }
     }
     val c = DnTheme.colors
-    val strings = com.hanmaum.dn.mobile.core.i18n.LocalStrings.current
+    val strings = LocalStrings.current
 
     DnBackground(glows = DnGlows.action()) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
-            DnTopBar(title = "출석 체크", onBack = onBackClick)
+            DnTopBar(title = strings.navAttendance, onBack = onBackClick)
 
             Column(
                 Modifier
@@ -106,7 +109,7 @@ fun AttendanceScreen(
                     }
 
                     Text(
-                        state.definition?.title ?: "오늘은 예배가 없습니다",
+                        state.definition?.title ?: strings.attendanceNoService,
                         style = DnTheme.typography.titleLg,
                         color = c.textPrimary,
                     )
@@ -118,7 +121,7 @@ fun AttendanceScreen(
                         ) {
                             Icon(DnIcons.Clock, null, tint = c.textTertiary, modifier = Modifier.size(14.dp))
                             Text(
-                                "출석 시간 ${def.windowStart.take(5)} – ${def.windowEnd.take(5)}",
+                                strings.attendanceWindow.replace("{start}", def.windowStart.take(5)).replace("{end}", def.windowEnd.take(5)),
                                 style = DnTheme.typography.caption,
                                 color = c.textTertiary,
                             )
@@ -127,8 +130,8 @@ fun AttendanceScreen(
 
                     if (state.definition != null) {
                         SlideToCheckIn(
-                            label = if (state.isCheckedIn) "출석 완료" else "밀어서 출석하기",
-                            disabledLabel = "출석 시간이 아닙니다",
+                            label = if (state.isCheckedIn) strings.attendanceCheckedIn else strings.attendanceSlideToCheckIn,
+                            disabledLabel = strings.attendanceNotInWindow,
                             enabled = state.isInWindow && !state.isCheckedIn,
                             checkedIn = state.isCheckedIn,
                             isBusy = state.isCheckingIn,
@@ -137,7 +140,7 @@ fun AttendanceScreen(
                     }
 
                     val checkInError =
-                        if (state.checkInNotAllowed) strings.attendanceCheckInNotAllowed else state.checkInError
+                        if (state.checkInNotAllowed) strings.attendanceCheckInNotAllowed else state.checkInError?.let(strings::message)
                     checkInError?.let {
                         Text(it, style = DnTheme.typography.caption, color = c.red)
                     }
@@ -207,9 +210,9 @@ fun AttendanceScreen(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     listOf(
-                        Triple("이번 달", c.limeInk, summary?.let { "${it.monthAttended}" }),
-                        Triple("올해", c.blue, summary?.let { "${it.yearAttended}" }),
-                        Triple("출석률", c.amber, summary?.let { "${it.ratePercent}%" }),
+                        Triple(strings.sectionThisMonth, c.limeInk, summary?.let { "${it.monthAttended}" }),
+                        Triple(strings.attendanceYear, c.blue, summary?.let { "${it.yearAttended}" }),
+                        Triple(strings.attendanceRate, c.amber, summary?.let { "${it.ratePercent}%" }),
                     ).forEach { (label, accent, value) ->
                         Column(
                             Modifier
@@ -233,7 +236,7 @@ fun AttendanceScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text("최근 출석", style = DnTheme.typography.headline, color = c.textPrimary)
+                    Text(strings.attendanceRecent, style = DnTheme.typography.headline, color = c.textPrimary)
                     // Always offered, including on an empty record: the full
                     // view is where a member goes to look, not only to scroll.
                     Text(
@@ -295,7 +298,7 @@ fun AttendanceScreen(
                                         color = c.textPrimary,
                                     )
                                     Text(
-                                        formatEntryDate(entry.date),
+                                        formatEntryDate(entry.date, strings),
                                         style = DnTheme.typography.caption,
                                         color = c.textTertiary,
                                     )
@@ -321,9 +324,9 @@ fun AttendanceScreen(
  * a date the server sends in an unexpected shape should degrade to something
  * readable, not take the screen down.
  */
-private fun formatEntryDate(iso: String): String = try {
+private fun formatEntryDate(iso: String, strings: AppStrings): String = try {
     val d = kotlinx.datetime.LocalDate.parse(iso)
-    "${d.month.ordinal + 1}월 ${d.day}일"
+    strings.rsvpDate(d, includeWeekday = false)
 } catch (_: IllegalArgumentException) {
     iso
 }

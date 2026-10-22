@@ -1,5 +1,7 @@
 package com.hanmaum.dn.mobile.features.announcement.presentation
 
+import com.hanmaum.dn.mobile.core.i18n.displayDate
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -63,10 +65,12 @@ fun AnnouncementListScreen(
     onBackClick: () -> Unit,
     onItemClick: (String) -> Unit,
 ) {
+    val strings = LocalStrings.current
     val viewModel: AnnouncementListViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val c = DnTheme.colors
 
+    val categoryFilters = categoryFilters()
     var category by remember { mutableStateOf<String?>(null) }
 
     val filtered = remember(state.list, category) {
@@ -75,7 +79,7 @@ fun AnnouncementListScreen(
 
     DnBackground(glows = DnGlows.information()) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
-            DnTopBar(title = "소식", onBack = onBackClick)
+            DnTopBar(title = strings.navNews, onBack = onBackClick)
 
             Spacer(Modifier.height(10.dp))
 
@@ -84,9 +88,9 @@ fun AnnouncementListScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 item {
-                    DnChip("전체", selected = category == null, onClick = { category = null })
+                    DnChip(strings.newsAll, selected = category == null, onClick = { category = null })
                 }
-                items(CATEGORY_FILTERS) { (code, label) ->
+                items(categoryFilters) { (code, label) ->
                     DnChip(label, selected = category == code, onClick = { category = code })
                 }
             }
@@ -102,7 +106,7 @@ fun AnnouncementListScreen(
                     DnErrorState(onRetry = viewModel::loadAll)
 
                 filtered.isEmpty() -> Box(Modifier.fillMaxSize(), Alignment.Center) {
-                    Text("소식이 없습니다", style = DnTheme.typography.body, color = c.textSecondary)
+                    Text(strings.newsEmpty, style = DnTheme.typography.body, color = c.textSecondary)
                 }
 
                 else -> LazyColumn(
@@ -120,14 +124,19 @@ fun AnnouncementListScreen(
     }
 }
 
-private val CATEGORY_FILTERS = listOf(
-    "NOTICE" to "공지",
-    "MINISTRY" to "사역",
-    "EVENT" to "행사",
-)
+@Composable
+private fun categoryFilters(): List<Pair<String, String>> {
+    val strings = LocalStrings.current
+    return listOf(
+        "NOTICE" to strings.categoryNotice,
+        "MINISTRY" to strings.ministryDetailTitle,
+        "EVENT" to strings.categoryEvent,
+    )
+}
 
 @Composable
 private fun NewsRow(item: Announcement, onClick: () -> Unit) {
+    val strings = LocalStrings.current
     val c = DnTheme.colors
     Column(
         Modifier
@@ -152,7 +161,7 @@ private fun NewsRow(item: Announcement, onClick: () -> Unit) {
                 ) {
                     CategoryPill(item)
                     Text(
-                        item.startAt.take(10),
+                        strings.displayDate(item.startAt),
                         style = DnTheme.typography.caption,
                         color = c.textTertiary,
                     )
@@ -188,7 +197,7 @@ private fun NewsRow(item: Announcement, onClick: () -> Unit) {
             ) {
                 Icon(DnIcons.User, null, tint = c.textSecondary, modifier = Modifier.size(13.dp))
             }
-            Text("한마음 교회", style = DnTheme.typography.caption, color = c.textSecondary)
+            Text(strings.churchName, style = DnTheme.typography.caption, color = c.textSecondary)
 
             Spacer(Modifier.weight(1f))
 
@@ -202,7 +211,7 @@ private fun NewsRow(item: Announcement, onClick: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                Text("자세히 보기", style = DnTheme.typography.captionStrong, color = c.textPrimary)
+                Text(strings.newsReadFull, style = DnTheme.typography.captionStrong, color = c.textPrimary)
                 Icon(DnIcons.ChevronRight, null, tint = c.textPrimary, modifier = Modifier.size(14.dp))
             }
         }

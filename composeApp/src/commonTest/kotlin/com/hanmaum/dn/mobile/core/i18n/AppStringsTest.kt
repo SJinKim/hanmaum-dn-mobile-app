@@ -43,28 +43,11 @@ class AppStringsTest {
     }
 
     @Test
-    fun `DeStrings has non-blank values for all keys`() {
-        val s = DeStrings
-        assertTrue(s.retry.isNotBlank())
-        assertTrue(s.save.isNotBlank())
-        assertTrue(s.back.isNotBlank())
-        assertTrue(s.navHome.isNotBlank())
-        assertTrue(s.selectLanguage.isNotBlank())
-        assertTrue(s.list.isNotBlank())
-        assertTrue(s.checkStatus.isNotBlank())
-        assertEquals("", s.yearSuffix)
-        assertEquals(13, s.months.size)
-        assertTrue(s.months[1].isNotBlank())
-        assertTrue(s.ministryListTitle.isNotBlank())
-        assertEquals("Über uns", s.ministryAbout)
-    }
-
-    @Test
-    fun `AppLocale entries cover EN KO DE`() {
+    fun `AppLocale entries cover only EN and KO`() {
         val codes = AppLocale.entries.map { it.code }
         assertTrue(codes.contains("en"))
         assertTrue(codes.contains("ko"))
-        assertTrue(codes.contains("de"))
+        assertEquals(setOf("en", "ko"), codes.toSet())
     }
 
     @Test
@@ -78,7 +61,7 @@ class AppStringsTest {
     fun `time together renders all four branches in every language`() {
         // The profile tile (#114) is the visible output of membershipDuration.
         // Each language breaks the units differently so each gets its own row.
-        listOf(EnStrings, KoStrings, DeStrings).forEach { s ->
+        listOf(EnStrings, KoStrings).forEach { s ->
             assertTrue(s.profileTimeTogether.isNotBlank())
             listOf(
                 s.profileTimeTogetherValue(4, 6),  // years and months
@@ -93,13 +76,12 @@ class AppStringsTest {
     fun `time together drops the month part on an exact anniversary`() {
         assertEquals("4년", KoStrings.profileTimeTogetherValue(4, 0))
         assertEquals("4y", EnStrings.profileTimeTogetherValue(4, 0))
-        assertEquals("4 J.", DeStrings.profileTimeTogetherValue(4, 0))
     }
 
     @Test
     fun `time together says something other than zero for a new member`() {
         // "0개월" would read as an error; a fresh member gets a word instead.
-        listOf(EnStrings, KoStrings, DeStrings).forEach { s ->
+        listOf(EnStrings, KoStrings).forEach { s ->
             val v = s.profileTimeTogetherValue(0, 0)
             assertTrue(!v.contains("0"), "expected no zero in \"$v\"")
         }

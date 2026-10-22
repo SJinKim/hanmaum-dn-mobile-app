@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.album.presentation
 
+import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +24,7 @@ import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
  */
 @Composable
 fun PhotoViewerScreen(photoUrl: String, onBackClick: () -> Unit) {
+    val strings = LocalStrings.current
     Box(
         Modifier
             .fillMaxSize()
@@ -42,7 +44,7 @@ fun PhotoViewerScreen(photoUrl: String, onBackClick: () -> Unit) {
                 .statusBarsPadding()
                 .padding(20.dp),
         ) {
-            DnGlassIconButton(DnIcons.ArrowLeft, "뒤로", onBackClick)
+            DnGlassIconButton(DnIcons.ArrowLeft, strings.back, onBackClick)
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.profile.presentation
 
+import com.hanmaum.dn.mobile.core.i18n.UiMessage
 import androidx.lifecycle.ViewModel
 import com.hanmaum.dn.mobile.core.domain.repository.AuthPreferences
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
@@ -14,7 +15,7 @@ import kotlinx.coroutines.flow.update
 data class FaceIdSetupUiState(
     val enabled: Boolean = false,
     val isBusy: Boolean = false,
-    val error: String? = null,
+    val error: UiMessage? = null,
 )
 
 /**
@@ -53,7 +54,7 @@ class FaceIdSetupViewModel(
         if (refreshToken.isNullOrBlank()) {
             // Nothing to seal. Rather than arm a switch that would fail at the
             // next launch, say so now.
-            _uiState.update { it.copy(error = "다시 로그인한 뒤 설정해주세요.") }
+            _uiState.update { it.copy(error = UiMessage.SIGN_IN_BEFORE_SETUP) }
             return
         }
 
@@ -63,7 +64,7 @@ class FaceIdSetupViewModel(
         // camera should not then be told the setup failed on a network call.
         val owner = memberRepository.getMyProfile().getOrNull()?.publicId
         if (owner == null) {
-            _uiState.update { it.copy(isBusy = false, error = "사용자 정보를 확인하지 못했습니다. 다시 시도해주세요.") }
+            _uiState.update { it.copy(isBusy = false, error = UiMessage.PROFILE_CHECK_FAILED) }
             return
         }
 
@@ -82,12 +83,12 @@ class FaceIdSetupViewModel(
                 VaultResult.Unavailable -> state.copy(
                     isBusy = false,
                     error = when (unavailable) {
-                        BiometricAvailability.NOT_ENROLLED -> "기기에 등록된 생체 인증이 없습니다."
-                        BiometricAvailability.DENIED -> "iPhone 설정에서 이 앱의 Face ID 사용을 허용해주세요."
-                        else -> "지금은 생체 인증을 사용할 수 없습니다. 잠시 후 다시 시도해주세요."
+                        BiometricAvailability.NOT_ENROLLED -> UiMessage.BIOMETRICS_NOT_ENROLLED
+                        BiometricAvailability.DENIED -> UiMessage.BIOMETRICS_DENIED
+                        else -> UiMessage.BIOMETRICS_UNAVAILABLE
                     },
                 )
-                else -> state.copy(isBusy = false, error = "설정에 실패했습니다. 다시 시도해주세요.")
+                else -> state.copy(isBusy = false, error = UiMessage.BIOMETRIC_SETUP_FAILED)
             }
         }
     }

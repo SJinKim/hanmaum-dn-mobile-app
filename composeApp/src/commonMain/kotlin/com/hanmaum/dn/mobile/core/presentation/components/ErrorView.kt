@@ -24,7 +24,7 @@ fun ErrorView(
     ) {
         Icon(
             imageVector        = Icons.Rounded.Warning,
-            contentDescription = "Error",
+            contentDescription = strings.errorTitle,
             tint               = MaterialTheme.colorScheme.error,
             modifier           = Modifier.size(48.dp),
         )

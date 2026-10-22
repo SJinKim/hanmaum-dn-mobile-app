@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.calendar.presentation
 
+import com.hanmaum.dn.mobile.core.i18n.displayDate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -86,7 +87,7 @@ fun CalendarScreen(onBackClick: () -> Unit) {
 
             Spacer(Modifier.height(12.dp))
             DnSegmented(
-                options = listOf("월간", "목록"),
+                options = listOf(strings.calendarMonthView, strings.list),
                 selectedIndex = if (state.viewMode == ViewMode.CALENDAR) 0 else 1,
                 onSelect = { viewModel.switchView(if (it == 0) ViewMode.CALENDAR else ViewMode.LIST) },
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
@@ -169,7 +170,7 @@ private fun MonthView(state: CalendarUiState, viewModel: CalendarViewModel) {
         item {
             Spacer(Modifier.height(8.dp))
             Text(
-                state.selectedDay?.let { "${it}일 일정" } ?: strings.calendarEventsThisMonth,
+                state.selectedDay?.let { strings.calendarDayEvents(it) } ?: strings.calendarEventsThisMonth,
                 style = DnTheme.typography.headline,
                 color = c.textPrimary,
             )
@@ -241,7 +242,7 @@ private fun YearListView(
                         color = if (month == state.todayMonth) c.limeInk else c.textPrimary,
                     )
                     Text(
-                        "${monthEvents.size}개",
+                        strings.calendarEventCount(monthEvents.size),
                         style = DnTheme.typography.label,
                         color = c.textTertiary,
                     )
@@ -348,11 +349,11 @@ private fun EventSheet(event: CalendarEvent) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             SheetFact(
-                DnIcons.Calendar, "일시",
-                if (event.isAllDay) "${event.startDate.take(10)} · ${strings.calendarAllDay}"
-                else "${event.startDate.take(10)} ${event.startDate.substringAfterLast('T').take(5)}",
+                DnIcons.Calendar, strings.labelWhen,
+                if (event.isAllDay) "${strings.displayDate(event.startDate)} · ${strings.calendarAllDay}"
+                else "${strings.displayDate(event.startDate)} ${event.startDate.substringAfterLast('T').take(5)}",
             )
-            event.location?.let { SheetFact(DnIcons.MapPin, "장소", it) }
+            event.location?.let { SheetFact(DnIcons.MapPin, strings.nurturePlace, it) }
         }
 
         if (!event.description.isNullOrBlank()) {

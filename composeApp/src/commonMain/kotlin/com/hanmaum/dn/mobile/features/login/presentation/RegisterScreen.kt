@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.login.presentation
 
+import com.hanmaum.dn.mobile.core.presentation.theme.AppSpacing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -176,24 +177,29 @@ fun RegisterScreen(
                 )
                 Spacer(Modifier.height(14.dp))
 
+                Text(strings.registerKoreanNameHint, style = DnTheme.typography.caption, color = c.textSecondary)
+                Spacer(Modifier.height(AppSpacing.sm))
+
                 // ── name ──
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Column(Modifier.weight(1f)) {
                         DnTextField(
                             required(strings.fieldLastName), state.lastName, viewModel::onLastNameChange,
                             Modifier.fillMaxWidth().focusRequester(requesters.getValue(RegisterField.LAST_NAME)),
-                            placeholder = strings.fieldLastName,
+                            placeholder = strings.registerLastNameExample,
                             isError = state.lastNameError != null,
                         )
+                        Text(strings.registerLastNameExample, style = DnTheme.typography.caption, color = c.textSecondary)
                         FieldError(strings.messageFor(state.lastNameError))
                     }
                     Column(Modifier.weight(1f)) {
                         DnTextField(
                             required(strings.fieldFirstName), state.firstName, viewModel::onFirstNameChange,
                             Modifier.fillMaxWidth().focusRequester(requesters.getValue(RegisterField.FIRST_NAME)),
-                            placeholder = strings.fieldFirstName,
+                            placeholder = strings.registerFirstNameExample,
                             isError = state.firstNameError != null,
                         )
+                        Text(strings.registerFirstNameExample, style = DnTheme.typography.caption, color = c.textSecondary)
                         FieldError(strings.messageFor(state.firstNameError))
                     }
                 }
@@ -351,7 +357,6 @@ private fun FormBanner(banner: RegisterBanner, strings: AppStrings) {
         }
         Text(
             text = when (banner) {
-                is RegisterBanner.ServerMessage -> banner.text
                 RegisterBanner.Generic -> strings.registerFailed
                 RegisterBanner.RegisteredPleaseLogin -> strings.registerSuccessLogin
                 RegisterBanner.MissingRequired -> strings.registerMissingRequired

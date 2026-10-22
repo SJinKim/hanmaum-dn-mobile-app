@@ -1,5 +1,7 @@
 package com.hanmaum.dn.mobile.features.announcement.presentation
 
+import com.hanmaum.dn.mobile.core.i18n.AppStrings
+import com.hanmaum.dn.mobile.core.i18n.displayDate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -173,8 +175,8 @@ fun HomeScreen(
 
             Box(Modifier.padding(horizontal = 20.dp)) {
                 SlideToCheckIn(
-                    label = if (attendance.isCheckedIn) "출석 완료" else "밀어서 출석하기",
-                    disabledLabel = "출석 시간이 아닙니다",
+                    label = if (attendance.isCheckedIn) strings.attendanceCheckedIn else strings.attendanceSlideToCheckIn,
+                    disabledLabel = strings.attendanceNotInWindow,
                     enabled = attendance.isInWindow && !attendance.isCheckedIn,
                     checkedIn = attendance.isCheckedIn,
                     isBusy = attendance.isCheckingIn,
@@ -187,7 +189,7 @@ fun HomeScreen(
             HomeTiles(
                 serviceTitle = attendance.definition?.title,
                 serviceTime = attendance.definition?.let { def ->
-                    "${dayLabel(def.dayOfWeek)} ${def.windowStart.take(5)}"
+                    "${dayLabel(def.dayOfWeek, strings)} ${def.windowStart.take(5)}"
                 },
                 // Same AttendanceViewModel that drives the check-in slider above,
                 // so the tile costs no second request.
@@ -240,6 +242,7 @@ private fun HomeHeader(
     onNotificationsClick: () -> Unit,
     unseenCount: Int,
 ) {
+    val strings = LocalStrings.current
     val c = DnTheme.colors
     Row(
         Modifier
@@ -258,11 +261,11 @@ private fun HomeHeader(
                 .clickable(onClick = onProfileClick),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(DnIcons.User, "프로필", tint = c.textPrimary, modifier = Modifier.size(22.dp))
+            Icon(DnIcons.User, strings.navProfile, tint = c.textPrimary, modifier = Modifier.size(22.dp))
         }
 
         Column(Modifier.weight(1f)) {
-            Text("Welcome", style = DnTheme.typography.caption, color = c.textSecondary)
+            Text(strings.homeWelcome, style = DnTheme.typography.caption, color = c.textSecondary)
             Text(
                 text = memberName ?: "…",
                 style = DnTheme.typography.headline,
@@ -273,7 +276,7 @@ private fun HomeHeader(
         }
 
         Box {
-            DnGlassIconButton(DnIcons.Bell, "알림", onNotificationsClick)
+            DnGlassIconButton(DnIcons.Bell, strings.notifications, onNotificationsClick)
             // GET /api/v1/me/notifications/unseen-count. No badge at zero — an
             // empty badge would promise something that isn't there.
             if (unseenCount > 0) {
@@ -306,14 +309,15 @@ private fun QuickMenuRow(
     onCommunityClick: () -> Unit,
     onBulletinClick: () -> Unit,
 ) {
+    val strings = LocalStrings.current
     val c = DnTheme.colors
     val entries = listOf(
         LocalStrings.current.bulletin.title to onBulletinClick,
-        "양육" to onNurtureClick,
-        "사역" to onServeClick,
-        "교회 지도" to onFloorPlanClick,
-        "출석 현황" to onAttendanceClick,
-        "커뮤니티" to onCommunityClick,
+        strings.nurtureTitle to onNurtureClick,
+        strings.ministryDetailTitle to onServeClick,
+        strings.floorPlanTitle to onFloorPlanClick,
+        strings.navAttendance to onAttendanceClick,
+        strings.communityTitle to onCommunityClick,
     )
     LazyRow(
         contentPadding = PaddingValues(horizontal = 20.dp),
@@ -339,6 +343,7 @@ private fun NewsCarousel(
     banners: List<Announcement>,
     onClick: (String) -> Unit,
 ) {
+    val strings = LocalStrings.current
     val c = DnTheme.colors
     if (banners.isEmpty()) return
 
@@ -371,7 +376,7 @@ private fun NewsCarousel(
                         .fillMaxWidth()
                         .height(120.dp),
                     cornerRadius = 18.dp,
-                    label = "이미지",
+                    label = strings.imageDescription,
                 )
                 CategoryPill(item)
                 Text(
@@ -382,7 +387,7 @@ private fun NewsCarousel(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = item.startAt.take(10),
+                    text = strings.displayDate(item.startAt),
                     style = DnTheme.typography.caption,
                     color = c.textSecondary,
                 )
@@ -411,6 +416,7 @@ private fun NewsCarousel(
 /** Category colour follows the palette roles, not the legacy hex on the model. */
 @Composable
 internal fun CategoryPill(item: Announcement) {
+    val strings = LocalStrings.current
     val c = DnTheme.colors
     val (container, ink) = when (item.category) {
         "NOTICE" -> c.blueDim to c.blue
@@ -424,7 +430,7 @@ internal fun CategoryPill(item: Announcement) {
             .background(container, RoundedCornerShape(12.dp))
             .padding(horizontal = 10.dp, vertical = 4.dp),
     ) {
-        Text(item.getAnnouncementCategoryName(), style = DnTheme.typography.label, color = ink)
+        Text(item.categoryLabel(strings), style = DnTheme.typography.label, color = ink)
     }
 }
 
@@ -435,6 +441,7 @@ private fun HomeTiles(
     summary: AttendanceSummary?,
     onAttendanceClick: () -> Unit,
 ) {
+    val strings = LocalStrings.current
     val c = DnTheme.colors
     Row(
         Modifier
@@ -456,16 +463,16 @@ private fun HomeTiles(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("다음 예배", style = DnTheme.typography.caption, color = c.textSecondary)
+                Text(strings.nextService, style = DnTheme.typography.caption, color = c.textSecondary)
                 Icon(DnIcons.Clock, null, tint = c.blue, modifier = Modifier.size(16.dp))
             }
             Text(
-                text = serviceTime ?: "예정 없음",
+                text = serviceTime ?: strings.nothingScheduled,
                 style = DnTheme.typography.headline,
                 color = c.textPrimary,
             )
             Text(
-                text = serviceTitle ?: "오늘 예배가 없습니다",
+                text = serviceTitle ?: strings.attendanceNoService,
                 style = DnTheme.typography.caption,
                 color = c.textTertiary,
                 maxLines = 1,
@@ -488,7 +495,7 @@ private fun HomeTiles(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("이번 달 출석", style = DnTheme.typography.caption, color = c.textSecondary)
+                Text(strings.attendanceThisMonth, style = DnTheme.typography.caption, color = c.textSecondary)
                 Icon(DnIcons.UserCheck, null, tint = c.limeInk, modifier = Modifier.size(16.dp))
             }
             Row(verticalAlignment = Alignment.Bottom) {
@@ -750,13 +757,8 @@ private fun weekRangeLabel(start: LocalDate?, end: LocalDate?): String? {
     )
 }
 
-private fun dayLabel(dayOfWeek: String): String = when (dayOfWeek.uppercase()) {
-    "MONDAY" -> "월요일"
-    "TUESDAY" -> "화요일"
-    "WEDNESDAY" -> "수요일"
-    "THURSDAY" -> "목요일"
-    "FRIDAY" -> "금요일"
-    "SATURDAY" -> "토요일"
-    "SUNDAY" -> "일요일"
-    else -> dayOfWeek
+private fun dayLabel(dayOfWeek: String, strings: AppStrings): String {
+    val index = listOf("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY")
+        .indexOf(dayOfWeek.uppercase())
+    return if (index >= 0) strings.fullWeekdays[(index + 1) % 7] else dayOfWeek
 }

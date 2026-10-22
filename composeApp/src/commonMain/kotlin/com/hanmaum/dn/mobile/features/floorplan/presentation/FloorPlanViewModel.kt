@@ -25,7 +25,7 @@ class FloorPlanViewModel(
             try {
                 val floors = repository.getFloors()
                 if (floors.isEmpty()) {
-                    _uiState.value = FloorPlanUiState.Error("등록된 층 정보가 없습니다.")
+                    _uiState.value = FloorPlanUiState.Error("No floor information is available.")
                     return@launch
                 }
                 val first = floors.first()
@@ -37,7 +37,7 @@ class FloorPlanViewModel(
                     selectedRoom = null,
                 )
             } catch (e: Exception) {
-                _uiState.value = FloorPlanUiState.Error(e.message ?: "알 수 없는 오류가 발생했습니다.")
+                _uiState.value = FloorPlanUiState.Error(e.message ?: "An unexpected error occurred.")
             }
         }
     }
@@ -53,7 +53,7 @@ class FloorPlanViewModel(
                     _uiState.value = latest.copy(rooms = rooms)
                 }
             } catch (e: Exception) {
-                _uiState.value = FloorPlanUiState.Error(e.message ?: "알 수 없는 오류가 발생했습니다.")
+                _uiState.value = FloorPlanUiState.Error(e.message ?: "An unexpected error occurred.")
             }
         }
     }

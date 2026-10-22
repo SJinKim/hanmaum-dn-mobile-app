@@ -88,6 +88,31 @@ class RegisterViewModelTest {
     }
 
     @Test
+    fun hangulNamesReachTheBackendUnchanged() = runTest {
+        fillMinimumValidForm()
+        vm.onLastNameChange("홍")
+        vm.onFirstNameChange("길동")
+        vm.register()
+        advanceUntilIdle()
+        assertEquals("홍", auth.lastRequest?.lastName)
+        assertEquals("길동", auth.lastRequest?.firstName)
+    }
+
+    @Test
+    fun latinNamesRemainAllowedWithoutHangulValidation() = runTest {
+        fillMinimumValidForm()
+        vm.onLastNameChange("Hong")
+        vm.onFirstNameChange("Gildong")
+        vm.register()
+        advanceUntilIdle()
+        assertEquals(1, auth.registerCalls)
+        assertEquals("Hong", auth.lastRequest?.lastName)
+        assertEquals("Gildong", auth.lastRequest?.firstName)
+        assertNull(vm.uiState.value.firstNameError)
+        assertNull(vm.uiState.value.lastNameError)
+    }
+
+    @Test
     fun aStreetWithoutAHouseNumberBlocksSubmitAndSaysSo() = runTest {
         fillMinimumValidForm()
         vm.onStreetChange("Musterstraße")
@@ -445,7 +470,7 @@ class RegisterViewModelTest {
     }
 
     @Test
-    fun aRefusalWithAMessageStaysABannerNotADialog() = runTest {
+    fun aRefusalUsesLocalizedGenericCopyInsteadOfArbitraryServerLanguage() = runTest {
         auth.registerResult = Result.failure(RegisterException("Email already registered"))
         fillMinimumValidForm()
         vm.register()
@@ -453,7 +478,7 @@ class RegisterViewModelTest {
 
         val s = vm.uiState.value
         assertFalse(s.showUnavailableDialog)
-        assertEquals(RegisterBanner.ServerMessage("Email already registered"), s.bannerError)
+        assertEquals(RegisterBanner.Generic, s.bannerError)
     }
 
     @Test

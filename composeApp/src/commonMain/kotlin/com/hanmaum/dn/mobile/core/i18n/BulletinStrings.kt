@@ -48,19 +48,17 @@ data class BulletinStrings(
     fun questions(count: Int): String = when (language) {
         AppLocale.EN -> "$count ${if (count == 1) "question" else "questions"}"
         AppLocale.KO -> "질문 ${count}개"
-        AppLocale.DE -> "$count ${if (count == 1) "Frage" else "Fragen"}"
     }
 
     fun songCount(count: Int): String = when (language) {
         AppLocale.EN -> "$count ${if (count == 1) "song" else "songs"}"
         AppLocale.KO -> "${count}곡"
-        AppLocale.DE -> "$count ${if (count == 1) "Lied" else "Lieder"}"
     }
 
     fun date(date: LocalDate, full: Boolean = false): String {
         val month = date.monthNumber.toString().padStart(2, '0')
         val day = date.day.toString().padStart(2, '0')
-        val short = if (language == AppLocale.DE) "$day.$month" else "$month.$day"
+        val short = "$month.$day"
         return when {
             !full -> short
             language == AppLocale.KO -> "${date.year}.$short"
@@ -76,7 +74,6 @@ data class BulletinStrings(
     fun publishedOn(date: String): String = when (language) {
         AppLocale.KO -> "$date $published"
         AppLocale.EN -> "$published · $date"
-        AppLocale.DE -> "$published am $date"
     }
 
     fun metadata(vararg parts: String?): String = parts.mapNotNull {
@@ -163,40 +160,4 @@ val KoBulletinStrings = BulletinStrings(
     offline = "저장된 주보 · 저장일",
     sunday = "SUN",
     question = "질문",
-)
-val DeBulletinStrings = BulletinStrings(
-    language = AppLocale.DE,
-    title = "Gemeindebrief",
-    current = "Aktueller Gemeindebrief",
-    history = "Frühere Ausgaben",
-    worshipOrder = "Gottesdienstablauf",
-    sermonSharing = "Predigtgespräch",
-    sermon = "Die heutige Predigt",
-    scripture = "Bibeltext",
-    openingPrayer = "Anfangsgebet",
-    songs = "Lieder",
-    openingSongs = "Lobpreis",
-    offeringSong = "Lied zur Kollekte",
-    announcements = "Gemeindenachrichten",
-    scriptureReading = "Bibellesung",
-    sermonProclamation = "Predigt",
-    responsePrayer = "Antwortgebet",
-    responseSong = "Antwortlied",
-    closing = "Abschluss",
-    viewSharing = "Predigtgespräch lesen",
-    emptyTitle = "Noch kein Gemeindebrief veröffentlicht",
-    emptyBody = "Nach der Veröffentlichung findest du den Gemeindebrief hier. Frühere Ausgaben bleiben lesbar.",
-    unavailable = "Diese Ausgabe ist nicht mehr verfügbar",
-    errorTitle = "Gemeindebrief konnte nicht geladen werden",
-    errorBody = "Prüfe deine Verbindung und versuche es erneut.",
-    historyEmpty = "Noch keine früheren Ausgaben",
-    sharingEmpty = "Das Predigtgespräch wurde noch nicht ergänzt.",
-    refresh = "Aktualisieren",
-    refreshing = "Wird aktualisiert…",
-    loading = "Gemeindebrief wird geladen…",
-    loadMore = "Mehr laden",
-    published = "Veröffentlicht",
-    offline = "Gespeicherte Ausgabe · gespeichert am",
-    sunday = "SO",
-    question = "Frage",
 )

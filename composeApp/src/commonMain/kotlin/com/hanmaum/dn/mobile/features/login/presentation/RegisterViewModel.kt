@@ -258,11 +258,9 @@ class RegisterViewModel(
                     }
                     return@onFailure
                 }
-                // Show a clean backend message if we have one, else a localized generic.
-                val banner = (exception as? RegisterException)?.userMessage
-                    ?.takeIf { it.isNotBlank() }
-                    ?.let { RegisterBanner.ServerMessage(it) }
-                    ?: RegisterBanner.Generic
+                // The backend exposes free-text messages rather than localized error codes.
+                // Keep arbitrary server language and technical details out of the form.
+                val banner = RegisterBanner.Generic
                 _uiState.update { it.copy(isLoading = false, bannerError = banner) }
             }
         }

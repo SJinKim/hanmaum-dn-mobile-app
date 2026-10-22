@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.login.presentation
 
+import com.hanmaum.dn.mobile.core.i18n.UiMessage
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
@@ -64,7 +65,7 @@ class LoginViewModel(
             VaultResult.Invalidated -> {
                 // Biometrics were re-enrolled; the secret is gone for good.
                 authPreferences.setBiometricEnabled(false)
-                _uiState.update { it.copy(error = "생체 인증이 변경되어 다시 설정해야 합니다.") }
+                _uiState.update { it.copy(error = UiMessage.BIOMETRICS_CHANGED) }
             }
             // Nothing sealed. The item is gone for good, so the switch follows it.
             VaultResult.Empty -> authPreferences.setBiometricEnabled(false)
@@ -74,12 +75,12 @@ class LoginViewModel(
             // up again to get the button back (#212).
             VaultResult.Unavailable -> Unit
             VaultResult.Failed ->
-                _uiState.update { it.copy(error = "생체 인증에 실패했습니다. 계정으로 로그인해 주세요.") }
+                _uiState.update { it.copy(error = UiMessage.BIOMETRIC_FAILED) }
         }
     }
 
     private suspend fun exchangeRefreshToken(vault: BiometricVault, refreshToken: String) {
-        _uiState.update { it.copy(isLoading = true, error = null, statusMessage = "인증하는 중입니다. 잠시만 기다려주세요.") }
+        _uiState.update { it.copy(isLoading = true, error = null, statusMessage = UiMessage.AUTHENTICATING) }
         try {
             val tokens = authRepository.refresh(refreshToken)
             tokenStorage.saveAccessToken(tokens.accessToken)
@@ -97,7 +98,7 @@ class LoginViewModel(
             // The composition-bound Face ID job can end while this ViewModel
             // survives. Release the UI without treating cancellation as expiry
             // or silently starting another authentication attempt.
-            _uiState.update { it.copy(isLoading = false, statusMessage = "") }
+            _uiState.update { it.copy(isLoading = false, statusMessage = null) }
             throw e
         } catch (e: Exception) {
             if (e is LoginException && e.error == "invalid_grant") {
@@ -110,8 +111,8 @@ class LoginViewModel(
             _uiState.update {
                 it.copy(
                     isLoading = false,
-                    statusMessage = "",
-                    error = "다시 로그인해주세요.",
+                    statusMessage = null,
+                    error = UiMessage.SIGN_IN_AGAIN,
                 )
             }
         }
@@ -131,11 +132,11 @@ class LoginViewModel(
             try {
                 val callback = browser.authenticate(authorization.begin(uiLocale), authorization.callbackScheme)
                 if (callback == null) {
-                    _uiState.update { it.copy(isLoading = false, browserOpen = false, statusMessage = "") }
+                    _uiState.update { it.copy(isLoading = false, browserOpen = false, statusMessage = null) }
                     return@launch
                 }
                 val grant = authorization.complete(callback)
-                _uiState.update { it.copy(browserOpen = false, statusMessage = "사용자 정보를 확인하고 있어요.") }
+                _uiState.update { it.copy(browserOpen = false, statusMessage = UiMessage.CHECKING_PROFILE) }
                 val tokenResponse = authRepository.exchangeAuthorizationCode(grant.code, grant.verifier)
 
                 // TOKEN Speichern
@@ -160,8 +161,8 @@ class LoginViewModel(
                     it.copy(
                         isLoading = false,
                         browserOpen = false,
-                        error = "연결 상태를 확인하고 다시 시도해 주세요.",
-                        statusMessage = ""
+                        error = UiMessage.CHECK_CONNECTION,
+                        statusMessage = null
                     )
                 }
             } finally {
@@ -177,7 +178,7 @@ class LoginViewModel(
      * and the same question — where does this member belong?
      */
     private suspend fun routeByStatus() {
-        _uiState.update { it.copy(statusMessage = "사용자 정보를 확인 중입니다. 잠시만 기다려주세요.") }
+        _uiState.update { it.copy(statusMessage = UiMessage.LOADING_PROFILE) }
 
         memberRepository.getMyProfile()
             .onSuccess { member ->
@@ -206,7 +207,7 @@ class LoginViewModel(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        statusMessage = if (destination == NavRoute.Home) "인증 완료!" else it.statusMessage,
+                        statusMessage = if (destination == NavRoute.Home) UiMessage.AUTHENTICATED else it.statusMessage,
                         isSuccess = true,
                         navigateTo = destination,
                     )
@@ -218,8 +219,8 @@ class LoginViewModel(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = "사용자 정보를 가져오지 못했습니다. 로그인을 다시 시도해주세요.",
-                        statusMessage = "로그인 실패하였습니다.",
+                        error = UiMessage.PROFILE_SIGN_IN_FAILED,
+                        statusMessage = UiMessage.SIGN_IN_FAILED,
                     )
                 }
             }
