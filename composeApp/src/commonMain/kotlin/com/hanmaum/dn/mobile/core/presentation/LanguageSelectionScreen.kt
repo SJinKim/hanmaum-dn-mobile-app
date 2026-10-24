@@ -43,6 +43,10 @@ fun LanguageSelectionScreen(onSelect: (AppLocale) -> Unit) {
                     label = locale.nativeName,
                     onClick = { onSelect(locale) },
                     modifier = Modifier.fillMaxWidth(),
+                    // Neutral, not the red default: a choice here is not an error or a warning.
+                    tint = DnTheme.colors.textPrimary,
+                    container = DnTheme.colors.surface2,
+                    showBorder = false,
                 )
             }
         }
