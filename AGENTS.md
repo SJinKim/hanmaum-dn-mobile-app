@@ -163,3 +163,23 @@ Always use the OpenAI developer documentation MCP server if work involves OpenAI
 - Do not rebase, reset, discard, or overwrite user work without explicit permission.
 - Commit messages: `<type>(<scope>): <imperative summary max 72 chars>`.
 - Types: `feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `perf`, `revert`.
+
+<!-- ai-dev-team:start -->
+## KI-Entwicklungsteam
+
+Dieses Repo wird vom KI-Entwicklungsteam bearbeitet (Claude A, Claude B, Codex; Entscheidungen: Jin).
+
+- **Vor jeder Team-Aufgabe** den Skill `team-workflow` laden und `.team/config.yml` lesen.
+- Projekt-Key: `HDN` · Board: GitHub Project #6 (SJinKim) · Rolle dieses Repos: mobile
+- Verwandte Repos: `SJinKim/hanmaum-dn-server`, `SJinKim/hanmaum-dn-web-app`
+- Architektur: `docs/architecture/` (overview, ADRs, patterns) – **vor jeder Implementierung lesen; Abweichungen nur per Entscheidungsvorlage.**
+- Produktentscheidungen: `docs/product/decisions.md` – gelten verbindlich.
+- Designs: Figma https://www.figma.com/design/NOVmvVvB7CEXXVemOy5hJa/DN-App · technische Feature-Designs in `docs/design/` bzw. im Issue.
+- Erkenntnisse: `tasks/lessons.md` – vor der Arbeit überfliegen, nach Fehlern ergänzen.
+- Produkt- und wichtige Technikentscheidungen trifft **nur Jin** (Skill `team-decision`).
+- Lücken in Story/Design nie erfinden – nachfragen.
+
+### Befehle
+- Build: `./gradlew :composeApp:assembleDevDebug` · Tests: `./gradlew :composeApp:testDevDebugUnitTest` · Lint: `./gradlew lint` · Architekturtests: – (noch keine) · iOS-Tests: `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer ./gradlew :composeApp:iosSimulatorArm64Test`
+- Lokal starten: Android-Emulator bzw. iOS-Simulator (siehe oben)
+<!-- ai-dev-team:end -->

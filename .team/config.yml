@@ -1,0 +1,36 @@
+# KI-Entwicklungsteam – Projektkonfiguration
+# Flache "key: value"-Zeilen werden von Skripten gelesen – Format bitte beibehalten.
+
+project_key: HDN                 # Ticket-Präfix
+product_name: Hanmaum DN
+github_owner: SJinKim            # User oder Organisation, der das GitHub Project gehört
+project_number: 6                # Nummer des GitHub Project (Board)
+stage_field: Stage
+auto_merge: false                # true = nach Review + QA + grüner CI automatisch mergen
+figma_file: https://www.figma.com/design/NOVmvVvB7CEXXVemOy5hJa/DN-App
+
+# Sprache
+language_docs: de                # Issues, Kommentare, Doku
+language_code: en                # Code, Commits, Branches
+
+# Repos desselben Produkts (eine Zeile pro Repo)
+repos:
+  - SJinKim/hanmaum-dn-server
+  - SJinKim/hanmaum-dn-web-app
+  - SJinKim/hanmaum-dn-mobile-app
+
+# Dieses Repo
+repo_role: mobile                # backend | web | mobile | ops | fullstack
+
+# Befehle (von Developer, Reviewer und QA verwendet)
+commands:
+  build: ./gradlew :composeApp:assembleDevDebug
+  test: ./gradlew :composeApp:testDevDebugUnitTest
+  lint: ./gradlew lint
+  arch_test:
+  ios_test: DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer ./gradlew :composeApp:iosSimulatorArm64Test
+  e2e:
+  run_local:
+
+# Design-Puffer: so viele Tickets sollen mindestens in "Ready" liegen
+ready_buffer: 3
