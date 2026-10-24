@@ -11,6 +11,7 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentGrant
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterException
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterFailureReason
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterRequest
@@ -56,6 +57,7 @@ private val REGISTER_REQUEST = RegisterRequest(
     password = "Passwort1!",
     birthDate = "2000-08-16",
     identityStatus = "UNIVERSITY_STUDENT",
+    consent = ConsentGrant(accepted = true, version = "2026-09"),
 )
 
 private fun registerClient(status: HttpStatusCode, body: String) = HttpClient(
@@ -176,6 +178,35 @@ class AuthRepositoryImplTest {
 
         assertIs<RegisterException>(error)
         assertEquals(RegisterFailureReason.UNKNOWN, error.reason)
+        assertFalse(error.isServerError)
+        client.close()
+    }
+
+    @Test
+    fun `an outdated consent is told apart from the email conflict by its code`() = runTest {
+        val client = registerClient(
+            HttpStatusCode.Conflict,
+            """{"status":409,"message":"Die Datenschutzerklärung wurde aktualisiert.","code":"CONSENT_VERSION_OUTDATED"}""",
+        )
+
+        val error = AuthRepositoryImpl(client).register(REGISTER_REQUEST).exceptionOrNull()
+
+        assertIs<RegisterException>(error)
+        assertEquals(RegisterFailureReason.CONSENT_VERSION_OUTDATED, error.reason)
+        client.close()
+    }
+
+    @Test
+    fun `a missing consent is classified by its code`() = runTest {
+        val client = registerClient(
+            HttpStatusCode.BadRequest,
+            """{"status":400,"message":"Consent required","code":"CONSENT_REQUIRED"}""",
+        )
+
+        val error = AuthRepositoryImpl(client).register(REGISTER_REQUEST).exceptionOrNull()
+
+        assertIs<RegisterException>(error)
+        assertEquals(RegisterFailureReason.CONSENT_REQUIRED, error.reason)
         assertFalse(error.isServerError)
         client.close()
     }

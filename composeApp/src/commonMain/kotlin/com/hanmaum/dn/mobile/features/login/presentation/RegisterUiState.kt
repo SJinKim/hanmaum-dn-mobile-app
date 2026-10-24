@@ -44,6 +44,13 @@ sealed interface RegisterBanner {
      * sight — the per-field messages alone left the button looking dead.
      */
     data object MissingRequired : RegisterBanner
+    /**
+     * The privacy notice changed while the form was open. The new version is
+     * loaded and the checkbox cleared, so the member agrees to what they see.
+     */
+    data object ConsentOutdated : RegisterBanner
+    /** The server received no valid consent and created no account. */
+    data object ConsentRequired : RegisterBanner
 }
 
 data class RegisterUiState(
@@ -62,6 +69,13 @@ data class RegisterUiState(
      * and the member needs the way to reach the team (#156).
      */
     val showUnavailableDialog: Boolean = false,
+
+    // Privacy consent (#290). The version is the server's: the member agrees to
+    // exactly the notice it serves, so nothing can be sent before it has loaded.
+    val policyVersion: String? = null,
+    val isPolicyLoading: Boolean = false,
+    val policyLoadFailed: Boolean = false,
+    val consentAccepted: Boolean = false, // never preselected
 
     // Formular Felder
     val firstName: String = "",
@@ -97,4 +111,7 @@ data class RegisterUiState(
 
     // Field the UI should focus/scroll to after a failed submit
     val focusTarget: RegisterField? = null,
-)
+) {
+    /** Submit stays disabled until the member has ticked a notice that actually loaded. */
+    val canSubmit: Boolean get() = consentAccepted && policyVersion != null && !isLoading
+}

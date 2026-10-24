@@ -47,6 +47,12 @@ import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlows
 import com.hanmaum.dn.mobile.core.presentation.components.DnPrimaryButton
 import com.hanmaum.dn.mobile.core.presentation.components.DnTextField
+import com.hanmaum.dn.mobile.core.presentation.components.DnTintedButton
+import com.hanmaum.dn.mobile.core.presentation.theme.DnInnerShape
+import com.hanmaum.dn.mobile.features.consent.presentation.components.ConsentLinks
+import com.hanmaum.dn.mobile.features.consent.presentation.components.ConsentNotice
+import com.hanmaum.dn.mobile.features.consent.presentation.components.ConsentNoticeTone
+import com.hanmaum.dn.mobile.features.consent.presentation.components.PrivacyConsentCheckbox
 import com.hanmaum.dn.mobile.core.presentation.components.DnTopBar
 import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
@@ -314,15 +320,66 @@ fun RegisterScreen(
                 }
 
                 Spacer(Modifier.height(26.dp))
+                ConsentSection(
+                    state = state,
+                    onConsentToggle = viewModel::onConsentToggle,
+                    onRetry = viewModel::retryPolicies,
+                    strings = strings,
+                )
+
+                Spacer(Modifier.height(20.dp))
                 DnPrimaryButton(
                     label = if (state.isLoading) strings.registerSubmitting else strings.registerSubmit,
                     onClick = submit,
-                    enabled = !state.isLoading,
+                    // Without the member's own tick on the current notice there
+                    // is no account to create (#290).
+                    enabled = state.canSubmit,
                     modifier = Modifier.fillMaxWidth(),
                 )
 
                 Spacer(Modifier.height(60.dp))
             }
+        }
+    }
+}
+
+/**
+ * 개인정보 처리 안내 — the APP_PRIVACY consent the account depends on. When the
+ * notice version cannot be loaded there is nothing to agree to, so the
+ * checkbox gives way to the failure and a reload (07).
+ */
+@Composable
+private fun ConsentSection(
+    state: RegisterUiState,
+    onConsentToggle: (Boolean) -> Unit,
+    onRetry: () -> Unit,
+    strings: AppStrings,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(strings.consentNoticeTitle, style = DnTheme.typography.headline, color = DnTheme.colors.textPrimary)
+        if (state.policyLoadFailed) {
+            ConsentNotice(
+                strings.consentLoadFailedTitle,
+                strings.consentLoadFailedBody,
+                tone = ConsentNoticeTone.Error,
+            )
+            DnTintedButton(
+                label = strings.consentReload,
+                onClick = onRetry,
+                modifier = Modifier.fillMaxWidth(),
+                tint = DnTheme.colors.limeInk,
+                container = DnTheme.colors.limeDim,
+                showBorder = false,
+                shape = DnInnerShape,
+            )
+        } else {
+            PrivacyConsentCheckbox(
+                checked = state.consentAccepted,
+                onCheckedChange = onConsentToggle,
+                enabled = state.policyVersion != null && !state.isLoading,
+            )
+            Text(strings.consentWithdrawHint, style = DnTheme.typography.caption, color = DnTheme.colors.textTertiary)
+            ConsentLinks()
         }
     }
 }
@@ -361,6 +418,8 @@ private fun FormBanner(banner: RegisterBanner, strings: AppStrings) {
                 RegisterBanner.Generic -> strings.registerFailed
                 RegisterBanner.RegisteredPleaseLogin -> strings.registerSuccessLogin
                 RegisterBanner.MissingRequired -> strings.registerMissingRequired
+                RegisterBanner.ConsentOutdated -> strings.registerConsentOutdated
+                RegisterBanner.ConsentRequired -> strings.registerConsentRequired
             },
             style = DnTheme.typography.captionStrong,
             color = tint,

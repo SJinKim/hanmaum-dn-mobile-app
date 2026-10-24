@@ -2,6 +2,8 @@ package com.hanmaum.dn.mobile.features.login.presentation
 
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.navigation.LoginRoute
+import com.hanmaum.dn.mobile.features.consent.FakeConsentRepository
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentResult
 import com.hanmaum.dn.mobile.features.login.domain.model.IdentityStatus
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterException
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterFailureReason
@@ -64,20 +66,29 @@ class RegisterViewModelTest {
 
     private val dispatcher = StandardTestDispatcher()
     private lateinit var auth: FakeAuthRepository
+    private lateinit var consent: FakeConsentRepository
     private lateinit var vm: RegisterViewModel
 
     @BeforeTest
     fun setUp() {
         Dispatchers.setMain(dispatcher)
         auth = FakeAuthRepository()
-        vm = RegisterViewModel(auth, FakeCityLookupRepository())
+        consent = FakeConsentRepository()
+        vm = RegisterViewModel(auth, FakeCityLookupRepository(), consent)
     }
 
     @AfterTest
     fun tearDown() = Dispatchers.resetMain()
 
     /** Everything the validator demands, with no address at all. */
+    /** The submit button only enables once the member has ticked the notice (#290). */
+    private fun agreeToNotice() {
+        dispatcher.scheduler.advanceUntilIdle() // the privacy notice loads on start
+        vm.onConsentToggle(true)
+    }
+
     private fun fillMinimumValidForm() {
+        agreeToNotice()
         vm.onLastNameChange("김")
         vm.onFirstNameChange("승진")
         vm.onEmailChange("hello@hanmaum.de")
@@ -170,6 +181,7 @@ class RegisterViewModelTest {
     @Test
     fun everyMissingRequiredFieldIsReportedAtOnce() = runTest {
         // Not one at a time: the user should see the whole list after one tap.
+        agreeToNotice()
         vm.register()
         advanceUntilIdle()
 
@@ -258,6 +270,7 @@ class RegisterViewModelTest {
 
     @Test
     fun aMissingIdentityStatusBlocksSubmitAndTakesFocus() = runTest {
+        agreeToNotice()
         vm.onLastNameChange("김")
         vm.onFirstNameChange("승진")
         vm.onEmailChange("hello@hanmaum.de")
@@ -378,6 +391,7 @@ class RegisterViewModelTest {
 
     @Test
     fun editingAFieldClearsItsErrorAndTheBanner() = runTest {
+        agreeToNotice()
         vm.register()
         advanceUntilIdle()
         assertNotNull(vm.uiState.value.bannerError)
@@ -513,5 +527,89 @@ class RegisterViewModelTest {
         vm.onUnavailableDialogDismissed()
 
         assertFalse(vm.uiState.value.showUnavailableDialog)
+    }
+
+    // --- Privacy consent (#290) ---
+
+    @Test
+    fun theConsentIsNeverPreselected() = runTest {
+        advanceUntilIdle()
+
+        val s = vm.uiState.value
+        assertEquals("2026-09", s.policyVersion)
+        assertFalse(s.consentAccepted)
+        assertFalse(s.canSubmit)
+    }
+
+    @Test
+    fun withoutConsentNothingReachesTheBackend() = runTest {
+        fillMinimumValidForm()
+        vm.onConsentToggle(false)
+
+        vm.register()
+        advanceUntilIdle()
+
+        assertEquals(0, auth.registerCalls)
+    }
+
+    @Test
+    fun theRequestCarriesTheVersionTheMemberSaw() = runTest {
+        fillMinimumValidForm()
+        vm.register()
+        advanceUntilIdle()
+
+        val grant = auth.lastRequest?.consent
+        assertEquals(true, grant?.accepted)
+        assertEquals("2026-09", grant?.version)
+    }
+
+    @Test
+    fun aFailedNoticeLoadBlocksSubmitUntilARetrySucceeds() = runTest {
+        consent.policiesResult = ConsentResult.Failed
+        vm = RegisterViewModel(auth, FakeCityLookupRepository(), consent)
+        advanceUntilIdle()
+        vm.onConsentToggle(true)
+
+        assertTrue(vm.uiState.value.policyLoadFailed)
+        assertFalse(vm.uiState.value.canSubmit, "there is no version to agree to")
+
+        consent.policiesResult = ConsentResult.Success(listOf(FakeConsentRepository.policy()))
+        vm.retryPolicies()
+        advanceUntilIdle()
+
+        assertFalse(vm.uiState.value.policyLoadFailed)
+        assertEquals("2026-09", vm.uiState.value.policyVersion)
+    }
+
+    @Test
+    fun anOutdatedNoticeIsReloadedAndTheCheckboxCleared() = runTest {
+        auth.registerResult = Result.failure(RegisterException(
+            null,
+            reason = RegisterFailureReason.CONSENT_VERSION_OUTDATED,
+        ))
+        fillMinimumValidForm()
+        consent.policiesResult = ConsentResult.Success(listOf(FakeConsentRepository.policy("2026-10")))
+
+        vm.register()
+        advanceUntilIdle()
+
+        val s = vm.uiState.value
+        assertEquals(RegisterBanner.ConsentOutdated, s.bannerError)
+        assertEquals("2026-10", s.policyVersion)
+        assertFalse(s.consentAccepted, "agreeing to the old notice is no agreement to the new one")
+        assertEquals("hello@hanmaum.de", s.email, "the rest of the form survives")
+    }
+
+    @Test
+    fun aMissingConsentOnTheServerShowsItsOwnBanner() = runTest {
+        auth.registerResult = Result.failure(RegisterException(
+            null,
+            reason = RegisterFailureReason.CONSENT_REQUIRED,
+        ))
+        fillMinimumValidForm()
+        vm.register()
+        advanceUntilIdle()
+
+        assertEquals(RegisterBanner.ConsentRequired, vm.uiState.value.bannerError)
     }
 }

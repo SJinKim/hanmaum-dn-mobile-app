@@ -37,6 +37,12 @@ object RegisterValidation {
 enum class RegisterFailureReason {
     UNKNOWN,
     EMAIL_ALREADY_REGISTERED,
+
+    /** The privacy notice changed while the form was open; it must be shown again. */
+    CONSENT_VERSION_OUTDATED,
+
+    /** The server received no valid consent, so no account was created. */
+    CONSENT_REQUIRED,
 }
 
 /**

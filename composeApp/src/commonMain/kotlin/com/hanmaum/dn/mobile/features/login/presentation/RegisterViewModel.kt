@@ -4,6 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.navigation.LoginRoute
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentGrant
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentPurpose
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentResult
+import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentRepository
 import com.hanmaum.dn.mobile.features.login.domain.model.BirthDateInput
 import com.hanmaum.dn.mobile.features.login.domain.model.IdentityStatus
 import com.hanmaum.dn.mobile.features.login.domain.model.Countries
@@ -25,10 +29,44 @@ import kotlinx.datetime.LocalDate
 class RegisterViewModel(
     private val authRepository: AuthRepository,
     private val cityLookupRepository: CityLookupRepository,
+    private val consentRepository: ConsentRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterUiState())
     val uiState = _uiState.asStateFlow()
+
+    init {
+        loadPolicy()
+    }
+
+    /** Reloads the privacy notice after it failed to load (state 07). */
+    fun retryPolicies() = loadPolicy()
+
+    /**
+     * Fetches the current APP_PRIVACY version. A new version always clears the
+     * checkbox: agreeing to one notice is no agreement to the next.
+     */
+    private fun loadPolicy() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isPolicyLoading = true, policyLoadFailed = false) }
+            val version = (consentRepository.getPolicies() as? ConsentResult.Success)
+                ?.data?.firstOrNull { it.purpose == ConsentPurpose.APP_PRIVACY }?.version
+            _uiState.update {
+                it.copy(
+                    policyVersion = version,
+                    isPolicyLoading = false,
+                    policyLoadFailed = version == null,
+                    consentAccepted = it.consentAccepted && version == it.policyVersion,
+                )
+            }
+        }
+    }
+
+    fun onConsentToggle(accepted: Boolean) = _uiState.update {
+        val clearsConsentBanner = it.bannerError is RegisterBanner.ConsentOutdated ||
+            it.bannerError is RegisterBanner.ConsentRequired
+        it.copy(consentAccepted = accepted, bannerError = if (clearsConsentBanner) null else it.bannerError)
+    }
 
     // --- Events zum Ändern der Felder ---
     // Editing a field clears its own error and any top-of-form banner.
@@ -141,6 +179,9 @@ class RegisterViewModel(
             _uiState.update { it.copy(birthDate = normalisedBirthDate) }
         }
         val s = _uiState.value
+        // The button is disabled in this state; this only guards a stray call.
+        val policyVersion = s.policyVersion
+        if (!s.consentAccepted || policyVersion == null) return
 
         // 1. VALIDIERUNG — collect every field error so the user sees them all at once.
         val emailError = when {
@@ -229,6 +270,7 @@ class RegisterViewModel(
                 // Both are validated above, so the non-null forms are safe here.
                 birthDate = s.birthDate.replace('.', '-'),
                 identityStatus = checkNotNull(s.identityStatus).name,
+                consent = ConsentGrant(accepted = true, version = policyVersion),
                 phoneNumber = PhoneNumber.toE164(
                     dialCode = Countries.byIsoOrDefault(s.phoneCountryIso).dialCode,
                     national = s.phoneNumber,
@@ -261,11 +303,17 @@ class RegisterViewModel(
                 }
                 // Known business failures remain actionable in the selected app language.
                 // Unknown server messages and technical details stay out of the form.
-                val banner = when ((exception as? RegisterException)?.reason) {
+                val reason = (exception as? RegisterException)?.reason
+                val banner = when (reason) {
                     RegisterFailureReason.EMAIL_ALREADY_REGISTERED -> RegisterBanner.EmailAlreadyRegistered
+                    RegisterFailureReason.CONSENT_VERSION_OUTDATED -> RegisterBanner.ConsentOutdated
+                    RegisterFailureReason.CONSENT_REQUIRED -> RegisterBanner.ConsentRequired
                     else -> RegisterBanner.Generic
                 }
                 _uiState.update { it.copy(isLoading = false, bannerError = banner) }
+                // The notice the member agreed to is no longer current: fetch the
+                // new one, which clears the checkbox (see loadPolicy).
+                if (reason == RegisterFailureReason.CONSENT_VERSION_OUTDATED) loadPolicy()
             }
         }
     }

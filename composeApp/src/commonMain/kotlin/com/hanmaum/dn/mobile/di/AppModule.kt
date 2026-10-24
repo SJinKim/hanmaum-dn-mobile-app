@@ -35,6 +35,8 @@ import com.hanmaum.dn.mobile.features.attendance.data.repository.AttendanceRepos
 import com.hanmaum.dn.mobile.features.attendance.domain.repository.AttendanceRepository
 import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceViewModel
 import com.hanmaum.dn.mobile.features.attendance.presentation.history.AttendanceHistoryViewModel
+import com.hanmaum.dn.mobile.features.consent.data.repository.ConsentRepositoryImpl
+import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentRepository
 import com.hanmaum.dn.mobile.features.events.data.repository.EventRsvpRepositoryImpl
 import com.hanmaum.dn.mobile.features.events.domain.repository.EventRsvpRepository
 import com.hanmaum.dn.mobile.features.events.presentation.EventRsvpViewModel
@@ -93,6 +95,7 @@ val appModule = module {
     single<AnnouncementRepository> { AnnouncementRepositoryImpl(get()) }
     single<AuthRepository> { AuthRepositoryImpl(get()) }
     single<CityLookupRepository> { CityLookupRepositoryImpl(get()) }
+    single<ConsentRepository> { ConsentRepositoryImpl(get()) }
     single<MemberRepository> { MemberRepositoryImpl(get()) }
     single<VerseRepository> { VerseRepositoryImpl(get(), get()) }
     single<VerseRecordRepository> { VerseRecordRepositoryImpl(get()) }
@@ -134,7 +137,7 @@ val appModule = module {
     viewModel { AnnouncementListViewModel(get()) }
 
     // Register VM
-    viewModel { RegisterViewModel(get(), get()) }
+    viewModel { RegisterViewModel(get(), get(), get()) }
 
     // Login VM
     viewModel { LoginViewModel(get(), get(), get(), get(), get(), get()) }

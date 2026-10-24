@@ -124,6 +124,39 @@ interface AppStrings {
     val registerSubtitle: String
     val registerRequiredLegend: String
     val registerMissingRequired: String
+    // Privacy consent (#290)
+    val consentNoticeTitle: String
+    val consentCheckboxLabel: String
+    val consentCheckboxDetail: String
+    val consentWithdrawHint: String
+    val consentPolicyLink: String
+    val consentContactLink: String
+    val consentLoadFailedTitle: String
+    val consentLoadFailedBody: String
+    val consentReload: String
+    val registerConsentOutdated: String
+    val registerConsentRequired: String
+    val consentMissingTitle: String
+    val consentMissingBody: String
+    val consentOutdatedTitle: String
+    val consentOutdatedBody: String
+    fun consentNewVersion(version: String): String
+    fun consentPreviousVersion(version: String): String
+    val consentAgreeAndContinue: String
+    val consentSaveFailedTitle: String
+    val consentSaveFailedBody: String
+    val consentSaveAgain: String
+    val consentGrantedTitle: String
+    fun consentGrantedDetail(date: String, version: String): String
+    val consentContactBlock: String
+    val consentWithdrawLink: String
+    val consentStatusFailedTitle: String
+    val consentStatusFailedBody: String
+    val consentStatusReload: String
+    val consentWithdrawTitle: String
+    val consentWithdrawBody: String
+    val consentWithdrawConfirm: String
+    val consentWithdrawFailed: String
     val registerUnavailableTitle: String
     val registerUnavailableBody: String
     /** Contact sentence around the team link: prefix + [registerUnavailableTeam] + suffix. */
@@ -688,6 +721,38 @@ object EnStrings : AppStrings {
     override val registerSubtitle = "After you apply, a leader reviews your request before you can use the app."
     override val registerRequiredLegend = "* marks a required field"
     override val registerMissingRequired = "Please fill in every required field"
+    override val consentNoticeTitle = "Privacy notice"
+    override val consentCheckboxLabel = "I agree to my personal data being processed for church activities"
+    override val consentCheckboxDetail = "This includes religious information such as church membership and baptism. The purpose and scope are set out in the privacy policy."
+    override val consentWithdrawHint = "You can withdraw your consent. Details and contact are in the privacy policy."
+    override val consentPolicyLink = "View privacy policy"
+    override val consentContactLink = "Privacy contact"
+    override val consentLoadFailedTitle = "Could not load the notice"
+    override val consentLoadFailedBody = "Check your internet connection and try again."
+    override val consentReload = "Load again"
+    override val registerConsentOutdated = "The privacy notice has changed. Please read it and agree again."
+    override val registerConsentRequired = "Please agree to the processing of your personal data"
+    override val consentMissingTitle = "Please review how your data is processed"
+    override val consentMissingBody = "There is no consent on record for this account. Please review the purpose and scope first."
+    override val consentOutdatedTitle = "The privacy notice has changed"
+    override val consentOutdatedBody = "Please review what changed since you last agreed, then choose again."
+    override fun consentNewVersion(version: String) = "New version $version"
+    override fun consentPreviousVersion(version: String) = "Previous consent: version $version"
+    override val consentAgreeAndContinue = "Agree and continue"
+    override val consentSaveFailedTitle = "Could not save your consent"
+    override val consentSaveFailedBody = "Nothing has been saved yet. Please try again."
+    override val consentSaveAgain = "Save again"
+    override val consentGrantedTitle = "Consent to data processing"
+    override fun consentGrantedDetail(date: String, version: String) = "Agreed $date · version $version"
+    override val consentContactBlock = "Hanmaum Church\nhanmaum.dev@gmail.com"
+    override val consentWithdrawLink = "Withdraw consent"
+    override val consentStatusFailedTitle = "Could not load your consent"
+    override val consentStatusFailedBody = "Your consent status cannot be checked."
+    override val consentStatusReload = "Load again"
+    override val consentWithdrawTitle = "Withdraw your consent to data processing?"
+    override val consentWithdrawBody = "Until you agree again you cannot use the app. Processing that took place before the withdrawal is not affected."
+    override val consentWithdrawConfirm = "Withdraw"
+    override val consentWithdrawFailed = "Could not withdraw. Please try again."
     override val registerUnavailableTitle = "Registration isn't possible right now"
     override val registerUnavailableBody = "Something went wrong and your registration couldn't be completed. Please try again later."
     override val registerUnavailableContactPrefix = "If the problem persists, please contact "
@@ -1151,6 +1216,38 @@ object KoStrings : AppStrings {
     override val registerSubtitle = "가입 신청 후 담당자의 승인을 거쳐 이용하실 수 있습니다."
     override val registerRequiredLegend = "* 표시는 필수 항목입니다"
     override val registerMissingRequired = "필수 항목을 모두 입력해 주세요"
+    override val consentNoticeTitle = "개인정보 처리 안내"
+    override val consentCheckboxLabel = "교회 활동을 위한 개인정보 처리에 동의합니다"
+    override val consentCheckboxDetail = "교회 소속·세례 등 종교 관련 정보가 포함됩니다. 목적과 범위는 개인정보 처리방침에서 확인해 주세요."
+    override val consentWithdrawHint = "동의는 철회할 수 있습니다. 자세한 내용과 연락처는 처리방침을 확인해 주세요."
+    override val consentPolicyLink = "개인정보 처리방침 보기"
+    override val consentContactLink = "개인정보 문의"
+    override val consentLoadFailedTitle = "안내를 불러오지 못했습니다"
+    override val consentLoadFailedBody = "인터넷 연결을 확인하고 다시 시도해 주세요."
+    override val consentReload = "다시 불러오기"
+    override val registerConsentOutdated = "개인정보 처리 안내가 변경되었습니다. 확인 후 다시 동의해 주세요."
+    override val registerConsentRequired = "개인정보 처리에 동의해 주세요"
+    override val consentMissingTitle = "개인정보 처리 내용을 확인해 주세요"
+    override val consentMissingBody = "이 계정에 동의 기록이 없습니다. 처리 목적과 범위를 먼저 확인해 주세요."
+    override val consentOutdatedTitle = "개인정보 처리 안내가 변경되었습니다"
+    override val consentOutdatedBody = "이전에 동의한 내용과 달라진 안내를 확인한 후 다시 선택해 주세요."
+    override fun consentNewVersion(version: String) = "새 버전 $version"
+    override fun consentPreviousVersion(version: String) = "이전 동의: 버전 $version"
+    override val consentAgreeAndContinue = "동의하고 계속하기"
+    override val consentSaveFailedTitle = "동의를 저장하지 못했습니다"
+    override val consentSaveFailedBody = "아직 저장되지 않았습니다. 다시 시도해 주세요."
+    override val consentSaveAgain = "다시 저장하기"
+    override val consentGrantedTitle = "개인정보 처리 동의"
+    override fun consentGrantedDetail(date: String, version: String) = "동의일 $date · 버전 $version"
+    override val consentContactBlock = "한마음교회\nhanmaum.dev@gmail.com"
+    override val consentWithdrawLink = "동의 철회"
+    override val consentStatusFailedTitle = "동의 내역을 불러오지 못했습니다"
+    override val consentStatusFailedBody = "동의 여부를 확인할 수 없습니다."
+    override val consentStatusReload = "내역 다시 불러오기"
+    override val consentWithdrawTitle = "개인정보 처리 동의를 철회할까요?"
+    override val consentWithdrawBody = "철회하면 다시 동의할 때까지 앱을 사용할 수 없습니다. 철회 전에 이루어진 처리에는 영향이 없습니다."
+    override val consentWithdrawConfirm = "철회하기"
+    override val consentWithdrawFailed = "철회하지 못했습니다. 다시 시도해 주세요."
     override val registerUnavailableTitle = "현재 가입 신청이 불가능합니다"
     override val registerUnavailableBody = "오류가 발생하여 가입 신청을 완료할 수 없습니다. 잠시 후 다시 시도해 주세요."
     override val registerUnavailableContactPrefix = "문제가 계속되면 "

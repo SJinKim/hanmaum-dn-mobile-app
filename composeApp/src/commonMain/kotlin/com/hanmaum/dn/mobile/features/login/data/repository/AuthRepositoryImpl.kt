@@ -1,7 +1,9 @@
 package com.hanmaum.dn.mobile.features.login.data.repository
 
 import com.hanmaum.dn.mobile.core.security.MobileAuthConfig
+import com.hanmaum.dn.mobile.core.domain.model.ApiErrorResponse
 import com.hanmaum.dn.mobile.core.domain.model.ApiResponse
+import com.hanmaum.dn.mobile.features.consent.data.repository.ConsentRepositoryImpl
 import com.hanmaum.dn.mobile.features.login.domain.model.KeycloakError
 import com.hanmaum.dn.mobile.features.login.domain.model.LoginException
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterException
@@ -121,12 +123,17 @@ class AuthRepositoryImpl(
                 val message = runCatching {
                     lenientJson.decodeFromString<ApiResponse<Unit>>(errorText).message
                 }.getOrNull()
-                // Registration's 409 contract means the email is already in use.
-                // Classify by status even if the body is absent or not JSON.
-                val reason = if (response.status == HttpStatusCode.Conflict) {
-                    RegisterFailureReason.EMAIL_ALREADY_REGISTERED
-                } else {
-                    RegisterFailureReason.UNKNOWN
+                val code = runCatching {
+                    lenientJson.decodeFromString<ApiErrorResponse>(errorText).code
+                }.getOrNull()
+                // The consent codes come first: an outdated notice is a 409 too.
+                // A 409 without a code is the email conflict, which the server
+                // sends without one — classify it even if the body is not JSON.
+                val reason = when {
+                    code == ConsentRepositoryImpl.CODE_VERSION_OUTDATED -> RegisterFailureReason.CONSENT_VERSION_OUTDATED
+                    code == ConsentRepositoryImpl.CODE_CONSENT_REQUIRED -> RegisterFailureReason.CONSENT_REQUIRED
+                    response.status == HttpStatusCode.Conflict -> RegisterFailureReason.EMAIL_ALREADY_REGISTERED
+                    else -> RegisterFailureReason.UNKNOWN
                 }
                 Result.failure(
                     RegisterException(message, isServerError = response.status.value >= 500, reason = reason),
