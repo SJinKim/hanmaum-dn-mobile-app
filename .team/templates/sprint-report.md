@@ -18,10 +18,10 @@
 - Entscheidungen: getroffen <n>, offen <n>
 - Ausfälle / Übergaben wegen Limits: <n>
 
-## Beobachtungen für die Retro (Entwurf)
-- Was lief gut?
-- Was lief schlecht?
-- Vorschläge (konkret, z. B. Änderung an Skill, Vorlage, Architekturregel):
+## Lessons und Vorschläge
+- Neue Einträge in `tasks/lessons.md` in diesem Sprint
+- Wiederkehrende Muster (Nacharbeit, `needs-human`, Codex-P0/P1)
+- Vorschläge (max. 3, konkret, z. B. Änderung an Skill, Vorlage, Architekturregel – Entscheidung: Jin):
 
 ## Vorschlag nächster Sprint
 Ziel-Vorschlag und Kandidaten aus dem Backlog (Entscheidung: Jin)

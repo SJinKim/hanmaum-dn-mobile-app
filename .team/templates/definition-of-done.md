@@ -24,4 +24,4 @@ Ein Ticket ist erst `Done`, wenn alle zutreffenden Punkte erfüllt sind.
 - [ ] API-Doku / OpenAPI aktualisiert
 - [ ] README / Betriebsdoku bei neuen Komponenten oder Konfiguration
 - [ ] ADR bzw. `docs/product/decisions.md` bei getroffenen Entscheidungen
-- [ ] Erkenntnisse in `tasks/lessons.md`, falls etwas schiefging
+- [ ] `[lesson]`-Punkte aus Review/QA in `tasks/lessons.md` eingetragen
