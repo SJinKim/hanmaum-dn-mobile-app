@@ -29,9 +29,7 @@ import kotlinx.coroutines.launch
 import com.hanmaum.dn.mobile.features.geofence.domain.GeofenceCoordinator
 import com.hanmaum.dn.mobile.core.security.BiometricVault
 import com.hanmaum.dn.mobile.core.security.InstallationGuard
-import com.hanmaum.dn.mobile.core.i18n.AppLocale
-import com.hanmaum.dn.mobile.core.i18n.EnStrings
-import com.hanmaum.dn.mobile.core.i18n.KoStrings
+import com.hanmaum.dn.mobile.core.i18n.appStringsFor
 import com.hanmaum.dn.mobile.core.i18n.ProvideAppLanguage
 import com.hanmaum.dn.mobile.core.navigation.*
 import com.hanmaum.dn.mobile.core.notification.NotificationDestination
@@ -89,12 +87,7 @@ fun App() {
             ThemeMode.LIGHT -> false
             ThemeMode.DARK -> true
         }
-        val strings = remember(locale) {
-            when (locale) {
-                AppLocale.EN -> EnStrings
-                AppLocale.KO -> KoStrings
-            }
-        }
+        val strings = remember(locale) { appStringsFor(locale) }
 
         ProvideAppLanguage(strings) {
             AppTheme(darkTheme = darkTheme) {

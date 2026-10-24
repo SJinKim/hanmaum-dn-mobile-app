@@ -1,7 +1,9 @@
 package com.hanmaum.dn.mobile.features.geofence.domain
 
+import com.hanmaum.dn.mobile.core.domain.repository.LocaleRepository
 import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
 import com.hanmaum.dn.mobile.core.geofence.GeofenceManager
+import com.hanmaum.dn.mobile.core.i18n.appStringsFor
 import com.hanmaum.dn.mobile.core.notification.NotificationService
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceDefinition
 import com.hanmaum.dn.mobile.features.attendance.domain.repository.AttendanceRepository
@@ -21,6 +23,7 @@ class GeofenceCoordinator(
     private val geofenceManager: GeofenceManager,
     private val notificationService: NotificationService,
     private val locationPreferences: LocationPreferences,
+    private val localeRepository: LocaleRepository,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob()),
 ) {
     private val initMutex = Mutex()
@@ -71,7 +74,11 @@ class GeofenceCoordinator(
         val todayName = now.dayOfWeek.name
         val todayDef = definitions.firstOrNull { it.dayOfWeek == todayName } ?: return
         if (isCurrentlyInWindow(todayDef, now.hour, now.minute, now.second)) {
-            notificationService.showAttendanceNotification()
+            val strings = appStringsFor(localeRepository.getLocale())
+            notificationService.showAttendanceNotification(
+                strings.arrivalNotificationTitle,
+                strings.arrivalNotificationBody,
+            )
         }
     }
 

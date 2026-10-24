@@ -2,6 +2,7 @@ package com.hanmaum.dn.mobile.core.push
 
 import android.content.Context
 import com.google.firebase.messaging.FirebaseMessaging
+import com.hanmaum.dn.mobile.core.domain.repository.LocaleRepository
 import com.hanmaum.dn.mobile.core.notification.NotificationService
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
@@ -9,13 +10,14 @@ import kotlin.coroutines.resume
 class AndroidPushManager(
     context: Context,
     private val notificationService: NotificationService,
+    localeRepository: LocaleRepository,
 ) : PushManager {
     override val platform: String = "ANDROID"
 
     init {
         // Background pushes are rendered by FCM itself; the channel from the manifest
         // meta-data must already exist or Android falls back to a misc channel.
-        ensureAnnouncementChannel(context)
+        ensureAnnouncementChannel(context, localeRepository)
     }
 
     override suspend fun currentToken(): String? = suspendCancellableCoroutine { cont ->
