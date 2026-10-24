@@ -1,7 +1,10 @@
 package com.hanmaum.dn.mobile.features.geofence.domain
 
+import com.hanmaum.dn.mobile.core.data.repository.LocaleRepositoryImpl
 import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
 import com.hanmaum.dn.mobile.core.geofence.GeofenceManager
+import com.hanmaum.dn.mobile.core.i18n.AppLocale
+import com.hanmaum.dn.mobile.core.i18n.KoStrings
 import com.hanmaum.dn.mobile.core.location.DeviceLocation
 import com.hanmaum.dn.mobile.core.notification.NotificationService
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceCheckIn
@@ -12,6 +15,7 @@ import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceSummary
 import com.hanmaum.dn.mobile.features.attendance.domain.repository.AttendanceRepository
 import com.hanmaum.dn.mobile.features.geofence.domain.model.ChurchLocation
 import com.hanmaum.dn.mobile.features.geofence.domain.repository.ChurchLocationRepository
+import com.russhwolf.settings.MapSettings
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.TimeZone
@@ -46,8 +50,14 @@ private class FakeGeofenceManager(
 
 private class FakeNotificationService : NotificationService {
     var notificationCount = 0
+    var lastTitle: String? = null
+    var lastBody: String? = null
     override fun isNotificationPermissionGranted() = true
-    override fun showAttendanceNotification() { notificationCount++ }
+    override fun showAttendanceNotification(title: String, body: String) {
+        notificationCount++
+        lastTitle = title
+        lastBody = body
+    }
 }
 
 private class FakeAttendanceRepository(
@@ -87,7 +97,7 @@ class GeofenceCoordinatorTest {
         val fakeGeofence = FakeGeofenceManager(permissionGranted = true)
         val coordinator = GeofenceCoordinator(
             FakeChurchLocationRepository(), FakeAttendanceRepository(),
-            fakeGeofence, FakeNotificationService(), FakeLocationPreferences(), scope = this
+            fakeGeofence, FakeNotificationService(), FakeLocationPreferences(), LocaleRepositoryImpl(MapSettings()), scope = this
         )
 
         coordinator.initialize()
@@ -100,7 +110,7 @@ class GeofenceCoordinatorTest {
         val fakeGeofence = FakeGeofenceManager(permissionGranted = false)
         val coordinator = GeofenceCoordinator(
             FakeChurchLocationRepository(), FakeAttendanceRepository(),
-            fakeGeofence, FakeNotificationService(), FakeLocationPreferences(), scope = this
+            fakeGeofence, FakeNotificationService(), FakeLocationPreferences(), LocaleRepositoryImpl(MapSettings()), scope = this
         )
 
         coordinator.initialize()
@@ -113,7 +123,7 @@ class GeofenceCoordinatorTest {
         val fakeGeofence = FakeGeofenceManager()
         val coordinator = GeofenceCoordinator(
             FakeChurchLocationRepository(Result.failure(Exception("network error"))),
-            FakeAttendanceRepository(), fakeGeofence, FakeNotificationService(), FakeLocationPreferences(), scope = this
+            FakeAttendanceRepository(), fakeGeofence, FakeNotificationService(), FakeLocationPreferences(), LocaleRepositoryImpl(MapSettings()), scope = this
         )
 
         coordinator.initialize() // must not throw
@@ -131,7 +141,7 @@ class GeofenceCoordinatorTest {
         }
         val coordinator = GeofenceCoordinator(
             FakeChurchLocationRepository(), FakeAttendanceRepository(),
-            countingGeofence, FakeNotificationService(), FakeLocationPreferences(), scope = this
+            countingGeofence, FakeNotificationService(), FakeLocationPreferences(), LocaleRepositoryImpl(MapSettings()), scope = this
         )
 
         coordinator.initialize()
@@ -149,7 +159,7 @@ class GeofenceCoordinatorTest {
         )
         val coordinator = GeofenceCoordinator(
             FakeChurchLocationRepository(), FakeAttendanceRepository(definitions),
-            fakeGeofence, fakeNotification, FakeLocationPreferences(), scope = this
+            fakeGeofence, fakeNotification, FakeLocationPreferences(), LocaleRepositoryImpl(MapSettings()), scope = this
         )
 
         coordinator.initialize()
@@ -175,7 +185,7 @@ class GeofenceCoordinatorTest {
         )
         val coordinator = GeofenceCoordinator(
             FakeChurchLocationRepository(), FakeAttendanceRepository(definitions),
-            fakeGeofence, fakeNotification, FakeLocationPreferences(), scope = this
+            fakeGeofence, fakeNotification, FakeLocationPreferences(), LocaleRepositoryImpl(MapSettings()), scope = this
         )
 
         coordinator.initialize()
@@ -191,7 +201,7 @@ class GeofenceCoordinatorTest {
         val coordinator = GeofenceCoordinator(
             FakeChurchLocationRepository(), FakeAttendanceRepository(),
             fakeGeofence, FakeNotificationService(),
-            FakeLocationPreferences(sharingEnabled = false), scope = this
+            FakeLocationPreferences(sharingEnabled = false), LocaleRepositoryImpl(MapSettings()), scope = this
         )
 
         coordinator.initialize()
@@ -205,7 +215,7 @@ class GeofenceCoordinatorTest {
         val coordinator = GeofenceCoordinator(
             FakeChurchLocationRepository(), FakeAttendanceRepository(),
             fakeGeofence, FakeNotificationService(),
-            FakeLocationPreferences(), scope = this
+            FakeLocationPreferences(), LocaleRepositoryImpl(MapSettings()), scope = this
         )
 
         coordinator.initialize()
@@ -224,7 +234,7 @@ class GeofenceCoordinatorTest {
         val fakeGeofence = FakeGeofenceManager()
         val coordinator = GeofenceCoordinator(
             FakeChurchLocationRepository(), FakeAttendanceRepository(emptyList()),
-            fakeGeofence, fakeNotification, FakeLocationPreferences(), scope = this
+            fakeGeofence, fakeNotification, FakeLocationPreferences(), LocaleRepositoryImpl(MapSettings()), scope = this
         )
 
         coordinator.initialize()
@@ -232,5 +242,25 @@ class GeofenceCoordinatorTest {
         advanceUntilIdle()
 
         assertEquals(0, fakeNotification.notificationCount)
+    }
+
+    @Test
+    fun notifyEntry_usesTheStoredAppLanguage() = runTest {
+        val fakeNotification = FakeNotificationService()
+        val definitions = listOf(
+            AttendanceDefinition("1", "Morning Service", todayName(), "00:00:00", "23:59:59")
+        )
+        val locale = LocaleRepositoryImpl(MapSettings()).apply { setLocale(AppLocale.KO) }
+        val coordinator = GeofenceCoordinator(
+            FakeChurchLocationRepository(), FakeAttendanceRepository(definitions),
+            FakeGeofenceManager(), fakeNotification, FakeLocationPreferences(), locale, scope = this
+        )
+
+        coordinator.initialize()
+        coordinator.notifyEntry()
+        advanceUntilIdle()
+
+        assertEquals(KoStrings.arrivalNotificationTitle, fakeNotification.lastTitle)
+        assertEquals(KoStrings.arrivalNotificationBody, fakeNotification.lastBody)
     }
 }

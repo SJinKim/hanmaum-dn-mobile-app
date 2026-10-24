@@ -18,9 +18,9 @@ import org.koin.dsl.module
 actual val platformModule = module {
     single<GeofenceManager> { AndroidGeofenceManager(androidContext()) }
     single<CurrentLocationProvider> { AndroidCurrentLocationProvider(androidContext()) }
-    single<NotificationService> { AndroidNotificationService(androidContext()) }
+    single<NotificationService> { AndroidNotificationService(androidContext(), get()) }
     single<SecureStore> { AndroidSecureStore(androidContext()) }
     // No activity: this instance exists so logout can clear the vault.
     single<BiometricVault> { AndroidBiometricVault(androidContext()) }
-    single<PushManager> { AndroidPushManager(androidContext(), get()) }
+    single<PushManager> { AndroidPushManager(androidContext(), get(), get()) }
 }

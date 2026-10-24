@@ -12,11 +12,16 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.hanmaum.dn.mobile.MainActivity
+import com.hanmaum.dn.mobile.core.domain.repository.LocaleRepository
+import com.hanmaum.dn.mobile.core.i18n.appStringsFor
 
 private const val CHANNEL_ID = "attendance_channel"
 private const val NOTIFICATION_ID = 1001
 
-class AndroidNotificationService(private val context: Context) : NotificationService {
+class AndroidNotificationService(
+    private val context: Context,
+    private val localeRepository: LocaleRepository,
+) : NotificationService {
 
     init { createChannel() }
 
@@ -29,13 +34,16 @@ class AndroidNotificationService(private val context: Context) : NotificationSer
         }
     }
 
-    override fun showAttendanceNotification() {
+    override fun showAttendanceNotification(title: String, body: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
             PackageManager.PERMISSION_GRANTED
         ) {
             return
         }
+
+        // Re-registering an existing channel only renames it, so this follows a language change.
+        createChannel()
 
         val tapIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -47,8 +55,8 @@ class AndroidNotificationService(private val context: Context) : NotificationSer
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle("교회에 도착하셨습니다 ⛪")
-            .setContentText("출석 체크를 해주세요!")
+            .setContentTitle(title)
+            .setContentText(body)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
@@ -63,9 +71,10 @@ class AndroidNotificationService(private val context: Context) : NotificationSer
 
     private fun createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val strings = appStringsFor(localeRepository.getLocale())
             val channel = NotificationChannel(
-                CHANNEL_ID, "출석 알림", NotificationManager.IMPORTANCE_HIGH
-            ).apply { description = "교회 도착 시 출석 체크 알림" }
+                CHANNEL_ID, strings.attendanceChannelName, NotificationManager.IMPORTANCE_HIGH
+            ).apply { description = strings.attendanceChannelDescription }
             val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.createNotificationChannel(channel)
         }
