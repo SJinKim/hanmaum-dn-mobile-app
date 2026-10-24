@@ -37,6 +37,7 @@ import kotlinx.serialization.Serializable
 @Serializable object CalendarRoute
 @Serializable object NotificationsRoute
 @Serializable object SettingsRoute
+@Serializable object ConsentRoute
 
 /**
  * 양육 and 사역 share one screen with a segmented toggle; the tab decides

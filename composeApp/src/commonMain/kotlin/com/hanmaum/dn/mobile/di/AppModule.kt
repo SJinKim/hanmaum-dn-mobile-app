@@ -37,6 +37,7 @@ import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceViewMode
 import com.hanmaum.dn.mobile.features.attendance.presentation.history.AttendanceHistoryViewModel
 import com.hanmaum.dn.mobile.features.consent.data.repository.ConsentRepositoryImpl
 import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentRepository
+import com.hanmaum.dn.mobile.features.consent.presentation.ConsentViewModel
 import com.hanmaum.dn.mobile.features.events.data.repository.EventRsvpRepositoryImpl
 import com.hanmaum.dn.mobile.features.events.domain.repository.EventRsvpRepository
 import com.hanmaum.dn.mobile.features.events.presentation.EventRsvpViewModel
@@ -116,7 +117,7 @@ val appModule = module {
     single<VersePreferences> { VersePreferencesImpl(Settings()) }
 
     //Splash VM
-    viewModel { SplashViewModel(get(), get(), get(), get(), get()) }
+    viewModel { SplashViewModel(get(), get(), get(), get(), get(), get()) }
 
 
     // Home VM
@@ -140,7 +141,10 @@ val appModule = module {
     viewModel { RegisterViewModel(get(), get(), get()) }
 
     // Login VM
-    viewModel { LoginViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { LoginViewModel(get(), get(), get(), get(), get(), get(), get()) }
+
+    // Consent VM (#290): 설정 block and the consent gate share it
+    viewModel { ConsentViewModel(get(), get(), get(), get(), get()) }
 
     // Profile VM
     viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }

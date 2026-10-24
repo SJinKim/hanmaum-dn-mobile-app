@@ -58,6 +58,20 @@ import kotlinx.coroutines.launch
 import com.hanmaum.dn.mobile.core.notification.NotificationService
 import com.hanmaum.dn.mobile.core.security.rememberBiometricVault
 import com.hanmaum.dn.mobile.features.notification.presentation.NotificationSettingsViewModel
+import com.hanmaum.dn.mobile.core.presentation.components.DnTintedButton
+import com.hanmaum.dn.mobile.core.presentation.theme.DnInnerShape
+import com.hanmaum.dn.mobile.features.consent.presentation.ConsentNavigation
+import com.hanmaum.dn.mobile.features.consent.presentation.ConsentViewModel
+import com.hanmaum.dn.mobile.features.consent.presentation.components.ConsentContactLink
+import com.hanmaum.dn.mobile.features.consent.presentation.components.ConsentLink
+import com.hanmaum.dn.mobile.features.consent.presentation.components.ConsentNotice
+import com.hanmaum.dn.mobile.features.consent.presentation.components.ConsentNoticeTone
+import com.hanmaum.dn.mobile.features.consent.presentation.components.ConsentPolicyLink
+import com.hanmaum.dn.mobile.features.consent.presentation.components.WithdrawConsentDialog
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Instant
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -80,6 +94,7 @@ fun SettingsScreen(
     onKeepSignedInChange: (Boolean) -> Unit,
     locationEnabled: Boolean,
     onLocationChange: (Boolean) -> Unit,
+    onConsentWithdrawn: () -> Unit,
 ) {
     val c = DnTheme.colors
     val strings = LocalStrings.current
@@ -161,6 +176,8 @@ fun SettingsScreen(
                         },
                     )
                 }
+
+                ConsentBlock(onWithdrawn = onConsentWithdrawn)
 
                 Spacer(Modifier.height(40.dp))
             }
@@ -394,4 +411,75 @@ private fun PushSwitchRow() {
         onChange = settingsVm::onToggle,
         enabled = permitted,
     )
+}
+
+/**
+ * The APP_PRIVACY record and the way out of it (#290, frames 03, 10 and 11).
+ *
+ * The withdraw link only appears once the server has confirmed a consent:
+ * offering to withdraw something we could not even load would be a guess.
+ */
+@Composable
+private fun ConsentBlock(onWithdrawn: () -> Unit) {
+    val c = DnTheme.colors
+    val strings = LocalStrings.current
+    val consentVm: ConsentViewModel = koinViewModel()
+    val state by consentVm.uiState.collectAsState()
+
+    LaunchedEffect(state.navigateTo) {
+        if (state.navigateTo == ConsentNavigation.Withdrawn) {
+            consentVm.onNavigationHandled()
+            onWithdrawn()
+        }
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        val status = state.status
+        when {
+            state.loadFailed -> {
+                ConsentNotice(
+                    title = strings.consentStatusFailedTitle,
+                    body = strings.consentStatusFailedBody,
+                    tone = ConsentNoticeTone.Error,
+                )
+                DnTintedButton(
+                    label = strings.consentStatusReload,
+                    onClick = consentVm::load,
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    tint = c.limeInk,
+                    container = c.limeDim,
+                    shape = DnInnerShape,
+                    showBorder = false,
+                )
+            }
+            status != null && state.isGranted -> ConsentNotice(
+                title = strings.consentGrantedTitle,
+                body = strings.consentGrantedDetail(
+                    date = status.grantedAt?.let(::consentDate).orEmpty(),
+                    version = status.grantedVersion ?: status.currentVersion,
+                ),
+            )
+        }
+        ConsentPolicyLink()
+        if (state.isGranted) {
+            ConsentLink(strings.consentWithdrawLink, consentVm::onWithdrawRequested, color = c.red)
+        }
+        ConsentContactLink()
+        Text(strings.consentContactBlock, style = DnTheme.typography.caption, color = c.textSecondary)
+    }
+
+    if (state.showWithdrawDialog) {
+        WithdrawConsentDialog(
+            onConfirm = consentVm::withdraw,
+            onDismiss = consentVm::onWithdrawDismissed,
+            isWorking = state.isWithdrawing,
+            failed = state.withdrawFailed,
+        )
+    }
+}
+
+/** yyyy.MM.dd in the device's zone, as in the Figma frame. */
+private fun consentDate(instant: Instant): String {
+    val date = instant.toLocalDateTime(TimeZone.currentSystemDefault()).date
+    return "${date.year}.${date.month.number.toString().padStart(2, '0')}.${date.day.toString().padStart(2, '0')}"
 }

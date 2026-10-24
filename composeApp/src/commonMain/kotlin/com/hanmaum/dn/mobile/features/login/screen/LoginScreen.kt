@@ -44,6 +44,7 @@ fun LoginScreen(
     onNavigateToHome: () -> Unit,
     onNavigateToPending: () -> Unit,
     onNavigateToRejected: () -> Unit,
+    onNavigateToConsent: () -> Unit,
     onRegisterClick: () -> Unit,
 ) {
     val viewModel: LoginViewModel = koinViewModel()
@@ -81,6 +82,7 @@ fun LoginScreen(
             NavRoute.Home -> onNavigateToHome()
             NavRoute.PendingApproval -> onNavigateToPending()
             NavRoute.Rejected -> onNavigateToRejected()
+            NavRoute.Consent -> onNavigateToConsent()
             else -> Unit
         }
         if (state.navigateTo != null) viewModel.onNavigationHandled()

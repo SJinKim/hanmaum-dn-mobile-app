@@ -132,15 +132,33 @@ fun ConsentLink(
 /** Privacy policy and privacy contact, side by side. */
 @Composable
 fun ConsentLinks(modifier: Modifier = Modifier) {
-    val strings = LocalStrings.current
-    val uriHandler = LocalUriHandler.current
     Row(modifier, horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-        if (PRIVACY_POLICY_URL.isNotBlank()) {
-            ConsentLink(strings.consentPolicyLink, { runCatching { uriHandler.openUri(PRIVACY_POLICY_URL) } })
-        }
-        // Only opens the mail app — nothing is sent on the member's behalf.
-        ConsentLink(strings.consentContactLink, { runCatching { uriHandler.openUri("mailto:$DEV_TEAM_EMAIL") } })
+        ConsentPolicyLink()
+        ConsentContactLink()
     }
+}
+
+/** "개인정보 처리방침 보기". Renders nothing while [PRIVACY_POLICY_URL] is blank. */
+@Composable
+fun ConsentPolicyLink(modifier: Modifier = Modifier) {
+    if (PRIVACY_POLICY_URL.isBlank()) return
+    val uriHandler = LocalUriHandler.current
+    ConsentLink(
+        LocalStrings.current.consentPolicyLink,
+        { runCatching { uriHandler.openUri(PRIVACY_POLICY_URL) } },
+        modifier,
+    )
+}
+
+/** "개인정보 문의". Only opens the mail app — nothing is sent on the member's behalf. */
+@Composable
+fun ConsentContactLink(modifier: Modifier = Modifier) {
+    val uriHandler = LocalUriHandler.current
+    ConsentLink(
+        LocalStrings.current.consentContactLink,
+        { runCatching { uriHandler.openUri("mailto:$DEV_TEAM_EMAIL") } },
+        modifier,
+    )
 }
 
 /**
@@ -152,6 +170,7 @@ fun WithdrawConsentDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     isWorking: Boolean = false,
+    failed: Boolean = false,
 ) {
     val c = DnTheme.colors
     val strings = LocalStrings.current
@@ -185,6 +204,14 @@ fun WithdrawConsentDialog(
                 color = c.textSecondary,
                 textAlign = TextAlign.Center,
             )
+            if (failed) {
+                Text(
+                    strings.consentWithdrawFailed,
+                    style = DnTheme.typography.caption,
+                    color = c.red,
+                    textAlign = TextAlign.Center,
+                )
+            }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 DialogPill(strings.cancel, c.surface2, c.textPrimary, !isWorking, onDismiss, Modifier.weight(1f))
                 DialogPill(strings.consentWithdrawConfirm, c.red, c.onRed, !isWorking, onConfirm, Modifier.weight(1f))

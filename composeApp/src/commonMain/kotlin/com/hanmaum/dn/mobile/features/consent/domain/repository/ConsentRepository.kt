@@ -21,3 +21,10 @@ interface ConsentRepository {
     /** Withdraws [purpose]. Idempotent: withdrawing twice is a success. */
     suspend fun withdraw(purpose: ConsentPurpose): ConsentResult<Unit>
 }
+
+/**
+ * True only when the server says so. A failed check lets the member through: the server
+ * enforces the lock itself, and a network hiccup must not lock a member out of the app.
+ */
+suspend fun ConsentRepository.requiresConsent(): Boolean =
+    (getMyConsents() as? ConsentResult.Success)?.data?.actionRequired == true

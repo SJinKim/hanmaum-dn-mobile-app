@@ -8,6 +8,9 @@ import com.hanmaum.dn.mobile.core.security.FakeSecureStore
 import com.hanmaum.dn.mobile.core.security.FakeBiometricVault
 import com.hanmaum.dn.mobile.core.security.VaultResult
 import com.hanmaum.dn.mobile.core.security.BrowserAuthentication
+import com.hanmaum.dn.mobile.features.consent.FakeConsentRepository
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentResult
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentState
 import com.hanmaum.dn.mobile.features.login.domain.model.LoginException
 import io.ktor.http.Url
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterRequest
@@ -98,13 +101,18 @@ class LoginViewModelFaceIdTest {
     private val tokenStorage = TokenStorageImpl(FakeSecureStore(), settings)
     private val vault = FakeBiometricVault()
 
-    private fun viewModel(auth: AuthRepository = FaceIdAuthRepository(), members: MemberRepository = FaceIdMemberRepository()) = LoginViewModel(
+    private fun viewModel(
+        auth: AuthRepository = FaceIdAuthRepository(),
+        members: MemberRepository = FaceIdMemberRepository(),
+        consents: FakeConsentRepository = FakeConsentRepository(),
+    ) = LoginViewModel(
         authRepository = auth,
         memberRepository = members,
         tokenStorage = tokenStorage,
         httpClient = HttpClient(MockEngine { respond("") }),
         authPreferences = authPreferences,
         biometricVault = vault,
+        consentRepository = consents,
     )
 
     private suspend fun signIn(vm: LoginViewModel) =
@@ -405,5 +413,38 @@ class LoginViewModelFaceIdTest {
         advanceUntilIdle()
         assertEquals(NavRoute.Home, vm.uiState.value.navigateTo)
         assertNull(vm.uiState.value.error)
+    }
+
+    @Test fun missingOrOutdatedConsentSendsActiveAndPendingMembersToTheNotice() = runTest(dispatcher) {
+        listOf(MemberStatus.ACTIVE, MemberStatus.PENDING).forEach { status ->
+            listOf(ConsentState.MISSING, ConsentState.OUTDATED).forEach { state ->
+                val consents = FakeConsentRepository().apply {
+                    myConsentsResult = ConsentResult.Success(FakeConsentRepository.overview(state, grantedVersion = "2026-01"))
+                }
+                val vm = viewModel(members = FaceIdMemberRepository(status), consents = consents)
+                vm.onLoginClicked(browser())
+                advanceUntilIdle()
+                assertEquals(NavRoute.Consent, vm.uiState.value.navigateTo, "$status / $state")
+            }
+        }
+    }
+
+    @Test fun rejectedMembersAreNotAskedForConsent() = runTest(dispatcher) {
+        val consents = FakeConsentRepository().apply {
+            myConsentsResult = ConsentResult.Success(FakeConsentRepository.overview(ConsentState.MISSING))
+        }
+        val vm = viewModel(members = FaceIdMemberRepository(MemberStatus.REJECTED), consents = consents)
+        vm.onLoginClicked(browser())
+        advanceUntilIdle()
+        assertEquals(NavRoute.Rejected, vm.uiState.value.navigateTo)
+        assertEquals(0, consents.myConsentsCalls)
+    }
+
+    @Test fun aFailedConsentCheckLetsTheMemberThrough() = runTest(dispatcher) {
+        val consents = FakeConsentRepository().apply { myConsentsResult = ConsentResult.Failed }
+        val vm = viewModel(consents = consents)
+        vm.onLoginClicked(browser())
+        advanceUntilIdle()
+        assertEquals(NavRoute.Home, vm.uiState.value.navigateTo)
     }
 }

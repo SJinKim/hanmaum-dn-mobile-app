@@ -24,6 +24,7 @@ import com.hanmaum.dn.mobile.core.domain.repository.ThemeRepository
 import com.hanmaum.dn.mobile.core.domain.repository.AuthPreferences
 import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
 import com.hanmaum.dn.mobile.features.profile.presentation.SettingsScreen
+import com.hanmaum.dn.mobile.features.consent.presentation.ConsentScreen
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import com.hanmaum.dn.mobile.features.geofence.domain.GeofenceCoordinator
@@ -149,6 +150,7 @@ fun App() {
                                     NavRoute.Login           -> LoginRoute()
                                     NavRoute.PendingApproval -> PendingRoute
                                     NavRoute.Rejected        -> RejectedRoute
+                                    NavRoute.Consent         -> ConsentRoute
                                 }
                                 navController.navigate(targetRoute) {
                                     // Belt and braces: the splash reports its
@@ -157,7 +159,7 @@ fun App() {
                                     // screen — two login screens, one behind the
                                     // other (#213).
                                     launchSingleTop = true
-                                    if (route == NavRoute.Rejected) {
+                                    if (route == NavRoute.Rejected || route == NavRoute.Consent) {
                                         popUpTo(0) { inclusive = true }
                                     } else {
                                         popUpTo<SplashRoute> { inclusive = true }
@@ -187,6 +189,11 @@ fun App() {
                                     popUpTo(0) { inclusive = true }
                                 }
                             },
+                            onNavigateToConsent = {
+                                navController.navigate(ConsentRoute) {
+                                    popUpTo(0) { inclusive = true }
+                                }
+                            },
                             onRegisterClick = { navController.navigate(RegisterRoute) },
                         )
                     }
@@ -200,6 +207,7 @@ fun App() {
                                     NavRoute.Rejected -> RejectedRoute
                                     NavRoute.Login -> LoginRoute(notice)
                                     NavRoute.PendingApproval -> PendingRoute
+                                    NavRoute.Consent -> ConsentRoute
                                 }
                                 navController.navigate(target) {
                                     // Registration is done either way, so the
@@ -214,6 +222,24 @@ fun App() {
                     // No back handler and no way out: the screen is the end of the
                     // road for a refused member, by design.
                     composable<RejectedRoute> { RejectedScreen() }
+
+                    // Nothing behind it either: the member agrees or signs out (#290).
+                    composable<ConsentRoute> {
+                        ConsentScreen(
+                            // Splash routes by status again, as after any sign-in.
+                            onContinue = {
+                                navController.navigate(SplashRoute) {
+                                    popUpTo(0) { inclusive = true }
+                                }
+                            },
+                            onLoggedOut = {
+                                navController.navigate(LoginRoute()) {
+                                    launchSingleTop = true
+                                    popUpTo(0) { inclusive = true }
+                                }
+                            },
+                        )
+                    }
 
                     composable<PendingRoute> {
                         PendingScreen(
@@ -298,6 +324,11 @@ fun App() {
                                 // Register or tear down the OS geofence right away
                                 // rather than waiting for the next cold start.
                                 if (value) scope.launch { geofence.initialize() } else scope.launch { geofence.stop() }
+                            },
+                            onConsentWithdrawn = {
+                                navController.navigate(ConsentRoute) {
+                                    popUpTo(0) { inclusive = true }
+                                }
                             },
                         )
                     }

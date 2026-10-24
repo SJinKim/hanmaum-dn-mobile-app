@@ -12,6 +12,8 @@ import com.hanmaum.dn.mobile.core.security.BiometricVault
 import com.hanmaum.dn.mobile.core.security.VaultResult
 import com.hanmaum.dn.mobile.core.security.BrowserAuthentication
 import com.hanmaum.dn.mobile.core.security.PkceAuthorization
+import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentRepository
+import com.hanmaum.dn.mobile.features.consent.domain.repository.requiresConsent
 import com.hanmaum.dn.mobile.features.login.domain.model.LoginException
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
@@ -34,6 +36,7 @@ class LoginViewModel(
      * the screens pass their own composition-bound vault into the calls below.
      */
     private val biometricVault: BiometricVault,
+    private val consentRepository: ConsentRepository,
 ) : ViewModel() {
 
     // 1. UI State: Single Source of Truth
@@ -195,14 +198,11 @@ class LoginViewModel(
                 // Sending every non-active member to the pending screen used to
                 // tell a refused applicant to wait for an approval that was
                 // never coming.
-                val destination = when (member.status) {
-                    MemberStatus.ACTIVE -> NavRoute.Home
-                    MemberStatus.REJECTED -> NavRoute.Rejected
-                    // INACTIVE / DELETED / UNKNOWN still land here. That is not
-                    // right either — they are not waiting for anything — but what
-                    // they should see is its own question, and guessing at it
-                    // would repeat the mistake this change is fixing.
-                    else -> NavRoute.PendingApproval
+                // ACTIVE and PENDING members answer the privacy notice first.
+                val asked = member.status == MemberStatus.ACTIVE || member.status == MemberStatus.PENDING
+                val destination = when {
+                    asked && consentRepository.requiresConsent() -> NavRoute.Consent
+                    else -> statusDestination(member.status)
                 }
                 _uiState.update {
                     it.copy(
@@ -224,6 +224,16 @@ class LoginViewModel(
                     )
                 }
             }
+    }
+
+    private fun statusDestination(status: MemberStatus): NavRoute = when (status) {
+        MemberStatus.ACTIVE -> NavRoute.Home
+        MemberStatus.REJECTED -> NavRoute.Rejected
+        // INACTIVE / DELETED / UNKNOWN still land here. That is not
+        // right either — they are not waiting for anything — but what
+        // they should see is its own question, and guessing at it
+        // would repeat the mistake this change is fixing.
+        else -> NavRoute.PendingApproval
     }
 
     // Nach Navigation State resetten, damit er nicht immer wieder navigiert

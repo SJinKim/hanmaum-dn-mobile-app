@@ -7,6 +7,8 @@ import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.domain.repository.AuthPreferences
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.core.security.BiometricVault
+import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentRepository
+import com.hanmaum.dn.mobile.features.consent.domain.repository.requiresConsent
 import com.hanmaum.dn.mobile.features.geofence.domain.GeofenceCoordinator
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +21,7 @@ class SplashViewModel(
     private val geofenceCoordinator: GeofenceCoordinator,
     private val biometricVault: BiometricVault,
     private val authPreferences: AuthPreferences,
+    private val consentRepository: ConsentRepository,
 ) : ViewModel() {
 
     private val _navigateTo = MutableStateFlow<NavRoute?>(null)
@@ -45,13 +48,17 @@ class SplashViewModel(
             memberRepository.getMyProfile()
                 .onSuccess { member ->
                     when (member.status) {
-                        MemberStatus.ACTIVE -> {
-                            // Fire-and-forget: initialize geofence after confirmed login.
-                            // No-op if already registered or permission not yet granted.
-                            viewModelScope.launch { geofenceCoordinator.initialize() }
-                            _navigateTo.value = NavRoute.Home
+                        MemberStatus.ACTIVE -> when {
+                            consentRepository.requiresConsent() -> _navigateTo.value = NavRoute.Consent
+                            else -> {
+                                // Fire-and-forget: initialize geofence after confirmed login.
+                                // No-op if already registered or permission not yet granted.
+                                viewModelScope.launch { geofenceCoordinator.initialize() }
+                                _navigateTo.value = NavRoute.Home
+                            }
                         }
-                        MemberStatus.PENDING -> _navigateTo.value = NavRoute.PendingApproval
+                        MemberStatus.PENDING -> _navigateTo.value =
+                            if (consentRepository.requiresConsent()) NavRoute.Consent else NavRoute.PendingApproval
                         // Refused. The session is deliberately kept: clearing it would
                         // drop the member at the login screen, where they could simply
                         // register again — and they would never see why they were
