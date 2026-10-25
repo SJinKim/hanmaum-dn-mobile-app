@@ -1,7 +1,6 @@
 package com.hanmaum.dn.mobile.core.presentation.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -93,9 +92,8 @@ fun DnCircleIconButton(rotate: Boolean, onClick: () -> Unit) {
     Box(
         Modifier
             .size(36.dp)
-            .clip(RoundedCornerShape(percent = 50))
-            .background(c.surface2)
-            .clickable(onClick = onClick),
+            .dnPressable(shape = RoundedCornerShape(percent = 50), onClick = onClick)
+            .background(c.surface2),
         contentAlignment = Alignment.Center,
     ) {
         Icon(
@@ -159,9 +157,18 @@ fun DnMonthGrid(
                             .weight(1f)
                             .aspectRatio(1f)
                             .padding(2.dp)
-                            .clip(RoundedCornerShape(percent = 50))
-                            .background(if (selected) c.lime else Color.Transparent)
-                            .then(if (valid) Modifier.clickable { onDayClick(day) } else Modifier),
+                            .then(
+                                // Padding cells are not buttons, not even disabled ones.
+                                if (valid) {
+                                    Modifier.dnPressable(
+                                        shape = RoundedCornerShape(percent = 50),
+                                        onClick = { onDayClick(day) },
+                                    )
+                                } else {
+                                    Modifier.clip(RoundedCornerShape(percent = 50))
+                                },
+                            )
+                            .background(if (selected) c.lime else Color.Transparent),
                         contentAlignment = Alignment.Center,
                     ) {
                         if (valid) {
