@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.hanmaum.dn.mobile.core.i18n.AppStrings
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
+import com.hanmaum.dn.mobile.core.presentation.components.dnPressable
 import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
 import com.hanmaum.dn.mobile.core.presentation.theme.DnCardShape
 import com.hanmaum.dn.mobile.core.presentation.theme.DnInnerShape
@@ -68,7 +69,7 @@ internal fun IdentityStatusField(
         Row(
             Modifier
                 .fillMaxWidth()
-                .clip(shape)
+                .dnPressable(shape = shape, onClick = onClick)
                 .background(c.surface2, shape)
                 // Same outline rule as DnTextField: red and thicker on error,
                 // always paired with the message underneath.
@@ -77,7 +78,6 @@ internal fun IdentityStatusField(
                     color = if (isError) c.red else c.strokeSubtle,
                     shape = shape,
                 )
-                .pressClick(onClick)
                 .focusable()
                 .padding(horizontal = 16.dp, vertical = 15.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -124,9 +124,8 @@ internal fun IdentityStatusPickerDialog(
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .clip(DnInnerShape)
+                        .dnPressable(shape = DnInnerShape, onClick = { onSelect(status) })
                         .background(if (isSelected) c.surface2 else c.surface)
-                        .pressClick { onSelect(status) }
                         .padding(horizontal = 12.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
