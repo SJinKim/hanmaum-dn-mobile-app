@@ -161,6 +161,7 @@ Always use the OpenAI developer documentation MCP server if work involves OpenAI
 - `main` is the integration branch. Never work directly on `main`; branch `feature/<short-name>` from a fresh `main` and PR back into it. Direct commits to `main` are blocked by lefthook (`lefthook.yml`).
 - Never add `Co-Authored-By:` trailers to commits, or any other AI/tool identity in authorship, trailers, or committer fields.
 - Do not rebase, reset, discard, or overwrite user work without explicit permission.
+- After a successful PR merge, delete the PR's remote feature branch on GitHub and verify it is gone. Before deletion, retarget any open stacked PRs that use this branch as their base to `main`. Use `gh pr merge --delete-branch` when safe, or delete only the remote branch after confirming the PR is merged; local branches, worktrees, and user changes are not part of this cleanup.
 - Commit messages: `<type>(<scope>): <imperative summary max 72 chars>`.
 - Types: `feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `perf`, `revert`.
 
