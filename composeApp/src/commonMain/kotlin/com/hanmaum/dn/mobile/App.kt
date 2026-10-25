@@ -17,6 +17,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavBackStackEntry
+import com.hanmaum.dn.mobile.features.consent.presentation.ConsentViewModel
+import com.hanmaum.dn.mobile.features.consent.presentation.ConsentPhase
+import com.hanmaum.dn.mobile.features.consent.presentation.ConsentGate
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import androidx.compose.foundation.isSystemInDarkTheme
 import com.hanmaum.dn.mobile.core.domain.model.ThemeMode
@@ -104,11 +109,20 @@ fun App() {
                 }
                 return@AppTheme
             }
+            val consentViewModel = koinViewModel<ConsentViewModel>()
+            val consentState by consentViewModel.uiState.collectAsState()
             val navController = rememberNavController()
+            val onConsentSignedOut: () -> Unit = {
+                navController.navigate(LoginRoute()) {
+                    popUpTo(0) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry?.destination
 
-            val showBottomBar = TopLevelDestination.all.any { dest ->
+            val showBottomBar = consentState.phase == ConsentPhase.READY &&
+                consentViewModel.hasCurrentSession() && TopLevelDestination.all.any { dest ->
                 currentDestination?.hasRoute(dest.routeClass) == true
             }
 
@@ -144,6 +158,7 @@ fun App() {
                     composable<SplashRoute> {
                         SplashScreen(
                             onNavigate = { route ->
+                                consentViewModel.reset()
                                 val targetRoute: Any = when (route) {
                                     NavRoute.Home            -> HomeRoute
                                     NavRoute.Login           -> LoginRoute()
@@ -168,19 +183,23 @@ fun App() {
                     }
 
                     composable<LoginRoute> { backStackEntry ->
+                        LaunchedEffect(Unit) { consentViewModel.reset() }
                         LoginScreen(
                             notice = backStackEntry.toRoute<LoginRoute>().notice,
                             onNavigateToHome = {
+                                consentViewModel.reset()
                                 navController.navigate(HomeRoute) {
                                     popUpTo<LoginRoute> { inclusive = true }
                                 }
                             },
                             onNavigateToPending = {
+                                consentViewModel.reset()
                                 navController.navigate(PendingRoute) {
                                     popUpTo<LoginRoute> { inclusive = true }
                                 }
                             },
                             onNavigateToRejected = {
+                                consentViewModel.reset()
                                 // popUpTo(0): the whole back stack goes, so there is
                                 // nothing behind this screen to return to.
                                 navController.navigate(RejectedRoute) {
@@ -215,9 +234,10 @@ fun App() {
                     // road for a refused member, by design.
                     composable<RejectedRoute> { RejectedScreen() }
 
-                    composable<PendingRoute> {
+                    consentProtectedComposable<PendingRoute>(consentViewModel, onConsentSignedOut, activeDestination = false) {
                         PendingScreen(
                             onNavigateToHome = {
+                                consentViewModel.reset()
                                 navController.navigate(HomeRoute) {
                                     popUpTo<PendingRoute> { inclusive = true }
                                 }
@@ -229,6 +249,7 @@ fun App() {
                                 }
                             },
                             onNavigateToRejected = {
+                                consentViewModel.reset()
                                 // popUpTo(0): the whole back stack goes, so there is
                                 // nothing behind this screen to return to.
                                 navController.navigate(RejectedRoute) {
@@ -238,7 +259,7 @@ fun App() {
                         )
                     }
 
-                    composable<HomeRoute> {
+                    consentProtectedComposable<HomeRoute>(consentViewModel, onConsentSignedOut) {
                         HomeScreen(
                             onAnnouncementClick = { id ->
                                 navController.navigate(AnnouncementDetailRoute(id = id))
@@ -259,11 +280,11 @@ fun App() {
                         )
                     }
 
-                    composable<BulletinRoute> {
+                    consentProtectedComposable<BulletinRoute>(consentViewModel, onConsentSignedOut) {
                         BulletinScreen(onBack = { navController.popBackStack() })
                     }
 
-                    composable<SettingsRoute> {
+                    consentProtectedComposable<SettingsRoute>(consentViewModel, onConsentSignedOut) {
                         val authPrefs = koinInject<AuthPreferences>()
                         val locationPrefs = koinInject<LocationPreferences>()
                         val geofence = koinInject<GeofenceCoordinator>()
@@ -274,6 +295,7 @@ fun App() {
 
                         SettingsScreen(
                             onBack = { navController.popBackStack() },
+                            consentViewModel = consentViewModel,
                             currentTheme = themeMode,
                             onThemeChange = { mode ->
                                 themeRepo.setThemeMode(mode)
@@ -302,7 +324,7 @@ fun App() {
                         )
                     }
 
-                    composable<NotificationsRoute> {
+                    consentProtectedComposable<NotificationsRoute>(consentViewModel, onConsentSignedOut) {
                         // main's list screen, not the v2 redesign: it carries
                         // swipe-to-delete and clear-all, which the redesign
                         // never had. Restyling it is tracked separately.
@@ -312,7 +334,7 @@ fun App() {
                         )
                     }
 
-                    composable<AnnouncementDetailRoute> { backStackEntry ->
+                    consentProtectedComposable<AnnouncementDetailRoute>(consentViewModel, onConsentSignedOut) { backStackEntry ->
                         val route: AnnouncementDetailRoute = backStackEntry.toRoute()
                         AnnouncementDetailScreen(
                             announcementId = route.id,
@@ -320,7 +342,7 @@ fun App() {
                         )
                     }
 
-                    composable<AnnouncementListRoute> {
+                    consentProtectedComposable<AnnouncementListRoute>(consentViewModel, onConsentSignedOut) {
                         AnnouncementListScreen(
                             onBackClick = { navController.popBackStack() },
                             onItemClick = { id ->
@@ -329,7 +351,7 @@ fun App() {
                         )
                     }
 
-                    composable<ProfileRoute> {
+                    consentProtectedComposable<ProfileRoute>(consentViewModel, onConsentSignedOut) {
                         ProfileScreen(
                             onLogout = {
                                 navController.navigate(LoginRoute()) {
@@ -342,7 +364,7 @@ fun App() {
                         )
                     }
 
-                    composable<ParticipationRoute> { backStackEntry ->
+                    consentProtectedComposable<ParticipationRoute>(consentViewModel, onConsentSignedOut) { backStackEntry ->
                         val route: ParticipationRoute = backStackEntry.toRoute()
                         ParticipationScreen(
                             initialTab = route.tab,
@@ -356,7 +378,7 @@ fun App() {
                         )
                     }
 
-                    composable<MinistryDetailRoute> { backStackEntry ->
+                    consentProtectedComposable<MinistryDetailRoute>(consentViewModel, onConsentSignedOut) { backStackEntry ->
                         val route: MinistryDetailRoute = backStackEntry.toRoute()
                         MinistryDetailScreen(
                             publicId    = route.publicId,
@@ -364,7 +386,7 @@ fun App() {
                         )
                     }
 
-                    composable<NurtureDetailRoute> { backStackEntry ->
+                    consentProtectedComposable<NurtureDetailRoute>(consentViewModel, onConsentSignedOut) { backStackEntry ->
                         val route: NurtureDetailRoute = backStackEntry.toRoute()
                         NurtureDetailScreen(
                             publicId = route.publicId,
@@ -372,7 +394,7 @@ fun App() {
                         )
                     }
 
-                    composable<MyApplicationsRoute> {
+                    consentProtectedComposable<MyApplicationsRoute>(consentViewModel, onConsentSignedOut) {
                         MyApplicationsScreen(
                             onBackClick = { navController.popBackStack() },
                             onApplicationClick = { publicId ->
@@ -381,17 +403,17 @@ fun App() {
                         )
                     }
 
-                    composable<CommunityRoute> {
+                    consentProtectedComposable<CommunityRoute>(consentViewModel, onConsentSignedOut) {
                         CommunityStubScreen(onBackClick = { navController.popBackStack() })
                     }
 
-                    composable<FloorPlanRoute> {
+                    consentProtectedComposable<FloorPlanRoute>(consentViewModel, onConsentSignedOut) {
                         FloorPlanScreen(
                             onBackClick = { navController.popBackStack() },
                         )
                     }
 
-                    composable<AttendanceRoute> {
+                    consentProtectedComposable<AttendanceRoute>(consentViewModel, onConsentSignedOut) {
                         AttendanceScreen(
                             onBackClick = { navController.popBackStack() },
                             onRsvpClick = { navController.navigate(RsvpRoute) },
@@ -404,15 +426,15 @@ fun App() {
                             },
                         )
                     }
-                    composable<AttendanceHistoryRoute> {
+                    consentProtectedComposable<AttendanceHistoryRoute>(consentViewModel, onConsentSignedOut) {
                         AttendanceHistoryScreen(onBackClick = { navController.popBackStack() })
                     }
 
-                    composable<RsvpRoute> {
+                    consentProtectedComposable<RsvpRoute>(consentViewModel, onConsentSignedOut) {
                         RsvpScreen(onBackClick = { navController.popBackStack() })
                     }
 
-                    composable<AlbumsRoute> {
+                    consentProtectedComposable<AlbumsRoute>(consentViewModel, onConsentSignedOut) {
                         AlbumsScreen(
                             onBackClick = { navController.popBackStack() },
                             onAlbumClick = { pcloudCode, albumName ->
@@ -421,7 +443,7 @@ fun App() {
                         )
                     }
 
-                    composable<AlbumDetailRoute> { backStackEntry ->
+                    consentProtectedComposable<AlbumDetailRoute>(consentViewModel, onConsentSignedOut) { backStackEntry ->
                         val route: AlbumDetailRoute = backStackEntry.toRoute()
                         AlbumDetailScreen(
                             pcloudCode = route.pcloudCode,
@@ -431,12 +453,12 @@ fun App() {
                         )
                     }
 
-                    composable<PhotoViewerRoute> { backStackEntry ->
+                    consentProtectedComposable<PhotoViewerRoute>(consentViewModel, onConsentSignedOut) { backStackEntry ->
                         val route: PhotoViewerRoute = backStackEntry.toRoute()
                         PhotoViewerScreen(photoUrl = route.photoUrl, onBackClick = { navController.popBackStack() })
                     }
 
-                    composable<CalendarRoute> { CalendarScreen(onBackClick = { navController.popBackStack() }) }
+                    consentProtectedComposable<CalendarRoute>(consentViewModel, onConsentSignedOut) { CalendarScreen(onBackClick = { navController.popBackStack() }) }
                 }
 
                 if (showBottomBar) {
@@ -459,5 +481,17 @@ fun App() {
             }
             }
         } // CompositionLocalProvider
+    }
+}
+
+/** Every member-content destination uses the session gate, including restored routes and push targets. */
+private inline fun <reified T : Any> NavGraphBuilder.consentProtectedComposable(
+    viewModel: ConsentViewModel,
+    noinline onSignedOut: () -> Unit,
+    activeDestination: Boolean = true,
+    crossinline content: @Composable (NavBackStackEntry) -> Unit,
+) {
+    composable<T> { entry ->
+        ConsentGate(viewModel, activeDestination, onSignedOut) { content(entry) }
     }
 }

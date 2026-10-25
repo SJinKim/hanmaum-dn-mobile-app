@@ -3,6 +3,7 @@ package com.hanmaum.dn.mobile.core.i18n
 import kotlinx.datetime.LocalDate
 
 interface AppStrings {
+    val consent: ConsentStrings
     val bulletin: BulletinStrings
     val languageTag: String
     val homeWelcome: String
@@ -568,6 +569,7 @@ interface AppStrings {
 }
 
 object EnStrings : AppStrings {
+    override val consent = EnConsentStrings
     override val homeWelcome = "Welcome"
     override val attendanceSlideToCheckIn = "Slide to check in"
     override val fullWeekdays = listOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
@@ -1031,6 +1033,7 @@ object EnStrings : AppStrings {
 }
 
 object KoStrings : AppStrings {
+    override val consent = KoConsentStrings
     override val homeWelcome = "환영합니다"
     override val attendanceSlideToCheckIn = "밀어서 출석하기"
     override val fullWeekdays = listOf("일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일")

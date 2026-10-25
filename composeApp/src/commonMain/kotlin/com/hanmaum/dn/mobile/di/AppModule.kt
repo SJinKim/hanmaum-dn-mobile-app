@@ -1,5 +1,12 @@
 package com.hanmaum.dn.mobile.di
 
+import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentRepository
+import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentSessionRepository
+import com.hanmaum.dn.mobile.features.consent.data.repository.ConsentRepositoryImpl
+import com.hanmaum.dn.mobile.features.consent.data.repository.ConsentSessionRepositoryImpl
+import com.hanmaum.dn.mobile.features.consent.presentation.ConsentViewModel
+import com.hanmaum.dn.mobile.features.consent.data.repository.privacyPolicyLink
+import com.hanmaum.dn.mobile.BuildKonfig
 import com.hanmaum.dn.mobile.core.presentation.LanguageViewModel
 import com.hanmaum.dn.mobile.core.data.repository.LocaleRepositoryImpl
 import com.hanmaum.dn.mobile.core.data.repository.AttendancePreferencesImpl
@@ -91,6 +98,14 @@ val appModule = module {
     single<Settings> { Settings() }
     // Repositories
     single<AnnouncementRepository> { AnnouncementRepositoryImpl(get()) }
+    single<ConsentRepository> {
+        ConsentRepositoryImpl(get())
+    }
+    single { privacyPolicyLink(BuildKonfig.PRIVACY_POLICY_URL) }
+    single<ConsentSessionRepository> {
+        ConsentSessionRepositoryImpl(get(), get(), get(), get(), get(), get(), get())
+    }
+    viewModel { ConsentViewModel(get(), get(), get()) }
     single<AuthRepository> { AuthRepositoryImpl(get()) }
     single<CityLookupRepository> { CityLookupRepositoryImpl(get()) }
     single<MemberRepository> { MemberRepositoryImpl(get()) }
@@ -113,7 +128,7 @@ val appModule = module {
     single<VersePreferences> { VersePreferencesImpl(Settings()) }
 
     //Splash VM
-    viewModel { SplashViewModel(get(), get(), get(), get(), get()) }
+    viewModel { SplashViewModel(get(), get(), get(), get()) }
 
 
     // Home VM
@@ -134,7 +149,7 @@ val appModule = module {
     viewModel { AnnouncementListViewModel(get()) }
 
     // Register VM
-    viewModel { RegisterViewModel(get(), get()) }
+    viewModel { RegisterViewModel(get(), get(), get(), get()) }
 
     // Login VM
     viewModel { LoginViewModel(get(), get(), get(), get(), get(), get()) }

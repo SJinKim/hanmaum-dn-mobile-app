@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.login.domain.model
 
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentGrant
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -21,6 +22,7 @@ class RegisterRequestTest {
                 password = "Secret123!",
                 birthDate = "2000-08-16",
                 identityStatus = "UNIVERSITY_STUDENT",
+                consent = ConsentGrant(true, "policy-1"),
                 street = "Hauptstraße",
                 houseNumber = "12a",
                 zipCode = "10115",
@@ -32,6 +34,9 @@ class RegisterRequestTest {
         assertEquals("김", json.getValue("lastName").jsonPrimitive.content)
         assertEquals("10115", json.getValue("zipCode").jsonPrimitive.content)
         assertFalse(json.containsKey("zip_code"))
+        val consent = json.getValue("consent").jsonObject
+        assertEquals("true", consent.getValue("accepted").jsonPrimitive.content)
+        assertEquals("policy-1", consent.getValue("version").jsonPrimitive.content)
         // Street and house number go out as separate camelCase fields — never combined.
         assertEquals("Hauptstraße", json.getValue("street").jsonPrimitive.content)
         assertEquals("12a", json.getValue("houseNumber").jsonPrimitive.content)

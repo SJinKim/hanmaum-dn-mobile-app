@@ -1,6 +1,8 @@
 package com.hanmaum.dn.mobile.features.login.presentation
 
 import com.hanmaum.dn.mobile.core.presentation.theme.AppSpacing
+import com.hanmaum.dn.mobile.core.presentation.theme.DnInnerShape
+import com.hanmaum.dn.mobile.features.consent.presentation.PolicyConsent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -314,11 +316,20 @@ fun RegisterScreen(
                 }
 
                 Spacer(Modifier.height(26.dp))
+                PolicyConsent(
+                    state = state.consent,
+                    policyLink = viewModel.policyLink,
+                    busy = state.isLoading,
+                    onAccepted = viewModel::onConsentChange,
+                    onRetry = { viewModel.loadConsentPolicy() },
+                )
+                Spacer(Modifier.height(AppSpacing.md))
                 DnPrimaryButton(
                     label = if (state.isLoading) strings.registerSubmitting else strings.registerSubmit,
                     onClick = submit,
-                    enabled = !state.isLoading,
+                    enabled = !state.isLoading && state.consent.canSubmit,
                     modifier = Modifier.fillMaxWidth(),
+                    shape = DnInnerShape,
                 )
 
                 Spacer(Modifier.height(60.dp))
