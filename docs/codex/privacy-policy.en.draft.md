@@ -289,10 +289,13 @@ and verified.]**
 
 ### Automated decisions
 
-**[OPEN: Review automated decisions, including profiling, and their significance.
-Include account approval, matching, course prerequisites and location checks.
-Do not assure users that relevant solely automated decisions exist or do not
-exist without reviewing this.]**
+A responsible person decides whether member accounts are approved and whether
+applicants are admitted to courses. These decisions are not made solely through
+automated processing.
+
+**[OPEN: Separately review the purposes and effects of other automated
+processing, such as matching, course prerequisite checks and location checks,
+and of any profiling.]**
 
 ## 9. Changes to this notice
 

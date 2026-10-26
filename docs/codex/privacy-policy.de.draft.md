@@ -293,10 +293,13 @@ solange sie nicht umgesetzt und geprüft wurde.]**
 
 ### Automatisierte Entscheidungen
 
-**[OFFEN: Automatisierte Entscheidungen einschließlich Profiling und deren
-Bedeutung prüfen. Kontofreigabe, Matching, Kursvoraussetzungen und Standortprüfung
-einbeziehen. Eine relevante ausschließlich automatisierte Entscheidung oder deren
-Fehlen nicht ohne Prüfung zusichern.]**
+Über die Freigabe von Mitgliedskonten und die Zulassung zu Kursen entscheidet
+jeweils eine verantwortliche Person. Diese Entscheidungen werden nicht
+ausschließlich durch automatisierte Verarbeitung getroffen.
+
+**[OFFEN: Weitere automatische Verarbeitungen wie Matching, Prüfung von
+Kursvoraussetzungen und Standortabgleich sowie etwaiges Profiling gesondert auf
+ihre Zwecke und Auswirkungen prüfen.]**
 
 ## 9. Änderungen dieser Erklärung
 

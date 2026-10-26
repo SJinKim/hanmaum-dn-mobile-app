@@ -34,7 +34,10 @@ Localization update, 2026-10-26: all three drafts include the operator's intende
 audience (older than 16 / aged 17 and above) and the stated process without
 collecting parental consent. The qualification that 17-year-olds remain minors
 and the outstanding legal/implementation review are retained in each language.
-Automated-decision details remain open; no operator answer was inferred.
+The operator confirmed that account approvals and course admissions are always
+decided by a responsible person. This is now stated in each language; review of
+other automated processing (matching, prerequisite/location checks and any
+profiling) remains separate.
 The local static preview offers a script-free language switch and complete
 localized navigation, status notices and review notes. Fifteen browser cases
 (three languages, desktop/mobile, light/dark, plus 320px mobile) passed; no page
