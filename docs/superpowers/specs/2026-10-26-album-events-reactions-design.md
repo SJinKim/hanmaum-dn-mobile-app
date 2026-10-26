@@ -3,7 +3,7 @@
 **Datum:** 2026-10-26
 **Branch:** `SJinKim/album`
 **Design:** Figma `DN-App` — Frames noch offen (Dark + Light, vor jedem Code abzunehmen)
-**Status:** Entwurf — Builder-Check erledigt, wartet auf Freigabe
+**Status:** Freigegeben (Jin, 2026-10-26) — nächster Schritt Figma
 **Ersetzt:** `docs/superpowers/specs/2026-07-02-album-s3-migration-and-grid-redesign.md`
 (Album 2.0 / Foto-Hub pro 순, Epic #303)
 
