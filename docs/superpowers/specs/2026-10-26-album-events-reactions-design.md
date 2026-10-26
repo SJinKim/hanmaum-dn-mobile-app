@@ -82,7 +82,8 @@ vorgeschlagen, nicht widersprochen — bitte beim Lesen prüfen.
 | Nachladen | Editor kann Fotos zu einem veröffentlichten Album hinzufügen **(meine Wahl)** |
 | Foto löschen | Entfernt Original + Vorschauen in S3 und die Reaktionen **(meine Wahl)** |
 | Album löschen | Löscht alle Fotos samt S3-Dateien, nach Bestätigungsdialog **(meine Wahl)** |
-| Titelbild | Standard = erstes Foto; Editor kann ein anderes wählen **(meine Wahl)** |
+| Album-Name | Wird beim Anlegen in der Web-App festgelegt (Entscheidung Jin, 2026-10-26); später änderbar, der Speicherordner bleibt |
+| Titelbild | Wird beim Anlegen in der Web-App festgelegt (Entscheidung Jin, 2026-10-26). Es ist immer eines der Fotos des Albums **(meine Wahl)** und kann später gewechselt werden. Wählt der Editor keins, gilt das erste Foto |
 | Reihenfolge der Alben | Nach Album-Datum absteigend **(meine Wahl)** |
 | Reihenfolge der Fotos | Upload-Reihenfolge (`sort_order`) **(meine Wahl)** |
 
@@ -239,13 +240,15 @@ aufbauen statt migrieren)**.
 
 ### Upload (Web-App)
 
-1. Editor legt ein Album an (Titel, Datum) → `DRAFT`.
-2. Drag & Drop mehrerer Dateien. Pro Datei fragt die Web-App den Server nach einer
+1. Editor legt ein Album an: **Name** und Datum → `DRAFT`.
+2. Im selben Anlege-Dialog Drag & Drop mehrerer Dateien. Pro Datei fragt die Web-App den Server nach einer
    vorsignierten PUT-URL; der Server legt eine `album_photos`-Zeile `UPLOADING` an.
 3. Browser lädt direkt nach S3 hoch und meldet dem Server „fertig".
 4. Server erzeugt `display` + `thumb`, liest Breite/Höhe, setzt `READY`
    (bei Fehler `FAILED` mit Hinweis in der Web-App).
-5. Editor prüft, sortiert ggf., wählt Titelbild, klickt **Veröffentlichen** →
+5. Noch im Anlege-Dialog wählt der Editor per Klick auf ein hochgeladenes Foto das
+   **Titelbild** (Stern-Markierung). Ohne Auswahl ist das erste Foto vorbelegt.
+6. Editor prüft, sortiert ggf., klickt **Veröffentlichen** →
    `PUBLISHED`, `published_at` gesetzt, Push geht raus.
 
 ### Anschauen (App)
