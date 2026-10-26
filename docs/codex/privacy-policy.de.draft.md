@@ -1,6 +1,6 @@
 # Datenschutzerklärung für die Hanmaum-DN-App
 
-**Arbeitsentwurf vom 24. Oktober 2026 — nicht zur Veröffentlichung freigegeben.**
+**Arbeitsentwurf, zuletzt bearbeitet am 26. Oktober 2026 — nicht zur Veröffentlichung freigegeben.**
 
 Dieser Text ist auf den geprüften App-Code zugeschnitten. Angaben in
 **[OFFEN: …]** müssen vor Veröffentlichung ergänzt und die Rechtsgrundlagen durch
@@ -277,11 +277,21 @@ Träger in Hessen zuständig ist, kommt der Hessische Beauftragte für Datenschu
 und Informationsfreiheit in Betracht; bei kirchlichem Datenschutzrecht kann
 eine kirchliche Aufsicht zuständig sein. Erst nach Klärung eindeutig benennen.]**
 
-## 8. Minderjährige und automatisierte Entscheidungen
+## 8. Altersgruppe und automatisierte Entscheidungen
 
-**[OFFEN: Altersgruppe der App, Umgang mit Minderjährigen und gegebenenfalls
-Einbeziehung der Sorgeberechtigten festlegen. Keine elterliche Zustimmung oder
-Altersprüfung behaupten, die technisch und organisatorisch nicht existiert.]**
+### Altersgruppe
+
+Unsere App richtet sich an Personen, die älter als 16 Jahre sind. Eine Nutzung
+durch Personen bis einschließlich 16 Jahre ist nicht vorgesehen. Für dieses
+Nutzungskonzept wird keine elterliche Zustimmung eingeholt.
+
+**[OFFEN: Umsetzung der Zielgruppenregel und Umgang mit 17-jährigen Nutzenden
+prüfen; diese sind noch minderjährig. Die Aussage zur elterlichen Zustimmung
+beschreibt den vom Betreiber vorgesehenen Ablauf, keine pauschale rechtliche
+Bewertung aller Verarbeitungen. Keine technische Altersprüfung behaupten,
+solange sie nicht umgesetzt und geprüft wurde.]**
+
+### Automatisierte Entscheidungen
 
 **[OFFEN: Automatisierte Entscheidungen einschließlich Profiling und deren
 Bedeutung prüfen. Kontofreigabe, Matching, Kursvoraussetzungen und Standortprüfung
@@ -297,8 +307,9 @@ Zeitpunkt und Herkunft ist Teil von #290 und noch nicht ausgeliefert.
 
 **[OFFEN: Nach Freigabe tatsächliches Gültigkeitsdatum, unveränderliche
 Versionskennung und öffentliche HTTPS-Adresse einsetzen. Alte Fassungen für die
-Nachweisbarkeit aufbewahren. Deutsch als Prüfvorlage; Koreanisch und Englisch
-nach Freigabe inhaltlich gleichwertig bereitstellen.]**
+Nachweisbarkeit aufbewahren. Deutsche, koreanische und englische Arbeitsfassungen
+liegen parallel vor; Änderungen und die abschließende Freigabe in allen drei
+Sprachen inhaltlich gleichwertig halten.]**
 
 ---
 

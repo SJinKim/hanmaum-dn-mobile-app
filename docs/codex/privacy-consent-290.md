@@ -24,8 +24,23 @@ Infrastructure clarification, 2026-10-24:
 Review artifacts:
 
 - [Figma: consent states in Dark and Light](https://www.figma.com/design/NOVmvVvB7CEXXVemOy5hJa/DN-App?node-id=639-5002)
-- [Individual German privacy-policy draft](privacy-policy.de.draft.md), using the
-  church name, address and contact supplied by the user; not legally approved.
+- Full privacy-policy working drafts in [German](privacy-policy.de.draft.md),
+  [Korean](privacy-policy.ko.draft.md) and [English](privacy-policy.en.draft.md),
+  using the church name, address and contact supplied by the user; not legally
+  approved. Each language contains the same nine sections, twelve subsections,
+  two tables and twenty open editorial review items. No language takes precedence.
+
+Localization update, 2026-10-26: all three drafts include the operator's intended
+audience (older than 16 / aged 17 and above) and the stated process without
+collecting parental consent. The qualification that 17-year-olds remain minors
+and the outstanding legal/implementation review are retained in each language.
+Automated-decision details remain open; no operator answer was inferred.
+The local static preview offers a script-free language switch and complete
+localized navigation, status notices and review notes. Fifteen browser cases
+(three languages, desktop/mobile, light/dark, plus 320px mobile) passed; no page
+overflow, broken anchors, scripts or external resource requests were observed.
+Source references and technical identifiers match across the three documents.
+No public content or App/Store URL was changed by this localization work.
 
 The editable Figma board uses DN Theme modes/tokens and the documented font
 stand-ins Inter and Noto Sans KR. The latest design contexts include the
