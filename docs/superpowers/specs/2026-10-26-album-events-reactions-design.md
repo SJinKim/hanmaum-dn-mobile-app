@@ -155,17 +155,31 @@ Fotos nachgeladen werden **(meine Wahl)**. Tippen öffnet das Album. Der Push l�
 ### Präfixe im Bucket
 
 ```
-{env}/albums/{albumPublicId}/original/{photoPublicId}.{ext}
-{env}/albums/{albumPublicId}/display/{photoPublicId}.jpg   ~1600 px lange Kante
-{env}/albums/{albumPublicId}/thumb/{photoPublicId}.jpg     ~400 px lange Kante
+ldn-event-album/{env}/{albumFolder}/original/{photoPublicId}.{ext}
+ldn-event-album/{env}/{albumFolder}/display/{photoPublicId}.jpg   ~1600 px lange Kante
+ldn-event-album/{env}/{albumFolder}/thumb/{photoPublicId}.jpg     ~400 px lange Kante
 members/…                                  Profilfotos (server#140)
 files/…                                    sonstige Dateien
 ```
 
-`{env}` ist `staging` oder `prod`, und die IDs sind die UUIDs (`public_id`)
-**(meine Wahl)**. So können Staging und Prod denselben Bucket nutzen, ohne dass sich
-Pfade überschneiden oder ein Löschen auf Staging Prod-Dateien trifft. Bekommt Prod
-später einen eigenen Bucket, schadet das Präfix nicht.
+- **Wurzel `ldn-event-album/`, darunter `staging/` und `prod/`** (Entscheidung Jin,
+  2026-10-26). Staging und Prod teilen sich den Bucket, ohne dass sich Pfade
+  überschneiden oder ein Löschen auf Staging Prod-Dateien trifft.
+- **Alben sind nach Event-Namen gruppiert** (Entscheidung Jin). Der Ordnername
+  `{albumFolder}` ist `{album_date}_{Titel}`, z. B. `2026-10-12_추수감사절`:
+  - Das Datum vorne sortiert die Ordner in jedem S3-Browser chronologisch
+    **(meine Wahl)**.
+  - Der Titel wird bereinigt: `/`, `\` und Steuerzeichen raus, Leerzeichen → `-`.
+    Koreanische Zeichen bleiben erhalten (S3-Schlüssel sind UTF-8) **(meine Wahl)**.
+  - Gibt es den Ordner schon (gleiches Datum, gleicher Titel), bekommt der neue ein
+    Suffix `-2`, `-3` … **(meine Wahl)**.
+  - Der Ordnername wird **beim Anlegen festgelegt und in `albums.storage_folder`
+    gespeichert**. Benennt DMU das Album später um, bleibt der Ordner, wie er ist;
+    sonst müssten alle Dateien kopiert werden **(meine Wahl)**.
+- Die Fotodateien selbst heißen nach der UUID (`public_id`), nicht nach dem
+  Kamera-Dateinamen. So gibt es keine Kollisionen. Der ursprüngliche Dateiname
+  steht in `album_photos.original_filename` und wird beim Speichern in der App
+  wieder verwendet **(meine Wahl)**.
 
 Die App kennt keine Pfade. Sie bekommt pro Foto vom Server vorsignierte URLs für
 `thumb`, `display` und (nur beim Speichern) `original`.
@@ -197,11 +211,12 @@ albums
   id, public_id, title, album_date, status (DRAFT|PUBLISHED),
   cover_photo_id (nullable), published_at (nullable),
   first_published_at (nullable, steuert den einmaligen Push),
+  storage_folder (beim Anlegen festgelegt, unveränderlich),
   created_by, created_at, updated_at
 
 album_photos
   id, public_id, album_id → albums,
-  original_key, display_key, thumb_key,
+  original_key, display_key, thumb_key, original_filename,
   content_type, size_bytes, width, height,
   sort_order, status (UPLOADING|READY|FAILED), created_at
 
