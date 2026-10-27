@@ -2,8 +2,8 @@
 
 **Datum:** 2026-10-26
 **Branch:** `SJinKim/album`
-**Design:** App: Figma `DN-App` (`NOVmvVvB7CEXXVemOy5hJa`), Seite 31:61, Section 699:5202; Komponenten 699:5203 auf 03 · Components (3:2). Web: Figma `DN-Web` (`KSEMYc00jcgvyQ6qWt1cm4`), Seite 26:11, Section „16 · 앨범 관리“ 1932:172777; Komponenten 1929:590/1929:591 auf Seite 26:5. Dark + Light gebaut, wartet auf Jins Abnahme.
-**Status:** Freigegeben (Jin, 2026-10-26) — Figma gebaut (2026-10-27), wartet auf Abnahme; danach Plan
+**Design:** App: Figma `DN-App` (`NOVmvVvB7CEXXVemOy5hJa`), Seite 31:61, Section 699:5202; Komponenten 699:5203 auf 03 · Components (3:2). Web: Figma `DN-Web` (`KSEMYc00jcgvyQ6qWt1cm4`), Seite 26:11, Section „16 · 앨범 관리“ 1932:172777; Komponenten 1929:590/1929:591 auf Seite 26:5. Dark + Light gebaut, abgenommen (Jin, 2026-10-28).
+**Status:** Freigegeben (Jin, 2026-10-26) — Figma abgenommen (Jin, 2026-10-28); nächster Schritt: Plan und Tickets
 **Ersetzt:** `docs/superpowers/specs/2026-07-02-album-s3-migration-and-grid-redesign.md`
 (Album 2.0 / Foto-Hub pro 순, Epic #303)
 
