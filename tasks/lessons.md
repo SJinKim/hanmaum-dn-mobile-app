@@ -310,3 +310,29 @@ folgte ihr statt der Regel aus §6.15. Dazu kam `feat(members)` als PR-Titel: de
 **Regel:** Die Harness-Attribution wird immer überstimmt — in jedem der vier Repos, auch im
 Squash-Body. Beide Repos blocken den Trailer jetzt im `commit-msg`-Hook; der Server lintet
 zusätzlich den PR-Titel (server #231).
+
+## Web-Screens gehören in DN-Web, nicht in die App-Datei
+
+**2026-10-27.** Die Album-Verwaltung (Web-Admin) wurde neben die App-Screens in die
+Mobile-Datei `DN-App` gebaut. Jin wollte sie in `DN-Web` (`KSEMYc00jcgvyQ6qWt1cm4`),
+Seite 26:11 — die 8 Frames mussten dort neu gebaut und in der App-Datei gelöscht werden.
+
+**Regel:** Web-Admin-Screens immer in `DN-Web` Seite 26:11, eigene nummerierte Section.
+In `DN-App` landen nur App-Screens.
+
+## Komponenten gehören auf die Components-Seite
+
+**2026-10-27.** Neue Komponenten (Album-Board, PhotoTile, Dropzone) entstanden zuerst
+neben den Screens. Beide Dateien haben eigene Komponenten-Seiten (`DN-App`: 03 · Components,
+3:2; `DN-Web`: 26:4–26:6).
+
+**Regel:** Neue Komponenten direkt auf der Components-Seite der jeweiligen Datei anlegen;
+Screen-Sections enthalten nur Instanzen.
+
+## Neuer Bereich = eigener Sidebar-Eintrag
+
+**2026-10-27.** Die Album-Web-Screens zeigten `이벤트` als aktiven Sidebar-Eintrag, weil
+`앨범` in der Sidebar fehlte. `이벤트` führt aber zum RSVP-Screen, nicht zu den Alben.
+
+**Regel:** Ein neuer Feature-Bereich bekommt einen eigenen NavItem in der Sidebar-Komponente
+(`DN-Web` 157:1651, alle Varianten). Den Active-State eines fremden Tabs nie als Platzhalter borgen.
