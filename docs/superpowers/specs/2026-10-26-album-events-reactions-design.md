@@ -267,8 +267,8 @@ aufbauen statt migrieren)**.
 
 ### hanmaum-dn-server
 
-- S3-Anbindung auf `main` bringen. Wiederverwendbar vom alten Branch
-  `feat/HDN-0-album2-s3-photo-hub`: `common/storage/S3ClientConfig.kt`,
+- S3-Anbindung auf `main` bringen. Wiederverwendbar aus dem Tag
+  `archive/album2-s3-photo-hub` (früher Branch `feat/HDN-0-album2-s3-photo-hub`): `common/storage/S3ClientConfig.kt`,
   `S3StorageProperties.kt`, `S3StorageService.kt`, `S3StorageServiceIT.kt` und der
   `app.storage.s3`-Block in `application.yml`. **Nicht** übernehmen: dessen
   Album-Modell und Migration `V20260703120000__album2_photo_hub.sql`.
@@ -318,7 +318,7 @@ aufbauen statt migrieren)**.
 |---|---|---|
 | mobile Epic #303 „Album 2.0" | Konzept ersetzt | geschlossen, Nachfolger mobile #310 |
 | server #116 pCloud-Jahresfilter | pCloud fällt weg | geschlossen |
-| server-Branch `feat/HDN-0-album2-s3-photo-hub` | S3-Klassen vorher retten, dann löschen | offen: lag nur lokal; Archiv-Tag `archive/album2-s3-photo-hub` angelegt, Push nach `origin` steht aus |
+| server-Branch `feat/HDN-0-album2-s3-photo-hub` | S3-Klassen vorher retten, dann löschen | gelöscht; gesichert als Tag `archive/album2-s3-photo-hub` auf `origin` |
 | Spec `2026-07-02-album-s3-migration-and-grid-redesign.md` (PR #304) | durch dieses Dokument ersetzt | gelöscht |
 | Remote-Branch `origin/docs/HDN-303-album-spec` | gehört zum alten Spec | gelöscht |
 
