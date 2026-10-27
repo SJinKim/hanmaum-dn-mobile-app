@@ -80,10 +80,12 @@ umbrella organisation. This is included in all three drafts; applicable privacy
 law remains a separate legal review item.
 For ST, the operator confirmed full member-information access only for admins
 and pastors; ministry leaders see the name, phone number, email address and role
-in the respective team of their own team members, and newcomer leaders see
-newcomer information. The recipient sections now reflect this rule. The exact
-newcomer-leader field set and actual API/role/object-level enforcement remain to
-be verified. No technical permissions were changed.
+in the respective team of their own team members. Newcomer leaders see all
+fields displayed in the web app's Newcomer area, including its assignment,
+graduation and account-reconciliation information. The recipient sections now
+reflect this rule, with data categories checked against the web source. The
+deployed ST field set and actual API/role/object-level enforcement remain to be
+verified. No technical permissions were changed.
 
 The editable Figma board uses DN Theme modes/tokens and the documented font
 stand-ins Inter and Noto Sans KR. The latest design contexts include the

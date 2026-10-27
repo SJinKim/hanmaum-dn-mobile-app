@@ -84,12 +84,35 @@ Notwendigkeit und Hinweise für betroffene Dritte bleiben zu prüfen.
 Jin hat bestätigt: Nur Administratoren und Pastoren sehen alle
 Mitgliedsinformationen. Für Ministry-Leitungen hat Jin Name, Telefonnummer,
 E-Mail-Adresse und die Rolle im jeweiligen Team der Mitglieder ihres eigenen
-Teams bestätigt. Newcomer-Leitungen sehen Newcomer-Informationen.
-Diese Regel ist in allen drei Arbeitsfassungen enthalten. Für
-Newcomer-Leitungen sind die konkreten Felder noch zu benennen; die tatsächlichen
+Teams bestätigt. Für Newcomer-Leitungen hat Jin alle im Newcomer-Tab der Webapp
+angezeigten Felder bestätigt. Diese Regel ist in allen drei Arbeitsfassungen
+enthalten. Der Feldbestand der eingesetzten ST-Version und die tatsächlichen
 API-/Rollen-/Objektberechtigungen sind vor Veröffentlichung abzugleichen.
 Keine zusätzlichen Feldfreigaben, allgemeine Gruppen-/Kursleiterrechte oder
 Änderungen an der technischen Autorisierung werden daraus abgeleitet.
+
+### Feldabgleich des Newcomer-Bereichs
+
+Die Kategorien wurden am lokalen, unveränderten Webapp-Quellstand
+`6f32b42ae6ef3584aa7edff27ab43e3f84f4d675` geprüft. Dies ist kein Nachweis der
+auf ST bereitgestellten Version oder der serverseitigen Autorisierung.
+
+| Oberfläche | Sichtbare personenbezogene Angaben |
+| --- | --- |
+| Newcomer-Liste, Detail und Bearbeitung | Name, Geschlecht, Geburtsdatum, beruflicher/Ausbildungsstatus, Arbeitgeber/Schule, Telefonnummer, E-Mail, Kakao-ID, Anschrift, Taufstatus, Kirchenerfahrung, bisherige Gemeinde, Registrierungs- und Erstbesuchsdatum, Aufnahmerunde, Betreuungsperson, Gruppe und Zuordnungsgrund, Betreuungs-/Anwesenheitsstatus, Notizen |
+| Übergang in eine Gemeindegruppe / 등반 | Gruppe, Jahrgang/Runde, Datum, Notiz/Zuordnungsgrund |
+| Kontoabgleich | Name, E-Mail, Geburtsdatum und Telefonnummer der Anmeldung und möglicher passender Konten; Kontoverknüpfung, E-Mail-Bestätigung, Datensatzherkunft, Abgleichgründe/-status und Bearbeitungszeitpunkte |
+
+Belege im Webapp-Repo: `src/app/features/newcomers/newcomer-detail/`,
+`src/app/features/newcomers/newcomer-edit/`,
+`src/app/features/newcomers/newcomer-reconciliation-detail/` und
+`src/app/core/models/reconciliation.model.ts`.
+Nur im Datenmodell vorhandene Felder wie Profilbild, Besuchsmotive oder
+zusätzliche Notizen werden dadurch nicht als sichtbar bestätigt. Die separat
+nach `/quick-records` verlegten Besuchsaufzeichnungen werden nicht automatisch
+diesem Tab zugerechnet. Neue Felder und andere Bereiche benötigen einen erneuten
+Abgleich; eine spätere Erweiterung ist durch diese Bestätigung nicht pauschal
+freigegeben. Die Angaben betreffen das Lesen, keine zusätzliche Schreibfreigabe.
 
 ## Noch nicht durch diese Quelle geklärt
 

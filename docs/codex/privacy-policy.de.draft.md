@@ -260,15 +260,26 @@ Administratoren und Pastoren Zugriff auf alle Mitgliedsinformationen.
 
 Leitungen eines Ministry-Teams erhalten Zugriff auf Name, Telefonnummer,
 E-Mail-Adresse und die Rolle im jeweiligen Team der Mitglieder ihres eigenen
-Teams. Newcomer-Leitungen erhalten Zugriff auf Newcomer-Informationen. Die
-konkreten Feldfreigaben für Newcomer-Leitungen und die tatsächliche technische
-Umsetzung dieser Rollenbegrenzungen sind noch abzugleichen.
+Teams. Newcomer-Leitungen erhalten zur Newcomer-Betreuung Zugriff auf sämtliche
+im Newcomer-Bereich der Webapp angezeigten Newcomer-Felder: Name, Geschlecht,
+Geburtsdatum, beruflicher oder Ausbildungsstatus, Arbeitgeber oder Schule,
+Telefonnummer, E-Mail-Adresse, Kakao-ID, Anschrift, Taufstatus, bisherige
+Kirchenerfahrung und Gemeinde, Registrierungs- und Erstbesuchsdatum,
+Aufnahmerunde, Betreuungsperson, Gruppenzuordnung und deren Begründung,
+Betreuungs- und Anwesenheitsstatus sowie Notizen. Dazu gehören die dort
+angezeigten Angaben zum Übergang in eine Gemeindegruppe und zum Kontoabgleich.
+Beim Kontoabgleich können Name, E-Mail-Adresse, Geburtsdatum und Telefonnummer
+möglicher passender Konten sowie Kontoverknüpfung, E-Mail-Bestätigungsstatus,
+Herkunft des Datensatzes und Abgleichstatus sichtbar sein.
+
+Der genaue Feldbestand der eingesetzten ST-Version und die tatsächliche
+technische Umsetzung dieser Rollenbegrenzungen sind noch abzugleichen.
 
 | Dienst / Empfängerkreis | Zweck | Noch vor Veröffentlichung zu ergänzen |
 | --- | --- | --- |
 | Administratoren und Pastoren | Mitglieder- und Gemeindeverwaltung | Technische Berechtigungen gegen den bestätigten Zugriff auf alle Mitgliedsinformationen prüfen |
 | Ministry-Teamleitungen | Leitung des eigenen Teams; Zugriff auf Name, Telefonnummer, E-Mail-Adresse und Rolle im jeweiligen Team | Technische Beschränkung auf diese Felder und Mitglieder des eigenen Teams prüfen |
-| Newcomer-Leitungen | Newcomer-Betreuung | Konkrete Newcomer-Felder und die technische Beschränkung auf Newcomer-Informationen prüfen |
+| Newcomer-Leitungen | Newcomer-Betreuung; sämtliche im Newcomer-Bereich der Webapp angezeigten Felder einschließlich der dortigen Zuordnungs- und Kontoabgleichsangaben | Feldbestand der ST-Version und technische Beschränkung auf diesen Aufgabenbereich prüfen |
 | Hosting, Datenbank und Keycloak | Betrieb und Anmeldung | ST: Hetzner-Hosting in Deutschland, DB und Keycloak ebenfalls Deutschland; Vertragsgesellschaften und Rollen prüfen |
 | Backups, Logs und E-Mail-Dienst | Sicherung, technischer Betrieb und Kontokommunikation | Anbieter, Standorte, Unterauftragnehmer, Vertragsrollen und Löschfristen für ST und die angebundenen Dienste bestätigen |
 | Google / Firebase; unter iOS Apple | Push-Zustellung | Verantwortliche Gesellschaften, Datenflüsse und vertragliche Grundlage |

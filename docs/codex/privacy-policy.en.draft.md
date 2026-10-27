@@ -249,16 +249,26 @@ their tasks. Under the established access rule, only administrators and pastors
 have access to all member information.
 
 Ministry team leaders have access to the name, phone number, email address and
-role in the respective team of members of their own team. Newcomer leaders have
-access to newcomer information. The specific field permissions for newcomer
-leaders and the actual technical implementation of these role limits still need
-to be checked against this rule.
+role in the respective team of members of their own team. For newcomer care,
+newcomer leaders have access to all newcomer fields displayed in the web app's
+Newcomer area: name, gender, date of birth, employment or education status,
+employer or school, phone number, email address, Kakao ID, address, baptism
+status, previous church experience and church, registration and first-visit
+dates, intake round, caregiver, group assignment and its reason, care and
+attendance status, and notes. This includes the information displayed there
+about joining a church group and account reconciliation. Account reconciliation
+may display the name, email address, date of birth and phone number of possible
+matching accounts, along with account-link status, email-verification status,
+record origin and reconciliation status.
+
+The exact fields in the deployed ST version and the actual technical
+implementation of these role limits still need to be checked against this rule.
 
 | Service / recipients | Purpose | Information to complete before publication |
 | --- | --- | --- |
 | Administrators and pastors | Member and church administration | Check technical permissions against the confirmed access to all member information |
 | Ministry team leaders | Leadership of their own team; access to name, phone number, email address and role in the respective team | Technically verify that access is restricted to these fields and members of their own team |
-| Newcomer leaders | Newcomer care | Verify the specific newcomer fields and the technical restriction to newcomer information |
+| Newcomer leaders | Newcomer care; all fields displayed in the web app's Newcomer area, including its assignment and account-reconciliation information | Verify the ST version's field set and the technical restriction to this area of responsibility |
 | Hosting, database and Keycloak | Operation and sign-in | ST: Hetzner hosting in Germany, database and Keycloak also in Germany; verify contracting companies and roles |
 | Backups, logs and email service | Backup, technical operation and account communication | Confirm providers, locations, subprocessors, contractual roles and deletion periods for ST and its connected services |
 | Google / Firebase; Apple on iOS | Push delivery | Responsible companies, data flows and contractual basis |
