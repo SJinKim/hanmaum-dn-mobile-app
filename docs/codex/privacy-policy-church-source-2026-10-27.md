@@ -128,8 +128,12 @@ Newcomer-Betreuung, Anwesenheit, Teilnahme und Kurse. Eine pauschale rechtliche
 Freigabe zur Speicherung sämtlicher Daten folgt daraus nicht. Erforderlichkeit
 je Datenart, frühere Löschgründe, technische Fristen für Standort, Logs, Push,
 Caches und Backups sowie erforderliche und zulässige Nachweisfristen bleiben
-gesondert zu prüfen. Feststellung des Weggangs und anschließender Löschablauf
-sind noch festzulegen; eine automatische technische Löschung wird nicht behauptet.
+gesondert zu prüfen. Jin hat den Meldeweg bestätigt: Die Person teilt dem Pastor
+persönlich mit, dass sie die Gemeinde verlässt. Dies ist als organisatorischer
+Ausgangspunkt in allen drei Fassungen aufgenommen. Zuständigkeit und Erfassung
+im System sowie der anschließende Löschablauf sind noch festzulegen; eine
+automatische technische Erfassung oder Löschung wird nicht behauptet. Weitere
+Kontaktwege für Datenschutz- und Löschanfragen bleiben erhalten.
 
 Prüfhinweis: Der HBDI erläutert Speicherbegrenzung und Löschpflichten nach
 Art. 5 und 17 DSGVO in
@@ -151,7 +155,7 @@ werden nicht allein durch die Bezeichnung „Testumgebung“ zu fiktiven Testdat
 - Vollständige Anbieter-/Vertrags-/Drittlandangaben für ST und angebundene
   Dienste, einschließlich Kontomails, Kursportal, Backups und Logs.
 - Zweckbezogene Prüfung der Gemeindezugehörigkeit als Aufbewahrungskriterium,
-  konkrete technische Fristen und Ausnahmen, Feststellung des Weggangs und die
+  konkrete technische Fristen und Ausnahmen, Erfassung des mitgeteilten Weggangs und die
   tatsächliche Löschung, Einschränkung, Backup-Rotation und Schutzmaßnahmen.
 - Notwendigkeit einzelner Pflichtfelder, Umgang mit Angaben über Dritte,
   Alternativen bei optionalen Berechtigungen und tatsächliche Alterskontrolle.
@@ -181,6 +185,7 @@ unveränderte Abschnitts-/Tabellenstruktur und kein globaler Überlauf bei 320px
 Quellenlinks und technische Bezeichner stimmen weiterhin überein;
 `git diff --check` ist sauber.
 
-Der Nachtrag zur Gemeindezugehörigkeit als Aufbewahrungskriterium wurde in allen
-drei Sprachvorschauen bei 320px geprüft: Kriterium vorhanden, unveränderte
+Der Nachtrag zur Gemeindezugehörigkeit als Aufbewahrungskriterium einschließlich
+der persönlichen Weggangsmeldung an den Pastor wurde in allen drei
+Sprachvorschauen bei 320px geprüft: Angaben vorhanden, unveränderte
 Abschnitts-/Tabellenstruktur und kein globaler horizontaler Überlauf.

@@ -303,6 +303,12 @@ Der Abschluss der Newcomer-Betreuung beendet die Gemeindezugehörigkeit nicht
 automatisch. Maßgeblich ist die Gemeindezugehörigkeit, nicht allein das Bestehen
 eines App-Kontos.
 
+Wenn eine Person die Gemeinde verlässt, teilt sie dies nach der Gemeindepraxis
+dem Pastor persönlich mit. Diese Mitteilung ist der organisatorische
+Ausgangspunkt für die Erfassung des Weggangs und die Prüfung der betroffenen
+Daten. Wer die Mitteilung im System erfasst und den anschließenden Löschablauf
+umsetzt, ist noch festzulegen.
+
 Daten werden gelöscht, sobald der Zweck entfällt oder die maßgebliche
 Aufbewahrungsdauer abläuft. Für technische Daten sind gesonderte, am jeweiligen
 Zweck orientierte Fristen festzulegen. Die Gemeindezugehörigkeit rechtfertigt
@@ -311,8 +317,8 @@ Soweit eine weitere Speicherung rechtlich erforderlich und zulässig ist,
 werden die Daten getrennt aufbewahrt. Dies kann beispielsweise bei laufenden
 Ermittlungen oder Prüfungen wegen Rechtsverstößen bis zu deren Abschluss gelten.
 
-**[OFFEN — Erforderlichkeit je Datenart, Feststellung des Endes der
-Gemeindezugehörigkeit, anschließenden Löschablauf, konkrete technische Fristen
+**[OFFEN — Erforderlichkeit je Datenart, Zuständigkeit und technische Erfassung
+des persönlich mitgeteilten Weggangs, anschließenden Löschablauf, technische Fristen
 und Ausnahmen sowie die tatsächliche Umsetzung des Löschkonzepts ergänzen:]**
 
 | Daten | Festzulegende Frist oder nachvollziehbares Kriterium |

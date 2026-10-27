@@ -291,6 +291,12 @@ as they remain necessary for the respective purpose. Completing newcomer care
 does not automatically end church affiliation. Church affiliation is the
 criterion, rather than merely having an app account.
 
+Under the church's practice, a person leaving the church tells the pastor in
+person. This notification is the organisational starting point for recording
+the departure and reviewing the affected data. Who records the notification in
+the system and carries out the subsequent deletion process remains to be
+established.
+
 Data are deleted once the purpose no longer applies or the relevant retention
 period expires. Separate periods based on the respective purpose must be
 established for technical data. Church affiliation does not justify retaining
@@ -299,8 +305,8 @@ storage is legally necessary and permitted, the data are kept
 separately. For example, this may apply until ongoing investigations or reviews
 concerning violations of law have ended.
 
-**[OPEN — establish necessity for each data type, how the end of church
-affiliation is identified, the subsequent deletion process, specific technical
+**[OPEN — establish necessity for each data type, responsibility and technical
+recording of the departure reported in person, the subsequent deletion process, technical
 periods and exceptions, and the actual implementation of the deletion policy:]**
 
 | Data | Retention period or understandable criterion to establish |
