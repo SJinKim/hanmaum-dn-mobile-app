@@ -448,7 +448,7 @@ codebases share no types (`com.hanmaum.dn.mobile.*` vs `com.hanmaum.dn.app.*`).
 <!-- ai-dev-team:start -->
 ## KI-Entwicklungsteam
 
-Dieses Repo wird vom KI-Entwicklungsteam bearbeitet (Claude A, Claude B, Codex; Entscheidungen: Jin).
+Dieses Repo wird vom KI-Entwicklungsteam GraceOps bearbeitet (Builder, Bezalel, Cornerstone, Shepherd; Entscheidungen: Jin).
 
 - **Vor jeder Team-Aufgabe** den Skill `team-workflow` laden und `.team/config.yml` lesen.
 - Projekt-Key: `HDN` · Board: GitHub Project #6 (SJinKim) · Rolle dieses Repos: mobile
@@ -463,7 +463,7 @@ Dieses Repo wird vom KI-Entwicklungsteam bearbeitet (Claude A, Claude B, Codex; 
 - Lücken in Story/Design nie erfinden – nachfragen.
 
 ### Review guidelines
-Für das Codex-GitHub-Review dieses Repos:
+Für das Codex-GitHub-Review dieses Repos (nur Server-Repos, `codex_cloud_review` ≠ `off`):
 - **P0/P1 (blockierend):** Sicherheitslücken (AuthN/AuthZ, IDOR, Injection, Secrets im Code/Log),
   Datenverlust, Verstöße gegen `docs/architecture/` (Schichten, Muster, ADRs), nicht erfüllte
   Akzeptanzkriterien des verlinkten Issues, fehlende Tests für neue Logik.

@@ -7,7 +7,7 @@ github_owner: SJinKim            # User oder Organisation, der das GitHub Projec
 project_number: 6                # Nummer des GitHub Project (Board)
 stage_field: Stage
 auto_merge: false                # true = nach Review (+ QA bei ui/size:M) + grüner CI automatisch mergen
-codex_cloud_review: auto         # mention = Developer kommentiert "@codex review" | auto = GitHub-Integration reviewt selbst | off
+codex_cloud_review: off          # mention = Developer kommentiert "@codex review" | auto = GitHub-Integration reviewt selbst | off
 figma_file: https://www.figma.com/design/NOVmvVvB7CEXXVemOy5hJa/DN-App
 
 # Sprache
