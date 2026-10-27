@@ -1,6 +1,6 @@
 # Privacy notice for the Hanmaum DN app — ST test environment
 
-**Working draft, last edited on 27 October 2026 — not approved for publication.**
+**Working draft, last edited on 28 October 2026 — not approved for publication.**
 
 This text is tailored to the reviewed app code. Items marked **[OPEN: …]** must
 be completed before publication, and the responsible church must review the
@@ -293,9 +293,10 @@ criterion, rather than merely having an app account.
 
 Under the church's practice, a person leaving the church tells the pastor in
 person. This notification is the organisational starting point for recording
-the departure and reviewing the affected data. Who records the notification in
-the system and carries out the subsequent deletion process remains to be
-established.
+the departure and reviewing the affected data. Either a pastor or an
+administrator may record the departure in the system. The technical recording
+process and responsibility for and implementation of subsequent deletion still
+need to be checked.
 
 Data are deleted once the purpose no longer applies or the relevant retention
 period expires. Separate periods based on the respective purpose must be
@@ -305,7 +306,7 @@ storage is legally necessary and permitted, the data are kept
 separately. For example, this may apply until ongoing investigations or reviews
 concerning violations of law have ended.
 
-**[OPEN — establish necessity for each data type, responsibility and technical
+**[OPEN — establish necessity for each data type, technical
 recording of the departure reported in person, the subsequent deletion process, technical
 periods and exceptions, and the actual implementation of the deletion policy:]**
 

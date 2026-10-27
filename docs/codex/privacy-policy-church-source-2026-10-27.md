@@ -130,9 +130,11 @@ je Datenart, frühere Löschgründe, technische Fristen für Standort, Logs, Pus
 Caches und Backups sowie erforderliche und zulässige Nachweisfristen bleiben
 gesondert zu prüfen. Jin hat den Meldeweg bestätigt: Die Person teilt dem Pastor
 persönlich mit, dass sie die Gemeinde verlässt. Dies ist als organisatorischer
-Ausgangspunkt in allen drei Fassungen aufgenommen. Zuständigkeit und Erfassung
-im System sowie der anschließende Löschablauf sind noch festzulegen; eine
-automatische technische Erfassung oder Löschung wird nicht behauptet. Weitere
+Ausgangspunkt in allen drei Fassungen aufgenommen. Am 28.10.2026 hat Jin
+bestätigt, dass sowohl ein Pastor als auch ein Administrator den Weggang im
+System erfassen kann. Die technische Erfassung und die Zuständigkeit sowie
+Umsetzung des anschließenden Löschablaufs sind noch abzugleichen; eine
+verifizierte oder automatische Erfassung bzw. Löschung wird nicht behauptet. Weitere
 Kontaktwege für Datenschutz- und Löschanfragen bleiben erhalten.
 
 Prüfhinweis: Der HBDI erläutert Speicherbegrenzung und Löschpflichten nach
@@ -189,3 +191,7 @@ Der Nachtrag zur Gemeindezugehörigkeit als Aufbewahrungskriterium einschließli
 der persönlichen Weggangsmeldung an den Pastor wurde in allen drei
 Sprachvorschauen bei 320px geprüft: Angaben vorhanden, unveränderte
 Abschnitts-/Tabellenstruktur und kein globaler horizontaler Überlauf.
+
+Am 28.10.2026 wurden die ergänzte Erfassungszuständigkeit für Pastor und Admin
+sowie das aktualisierte Bearbeitungsdatum in allen drei Sprachvorschauen bei
+320px geprüft. Struktur und Quellenabgleich bleiben unverändert und sauber.

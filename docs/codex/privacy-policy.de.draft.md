@@ -1,6 +1,6 @@
 # Datenschutzerklärung für die Hanmaum-DN-App — ST-Testumgebung
 
-**Arbeitsentwurf, zuletzt bearbeitet am 27. Oktober 2026 — nicht zur Veröffentlichung freigegeben.**
+**Arbeitsentwurf, zuletzt bearbeitet am 28. Oktober 2026 — nicht zur Veröffentlichung freigegeben.**
 
 Dieser Text ist auf den geprüften App-Code zugeschnitten. Angaben in
 **[OFFEN: …]** müssen vor Veröffentlichung ergänzt und die Rechtsgrundlagen durch
@@ -306,8 +306,9 @@ eines App-Kontos.
 Wenn eine Person die Gemeinde verlässt, teilt sie dies nach der Gemeindepraxis
 dem Pastor persönlich mit. Diese Mitteilung ist der organisatorische
 Ausgangspunkt für die Erfassung des Weggangs und die Prüfung der betroffenen
-Daten. Wer die Mitteilung im System erfasst und den anschließenden Löschablauf
-umsetzt, ist noch festzulegen.
+Daten. Pastoren und Administratoren können den Weggang im System erfassen.
+Die technische Erfassung sowie Zuständigkeit und Umsetzung des
+anschließenden Löschablaufs sind noch abzugleichen.
 
 Daten werden gelöscht, sobald der Zweck entfällt oder die maßgebliche
 Aufbewahrungsdauer abläuft. Für technische Daten sind gesonderte, am jeweiligen
@@ -317,7 +318,7 @@ Soweit eine weitere Speicherung rechtlich erforderlich und zulässig ist,
 werden die Daten getrennt aufbewahrt. Dies kann beispielsweise bei laufenden
 Ermittlungen oder Prüfungen wegen Rechtsverstößen bis zu deren Abschluss gelten.
 
-**[OFFEN — Erforderlichkeit je Datenart, Zuständigkeit und technische Erfassung
+**[OFFEN — Erforderlichkeit je Datenart und technische Erfassung
 des persönlich mitgeteilten Weggangs, anschließenden Löschablauf, technische Fristen
 und Ausnahmen sowie die tatsächliche Umsetzung des Löschkonzepts ergänzen:]**
 

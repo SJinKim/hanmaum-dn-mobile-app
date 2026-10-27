@@ -94,10 +94,11 @@ as the intended criterion for personal church records, including newcomer care,
 rather than app-account closure or completion of newcomer care alone. This is
 an operator requirement, not a legal approval of blanket retention: necessity
 by data type, technical-data periods, earlier deletion grounds, permitted
-exceptions, responsibility for recording departure and the actual deletion
+exceptions, the technical recording of departure and the actual deletion
 process remain to be established. The operator confirmed that the departing
-person tells the pastor in person; all drafts record this organisational
-notification route without claiming automated recording or deletion. No
+person tells the pastor in person and, on 2026-10-28, that either a pastor or an
+administrator may record the departure. All drafts record these organisational
+responsibilities without claiming verified or automated recording or deletion. No
 retention or deletion implementation was changed.
 
 The editable Figma board uses DN Theme modes/tokens and the documented font
