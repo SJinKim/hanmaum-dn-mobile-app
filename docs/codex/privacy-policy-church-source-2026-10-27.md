@@ -114,6 +114,28 @@ diesem Tab zugerechnet. Neue Felder und andere Bereiche benötigen einen erneute
 Abgleich; eine spätere Erweiterung ist durch diese Bestätigung nicht pauschal
 freigegeben. Die Angaben betreffen das Lesen, keine zusätzliche Schreibfreigabe.
 
+## Ergänzende Aufbewahrungsvorgabe
+
+Jin hat ergänzend bestätigt: Alle Daten sollen solange gespeichert werden, wie
+die Person zur Gemeinde gehört. Diese Betreiberanforderung ersetzt für die
+neue App-Arbeitsfassung das reine Kontobeendigungs-Kriterium der historischen
+Website-Vorlage. Ein Ende der Newcomer-Betreuung bedeutet nicht automatisch ein
+Ende der Gemeindezugehörigkeit.
+
+Die drei Fassungen nennen die Gemeindezugehörigkeit als beabsichtigtes
+Grundkriterium für personenbezogene Gemeindedaten einschließlich
+Newcomer-Betreuung, Anwesenheit, Teilnahme und Kurse. Eine pauschale rechtliche
+Freigabe zur Speicherung sämtlicher Daten folgt daraus nicht. Erforderlichkeit
+je Datenart, frühere Löschgründe, technische Fristen für Standort, Logs, Push,
+Caches und Backups sowie erforderliche und zulässige Nachweisfristen bleiben
+gesondert zu prüfen. Feststellung des Weggangs und anschließender Löschablauf
+sind noch festzulegen; eine automatische technische Löschung wird nicht behauptet.
+
+Prüfhinweis: Der HBDI erläutert Speicherbegrenzung und Löschpflichten nach
+Art. 5 und 17 DSGVO in
+[„Löschen und Vernichten von Daten, aber wie?“](https://datenschutz.hessen.de/datenschutz/it-und-datenschutz/loeschen-und-vernichten-von-daten-aber-wie).
+Die Auswahl des anwendbaren Datenschutzregimes bleibt eine separate Prüfung.
+
 ## Noch nicht durch diese Quelle geklärt
 
 Jin hat den Geltungsbereich zunächst auf **ST einschließlich TestFlight**
@@ -128,8 +150,9 @@ werden nicht allein durch die Bezeichnung „Testumgebung“ zu fiktiven Testdat
   je Zweck einschließlich religiöser Angaben.
 - Vollständige Anbieter-/Vertrags-/Drittlandangaben für ST und angebundene
   Dienste, einschließlich Kontomails, Kursportal, Backups und Logs.
-- Konkrete Aufbewahrungsfristen aller weiteren Datenarten und die tatsächliche
-  Löschung, Einschränkung, Backup-Rotation und technische Schutzmaßnahmen.
+- Zweckbezogene Prüfung der Gemeindezugehörigkeit als Aufbewahrungskriterium,
+  konkrete technische Fristen und Ausnahmen, Feststellung des Weggangs und die
+  tatsächliche Löschung, Einschränkung, Backup-Rotation und Schutzmaßnahmen.
 - Notwendigkeit einzelner Pflichtfelder, Umgang mit Angaben über Dritte,
   Alternativen bei optionalen Berechtigungen und tatsächliche Alterskontrolle.
 - Verfügbarkeit und Folgen des Widerrufs, weitere automatische Verarbeitung,
@@ -157,3 +180,7 @@ Sprachen in der generierten Vorschau geprüft: bestätigte Feldbezeichnungen,
 unveränderte Abschnitts-/Tabellenstruktur und kein globaler Überlauf bei 320px.
 Quellenlinks und technische Bezeichner stimmen weiterhin überein;
 `git diff --check` ist sauber.
+
+Der Nachtrag zur Gemeindezugehörigkeit als Aufbewahrungskriterium wurde in allen
+drei Sprachvorschauen bei 320px geprüft: Kriterium vorhanden, unveränderte
+Abschnitts-/Tabellenstruktur und kein globaler horizontaler Überlauf.

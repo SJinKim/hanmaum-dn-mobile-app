@@ -58,8 +58,9 @@ application.hanmaum.de and confirmed that its church-wide rules apply to this
 app. [The source mapping](privacy-policy-church-source-2026-10-27.md) documents
 all source articles and their adoption boundaries. Each draft now identifies
 프랑크푸르트 한마음교회, internal privacy responsibility (이찬규), enquiry/access
-handling (이충만 목사) and the church office telephone. The account-retention
-criterion, purpose limitation, request/representation process, deletion approval
+handling (이충만 목사) and the church office telephone. The retention
+criterion (subsequently updated to church affiliation), purpose limitation,
+request/representation process, deletion approval
 and methods, separate statutory retention, and organisational security rules are
 also incorporated. These rules are distinguished from verified app implementation.
 No formal GDPR data-protection-officer appointment was inferred; legal
@@ -86,6 +87,15 @@ graduation and account-reconciliation information. The recipient sections now
 reflect this rule, with data categories checked against the web source. The
 deployed ST field set and actual API/role/object-level enforcement remain to be
 verified. No technical permissions were changed.
+
+The operator's intended retention rule is to keep all data for as long as the
+person belongs to the church. All three drafts now record church affiliation
+as the intended criterion for personal church records, including newcomer care,
+rather than app-account closure or completion of newcomer care alone. This is
+an operator requirement, not a legal approval of blanket retention: necessity
+by data type, technical-data periods, earlier deletion grounds, permitted
+exceptions, how departure is recorded and the actual deletion process remain
+to be established. No retention or deletion implementation was changed.
 
 The editable Figma board uses DN Theme modes/tokens and the documented font
 stand-ins Inter and Noto Sans KR. The latest design contexts include the

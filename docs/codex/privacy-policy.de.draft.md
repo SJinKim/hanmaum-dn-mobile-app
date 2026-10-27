@@ -295,20 +295,30 @@ Empfänger und Dienst überprüft werden.]**
 
 ## 6. Wie lange werden Daten gespeichert?
 
-Für die Konto- und Profilverwaltung gilt nach kirchlicher Vorgabe grundsätzlich
-die Dauer bis zur Beendigung des jeweiligen Mitgliedskontos. Daten werden
-gelöscht, sobald der Zweck entfällt oder die maßgebliche Aufbewahrungsdauer
-abläuft. Soweit eine weitere Speicherung rechtlich erforderlich und zulässig ist,
+Nach kirchlicher Vorgabe sollen personenbezogene Gemeindedaten grundsätzlich
+solange aufbewahrt werden, wie die Person zur Gemeinde gehört. Dies umfasst
+Konto- und Profildaten, Newcomer-Betreuung sowie Anwesenheits-, Teilnahme- und
+Kursdaten, soweit sie für den jeweiligen Zweck weiterhin erforderlich sind.
+Der Abschluss der Newcomer-Betreuung beendet die Gemeindezugehörigkeit nicht
+automatisch. Maßgeblich ist die Gemeindezugehörigkeit, nicht allein das Bestehen
+eines App-Kontos.
+
+Daten werden gelöscht, sobald der Zweck entfällt oder die maßgebliche
+Aufbewahrungsdauer abläuft. Für technische Daten sind gesonderte, am jeweiligen
+Zweck orientierte Fristen festzulegen. Die Gemeindezugehörigkeit rechtfertigt
+keine pauschale Speicherung aller Daten bis zum Verlassen der Gemeinde.
+Soweit eine weitere Speicherung rechtlich erforderlich und zulässig ist,
 werden die Daten getrennt aufbewahrt. Dies kann beispielsweise bei laufenden
 Ermittlungen oder Prüfungen wegen Rechtsverstößen bis zu deren Abschluss gelten.
 
-**[OFFEN — konkrete Fristen und Ausnahmen für die noch offenen Datenarten sowie
-die tatsächliche technische Umsetzung des Löschkonzepts ergänzen:]**
+**[OFFEN — Erforderlichkeit je Datenart, Feststellung des Endes der
+Gemeindezugehörigkeit, anschließenden Löschablauf, konkrete technische Fristen
+und Ausnahmen sowie die tatsächliche Umsetzung des Löschkonzepts ergänzen:]**
 
 | Daten | Festzulegende Frist oder nachvollziehbares Kriterium |
 | --- | --- |
-| Konto und Profil | Grundsätzlich bis zur Kontobeendigung; frühere Zweckerreichung und rechtlich erforderliche, zulässige Ausnahmen berücksichtigen |
-| Anwesenheit, RSVP und Kurse | Jeweilige Zweck-/Dokumentationsdauer; Anonymisierung getrennt prüfen |
+| Konto, Profil und Newcomer-Betreuung | Kirchliche Vorgabe: grundsätzlich für die Dauer der Gemeindezugehörigkeit; Erforderlichkeit je Feld, frühere Löschgründe und zulässige Aufbewahrungsausnahmen prüfen |
+| Anwesenheit, RSVP und Kurse | Kirchliche Vorgabe: grundsätzlich für die Dauer der Gemeindezugehörigkeit; jeweilige Zweck-/Dokumentationsdauer und frühere Löschung oder Anonymisierung prüfen |
 | Standortdaten und technische Logs | Tatsächliche Verarbeitung und kurze konkrete Fristen je System |
 | Push-Kennungen, Geräte-Caches und Backups | Ablauf, Abmeldung, Kontowechsel und Backup-Rotation je Dienst |
 | Einwilligungsnachweise und Anfragen | Notwendige Nachweisdauer mit geprüfter Grundlage und Löschregel |

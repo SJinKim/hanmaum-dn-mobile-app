@@ -284,20 +284,29 @@ recipient and service.]**
 
 ## 6. How long are data kept?
 
-For account and profile administration, the church's rules generally provide
-for retaining data until the relevant member account is closed. Data are deleted once the
-purpose no longer applies or the relevant retention period expires. Where
-continued storage is legally necessary and permitted, the data are kept
+Under the church's rules, personal church data are generally intended to be kept
+for as long as the person belongs to the church. This includes account and
+profile data, newcomer care, attendance, participation and course data, insofar
+as they remain necessary for the respective purpose. Completing newcomer care
+does not automatically end church affiliation. Church affiliation is the
+criterion, rather than merely having an app account.
+
+Data are deleted once the purpose no longer applies or the relevant retention
+period expires. Separate periods based on the respective purpose must be
+established for technical data. Church affiliation does not justify retaining
+all data indiscriminately until the person leaves the church. Where continued
+storage is legally necessary and permitted, the data are kept
 separately. For example, this may apply until ongoing investigations or reviews
 concerning violations of law have ended.
 
-**[OPEN — add specific periods and exceptions for the data types still open,
-and the actual technical implementation of the deletion policy:]**
+**[OPEN — establish necessity for each data type, how the end of church
+affiliation is identified, the subsequent deletion process, specific technical
+periods and exceptions, and the actual implementation of the deletion policy:]**
 
 | Data | Retention period or understandable criterion to establish |
 | --- | --- |
-| Account and profile | Generally until account closure; take earlier fulfilment of the purpose and legally necessary, permitted exceptions into account |
-| Attendance, RSVP and courses | Relevant purpose/documentation period; assess anonymisation separately |
+| Account, profile and newcomer care | Church rule: generally for the duration of church affiliation; review necessity for each field, earlier grounds for deletion and permitted retention exceptions |
+| Attendance, RSVP and courses | Church rule: generally for the duration of church affiliation; review the relevant purpose/documentation period and earlier deletion or anonymisation |
 | Location data and technical logs | Actual processing and short, specific periods for each system |
 | Push identifiers, device caches and backups | Expiry, sign-out, account changes and backup rotation for each service |
 | Consent records and requests | Necessary evidence period with a reviewed legal basis and deletion rule |
