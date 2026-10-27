@@ -1,6 +1,6 @@
 # Privacy notice for the Hanmaum DN app
 
-**Working draft, last edited on 26 October 2026 — not approved for publication.**
+**Working draft, last edited on 27 October 2026 — not approved for publication.**
 
 This text is tailored to the reviewed app code. Items marked **[OPEN: …]** must
 be completed before publication, and the responsible church must review the
@@ -9,24 +9,36 @@ is not itself a declaration of consent.
 
 ## 1. Who is responsible?
 
-한마음교회<br>
+프랑크푸르트 한마음교회 (한마음교회)<br>
 Leonhard-Heißwolf-Str. 5<br>
 65936 Frankfurt am Main<br>
 Germany
 
-Privacy contact: **hanmaum.dev@gmail.com** (the church's development team).
+Internal church responsibility for data protection: **이찬규**, senior pastor
+(담임목사). The contact point handling privacy enquiries, complaints and access
+requests is **김재희 목사**, pastor.
 
-**[OPEN: Confirm the controller's full legal name, legal form and authorised
-representative. Only the church name has been supplied so far. Check whether a
-data protection officer has been appointed or must be appointed; add their
-contact details where applicable. The development team is identified here as a
-contact point, not as a formally appointed data protection officer.]**
+Telephone: **+49 69 3399 9677** (church office).
+App-related privacy contact: **hanmaum.dev@gmail.com** (the church's development team).
+
+**[OPEN: Confirm the legal form, legal controller and authorised representative.
+The internal responsibilities come from the church policy supplied by the
+operator. They do not establish legal authority to represent the church or a
+formal appointment as data protection officer under the applicable law. Check
+whether such an appointment exists or is required; add the separate contact
+where applicable.]**
 
 ## 2. What does this notice cover?
 
 The app supports our church's organisation and communication. Its functions
 include personal member accounts, church announcements, dates and events,
 albums, attendance check-ins, and event and course applications.
+
+The church-wide rules provide for processing only for the stated purposes.
+If a purpose changes, the necessary data protection measures are assessed and
+new consent is obtained where required. Handling enquiries and complaints
+includes checking identity and the request, making necessary follow-up enquiries
+and communicating the outcome.
 
 The following information concerns the Android and iOS app and the associated
 church services. When you open external services, their operators also process
@@ -48,7 +60,8 @@ birth, place of residence and an attribute describing your personal circumstance
 information such as your phone number and address. Other profile details may
 include your school or employer and a profile picture URL.
 
-These details are used to create and assign your account, administer membership
+These details are used to create and assign your account, identify you and sign
+you in, administer membership, protect against misuse, send necessary notices
 and provide the relevant app functions. Access may require approval by the church.
 
 Sign-in takes place through our Keycloak authentication service in the system
@@ -99,16 +112,19 @@ alternative to location verification.]**
 
 We process your event participation choices, ministry assignments and the
 information you submit for a course. Course applications may include baptism
-information, course history and free text in addition to contact details. The
-specific fields are shown in the relevant form.
+information, course history, photos and free text in addition to contact details.
+Individual forms may also ask for family information such as children's names
+and ages. The specific fields are shown in the relevant form.
 
 Course applications are sent to the church server and may be forwarded to the
-connected course administration system.
+connected church course administration portal at application.hanmaum.de.
 
-**[OPEN: Identify the course administration system's operator, recipients,
-required fields, purpose and retention. Collect information about children or
-other people only where necessary; add notices for those people and minors.
-The separate course consent from #290 is not yet connected.]**
+**[OPEN: Add the church course portal's hosting and contractual roles, specific
+recipients, required fields, purpose and retention. Its technical connection to
+application.hanmaum.de is visible in server code; this does not establish a
+processing location. Collect information about children or other people only
+where necessary; add notices for those people and minors. The separate course
+consent from #290 is not yet connected.]**
 
 ### Push notifications
 
@@ -169,9 +185,19 @@ your message and contact details to handle your request. The stated contact
 address is operated through Gmail; the actual contractual and account
 configuration must be reviewed.
 
-**[OPEN: Add the actual logs, diagnostic/testing services, email provider's role
-and retention periods. Do not give general assurances of “no tracking” or “no
-third-party services” without separately reviewing the distributed build.]**
+### Protecting your data
+
+The church-wide data protection rules cover internal administrative procedures
+and regular training, access-rights management and access controls, encryption
+of identifying data requiring protection and security software, and restricting
+access to rooms and storage locations for documents and IT systems. These rules
+also form the basis for the app.
+
+**[OPEN: Verify the actual implementation and responsibility for these safeguards,
+including hosting operations. Add logs, diagnostic/testing services, the email
+provider's role and retention periods. Do not give general assurances of “no
+tracking” or “no third-party services” without separately reviewing the
+distributed build.]**
 
 ## 4. Legal bases and voluntary choices
 
@@ -225,7 +251,7 @@ implemented in practice.
 | Google / Firebase; Apple on iOS | Push delivery | Responsible companies, data flows and contractual basis |
 | Google Calendar | Calendar display | Company, processing locations and legal basis |
 | pCloud and the image/media services used | Album and image display | Companies, region, sharing arrangements and recipient roles |
-| Course administration system operator | Course application | Legal operator, location and allocation of responsibilities |
+| Church course portal application.hanmaum.de | Course application | Add hosting provider, processing locations and allocation of contractual roles/responsibilities |
 
 **[OPEN: If data are processed outside the EEA, specify the country, the concrete
 basis under Chapter V GDPR and how the safeguards used can be accessed. Do not
@@ -235,15 +261,30 @@ recipient and service.]**
 
 ## 6. How long are data kept?
 
-**[OPEN — complete with the actual deletion policy:]**
+For account and profile administration, the church's rules generally provide
+for retaining data until the relevant member account is closed. Data are deleted once the
+purpose no longer applies or the relevant retention period expires. Where
+continued storage is legally necessary and permitted, the data are kept
+separately. For example, this may apply until ongoing investigations or reviews
+concerning violations of law have ended.
+
+**[OPEN — add specific periods and exceptions for the data types still open,
+and the actual technical implementation of the deletion policy:]**
 
 | Data | Retention period or understandable criterion to establish |
 | --- | --- |
-| Account and profile | Duration of the purpose; process for leaving, suspension and permanent deletion |
+| Account and profile | Generally until account closure; take earlier fulfilment of the purpose and legally necessary, permitted exceptions into account |
 | Attendance, RSVP and courses | Relevant purpose/documentation period; assess anonymisation separately |
 | Location data and technical logs | Actual processing and short, specific periods for each system |
 | Push identifiers, device caches and backups | Expiry, sign-out, account changes and backup rotation for each service |
 | Consent records and requests | Necessary evidence period with a reviewed legal basis and deletion rule |
+
+For deletion, the church policy provides for selecting the data to be deleted
+and obtaining approval from the person internally responsible for data
+protection. Electronic data should be deleted using appropriate methods that
+prevent recovery; paper records are destroyed by shredding or burning. Records
+that must continue to be retained by law are kept in a separate database or
+storage location.
 
 Uninstalling the app does not automatically close your church account or delete
 server-side data. You can request deletion at **hanmaum.dev@gmail.com**. Any data
@@ -254,12 +295,24 @@ individual case and explained to you.
 
 You can withdraw consent at any time with effect for the future. This does not
 affect the lawfulness of processing previously carried out on that basis.
-Contact: **hanmaum.dev@gmail.com**.
+Requests can be sent in writing to the postal address above, made by telephone
+to the church office at **+49 69 3399 9677**, or emailed to
+**hanmaum.dev@gmail.com**. The church contact point receiving and handling them
+is **김재희 목사**. We handle requests without undue delay.
+
+A legal representative or authorised person may also submit a request; we may
+ask for suitable evidence of their authority. Under the church's handling rule,
+data covered by a rectification or erasure request are not further used or
+disclosed until the request has been resolved. The practical implementation of
+this rule for the app still needs to be verified. If you provide information
+about other people, please respect their rights and privacy.
 
 **[OPEN: Before introducing app consent, an equally easy withdrawal route must
 actually be available. The planned backend endpoint alone is not enough.
-Specify the consequences for the account, courses and optional features;
-withdrawal is not automatically account deletion.]**
+Check the consequences for the account, courses and optional features, and the
+technical and organisational handling and necessary restriction of processing
+for access, rectification and erasure requests; withdrawal is not automatically
+account deletion.]**
 
 Subject to the applicable conditions, you have rights of access, rectification,
 erasure, restriction and data portability. Where processing relies on legitimate
@@ -325,6 +378,12 @@ actual production configuration confirmed before publication.
 - [Section 25 TDDDG](https://www.gesetze-im-internet.juris.de/ttdsg/__25.html): separately review storage and access on devices.
 - [Firebase: Privacy and Security](https://firebase.google.com/support/privacy): installation identifiers and possible global processing; check the actual agreement.
 - [Hesse: submitting a complaint](https://datenschutz.hessen.de/service/beschwerde-uebermitteln): possible state contact after the controller's status is clarified.
+- [Church data protection rules on application.hanmaum.de](https://application.hanmaum.de/): confirmed by the operator on 27 October 2026 as applying church-wide; source policy effective from 1 May 2020. Relevant responsibilities and rules are adopted, without automatically adopting Korean statutory references, authorities, cookie statements or blanket non-disclosure claims.
+
+The adoption and its boundaries are documented in
+`privacy-policy-church-source-2026-10-27.md`. The source's historical effective
+date is not the effective date of this app notice. Organisational rules must be
+distinguished from verified technical implementation.
 
 Technical review baseline: mobile `origin/main` at `7f58123`; registration and
 sign-in (`RegisterRequest`, `AuthRepositoryImpl`), profile (`MemberResponse`),

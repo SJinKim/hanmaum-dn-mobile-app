@@ -1,6 +1,6 @@
 # Datenschutzerklärung für die Hanmaum-DN-App
 
-**Arbeitsentwurf, zuletzt bearbeitet am 26. Oktober 2026 — nicht zur Veröffentlichung freigegeben.**
+**Arbeitsentwurf, zuletzt bearbeitet am 27. Oktober 2026 — nicht zur Veröffentlichung freigegeben.**
 
 Dieser Text ist auf den geprüften App-Code zugeschnitten. Angaben in
 **[OFFEN: …]** müssen vor Veröffentlichung ergänzt und die Rechtsgrundlagen durch
@@ -9,24 +9,37 @@ geplant gekennzeichnet. Die Erklärung selbst ist keine Einwilligungserklärung.
 
 ## 1. Wer ist verantwortlich?
 
-한마음교회<br>
+프랑크푸르트 한마음교회 (한마음교회)<br>
 Leonhard-Heißwolf-Str. 5<br>
 65936 Frankfurt am Main<br>
 Deutschland
 
-Datenschutzkontakt: **hanmaum.dev@gmail.com** (Dev-Team der Gemeinde).
+Kircheninterne Datenschutzverantwortung: **이찬규**, leitender Pastor (담임목사).
+Kontakt- und Bearbeitungsstelle für Datenschutzanfragen, Beschwerden und
+Auskunftsersuchen: **김재희 목사**, Pastor.
 
-**[OFFEN: Vollständige rechtliche Bezeichnung und Rechtsform des Trägers sowie
-vertretungsberechtigte Person bestätigen. Der Gemeindename allein wurde bisher
-mitgeteilt. Prüfen, ob ein Datenschutzbeauftragter bestellt ist oder bestellt
-werden muss; gegebenenfalls dessen Kontakt ergänzen. Das Dev-Team ist hier als
-Kontaktstelle genannt, nicht als förmlich bestellter Datenschutzbeauftragter.]**
+Telefon: **+49 69 3399 9677** (Kirchenbüro).
+App-bezogener Datenschutzkontakt: **hanmaum.dev@gmail.com** (Dev-Team der Gemeinde).
+
+**[OFFEN: Rechtsform, rechtlichen Träger und vertretungsberechtigte Person
+bestätigen. Die kircheninternen Zuständigkeiten stammen aus der vom Betreiber
+übermittelten Kirchenrichtlinie. Sie bestätigen weder eine rechtliche
+Vertretungsbefugnis noch eine formelle Bestellung als Datenschutzbeauftragter
+nach dem anwendbaren Recht. Prüfen, ob eine solche Bestellung vorliegt oder
+erforderlich ist; gegebenenfalls den gesonderten Kontakt ergänzen.]**
 
 ## 2. Für welche Nutzung gilt diese Erklärung?
 
 Die App unterstützt die Organisation und Information unserer Gemeinde. Dazu
 gehören das persönliche Mitgliedskonto, Gemeindemitteilungen, Termine, Alben,
 Anwesenheitsmeldungen sowie Anmeldungen zu Veranstaltungen und Kursen.
+
+Die kirchenweiten Vorgaben sehen eine Verarbeitung nur für die angegebenen
+Zwecke vor. Bei einer Zweckänderung werden die erforderlichen
+Datenschutzmaßnahmen geprüft und, soweit erforderlich, eine neue Einwilligung
+eingeholt. Zur Bearbeitung von Anfragen und Beschwerden gehören die Prüfung der
+Identität und des Anliegens, notwendige Rückfragen sowie die Mitteilung des
+Ergebnisses.
 
 Die folgenden Angaben betreffen die Android- und iOS-App und die zugehörigen
 Gemeindedienste. Beim Öffnen externer Angebote werden Daten außerdem durch deren
@@ -49,8 +62,9 @@ Angaben wie Telefonnummer und Anschrift erfassen. Weitere Profilangaben umfassen
 gegebenenfalls Schule oder Arbeitgeber und eine Profilbild-Adresse.
 
 Diese Angaben dienen der Einrichtung und Zuordnung des Kontos, der
-Mitgliederverwaltung und der Bereitstellung der jeweiligen App-Funktionen. Der
-Zugang kann eine Freigabe durch die Gemeinde voraussetzen.
+Identifikation und Anmeldung, der Mitgliederverwaltung, dem Schutz vor
+Missbrauch, notwendigen Benachrichtigungen und der Bereitstellung der jeweiligen
+App-Funktionen. Der Zugang kann eine Freigabe durch die Gemeinde voraussetzen.
 
 Die Anmeldung erfolgt über unseren Keycloak-Anmeldedienst im Systembrowser. Bei
 der App-Registrierung wird das eingegebene Passwort zunächst an den
@@ -102,16 +116,21 @@ eine Alternative zur Standortprüfung festlegen.]**
 
 Wir verarbeiten Ihre Auswahl zur Veranstaltungsteilnahme, Zuordnungen zu Diensten
 und die Angaben, die Sie für einen Kurs einreichen. Bei Kursen können neben
-Kontaktdaten beispielsweise Taufinformationen, Kursvorgeschichte und Freitext
-anfallen. Die konkreten Felder sind im jeweiligen Formular erkennbar.
+Kontaktdaten beispielsweise Taufinformationen, Kursvorgeschichte, Fotos und
+Freitext anfallen. Einzelne Formulare können auch Familienangaben wie Namen und
+Alter von Kindern abfragen. Die konkreten Felder sind im jeweiligen Formular
+erkennbar.
 
 Kursanmeldungen gehen an den Gemeindeserver und können an das angebundene
-Kursverwaltungssystem weitergegeben werden.
+Kursverwaltungsportal der Gemeinde unter application.hanmaum.de weitergegeben
+werden.
 
-**[OFFEN: Betreiber des Kursverwaltungssystems, Empfänger, erforderliche Felder,
-Zweck und Aufbewahrung benennen. Angaben über Kinder oder andere Personen nur
-erheben, soweit erforderlich; Hinweise für diese Personen und Minderjährige
-ergänzen. Eine eigene Kurseinwilligung aus #290 ist noch nicht angebunden.]**
+**[OFFEN: Hosting und Vertragsrollen des kirchlichen Kursportals, konkrete
+Empfänger, erforderliche Felder, Zweck und Aufbewahrung ergänzen. Die technische
+Anbindung an application.hanmaum.de ist im Servercode erkennbar; sie bestätigt
+keinen Verarbeitungsort. Angaben über Kinder oder andere Personen nur erheben,
+soweit erforderlich; Hinweise für diese Personen und Minderjährige ergänzen.
+Eine eigene Kurseinwilligung aus #290 ist noch nicht angebunden.]**
 
 ### Push-Mitteilungen
 
@@ -175,9 +194,19 @@ Wenn Sie uns kontaktieren, verarbeiten wir Ihre Nachricht und Kontaktangaben zur
 Bearbeitung des Anliegens. Die genannte Kontaktadresse wird bei Gmail betrieben;
 die konkrete Vertrags- und Kontokonfiguration ist zu prüfen.
 
-**[OFFEN: Tatsächliche Logs, Diagnose-/Testdienste, E-Mail-Anbieterrolle und Fristen
-ergänzen. Keine pauschale Zusicherung „kein Tracking“ oder „keine Drittdienste“
-ohne gesonderte Prüfung des ausgelieferten Builds abgeben.]**
+### Schutz Ihrer Daten
+
+Die kirchenweiten Datenschutzvorgaben umfassen interne Verwaltungsregeln und
+regelmäßige Schulungen, die Verwaltung von Zugriffsrechten und Zugriffskontrollen,
+Verschlüsselung schutzbedürftiger Identifikationsdaten und Schutzsoftware sowie
+die Begrenzung des Zugangs zu Räumen und Aufbewahrungsorten für Unterlagen und
+IT-Systeme. Diese Vorgaben werden auch der App zugrunde gelegt.
+
+**[OFFEN: Tatsächliche Umsetzung und Zuständigkeit für diese Schutzmaßnahmen
+einschließlich des Hostingbetriebs prüfen. Logs, Diagnose-/Testdienste,
+E-Mail-Anbieterrolle und Fristen ergänzen. Keine pauschale Zusicherung „kein
+Tracking“ oder „keine Drittdienste“ ohne gesonderte Prüfung des ausgelieferten
+Builds abgeben.]**
 
 ## 4. Rechtsgrundlagen und Freiwilligkeit
 
@@ -229,7 +258,7 @@ umgesetzten Rollen und Sichtbarkeiten übereinstimmen.
 | Google / Firebase; unter iOS Apple | Push-Zustellung | Verantwortliche Gesellschaften, Datenflüsse und vertragliche Grundlage |
 | Google Calendar | Kalenderanzeige | Gesellschaft, Verarbeitungsorte und Rechtsgrundlage |
 | pCloud und verwendete Bild-/Mediendienste | Album- und Bildanzeige | Gesellschaften, Region, Freigaben und Empfängerrolle |
-| Betreiber des Kursverwaltungssystems | Kursanmeldung | Rechtlicher Betreiber, Ort und Verantwortungsverteilung |
+| Kirchliches Kursportal application.hanmaum.de | Kursanmeldung | Hostinganbieter, Verarbeitungsorte und Vertrags-/Verantwortungsverteilung ergänzen |
 
 **[OFFEN: Werden Daten außerhalb des EWR verarbeitet, Land und konkrete Grundlage
 nach Kapitel V DSGVO sowie Zugang zu den verwendeten Garantien angeben. Weder
@@ -239,15 +268,30 @@ Empfänger und Dienst überprüft werden.]**
 
 ## 6. Wie lange werden Daten gespeichert?
 
-**[OFFEN — mit dem tatsächlichen Löschkonzept ausfüllen:]**
+Für die Konto- und Profilverwaltung gilt nach kirchlicher Vorgabe grundsätzlich
+die Dauer bis zur Beendigung des jeweiligen Mitgliedskontos. Daten werden
+gelöscht, sobald der Zweck entfällt oder die maßgebliche Aufbewahrungsdauer
+abläuft. Soweit eine weitere Speicherung rechtlich erforderlich und zulässig ist,
+werden die Daten getrennt aufbewahrt. Dies kann beispielsweise bei laufenden
+Ermittlungen oder Prüfungen wegen Rechtsverstößen bis zu deren Abschluss gelten.
+
+**[OFFEN — konkrete Fristen und Ausnahmen für die noch offenen Datenarten sowie
+die tatsächliche technische Umsetzung des Löschkonzepts ergänzen:]**
 
 | Daten | Festzulegende Frist oder nachvollziehbares Kriterium |
 | --- | --- |
-| Konto und Profil | Dauer des Zwecks; Verfahren für Austritt, Sperrung und endgültige Löschung |
+| Konto und Profil | Grundsätzlich bis zur Kontobeendigung; frühere Zweckerreichung und rechtlich erforderliche, zulässige Ausnahmen berücksichtigen |
 | Anwesenheit, RSVP und Kurse | Jeweilige Zweck-/Dokumentationsdauer; Anonymisierung getrennt prüfen |
 | Standortdaten und technische Logs | Tatsächliche Verarbeitung und kurze konkrete Fristen je System |
 | Push-Kennungen, Geräte-Caches und Backups | Ablauf, Abmeldung, Kontowechsel und Backup-Rotation je Dienst |
 | Einwilligungsnachweise und Anfragen | Notwendige Nachweisdauer mit geprüfter Grundlage und Löschregel |
+
+Für die Löschung sieht die kirchliche Richtlinie die Auswahl der zu löschenden
+Daten und die Freigabe durch die kircheninterne Datenschutzverantwortung vor.
+Elektronische Daten sollen mit geeigneten Verfahren nicht wiederherstellbar
+gelöscht werden; Papierunterlagen werden durch Schreddern oder Verbrennen
+vernichtet. Gesetzlich weiter aufzubewahrende Unterlagen werden in einer
+gesonderten Datenbank oder an einem getrennten Aufbewahrungsort gesichert.
 
 Das Deinstallieren der App beendet nicht automatisch Ihr Gemeindekonto und
 löscht keine serverseitigen Daten. Für eine Löschanfrage erreichen Sie uns unter
@@ -258,12 +302,26 @@ aufbewahrt werden müssen, ist im konkreten Fall zu prüfen und mitzuteilen.
 
 Sie können eine Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen.
 Die Rechtmäßigkeit der zuvor auf dieser Grundlage erfolgten Verarbeitung bleibt
-unberührt. Kontakt: **hanmaum.dev@gmail.com**.
+unberührt. Anfragen können schriftlich an die oben genannte Anschrift,
+telefonisch an das Kirchenbüro unter **+49 69 3399 9677** oder per E-Mail an
+**hanmaum.dev@gmail.com** gestellt werden. Die kirchliche Annahme- und
+Bearbeitungsstelle ist **김재희 목사**. Wir bearbeiten die Anliegen ohne
+unangemessene Verzögerung.
+
+Anfragen können auch durch eine gesetzliche Vertretung oder eine bevollmächtigte
+Person gestellt werden; wir können einen geeigneten Nachweis der
+Vertretungsbefugnis verlangen. Nach der kirchlichen Bearbeitungsregel werden
+Daten, auf die sich ein Berichtigungs- oder Löschungsersuchen bezieht, bis zur
+Erledigung nicht weiter genutzt oder weitergegeben. Die praktische Umsetzung
+dieser Regel für die App ist noch zu überprüfen. Wenn Sie Angaben über andere
+Personen machen, beachten Sie bitte deren Rechte und Privatsphäre.
 
 **[OFFEN: Vor Einführung der App-Einwilligung muss ein ebenso einfacher
 Widerrufsweg tatsächlich bereitstehen. Der geplante Backend-Endpoint allein
-genügt nicht. Die Folgen für Konto, Kurse und optionale Funktionen konkret
-festlegen; Widerruf ist nicht automatisch Kontolöschung.]**
+genügt nicht. Die Folgen für Konto, Kurse und optionale Funktionen sowie die
+Bearbeitung und erforderliche Einschränkung bei Auskunfts-, Berichtigungs- und
+Löschanfragen technisch und organisatorisch prüfen; Widerruf ist nicht
+automatisch Kontolöschung.]**
 
 Nach den jeweils geltenden Voraussetzungen haben Sie Rechte auf Auskunft,
 Berichtigung, Löschung, Einschränkung und Datenübertragbarkeit. Soweit eine
@@ -330,6 +388,12 @@ aufgelöst und die tatsächliche Produktionskonfiguration bestätigt sein.
 - [§ 25 TDDDG](https://www.gesetze-im-internet.juris.de/ttdsg/__25.html): Speicherung und Zugriff auf Endgeräten gesondert prüfen.
 - [Firebase: Privacy and Security](https://firebase.google.com/support/privacy): Installationskennungen und mögliche globale Verarbeitung; tatsächlichen Vertrag prüfen.
 - [Hessen: Beschwerde übermitteln](https://datenschutz.hessen.de/service/beschwerde-uebermitteln): mögliche staatliche Anlaufstelle nach Klärung des Trägers.
+- [Kirchliche Datenschutzvorgaben auf application.hanmaum.de](https://application.hanmaum.de/): vom Betreiber am 27. Oktober 2026 als kirchenweit geltend bestätigt; Quelltext mit Geltungsbeginn 1. Mai 2020. Übernommen werden organisatorische Zuständigkeiten und passende Regeln, nicht automatisch koreanische Gesetzesverweise, Behörden, Cookie-Aussagen oder pauschale Nichtweitergabe.
+
+Die Übernahme und ihre Grenzen sind in `privacy-policy-church-source-2026-10-27.md`
+dokumentiert. Der historische Geltungsbeginn der Quelle ist kein Gültigkeitsdatum
+dieser App-Erklärung. Organisatorische Vorgaben sind von nachgewiesener technischer
+Umsetzung zu unterscheiden.
 
 Technischer Prüfstand: Mobile `origin/main` bei `7f58123`; Registrierung und Login
 (`RegisterRequest`, `AuthRepositoryImpl`), Profil (`MemberResponse`), Standort

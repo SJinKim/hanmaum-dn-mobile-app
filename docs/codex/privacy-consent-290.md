@@ -27,7 +27,7 @@ Review artifacts:
 - Full privacy-policy working drafts in [German](privacy-policy.de.draft.md),
   [Korean](privacy-policy.ko.draft.md) and [English](privacy-policy.en.draft.md),
   using the church name, address and contact supplied by the user; not legally
-  approved. Each language contains the same nine sections, twelve subsections,
+  approved. Each language contains the same nine sections, thirteen subsections,
   two tables and twenty open editorial review items. No language takes precedence.
 
 Localization update, 2026-10-26: all three drafts include the operator's intended
@@ -45,6 +45,22 @@ overflow, broken anchors, scripts or external resource requests were observed.
 Source references and technical identifiers match across the three documents.
 No public content or App/Store URL was changed by this localization work.
 
+Church-policy update, 2026-10-27: Jin supplied the existing Korean policy from
+application.hanmaum.de and confirmed that its church-wide rules apply to this
+app. [The source mapping](privacy-policy-church-source-2026-10-27.md) documents
+all source articles and their adoption boundaries. Each draft now identifies
+프랑크푸르트 한마음교회, internal privacy responsibility (이찬규), enquiry/access
+handling (김재희 목사) and the church office telephone. The account-retention
+criterion, purpose limitation, request/representation process, deletion approval
+and methods, separate statutory retention, and organisational security rules are
+also incorporated. These rules are distinguished from verified app implementation.
+No formal GDPR data-protection-officer appointment or legal representative was
+inferred. Korean legal references/authorities, the historical 2020 effective date,
+under-14 rule, blanket non-disclosure, website cookies and low-level formatting
+are not adopted as app facts. The course portal and possible family fields are
+supported by the supplied source and targeted server/public-page checks; hosting,
+necessity and legal basis remain to be confirmed.
+
 The editable Figma board uses DN Theme modes/tokens and the documented font
 stand-ins Inter and Noto Sans KR. The latest design contexts include the
 registration footer, settings proof and withdrawal link, consent prompt, version
@@ -59,8 +75,9 @@ Integration/release prerequisites:
 - The Figma states are approved. The policy itself still needs content approval;
   localized Korean/English UI copy is not a legal approval of that policy.
 - Confirmed controller/legal form, applicable privacy law, purpose-specific legal
-  bases, actual hosting/providers/regions and retention. User supplied 한마음교회,
-  Frankfurt am Main and the developer-team contact; no formal DPO was confirmed.
+  bases, actual hosting/providers/regions and remaining retention periods. The
+  supplied church policy now identifies internal privacy contacts; a formal DPO
+  appointment and legal representative are still unconfirmed.
 - A published privacy-policy URL serving the same version announced by the server.
   In-app withdrawal is implemented: record the withdrawal and sign out, without
   deleting the account.
