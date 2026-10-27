@@ -9,12 +9,15 @@ is not itself a declaration of consent.
 
 ## 1. Who is responsible?
 
+Koreanische Kirchengemeinde Hanmaum<br>
 프랑크푸르트 한마음교회 (한마음교회)<br>
 Leonhard-Heißwolf-Str. 5<br>
 65936 Frankfurt am Main<br>
 Germany
 
 Legal form: **registered association (eingetragener Verein, e. V.)**.
+
+D-U-N-S® number: **314469658**.
 
 Internal church responsibility for data protection: **이찬규**, senior pastor
 (담임목사). The contact point handling privacy enquiries, complaints and access
@@ -23,9 +26,10 @@ requests is **이충만 목사**, pastor.
 Telephone: **+49 69 3399 9677** (church office).
 App-related privacy contact: **hanmaum.dev@gmail.com** (the church's development team).
 
-**[OPEN: Confirm the legal controller's full name as entered in the register of
-associations and its authorised representative. The operator has confirmed the
-legal form e. V. The internal responsibilities come from the church policy
+**[OPEN: Confirm the authorised representative. The operator supplied the name,
+legal form e. V. and D-U-N-S® number. The D-U-N-S® number is recorded as an
+additional organisation identifier, not an association register number.
+The internal responsibilities come from the church policy
 supplied by the operator. They do not establish legal authority to represent the church or a
 formal appointment as data protection officer under the applicable law. Check
 whether such an appointment exists or is required; add the separate contact

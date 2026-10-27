@@ -9,12 +9,15 @@ geplant gekennzeichnet. Die Erklärung selbst ist keine Einwilligungserklärung.
 
 ## 1. Wer ist verantwortlich?
 
+Koreanische Kirchengemeinde Hanmaum<br>
 프랑크푸르트 한마음교회 (한마음교회)<br>
 Leonhard-Heißwolf-Str. 5<br>
 65936 Frankfurt am Main<br>
 Deutschland
 
 Rechtsform: **eingetragener Verein (e. V.)**.
+
+D-U-N-S®-Nummer: **314469658**.
 
 Kircheninterne Datenschutzverantwortung: **이찬규**, leitender Pastor (담임목사).
 Kontakt- und Bearbeitungsstelle für Datenschutzanfragen, Beschwerden und
@@ -23,9 +26,10 @@ Auskunftsersuchen: **이충만 목사**, Pastor.
 Telefon: **+49 69 3399 9677** (Kirchenbüro).
 App-bezogener Datenschutzkontakt: **hanmaum.dev@gmail.com** (Dev-Team der Gemeinde).
 
-**[OFFEN: Vollständigen im Vereinsregister eingetragenen Namen des rechtlichen
-Trägers und die vertretungsberechtigte Person bestätigen. Die Rechtsform e. V.
-wurde vom Betreiber bestätigt. Die kircheninternen Zuständigkeiten stammen aus
+**[OFFEN: Vertretungsberechtigte Person bestätigen. Name, Rechtsform e. V. und
+D-U-N-S®-Nummer wurden vom Betreiber angegeben. Die D-U-N-S®-Nummer wird als
+zusätzliche Organisationskennung geführt, nicht als Vereinsregisternummer.
+Die kircheninternen Zuständigkeiten stammen aus
 der vom Betreiber übermittelten Kirchenrichtlinie. Sie bestätigen weder eine rechtliche
 Vertretungsbefugnis noch eine formelle Bestellung als Datenschutzbeauftragter
 nach dem anwendbaren Recht. Prüfen, ob eine solche Bestellung vorliegt oder
