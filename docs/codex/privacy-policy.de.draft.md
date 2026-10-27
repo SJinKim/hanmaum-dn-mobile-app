@@ -16,7 +16,7 @@ Deutschland
 
 Kircheninterne Datenschutzverantwortung: **이찬규**, leitender Pastor (담임목사).
 Kontakt- und Bearbeitungsstelle für Datenschutzanfragen, Beschwerden und
-Auskunftsersuchen: **김재희 목사**, Pastor.
+Auskunftsersuchen: **이충만 목사**, Pastor.
 
 Telefon: **+49 69 3399 9677** (Kirchenbüro).
 App-bezogener Datenschutzkontakt: **hanmaum.dev@gmail.com** (Dev-Team der Gemeinde).
@@ -305,7 +305,7 @@ Die Rechtmäßigkeit der zuvor auf dieser Grundlage erfolgten Verarbeitung bleib
 unberührt. Anfragen können schriftlich an die oben genannte Anschrift,
 telefonisch an das Kirchenbüro unter **+49 69 3399 9677** oder per E-Mail an
 **hanmaum.dev@gmail.com** gestellt werden. Die kirchliche Annahme- und
-Bearbeitungsstelle ist **김재희 목사**. Wir bearbeiten die Anliegen ohne
+Bearbeitungsstelle ist **이충만 목사**. Wir bearbeiten die Anliegen ohne
 unangemessene Verzögerung.
 
 Anfragen können auch durch eine gesetzliche Vertretung oder eine bevollmächtigte

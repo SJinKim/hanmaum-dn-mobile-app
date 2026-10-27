@@ -50,7 +50,7 @@ application.hanmaum.de and confirmed that its church-wide rules apply to this
 app. [The source mapping](privacy-policy-church-source-2026-10-27.md) documents
 all source articles and their adoption boundaries. Each draft now identifies
 프랑크푸르트 한마음교회, internal privacy responsibility (이찬규), enquiry/access
-handling (김재희 목사) and the church office telephone. The account-retention
+handling (이충만 목사) and the church office telephone. The account-retention
 criterion, purpose limitation, request/representation process, deletion approval
 and methods, separate statutory retention, and organisational security rules are
 also incorporated. These rules are distinguished from verified app implementation.

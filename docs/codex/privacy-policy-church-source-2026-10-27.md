@@ -35,10 +35,18 @@ Durchführung sämtlicher dort beschriebenen Prozesse.
 | Art. 6: Löschung | Löschung bei Zweckerreichung/Ablauf; getrennte Aufbewahrung bei fortbestehender gesetzlicher Pflicht; Freigabe durch kircheninterne Datenschutzverantwortung; sichere elektronische und physische Vernichtung als Vorgabe | Keine ungeprüfte Low-Level-Formatierung von Cloud-/SSD-Speichern zusagen; konkrete Lösch-/Backup-Implementierung prüfen |
 | Art. 7: Sicherheit | Interne Vorgaben/Schulung, Zugriffsrechte und -kontrollen, Verschlüsselung/Schutzsoftware, Schutz von Aufbewahrungsorten als kirchliche organisatorische Vorgabe | Tatsächliche Umsetzung und Zuständigkeit beim Hostinganbieter gesondert prüfen, keine unbestätigte Audit-Zusage |
 | Art. 8: Cookies | Keine automatische Übernahme der personalisierten Website-Cookie-Nutzung | Native App, Keycloak-Browserlogin, Anmeldeportal und statische Privacy-Seite getrennt prüfen |
-| Art. 9: Datenschutzverantwortung | 이찬규, 담임목사; kircheninterne Verantwortung. Kontakt-/Bearbeitungsstelle 김재희 목사. Telefon +49 69 3399 9677, Kirchenbüro | Keine formelle Bestellung als Datenschutzbeauftragter nach Art. 37–39 DSGVO oder rechtliche Vertretungsbefugnis daraus ableiten |
-| Art. 10: Auskunft | 김재희 목사 / Kirchenbüro als Annahme- und Bearbeitungsstelle für Auskunftsanfragen | Technische App-Kontaktadresse hanmaum.dev@gmail.com bleibt ergänzend erhalten |
+| Art. 9: Datenschutzverantwortung | 이찬규, 담임목사; kircheninterne Verantwortung. Aktuelle Kontakt-/Bearbeitungsstelle 이충만 목사 (Betreiberkorrektur vom 27.10.2026). Telefon +49 69 3399 9677, Kirchenbüro | Keine formelle Bestellung als Datenschutzbeauftragter nach Art. 37–39 DSGVO oder rechtliche Vertretungsbefugnis daraus ableiten |
+| Art. 10: Auskunft | 이충만 목사 / Kirchenbüro als Annahme- und Bearbeitungsstelle für Auskunftsanfragen | Technische App-Kontaktadresse hanmaum.dev@gmail.com bleibt ergänzend erhalten |
 | Art. 11: Externe Stellen | Beschwerde- und Unterstützungswege sind zu benennen | Koreanische Behörden/Telefonnummern nicht als zuständige deutsche oder kirchliche Aufsicht darstellen; Zuständigkeit bleibt offen |
 | Art. 12: Änderungen | Historischen Stand 01.05.2020 der Quelle dokumentieren | Neues Gültigkeitsdatum und neue Versionskennung nach App-Freigabe bestimmen |
+
+## Korrektur der Kontaktperson
+
+Jin hat am 27.10.2026 die Kontakt- und Bearbeitungsstelle ausdrücklich auf
+**이충만 목사** geändert. Diese aktuelle Angabe gilt für alle drei Arbeitsfassungen
+und die Vorschau. Der historische Quelltext nennt noch 김재희 목사; diese ältere
+Angabe wird nur hier zur Nachvollziehbarkeit festgehalten. Kircheninterne
+Datenschutzverantwortung (이찬규), Büronummer und App-E-Mail bleiben unverändert.
 
 ## Zusätzlicher technischer Abgleich
 

@@ -16,7 +16,7 @@ Germany
 
 Internal church responsibility for data protection: **이찬규**, senior pastor
 (담임목사). The contact point handling privacy enquiries, complaints and access
-requests is **김재희 목사**, pastor.
+requests is **이충만 목사**, pastor.
 
 Telephone: **+49 69 3399 9677** (church office).
 App-related privacy contact: **hanmaum.dev@gmail.com** (the church's development team).
@@ -298,7 +298,7 @@ affect the lawfulness of processing previously carried out on that basis.
 Requests can be sent in writing to the postal address above, made by telephone
 to the church office at **+49 69 3399 9677**, or emailed to
 **hanmaum.dev@gmail.com**. The church contact point receiving and handling them
-is **김재희 목사**. We handle requests without undue delay.
+is **이충만 목사**. We handle requests without undue delay.
 
 A legal representative or authorised person may also submit a request; we may
 ask for suitable evidence of their authority. Under the church's handling rule,
