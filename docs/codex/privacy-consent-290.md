@@ -127,6 +127,13 @@ Integration/release prerequisites:
 
 ## Implemented behavior
 
+On 2026-10-28, the operator confirmed that version identification will be
+implemented. All three policy drafts now distinguish that planned rollout from
+the already prepared app handling of server versions. No release identifier is
+assigned to the unapproved draft. Before publication, the server version and
+all three published language texts must refer to the same approved document;
+the code alone does not verify the external page's content.
+
 - Registration loads the public policy version, starts unchecked, and sends
   `consent: { accepted: true, version }` only after an explicit selection. Policy
   reloads and version conflicts clear acceptance. Rapid submit is guarded.

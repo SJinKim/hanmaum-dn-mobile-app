@@ -396,6 +396,12 @@ necessary new consent must not be replaced by a mere version update. The planned
 recording of consent purpose, version, time and source is part of #290 and has
 not yet been released.
 
+The version identifier will be implemented as part of this rollout. The
+prepared app code obtains it from the server, displays it and submits it with
+consent. The published German, Korean and English texts must correspond to the
+same approved version. A specific version identifier has not yet been set for
+this unapproved working draft.
+
 **[OPEN: After approval, insert the actual effective date, immutable version
 identifier and public HTTPS address. Retain previous versions for evidence.
 German, Korean and English working drafts are available in parallel; changes and

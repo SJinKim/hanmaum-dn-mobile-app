@@ -410,6 +410,12 @@ an. Eine nötige neue Einwilligung darf nicht durch ein bloßes Versionsupdate
 ersetzt werden. Die für Einwilligungen geplante Speicherung von Zweck, Version,
 Zeitpunkt und Herkunft ist Teil von #290 und noch nicht ausgeliefert.
 
+Die Versionskennung wird im Rahmen dieser Einführung technisch umgesetzt.
+Der vorbereitete App-Code übernimmt sie vom Server, zeigt sie an und übermittelt
+sie bei der Zustimmung. Die veröffentlichte deutsche, koreanische und englische
+Fassung müssen derselben freigegebenen Version entsprechen. Eine konkrete
+Versionskennung für diese noch nicht freigegebene Arbeitsfassung steht nicht fest.
+
 **[OFFEN: Nach Freigabe tatsächliches Gültigkeitsdatum, unveränderliche
 Versionskennung und öffentliche HTTPS-Adresse einsetzen. Alte Fassungen für die
 Nachweisbarkeit aufbewahren. Deutsche, koreanische und englische Arbeitsfassungen

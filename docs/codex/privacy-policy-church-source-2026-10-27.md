@@ -142,6 +142,20 @@ Art. 5 und 17 DSGVO in
 [„Löschen und Vernichten von Daten, aber wie?“](https://datenschutz.hessen.de/datenschutz/it-und-datenschutz/loeschen-und-vernichten-von-daten-aber-wie).
 Die Auswahl des anwendbaren Datenschutzregimes bleibt eine separate Prüfung.
 
+## Versionskennung — Umsetzungsstand vom 28.10.2026
+
+Jin hat bestätigt, dass die Versionskennung implementiert wird. Im vorbereiteten
+App-Code sind `ConsentPolicy.version`, `currentVersion` und `grantedVersion`
+vorhanden. Repository, Einwilligungsdialog und ViewModel übernehmen die
+Serverkennung, zeigen sie an und binden eine Zustimmung an genau diese Version.
+Dies bestätigt den Quellstand, keine Bereitstellung auf ST.
+
+Alle drei Arbeitsfassungen beschreiben diesen Stand gleichwertig. Die konkrete
+Freigabekennung bleibt offen; sie wird nicht aus dem Bearbeitungsdatum erfunden.
+Server, veröffentlichter Text und Einwilligungsnachweis müssen vor ST-Freigabe
+aufeinander abgestimmt werden. Die Sprachfassungen gehören zur selben
+freigegebenen Dokumentversion; alte Fassungen bleiben für den Nachweis erforderlich.
+
 ## Noch nicht durch diese Quelle geklärt
 
 Jin hat den Geltungsbereich zunächst auf **ST einschließlich TestFlight**
@@ -195,3 +209,7 @@ Abschnitts-/Tabellenstruktur und kein globaler horizontaler Überlauf.
 Am 28.10.2026 wurden die ergänzte Erfassungszuständigkeit für Pastor und Admin
 sowie das aktualisierte Bearbeitungsdatum in allen drei Sprachvorschauen bei
 320px geprüft. Struktur und Quellenabgleich bleiben unverändert und sauber.
+
+Der Nachtrag zur geplanten Versionskennung wurde ebenfalls in allen drei
+Sprachvorschauen bei 320px geprüft; Inhalt, Struktur und Überlaufprüfung sind
+sauber. Dafür wurden keine App-Logik oder Serverkonfiguration geändert.
