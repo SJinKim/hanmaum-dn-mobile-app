@@ -19,6 +19,8 @@ Legal form: **registered association (eingetragener Verein, e. V.)**.
 
 D-U-N-S® number: **314469658**.
 
+Legal representative: **이찬규 목사**, pastor.
+
 Internal church responsibility for data protection: **이찬규**, senior pastor
 (담임목사). The contact point handling privacy enquiries, complaints and access
 requests is **이충만 목사**, pastor.
@@ -26,14 +28,10 @@ requests is **이충만 목사**, pastor.
 Telephone: **+49 69 3399 9677** (church office).
 App-related privacy contact: **hanmaum.dev@gmail.com** (the church's development team).
 
-**[OPEN: Confirm the authorised representative. The operator supplied the name,
-legal form e. V. and D-U-N-S® number. The D-U-N-S® number is recorded as an
-additional organisation identifier, not an association register number.
-The internal responsibilities come from the church policy
-supplied by the operator. They do not establish legal authority to represent the church or a
-formal appointment as data protection officer under the applicable law. Check
-whether such an appointment exists or is required; add the separate contact
-where applicable.]**
+**[OPEN: Separately check whether a formal appointment as data protection officer
+exists or is required under the applicable law; add the separate contact where
+applicable. The confirmed legal representation and internal church responsibility
+for data protection are distinct from such an appointment.]**
 
 ## 2. What does this notice cover?
 

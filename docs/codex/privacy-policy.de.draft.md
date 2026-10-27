@@ -19,6 +19,8 @@ Rechtsform: **eingetragener Verein (e. V.)**.
 
 D-U-N-S®-Nummer: **314469658**.
 
+Rechtliche Vertretung: **이찬규 목사**, Pastor.
+
 Kircheninterne Datenschutzverantwortung: **이찬규**, leitender Pastor (담임목사).
 Kontakt- und Bearbeitungsstelle für Datenschutzanfragen, Beschwerden und
 Auskunftsersuchen: **이충만 목사**, Pastor.
@@ -26,14 +28,11 @@ Auskunftsersuchen: **이충만 목사**, Pastor.
 Telefon: **+49 69 3399 9677** (Kirchenbüro).
 App-bezogener Datenschutzkontakt: **hanmaum.dev@gmail.com** (Dev-Team der Gemeinde).
 
-**[OFFEN: Vertretungsberechtigte Person bestätigen. Name, Rechtsform e. V. und
-D-U-N-S®-Nummer wurden vom Betreiber angegeben. Die D-U-N-S®-Nummer wird als
-zusätzliche Organisationskennung geführt, nicht als Vereinsregisternummer.
-Die kircheninternen Zuständigkeiten stammen aus
-der vom Betreiber übermittelten Kirchenrichtlinie. Sie bestätigen weder eine rechtliche
-Vertretungsbefugnis noch eine formelle Bestellung als Datenschutzbeauftragter
-nach dem anwendbaren Recht. Prüfen, ob eine solche Bestellung vorliegt oder
-erforderlich ist; gegebenenfalls den gesonderten Kontakt ergänzen.]**
+**[OFFEN: Gesondert prüfen, ob eine formelle Bestellung als Datenschutzbeauftragter
+nach dem anwendbaren Recht vorliegt oder erforderlich ist; gegebenenfalls den
+gesonderten Kontakt ergänzen. Die bestätigte rechtliche Vertretung und die
+kircheninterne Datenschutzverantwortung sind von einer solchen Bestellung zu
+unterscheiden.]**
 
 ## 2. Für welche Nutzung gilt diese Erklärung?
 

@@ -26,7 +26,7 @@ Durchführung sämtlicher dort beschriebenen Prozesse.
 
 | Quellabschnitt | Übernahme in die App-Arbeitsfassungen | Grenze / verbleibende Prüfung |
 | --- | --- | --- |
-| Einleitung | Gemeindebezeichnung 프랑크푸르트 한마음교회; ergänzende Betreiberangaben: Koreanische Kirchengemeinde Hanmaum, Rechtsform e. V. und D-U-N-S® 314469658 | Rechtliche Vertretung bleibt offen; koreanische Gesetzesverweise nicht ungeprüft übernehmen |
+| Einleitung | Gemeindebezeichnung 프랑크푸르트 한마음교회; ergänzende Betreiberangaben: Koreanische Kirchengemeinde Hanmaum, Rechtsform e. V., D-U-N-S® 314469658 und rechtliche Vertretung durch 이찬규 목사 | Koreanische Gesetzesverweise nicht ungeprüft übernehmen; formelle Datenschutzbeauftragtenrolle gesondert prüfen |
 | Art. 1: Zwecke | Konto, Identifikation/Anmeldung, Mitgliedsverwaltung, Missbrauchsschutz, Benachrichtigungen, Bearbeitung von Anfragen/Beschwerden; Zweckbindung | Versand, Zahlungsabwicklung, Inkasso und Unter-14-Regel sind kein Nachweis entsprechender App-Funktionen |
 | Art. 2: Aufbewahrung | Konto-/Profilverwaltung bis zur Kontobeendigung; erforderliche und zulässige Aufbewahrung während laufender Ermittlungen/Prüfungen bis zu deren Ende | Keine pauschale Frist für Kurse, Anwesenheit, Koordinaten, Logs, Push, Backups oder Einwilligungsnachweise ableiten |
 | Art. 3: Keine Drittweitergabe | Kein pauschales Versprechen in der App-Erklärung | Anbieter-/Empfängerrollen für Firebase, Apple, Google, pCloud und Kursverwaltung sowie Drittlandverarbeitung prüfen |
@@ -35,7 +35,7 @@ Durchführung sämtlicher dort beschriebenen Prozesse.
 | Art. 6: Löschung | Löschung bei Zweckerreichung/Ablauf; getrennte Aufbewahrung bei fortbestehender gesetzlicher Pflicht; Freigabe durch kircheninterne Datenschutzverantwortung; sichere elektronische und physische Vernichtung als Vorgabe | Keine ungeprüfte Low-Level-Formatierung von Cloud-/SSD-Speichern zusagen; konkrete Lösch-/Backup-Implementierung prüfen |
 | Art. 7: Sicherheit | Interne Vorgaben/Schulung, Zugriffsrechte und -kontrollen, Verschlüsselung/Schutzsoftware, Schutz von Aufbewahrungsorten als kirchliche organisatorische Vorgabe | Tatsächliche Umsetzung und Zuständigkeit beim Hostinganbieter gesondert prüfen, keine unbestätigte Audit-Zusage |
 | Art. 8: Cookies | Keine automatische Übernahme der personalisierten Website-Cookie-Nutzung | Native App, Keycloak-Browserlogin, Anmeldeportal und statische Privacy-Seite getrennt prüfen |
-| Art. 9: Datenschutzverantwortung | 이찬규, 담임목사; kircheninterne Verantwortung. Aktuelle Kontakt-/Bearbeitungsstelle 이충만 목사 (Betreiberkorrektur vom 27.10.2026). Telefon +49 69 3399 9677, Kirchenbüro | Keine formelle Bestellung als Datenschutzbeauftragter nach Art. 37–39 DSGVO oder rechtliche Vertretungsbefugnis daraus ableiten |
+| Art. 9: Datenschutzverantwortung | 이찬규, 담임목사; kircheninterne Verantwortung. Aktuelle Kontakt-/Bearbeitungsstelle 이충만 목사 (Betreiberkorrektur vom 27.10.2026). Telefon +49 69 3399 9677, Kirchenbüro | Keine formelle Bestellung als Datenschutzbeauftragter nach Art. 37–39 DSGVO ableiten; rechtliche Vertretung beruht auf separater Betreiberbestätigung |
 | Art. 10: Auskunft | 이충만 목사 / Kirchenbüro als Annahme- und Bearbeitungsstelle für Auskunftsanfragen | Technische App-Kontaktadresse hanmaum.dev@gmail.com bleibt ergänzend erhalten |
 | Art. 11: Externe Stellen | Beschwerde- und Unterstützungswege sind zu benennen | Koreanische Behörden/Telefonnummern nicht als zuständige deutsche oder kirchliche Aufsicht darstellen; Zuständigkeit bleibt offen |
 | Art. 12: Änderungen | Historischen Stand 01.05.2020 der Quelle dokumentieren | Neues Gültigkeitsdatum und neue Versionskennung nach App-Freigabe bestimmen |
@@ -57,8 +57,10 @@ den Namen **Koreanische Kirchengemeinde Hanmaum** und die **D-U-N-S®-Nummer
 die bestätigte Rechtsform wird gesondert ausgewiesen. Es wird kein nicht
 mitgeteilter Namenszusatz angehängt. Die D-U-N-S®-Nummer ist eine zusätzliche
 Organisationskennung, keine Vereinsregisternummer. Eine unabhängige
-Register-/Dun-&-Bradstreet-Prüfung wird nicht behauptet. Die rechtliche
-Vertretung bleibt offen.
+Register-/Dun-&-Bradstreet-Prüfung wird nicht behauptet. Jin hat anschließend
+**이찬규 목사** als rechtliche Vertretung bestätigt. Ein bestimmtes Vorstandsamt,
+eine Einzelvertretungsbefugnis oder eine formelle Datenschutzbeauftragtenrolle
+wird daraus nicht zusätzlich abgeleitet.
 
 ## Zusätzlicher technischer Abgleich
 
@@ -75,9 +77,8 @@ Notwendigkeit und Hinweise für betroffene Dritte bleiben zu prüfen.
 
 ## Noch nicht durch diese Quelle geklärt
 
-- Rechtliche Vertretung (Name, Rechtsform e. V. und D-U-N-S®-Nummer vom Betreiber
-  mitgeteilt), anwendbares Datenschutzrecht,
-  formelle Datenschutzbeauftragtenrolle, zuständige Aufsicht und Rechtsgrundlagen
+- Anwendbares Datenschutzrecht, formelle Datenschutzbeauftragtenrolle,
+  zuständige Aufsicht und Rechtsgrundlagen
   je Zweck einschließlich religiöser Angaben.
 - Prod-Anbieter/Regionen und vollständige Anbieter-/Vertrags-/Drittlandangaben,
   einschließlich Kontomails, Kursportal, Backups und Logs.

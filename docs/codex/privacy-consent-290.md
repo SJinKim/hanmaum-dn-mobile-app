@@ -54,8 +54,9 @@ handling (이충만 목사) and the church office telephone. The account-retenti
 criterion, purpose limitation, request/representation process, deletion approval
 and methods, separate statutory retention, and organisational security rules are
 also incorporated. These rules are distinguished from verified app implementation.
-No formal GDPR data-protection-officer appointment or legal representative was
-inferred. Korean legal references/authorities, the historical 2020 effective date,
+No formal GDPR data-protection-officer appointment was inferred; legal
+representation was subsequently confirmed separately by the operator.
+Korean legal references/authorities, the historical 2020 effective date,
 under-14 rule, blanket non-disclosure, website cookies and low-level formatting
 are not adopted as app facts. The course portal and possible family fields are
 supported by the supplied source and targeted server/public-page checks; hosting,
@@ -63,8 +64,9 @@ necessity and legal basis remain to be confirmed.
 The operator also supplied the legal name Koreanische Kirchengemeinde Hanmaum,
 the legal form registered association (e. V.) and D-U-N-S® number 314469658. The
 German name is retained verbatim in all languages; no unconfirmed name suffix or
-association register number is inferred. The authorised representative remains
-to be supplied.
+association register number is inferred. The operator subsequently confirmed
+이찬규 목사 as the legal representative. No specific board office, sole-signature
+authority or formal data-protection-officer appointment is inferred.
 
 The editable Figma board uses DN Theme modes/tokens and the documented font
 stand-ins Inter and Noto Sans KR. The latest design contexts include the
@@ -79,10 +81,11 @@ Integration/release prerequisites:
 
 - The Figma states are approved. The policy itself still needs content approval;
   localized Korean/English UI copy is not a legal approval of that policy.
-- Authorised representative, applicable privacy law, purpose-specific legal
+- Applicable privacy law, purpose-specific legal
   bases, actual hosting/providers/regions and remaining retention periods. The
-  supplied church policy now identifies internal privacy contacts; a formal DPO
-  appointment and legal representative are still unconfirmed.
+  supplied church policy now identifies internal privacy contacts and the
+  operator confirmed the legal representative; a formal DPO appointment remains
+  unconfirmed.
 - A published privacy-policy URL serving the same version announced by the server.
   In-app withdrawal is implemented: record the withdrawal and sign out, without
   deleting the account.
