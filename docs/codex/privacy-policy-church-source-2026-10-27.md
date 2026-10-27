@@ -82,9 +82,10 @@ Notwendigkeit und Hinweise für betroffene Dritte bleiben zu prüfen.
 ## Ergänzende Rollenregel für ST
 
 Jin hat bestätigt: Nur Administratoren und Pastoren sehen alle
-Mitgliedsinformationen. Ministry-Leitungen sehen ausgewählte Informationen der
-Mitglieder ihres eigenen Teams. Newcomer-Leitungen sehen Newcomer-Informationen.
-Diese Regel ist in allen drei Arbeitsfassungen enthalten. Für Ministry- und
+Mitgliedsinformationen. Für Ministry-Leitungen hat Jin Name, Telefonnummer,
+E-Mail-Adresse und die Rolle im jeweiligen Team der Mitglieder ihres eigenen
+Teams bestätigt. Newcomer-Leitungen sehen Newcomer-Informationen.
+Diese Regel ist in allen drei Arbeitsfassungen enthalten. Für
 Newcomer-Leitungen sind die konkreten Felder noch zu benennen; die tatsächlichen
 API-/Rollen-/Objektberechtigungen sind vor Veröffentlichung abzugleichen.
 Keine zusätzlichen Feldfreigaben, allgemeine Gruppen-/Kursleiterrechte oder
@@ -127,3 +128,9 @@ Es wurden nur Dokumente und die lokale Vorschau verändert. App-Logik,
 Serverkonfiguration und öffentliche Veröffentlichung sind nicht betroffen;
 Gradle-App-Prüfungen wurden deshalb für diesen Dokumentationsnachtrag nicht
 erneut ausgeführt. Dies ist keine rechtliche oder unabhängige PR-Abnahme.
+
+Der anschließende Nachtrag zu den vier Ministry-Feldern wurde in allen drei
+Sprachen in der generierten Vorschau geprüft: bestätigte Feldbezeichnungen,
+unveränderte Abschnitts-/Tabellenstruktur und kein globaler Überlauf bei 320px.
+Quellenlinks und technische Bezeichner stimmen weiterhin überein;
+`git diff --check` ist sauber.

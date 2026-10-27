@@ -248,15 +248,16 @@ Within the church, access to data should be limited to people who need it for
 their tasks. Under the established access rule, only administrators and pastors
 have access to all member information.
 
-Ministry team leaders have access to selected information about members of their
-own team. Newcomer leaders have access to newcomer information. The specific
-field permissions and the actual technical implementation of these role limits
-still need to be checked against this rule.
+Ministry team leaders have access to the name, phone number, email address and
+role in the respective team of members of their own team. Newcomer leaders have
+access to newcomer information. The specific field permissions for newcomer
+leaders and the actual technical implementation of these role limits still need
+to be checked against this rule.
 
 | Service / recipients | Purpose | Information to complete before publication |
 | --- | --- | --- |
 | Administrators and pastors | Member and church administration | Check technical permissions against the confirmed access to all member information |
-| Ministry team leaders | Leadership of their own team | Define the specific member fields and technically verify that access is restricted to their own team |
+| Ministry team leaders | Leadership of their own team; access to name, phone number, email address and role in the respective team | Technically verify that access is restricted to these fields and members of their own team |
 | Newcomer leaders | Newcomer care | Verify the specific newcomer fields and the technical restriction to newcomer information |
 | Hosting, database and Keycloak | Operation and sign-in | ST: Hetzner hosting in Germany, database and Keycloak also in Germany; verify contracting companies and roles |
 | Backups, logs and email service | Backup, technical operation and account communication | Confirm providers, locations, subprocessors, contractual roles and deletion periods for ST and its connected services |
