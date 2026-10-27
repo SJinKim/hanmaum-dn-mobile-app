@@ -1,4 +1,4 @@
-# Privacy notice for the Hanmaum DN app
+# Privacy notice for the Hanmaum DN app — ST test environment
 
 **Working draft, last edited on 27 October 2026 — not approved for publication.**
 
@@ -37,6 +37,10 @@ for data protection are distinct from such an appointment.]**
 
 ## 2. What does this notice cover?
 
+This version initially covers the **ST test environment** of the Android and
+iOS app, including the iOS test version distributed through **TestFlight**, and
+the church and external services actually connected to this test version.
+
 The app supports our church's organisation and communication. Its functions
 include personal member accounts, church announcements, dates and events,
 albums, attendance check-ins, and event and course applications.
@@ -47,8 +51,8 @@ new consent is obtained where required. Handling enquiries and complaints
 includes checking identity and the request, making necessary follow-up enquiries
 and communicating the outcome.
 
-The following information concerns the Android and iOS app and the associated
-church services. When you open external services, their operators also process
+The following information concerns this ST app and its associated services.
+When you open external services, their operators also process
 data. The website on which this notice will eventually be published requires
 appropriate additional information about the operation of that website.
 
@@ -111,7 +115,7 @@ location trail to the church server.
 You can change location permission in the app or device settings. Without that
 permission, the relevant location-dependent features may not be available.
 
-**[OPEN: Review production-side storage, logging and deletion of the coordinates
+**[OPEN: Review server-side storage, logging and deletion in ST of the coordinates
 transmitted during check-in. Do not publish a claim that location stays only on
 the device. Establish the legal basis, necessary permission scope and an
 alternative to location verification.]**
@@ -226,24 +230,17 @@ legal basis.]**
 
 ## 5. Who receives data, and where are they processed?
 
-### Operating environments: ST and production
+### Operating environment: ST
 
 Hosting with **Hetzner in Germany** has been confirmed for the ST environment.
 The **ST database and ST Keycloak service are also operated in Germany**. The
 operator supplied this information on 24 October 2026; provider agreements and
 the actual infrastructure have not yet been audited.
 
-The **production environment uses a different hosting provider from ST**. The
-production provider and the locations of the production server, database and
-Keycloak still need to be added. The Hetzner and Germany information therefore
-expressly applies only to ST; it does not establish corresponding locations for
-production.
-
-**[OPEN: Complete the information for the environment actually distributed.
-Production setup is tracked in hanmaum-dn-server#269. Separately confirm the
-contracting companies, backup/log locations, subprocessors and other external
-services. Before publication, make the environment relevant to users clear; ST
-and production information must not contradict each other.]**
+**[OPEN: Complete the information for ST and the services actually connected to
+this test version. Separately confirm the contracting companies, backup/log
+locations, subprocessors and other external services. The scope of this version
+remains limited to ST.]**
 
 ### Recipients
 
@@ -254,8 +251,8 @@ implemented in practice.
 | Service / recipients | Purpose | Information to complete before publication |
 | --- | --- | --- |
 | Church and app administration, responsible group/course leaders | Account, participation and church administration | Specific roles, visible fields and other members as recipients, if applicable |
-| Hosting, database and Keycloak | Operation and sign-in | ST: Hetzner hosting in Germany, database and Keycloak also in Germany; verify contracting companies and roles. Production: different provider, name and operating locations still open |
-| Backups, logs and email service | Backup, technical operation and account communication | Confirm providers, locations, subprocessors, contractual roles and deletion periods separately for each environment |
+| Hosting, database and Keycloak | Operation and sign-in | ST: Hetzner hosting in Germany, database and Keycloak also in Germany; verify contracting companies and roles |
+| Backups, logs and email service | Backup, technical operation and account communication | Confirm providers, locations, subprocessors, contractual roles and deletion periods for ST and its connected services |
 | Google / Firebase; Apple on iOS | Push delivery | Responsible companies, data flows and contractual basis |
 | Google Calendar | Calendar display | Company, processing locations and legal basis |
 | pCloud and the image/media services used | Album and image display | Companies, region, sharing arrangements and recipient roles |
@@ -376,7 +373,7 @@ the final approved version must be kept equivalent across all three languages.]*
 
 This is an individually prepared draft, not another organisation's copied
 privacy notice or a legal approval. All OPEN items must be resolved and the
-actual production configuration confirmed before publication.
+actual ST configuration confirmed before publication.
 
 - [Information obligations — Saxon Data Protection and Transparency Commissioner](https://www.datenschutz.sachsen.de/informationspflichten.html): structure of the information under Articles 13/14 GDPR.
 - [EDPB Guidelines 05/2020 on consent](https://www.edpb.europa.eu/system/files/documents/files/file1/edpb_guidelines_202005_consent_en.pdf): voluntary choices, separate purposes, evidence and withdrawal.
@@ -399,4 +396,4 @@ location (`AttendanceRepositoryImpl`, `GeofenceCoordinator`), calendar
 (`CalendarRepositoryImpl`), albums (`AlbumDetailRepositoryImpl`), courses
 (`TrainingRepositoryImpl`), push (`AndroidPushManager`, `IosPushManager`,
 `iOSApp.swift`) and local sign-in (`TokenStorageImpl`, `BiometricVault`).
-This is a source-code review, not an audit of production operations.
+This is a source-code review, not a comprehensive audit of ST operations.

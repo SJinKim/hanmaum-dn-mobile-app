@@ -81,11 +81,18 @@ Notwendigkeit und Hinweise für betroffene Dritte bleiben zu prüfen.
 
 ## Noch nicht durch diese Quelle geklärt
 
+Jin hat den Geltungsbereich zunächst auf **ST einschließlich TestFlight**
+begrenzt. Diese Entscheidung ist in allen drei Arbeitsfassungen und der Vorschau
+umgesetzt. Fragen zur künftigen Prod-Umgebung bleiben separat in Server #269;
+sie sind keine Lücken der aktuellen ST-Erklärung. Angebundene Dienste sind
+weiterhin nach ihrer tatsächlichen Nutzung in ST zu beschreiben; ihre Daten
+werden nicht allein durch die Bezeichnung „Testumgebung“ zu fiktiven Testdaten.
+
 - Anwendbares Datenschutzrecht, formelle Datenschutzbeauftragtenrolle,
   zuständige Aufsicht und Rechtsgrundlagen
   je Zweck einschließlich religiöser Angaben.
-- Prod-Anbieter/Regionen und vollständige Anbieter-/Vertrags-/Drittlandangaben,
-  einschließlich Kontomails, Kursportal, Backups und Logs.
+- Vollständige Anbieter-/Vertrags-/Drittlandangaben für ST und angebundene
+  Dienste, einschließlich Kontomails, Kursportal, Backups und Logs.
 - Konkrete Aufbewahrungsfristen aller weiteren Datenarten und die tatsächliche
   Löschung, Einschränkung, Backup-Rotation und technische Schutzmaßnahmen.
 - Notwendigkeit einzelner Pflichtfelder, Umgang mit Angaben über Dritte,

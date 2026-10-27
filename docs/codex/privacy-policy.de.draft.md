@@ -1,4 +1,4 @@
-# Datenschutzerklärung für die Hanmaum-DN-App
+# Datenschutzerklärung für die Hanmaum-DN-App — ST-Testumgebung
 
 **Arbeitsentwurf, zuletzt bearbeitet am 27. Oktober 2026 — nicht zur Veröffentlichung freigegeben.**
 
@@ -38,6 +38,11 @@ unterscheiden.]**
 
 ## 2. Für welche Nutzung gilt diese Erklärung?
 
+Diese Fassung gilt zunächst für die **ST-Testumgebung** der Android- und
+iOS-App, einschließlich der über **TestFlight** bereitgestellten iOS-Testversion,
+sowie für die in dieser Testversion tatsächlich angebundenen Gemeinde- und
+externen Dienste.
+
 Die App unterstützt die Organisation und Information unserer Gemeinde. Dazu
 gehören das persönliche Mitgliedskonto, Gemeindemitteilungen, Termine, Alben,
 Anwesenheitsmeldungen sowie Anmeldungen zu Veranstaltungen und Kursen.
@@ -49,8 +54,8 @@ eingeholt. Zur Bearbeitung von Anfragen und Beschwerden gehören die Prüfung de
 Identität und des Anliegens, notwendige Rückfragen sowie die Mitteilung des
 Ergebnisses.
 
-Die folgenden Angaben betreffen die Android- und iOS-App und die zugehörigen
-Gemeindedienste. Beim Öffnen externer Angebote werden Daten außerdem durch deren
+Die folgenden Angaben betreffen diese ST-App und die zugehörigen Dienste.
+Beim Öffnen externer Angebote werden Daten außerdem durch deren
 Betreiber verarbeitet. Der Besuch der Website, auf der diese Erklärung später
 steht, benötigt zusätzlich passende Angaben zum Websitebetrieb.
 
@@ -116,8 +121,8 @@ Die Standortfreigabe lässt sich in den App- beziehungsweise Geräteeinstellunge
 ändern. Ohne Berechtigung stehen die betreffenden ortsabhängigen Funktionen
 gegebenenfalls nicht zur Verfügung.
 
-**[OFFEN: Produktionsseitige Speicherung, Protokollierung und Löschung der beim
-Check-in übertragenen Koordinaten prüfen. Keine Aussage „Standort bleibt nur auf
+**[OFFEN: Speicherung, Protokollierung und Löschung der beim Check-in übertragenen
+Koordinaten auf den ST-Servern prüfen. Keine Aussage „Standort bleibt nur auf
 dem Gerät“ veröffentlichen. Rechtsgrundlage, notwendiger Berechtigungsumfang und
 eine Alternative zur Standortprüfung festlegen.]**
 
@@ -235,23 +240,17 @@ Eine Betriebssystemberechtigung ersetzt die Prüfung der Rechtsgrundlage nicht.]
 
 ## 5. Wer erhält Daten und wo werden sie verarbeitet?
 
-### Betriebsumgebungen: ST und Prod
+### Betriebsumgebung: ST
 
 Für die ST-Umgebung ist Hosting bei **Hetzner in Deutschland** bestätigt.
 Auch die **ST-Datenbank und der ST-Keycloak-Dienst werden in Deutschland
 betrieben**. Diese Angaben wurden vom Betreiber am 24. Oktober 2026 mitgeteilt;
 eine Prüfung der Providerverträge und der tatsächlichen Infrastruktur steht aus.
 
-Die **Prod-Umgebung verwendet einen anderen Hostinganbieter als ST**. Der
-Prod-Anbieter und die Betriebsorte von Prod-Server, Datenbank und Keycloak sind
-noch zu ergänzen. Die Angaben zu Hetzner und Deutschland gelten damit ausdrücklich
-nur für ST; sie belegen keine entsprechenden Standorte für Prod.
-
-**[OFFEN: Angaben für die konkret ausgelieferte Umgebung fertigstellen. Das
-Prod-Setup wird in hanmaum-dn-server#269 verfolgt. Vertragsgesellschaften,
-Backup-/Log-Standorte, Unterauftragnehmer und weitere externe Dienste getrennt
-bestätigen. Vor Veröffentlichung den für Nutzer maßgeblichen Umgebungsbezug klar
-darstellen; ST- und Prod-Angaben dürfen sich nicht widersprechen.]**
+**[OFFEN: Angaben für ST und die in dieser Testversion tatsächlich angebundenen
+Dienste fertigstellen. Vertragsgesellschaften, Backup-/Log-Standorte,
+Unterauftragnehmer und weitere externe Dienste getrennt bestätigen. Der
+Geltungsbereich dieser Fassung bleibt auf ST beschränkt.]**
 
 ### Empfänger
 
@@ -262,8 +261,8 @@ umgesetzten Rollen und Sichtbarkeiten übereinstimmen.
 | Dienst / Empfängerkreis | Zweck | Noch vor Veröffentlichung zu ergänzen |
 | --- | --- | --- |
 | Gemeinde- und App-Administration, zuständige Gruppen-/Kursverantwortliche | Konto-, Teilnahme- und Gemeindeverwaltung | Konkrete Rollen, sichtbare Felder und weitere Mitglieder als Empfänger, falls vorhanden |
-| Hosting, Datenbank und Keycloak | Betrieb und Anmeldung | ST: Hetzner-Hosting in Deutschland, DB und Keycloak ebenfalls Deutschland; Vertragsgesellschaften und Rollen prüfen. Prod: anderer Anbieter, Name und Betriebsorte offen |
-| Backups, Logs und E-Mail-Dienst | Sicherung, technischer Betrieb und Kontokommunikation | Anbieter, Standorte, Unterauftragnehmer, Vertragsrollen und Löschfristen je Umgebung gesondert bestätigen |
+| Hosting, Datenbank und Keycloak | Betrieb und Anmeldung | ST: Hetzner-Hosting in Deutschland, DB und Keycloak ebenfalls Deutschland; Vertragsgesellschaften und Rollen prüfen |
+| Backups, Logs und E-Mail-Dienst | Sicherung, technischer Betrieb und Kontokommunikation | Anbieter, Standorte, Unterauftragnehmer, Vertragsrollen und Löschfristen für ST und die angebundenen Dienste bestätigen |
 | Google / Firebase; unter iOS Apple | Push-Zustellung | Verantwortliche Gesellschaften, Datenflüsse und vertragliche Grundlage |
 | Google Calendar | Kalenderanzeige | Gesellschaft, Verarbeitungsorte und Rechtsgrundlage |
 | pCloud und verwendete Bild-/Mediendienste | Album- und Bildanzeige | Gesellschaften, Region, Freigaben und Empfängerrolle |
@@ -387,7 +386,7 @@ Sprachen inhaltlich gleichwertig halten.]**
 
 Dies ist ein individueller Entwurf, keine übernommene fremde Datenschutzerklärung
 und keine rechtliche Freigabe. Vor Veröffentlichung müssen alle OFFEN-Felder
-aufgelöst und die tatsächliche Produktionskonfiguration bestätigt sein.
+aufgelöst und die tatsächliche ST-Konfiguration bestätigt sein.
 
 - [Informationspflichten — Sächsische Datenschutz- und Transparenzbeauftragte](https://www.datenschutz.sachsen.de/informationspflichten.html): Struktur der Informationen nach Art. 13/14 DSGVO.
 - [EDSA-Leitlinien 05/2020 zur Einwilligung](https://www.edpb.europa.eu/system/files/documents/files/file1/edpb_guidelines_202005_consent_en.pdf): Freiwilligkeit, Zwecktrennung, Nachweis und Widerruf.
@@ -410,4 +409,4 @@ Technischer Prüfstand: Mobile `origin/main` bei `7f58123`; Registrierung und Lo
 (`CalendarRepositoryImpl`), Alben (`AlbumDetailRepositoryImpl`), Kurse
 (`TrainingRepositoryImpl`), Push (`AndroidPushManager`, `IosPushManager`,
 `iOSApp.swift`) und lokale Anmeldung (`TokenStorageImpl`, `BiometricVault`).
-Dies ist eine Quellcodeprüfung, keine Prüfung des Produktionsbetriebs.
+Dies ist eine Quellcodeprüfung, keine umfassende Prüfung des ST-Betriebs.

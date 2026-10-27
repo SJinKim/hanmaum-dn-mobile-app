@@ -2,6 +2,13 @@
 
 ## Status
 
+Policy scope confirmed on 2026-10-27: the current DE/KO/EN working drafts cover
+only the ST test environment, including TestFlight and the services actually
+connected to that test version. Future production-provider details are tracked
+separately in server #269 and do not block this ST-specific policy. ST provider
+contracts, connected services, legal bases and remaining retention details still
+require completion. Do not configure a production app to use the ST-only notice.
+
 Design approved by the user on 2026-10-24. The APP_PRIVACY mobile flow is
 implemented against the proposed ops #73 contract. Local verification passed on
 2026-10-25; the change is prepared for independent review as a draft PR. The server/ops merges, published policy URL and legal content approval
@@ -15,7 +22,8 @@ Infrastructure clarification, 2026-10-24:
   also operated in Germany. This is operator-provided information, not a live
   infrastructure or contract audit.
 - Prod uses a different hosting provider. Its provider and locations remain
-  unspecified; do not copy the ST values into the production privacy policy.
+  unspecified; do not copy the ST values into a future production privacy policy.
+  These details are outside the current ST-only notice.
 - Existing [server #269](https://github.com/SJinKim/hanmaum-dn-server/issues/269)
   already tracks production setup and was extended with provider/region inventory,
   environment separation and a review of the shared-Keycloak decision. No duplicate
@@ -85,7 +93,8 @@ Integration/release prerequisites:
 - The Figma states are approved. The policy itself still needs content approval;
   localized Korean/English UI copy is not a legal approval of that policy.
 - Applicable privacy law, purpose-specific legal
-  bases, actual hosting/providers/regions and remaining retention periods. The
+  bases, actual ST hosting/providers/regions, connected services and remaining
+  retention periods. The
   supplied church policy now identifies internal privacy contacts and the
   operator confirmed the legal representative; a formal DPO appointment remains
   unconfirmed.
@@ -117,6 +126,10 @@ Local builds read `PRIVACY_POLICY_URL` from `.env`. Distribution maps GitHub
 repository variables `ST_PRIVACY_POLICY_URL` and `PROD_PRIVACY_POLICY_URL` to that
 field in the corresponding Android/iOS lanes. BuildKonfig's common declaration,
 Android generated actual and AGP BuildConfig all include it.
+
+The current policy text is ST-only. Set `ST_PRIVACY_POLICY_URL` only after that
+text is approved and publicly available; the future production policy and
+`PROD_PRIVACY_POLICY_URL` require separate approval.
 
 Only HTTPS URLs without embedded credentials are accepted. No URL or policy
 version is invented. An absent/invalid URL prevents new consent and registration;
