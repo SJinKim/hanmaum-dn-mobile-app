@@ -5,6 +5,7 @@
 **Design:** App: Figma `DN-App` (`NOVmvVvB7CEXXVemOy5hJa`), Seite 31:61, Section 699:5202; Komponenten 699:5203 auf 03 · Components (3:2). Web: Figma `DN-Web` (`KSEMYc00jcgvyQ6qWt1cm4`), Seite 26:11, Section „16 · 앨범 관리“ 1932:172777; Komponenten 1929:590/1929:591 auf Seite 26:5. Dark + Light gebaut, abgenommen (Jin, 2026-10-28).
 **Status:** Freigegeben (Jin, 2026-10-26) — Figma abgenommen (Jin, 2026-10-28); nächster Schritt: Plan und Tickets
 **Ersetzt:** `docs/superpowers/specs/2026-07-02-album-s3-migration-and-grid-redesign.md`
+(gelöscht, in der Git-Historie von PR #304)
 (Album 2.0 / Foto-Hub pro 순, Epic #303)
 
 ---
@@ -311,15 +312,15 @@ aufbauen statt migrieren)**.
 
 ---
 
-## Aufräumen (nach Abnahme des Designs, vor Löschung einzeln bestätigen)
+## Aufräumen (von Jin bestätigt, 2026-10-28)
 
-| Was | Warum |
-|---|---|
-| mobile Epic #303 „Album 2.0" | Konzept ersetzt |
-| server #116 pCloud-Jahresfilter | pCloud fällt weg |
-| server-Branch `feat/HDN-0-album2-s3-photo-hub` | S3-Klassen vorher retten, dann löschen |
-| Spec `2026-07-02-album-s3-migration-and-grid-redesign.md` (PR #304) | durch dieses Dokument ersetzt |
-| Remote-Branch `origin/docs/HDN-303-album-spec` | gehört zum alten Spec |
+| Was | Warum | Stand |
+|---|---|---|
+| mobile Epic #303 „Album 2.0" | Konzept ersetzt | geschlossen, Nachfolger mobile #310 |
+| server #116 pCloud-Jahresfilter | pCloud fällt weg | geschlossen |
+| server-Branch `feat/HDN-0-album2-s3-photo-hub` | S3-Klassen vorher retten, dann löschen | offen: lag nur lokal; Archiv-Tag `archive/album2-s3-photo-hub` angelegt, Push nach `origin` steht aus |
+| Spec `2026-07-02-album-s3-migration-and-grid-redesign.md` (PR #304) | durch dieses Dokument ersetzt | gelöscht |
+| Remote-Branch `origin/docs/HDN-303-album-spec` | gehört zum alten Spec | gelöscht |
 
 Bleiben: server #140 (Object Storage + Profilfoto-Upload) und mobile #139
 (Profilfoto-Upload) — sie teilen sich die Storage-Schicht mit diesem Feature.
