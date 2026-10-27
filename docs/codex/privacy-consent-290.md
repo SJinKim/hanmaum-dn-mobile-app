@@ -78,6 +78,11 @@ authority or formal data-protection-officer appointment is inferred.
 The operator also confirmed that the church belongs to no church association or
 umbrella organisation. This is included in all three drafts; applicable privacy
 law remains a separate legal review item.
+For ST, the operator confirmed full member-information access only for admins
+and pastors; ministry leaders see selected fields of their own team members,
+and newcomer leaders see newcomer information. The recipient sections now
+reflect this rule. Exact leader field sets and actual API/role/object-level
+enforcement remain to be verified. No technical permissions were changed.
 
 The editable Figma board uses DN Theme modes/tokens and the documented font
 stand-ins Inter and Noto Sans KR. The latest design contexts include the

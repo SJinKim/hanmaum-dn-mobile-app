@@ -255,12 +255,19 @@ Geltungsbereich dieser Fassung bleibt auf ST beschränkt.]**
 ### Empfänger
 
 Innerhalb der Gemeinde sollen nur die Personen auf Daten zugreifen, die diese
-für ihre Aufgabe benötigen. Der konkrete Empfängerkreis muss mit den tatsächlich
-umgesetzten Rollen und Sichtbarkeiten übereinstimmen.
+für ihre Aufgabe benötigen. Nach der festgelegten Zugriffsregel haben nur
+Administratoren und Pastoren Zugriff auf alle Mitgliedsinformationen.
+
+Leitungen eines Ministry-Teams erhalten Zugriff auf ausgewählte Informationen
+über die Mitglieder ihres eigenen Teams. Newcomer-Leitungen erhalten Zugriff
+auf Newcomer-Informationen. Die konkreten Feldfreigaben und die tatsächliche
+technische Umsetzung dieser Rollenbegrenzungen sind noch abzugleichen.
 
 | Dienst / Empfängerkreis | Zweck | Noch vor Veröffentlichung zu ergänzen |
 | --- | --- | --- |
-| Gemeinde- und App-Administration, zuständige Gruppen-/Kursverantwortliche | Konto-, Teilnahme- und Gemeindeverwaltung | Konkrete Rollen, sichtbare Felder und weitere Mitglieder als Empfänger, falls vorhanden |
+| Administratoren und Pastoren | Mitglieder- und Gemeindeverwaltung | Technische Berechtigungen gegen den bestätigten Zugriff auf alle Mitgliedsinformationen prüfen |
+| Ministry-Teamleitungen | Leitung des eigenen Teams | Konkrete freigegebene Mitgliedsfelder festlegen und die Beschränkung auf das eigene Team technisch prüfen |
+| Newcomer-Leitungen | Newcomer-Betreuung | Konkrete Newcomer-Felder und die technische Beschränkung auf Newcomer-Informationen prüfen |
 | Hosting, Datenbank und Keycloak | Betrieb und Anmeldung | ST: Hetzner-Hosting in Deutschland, DB und Keycloak ebenfalls Deutschland; Vertragsgesellschaften und Rollen prüfen |
 | Backups, Logs und E-Mail-Dienst | Sicherung, technischer Betrieb und Kontokommunikation | Anbieter, Standorte, Unterauftragnehmer, Vertragsrollen und Löschfristen für ST und die angebundenen Dienste bestätigen |
 | Google / Firebase; unter iOS Apple | Push-Zustellung | Verantwortliche Gesellschaften, Datenflüsse und vertragliche Grundlage |

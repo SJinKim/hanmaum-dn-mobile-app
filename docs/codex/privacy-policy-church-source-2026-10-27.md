@@ -79,6 +79,17 @@ dass einzelne Kursformulare solche Angaben abfragen können; nicht, dass jedes
 Feld für jeden Kurs oder für die App-Registrierung verpflichtend ist. Zweck,
 Notwendigkeit und Hinweise für betroffene Dritte bleiben zu prüfen.
 
+## Ergänzende Rollenregel für ST
+
+Jin hat bestätigt: Nur Administratoren und Pastoren sehen alle
+Mitgliedsinformationen. Ministry-Leitungen sehen ausgewählte Informationen der
+Mitglieder ihres eigenen Teams. Newcomer-Leitungen sehen Newcomer-Informationen.
+Diese Regel ist in allen drei Arbeitsfassungen enthalten. Für Ministry- und
+Newcomer-Leitungen sind die konkreten Felder noch zu benennen; die tatsächlichen
+API-/Rollen-/Objektberechtigungen sind vor Veröffentlichung abzugleichen.
+Keine zusätzlichen Feldfreigaben, allgemeine Gruppen-/Kursleiterrechte oder
+Änderungen an der technischen Autorisierung werden daraus abgeleitet.
+
 ## Noch nicht durch diese Quelle geklärt
 
 Jin hat den Geltungsbereich zunächst auf **ST einschließlich TestFlight**
