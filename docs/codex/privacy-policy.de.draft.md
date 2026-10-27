@@ -17,6 +17,8 @@ Deutschland
 
 Rechtsform: **eingetragener Verein (e. V.)**.
 
+Die Gemeinde gehört keinem Kirchen- oder Dachverband an.
+
 D-U-N-S®-Nummer: **314469658**.
 
 Rechtliche Vertretung: **이찬규 목사**, Pastor.
@@ -53,8 +55,9 @@ Betreiber verarbeitet. Der Besuch der Website, auf der diese Erklärung später
 steht, benötigt zusätzlich passende Angaben zum Websitebetrieb.
 
 **[OFFEN: Prüfen, ob für den Träger die DSGVO oder kirchliches Datenschutzrecht
-gilt. Die nachfolgenden Verweise verwenden vorläufig die DSGVO. Eine kirchliche
-Zugehörigkeit allein klärt den Anwendungsbereich nicht. Bei abweichendem Recht
+gilt. Die nachfolgenden Verweise verwenden vorläufig die DSGVO. Der Betreiber
+hat bestätigt, dass keine Mitgliedschaft in einem Kirchen- oder Dachverband
+besteht; der anwendbare Rechtsrahmen ist gesondert zu prüfen. Bei abweichendem Recht
 sind Rechtsgrundlagen, Rechte und Aufsicht einheitlich anzupassen.]**
 
 ## 3. Welche Daten verarbeiten wir wofür?

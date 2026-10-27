@@ -17,6 +17,8 @@ Germany
 
 Legal form: **registered association (eingetragener Verein, e. V.)**.
 
+The church is not affiliated with a church association or umbrella organisation.
+
 D-U-N-S® number: **314469658**.
 
 Legal representative: **이찬규 목사**, pastor.
@@ -51,8 +53,9 @@ data. The website on which this notice will eventually be published requires
 appropriate additional information about the operation of that website.
 
 **[OPEN: Determine whether the controller is subject to the GDPR or church data
-protection law. The references below provisionally use the GDPR. Church
-affiliation alone does not establish which law applies. If a different law
+protection law. The references below provisionally use the GDPR. The operator
+has confirmed that the church is not affiliated with a church association or
+umbrella organisation; the applicable legal framework needs separate review. If a different law
 applies, update the legal bases, rights and supervisory authority consistently.]**
 
 ## 3. What data do we process, and why?

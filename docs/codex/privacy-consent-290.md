@@ -67,6 +67,9 @@ German name is retained verbatim in all languages; no unconfirmed name suffix or
 association register number is inferred. The operator subsequently confirmed
 이찬규 목사 as the legal representative. No specific board office, sole-signature
 authority or formal data-protection-officer appointment is inferred.
+The operator also confirmed that the church belongs to no church association or
+umbrella organisation. This is included in all three drafts; applicable privacy
+law remains a separate legal review item.
 
 The editable Figma board uses DN Theme modes/tokens and the documented font
 stand-ins Inter and Noto Sans KR. The latest design contexts include the

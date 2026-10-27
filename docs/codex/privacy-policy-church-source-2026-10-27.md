@@ -62,6 +62,10 @@ Register-/Dun-&-Bradstreet-Prüfung wird nicht behauptet. Jin hat anschließend
 eine Einzelvertretungsbefugnis oder eine formelle Datenschutzbeauftragtenrolle
 wird daraus nicht zusätzlich abgeleitet.
 
+Jin hat außerdem bestätigt, dass die Gemeinde keinem Kirchen- oder Dachverband
+angehört. Dies ist in allen drei Sprachfassungen vermerkt. Die rechtliche
+Einordnung des Datenschutzrechts wird dadurch nicht als abgeschlossen ausgegeben.
+
 ## Zusätzlicher technischer Abgleich
 
 Die Server-Referenz `origin/main` nennt `application.hanmaum.de` ausdrücklich als
