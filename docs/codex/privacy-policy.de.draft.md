@@ -14,6 +14,8 @@ Leonhard-Heißwolf-Str. 5<br>
 65936 Frankfurt am Main<br>
 Deutschland
 
+Rechtsform: **eingetragener Verein (e. V.)**.
+
 Kircheninterne Datenschutzverantwortung: **이찬규**, leitender Pastor (담임목사).
 Kontakt- und Bearbeitungsstelle für Datenschutzanfragen, Beschwerden und
 Auskunftsersuchen: **이충만 목사**, Pastor.
@@ -21,9 +23,10 @@ Auskunftsersuchen: **이충만 목사**, Pastor.
 Telefon: **+49 69 3399 9677** (Kirchenbüro).
 App-bezogener Datenschutzkontakt: **hanmaum.dev@gmail.com** (Dev-Team der Gemeinde).
 
-**[OFFEN: Rechtsform, rechtlichen Träger und vertretungsberechtigte Person
-bestätigen. Die kircheninternen Zuständigkeiten stammen aus der vom Betreiber
-übermittelten Kirchenrichtlinie. Sie bestätigen weder eine rechtliche
+**[OFFEN: Vollständigen im Vereinsregister eingetragenen Namen des rechtlichen
+Trägers und die vertretungsberechtigte Person bestätigen. Die Rechtsform e. V.
+wurde vom Betreiber bestätigt. Die kircheninternen Zuständigkeiten stammen aus
+der vom Betreiber übermittelten Kirchenrichtlinie. Sie bestätigen weder eine rechtliche
 Vertretungsbefugnis noch eine formelle Bestellung als Datenschutzbeauftragter
 nach dem anwendbaren Recht. Prüfen, ob eine solche Bestellung vorliegt oder
 erforderlich ist; gegebenenfalls den gesonderten Kontakt ergänzen.]**

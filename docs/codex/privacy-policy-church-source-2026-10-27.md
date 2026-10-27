@@ -26,7 +26,7 @@ Durchführung sämtlicher dort beschriebenen Prozesse.
 
 | Quellabschnitt | Übernahme in die App-Arbeitsfassungen | Grenze / verbleibende Prüfung |
 | --- | --- | --- |
-| Einleitung | Vollständige Gemeindebezeichnung 프랑크푸르트 한마음교회 | Rechtsform und rechtlicher Träger bleiben offen; koreanische Gesetzesverweise nicht ungeprüft übernehmen |
+| Einleitung | Vollständige Gemeindebezeichnung 프랑크푸르트 한마음교회; Rechtsform e. V. aus ergänzender Betreiberbestätigung | Genauer Registername und rechtliche Vertretung bleiben offen; koreanische Gesetzesverweise nicht ungeprüft übernehmen |
 | Art. 1: Zwecke | Konto, Identifikation/Anmeldung, Mitgliedsverwaltung, Missbrauchsschutz, Benachrichtigungen, Bearbeitung von Anfragen/Beschwerden; Zweckbindung | Versand, Zahlungsabwicklung, Inkasso und Unter-14-Regel sind kein Nachweis entsprechender App-Funktionen |
 | Art. 2: Aufbewahrung | Konto-/Profilverwaltung bis zur Kontobeendigung; erforderliche und zulässige Aufbewahrung während laufender Ermittlungen/Prüfungen bis zu deren Ende | Keine pauschale Frist für Kurse, Anwesenheit, Koordinaten, Logs, Push, Backups oder Einwilligungsnachweise ableiten |
 | Art. 3: Keine Drittweitergabe | Kein pauschales Versprechen in der App-Erklärung | Anbieter-/Empfängerrollen für Firebase, Apple, Google, pCloud und Kursverwaltung sowie Drittlandverarbeitung prüfen |
@@ -48,6 +48,14 @@ und die Vorschau. Der historische Quelltext nennt noch 김재희 목사; diese �
 Angabe wird nur hier zur Nachvollziehbarkeit festgehalten. Kircheninterne
 Datenschutzverantwortung (이찬규), Büronummer und App-E-Mail bleiben unverändert.
 
+## Ergänzung zur Rechtsform
+
+Jin hat am 27.10.2026 die Rechtsform **eingetragener Verein (e. V.)** bestätigt.
+Diese Angabe ist in allen drei Sprachfassungen ergänzt. Der genaue im
+Vereinsregister eingetragene Name und die rechtliche Vertretung bleiben offen;
+der koreanischen Gemeindebezeichnung wird kein unbestätigter Registername
+angehängt.
+
 ## Zusätzlicher technischer Abgleich
 
 Die Server-Referenz `origin/main` nennt `application.hanmaum.de` ausdrücklich als
@@ -63,7 +71,8 @@ Notwendigkeit und Hinweise für betroffene Dritte bleiben zu prüfen.
 
 ## Noch nicht durch diese Quelle geklärt
 
-- Rechtlicher Träger/Rechtsform/Vertretung, anwendbares Datenschutzrecht,
+- Genauer Registername des Trägers und rechtliche Vertretung (Rechtsform e. V.
+  vom Betreiber bestätigt), anwendbares Datenschutzrecht,
   formelle Datenschutzbeauftragtenrolle, zuständige Aufsicht und Rechtsgrundlagen
   je Zweck einschließlich religiöser Angaben.
 - Prod-Anbieter/Regionen und vollständige Anbieter-/Vertrags-/Drittlandangaben,

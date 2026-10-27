@@ -60,6 +60,8 @@ under-14 rule, blanket non-disclosure, website cookies and low-level formatting
 are not adopted as app facts. The course portal and possible family fields are
 supported by the supplied source and targeted server/public-page checks; hosting,
 necessity and legal basis remain to be confirmed.
+The operator also confirmed the legal form as a registered association (e. V.);
+the exact registered name and authorised representative remain to be supplied.
 
 The editable Figma board uses DN Theme modes/tokens and the documented font
 stand-ins Inter and Noto Sans KR. The latest design contexts include the
@@ -74,7 +76,7 @@ Integration/release prerequisites:
 
 - The Figma states are approved. The policy itself still needs content approval;
   localized Korean/English UI copy is not a legal approval of that policy.
-- Confirmed controller/legal form, applicable privacy law, purpose-specific legal
+- Exact registered controller name, applicable privacy law, purpose-specific legal
   bases, actual hosting/providers/regions and remaining retention periods. The
   supplied church policy now identifies internal privacy contacts; a formal DPO
   appointment and legal representative are still unconfirmed.

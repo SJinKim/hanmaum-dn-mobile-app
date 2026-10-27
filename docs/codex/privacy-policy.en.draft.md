@@ -14,6 +14,8 @@ Leonhard-Heißwolf-Str. 5<br>
 65936 Frankfurt am Main<br>
 Germany
 
+Legal form: **registered association (eingetragener Verein, e. V.)**.
+
 Internal church responsibility for data protection: **이찬규**, senior pastor
 (담임목사). The contact point handling privacy enquiries, complaints and access
 requests is **이충만 목사**, pastor.
@@ -21,9 +23,10 @@ requests is **이충만 목사**, pastor.
 Telephone: **+49 69 3399 9677** (church office).
 App-related privacy contact: **hanmaum.dev@gmail.com** (the church's development team).
 
-**[OPEN: Confirm the legal form, legal controller and authorised representative.
-The internal responsibilities come from the church policy supplied by the
-operator. They do not establish legal authority to represent the church or a
+**[OPEN: Confirm the legal controller's full name as entered in the register of
+associations and its authorised representative. The operator has confirmed the
+legal form e. V. The internal responsibilities come from the church policy
+supplied by the operator. They do not establish legal authority to represent the church or a
 formal appointment as data protection officer under the applicable law. Check
 whether such an appointment exists or is required; add the separate contact
 where applicable.]**
