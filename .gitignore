@@ -61,6 +61,8 @@ docs/*
 !docs/architecture/**
 !docs/design/
 !docs/design/**
+!docs/guidelines/
+!docs/guidelines/**
 
 # --- Font download artifacts ---
 composeApp/src/commonMain/Plus_Jakarta_Sans/README.txt
