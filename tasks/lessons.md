@@ -328,3 +328,11 @@ neben den Screens. Beide Dateien haben eigene Komponenten-Seiten (`DN-App`: 03 �
 
 **Regel:** Neue Komponenten direkt auf der Components-Seite der jeweiligen Datei anlegen;
 Screen-Sections enthalten nur Instanzen.
+
+## Neuer Bereich = eigener Sidebar-Eintrag
+
+**2026-10-27.** Die Album-Web-Screens zeigten `이벤트` als aktiven Sidebar-Eintrag, weil
+`앨범` in der Sidebar fehlte. `이벤트` führt aber zum RSVP-Screen, nicht zu den Alben.
+
+**Regel:** Ein neuer Feature-Bereich bekommt einen eigenen NavItem in der Sidebar-Komponente
+(`DN-Web` 157:1651, alle Varianten). Den Active-State eines fremden Tabs nie als Platzhalter borgen.
