@@ -20,11 +20,12 @@ class LocalizationCoverageTest {
     }
 
     @Test fun koreanUiCopyLivesInTheLocalizationLayer() {
-        val source = listOf(File("src/commonMain/kotlin"), File("composeApp/src/commonMain/kotlin"))
-            .first { it.isDirectory }
+        // Platform sets too: notification copy posted from androidMain/iosMain reaches the user as well.
+        val root = listOf(File("src"), File("composeApp/src")).first { File(it, "commonMain/kotlin").isDirectory }
+        val sources = listOf("commonMain", "androidMain", "iosMain").map { File(root, "$it/kotlin") }
         val comments = Regex("""/\*.*?\*/|(?m)^\s*//[^\n]*$""", RegexOption.DOT_MATCHES_ALL)
         val koreanLiteral = Regex("\"[^\"\n]*[가-힣][^\"\n]*\"")
-        val findings = source.walkTopDown().filter { it.extension == "kt" && "i18n" !in it.toPath().map { part -> part.toString() } }
+        val findings = sources.asSequence().flatMap { it.walkTopDown() }.filter { it.extension == "kt" && "i18n" !in it.toPath().map { part -> part.toString() } }
             .flatMap { file ->
                 koreanLiteral.findAll(file.readText().replace(comments, ""))
                     .map { "${file.name}: ${it.value}" }

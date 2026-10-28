@@ -194,6 +194,13 @@ interface AppStrings {
     fun notificationTimeMinutesAgo(minutes: Int): String
     fun notificationTimeHoursAgo(hours: Int): String
     fun notificationTimeDaysAgo(days: Int): String
+
+    // System notifications, posted outside Compose with the stored app language.
+    val arrivalNotificationTitle: String
+    val arrivalNotificationBody: String
+    val attendanceChannelName: String
+    val attendanceChannelDescription: String
+    val announcementChannelName: String
     val pushPrimingTitle: String
     val pushPrimingBody: String
     val pushPrimingEnable: String
@@ -753,6 +760,11 @@ object EnStrings : AppStrings {
     override fun notificationTimeMinutesAgo(minutes: Int) = "${minutes}m ago"
     override fun notificationTimeHoursAgo(hours: Int) = "${hours}h ago"
     override fun notificationTimeDaysAgo(days: Int) = "${days}d ago"
+    override val arrivalNotificationTitle = "You've arrived at church ⛪"
+    override val arrivalNotificationBody = "Don't forget to check in!"
+    override val attendanceChannelName = "Attendance"
+    override val attendanceChannelDescription = "Check-in reminder when you arrive at church"
+    override val announcementChannelName = "Announcements"
     override val pushPrimingTitle = "Don't miss new announcements"
     override val pushPrimingBody = "We'll notify you when something new is posted"
     override val pushPrimingEnable = "Turn on notifications"
@@ -1216,6 +1228,11 @@ object KoStrings : AppStrings {
     override fun notificationTimeMinutesAgo(minutes: Int) = "${minutes}분 전"
     override fun notificationTimeHoursAgo(hours: Int) = "${hours}시간 전"
     override fun notificationTimeDaysAgo(days: Int) = "${days}일 전"
+    override val arrivalNotificationTitle = "교회에 도착하셨습니다 ⛪"
+    override val arrivalNotificationBody = "출석 체크를 해주세요!"
+    override val attendanceChannelName = "출석 알림"
+    override val attendanceChannelDescription = "교회 도착 시 출석 체크 알림"
+    override val announcementChannelName = "공지 알림"
     override val pushPrimingTitle = "새 소식을 놓치지 마세요"
     override val pushPrimingBody = "새로운 공지가 올라오면 알려드릴게요"
     override val pushPrimingEnable = "알림 켜기"
@@ -1488,4 +1505,10 @@ object KoStrings : AppStrings {
     override val nurtureOptionConfirmation = "입교"
     override val nurtureOptionBaptism = "세례"
     override val nurtureOptionUnbaptized = "미세례"
+}
+
+/** The string set for [locale]; for code that runs outside Compose, where [LocalStrings] is unavailable. */
+fun appStringsFor(locale: AppLocale): AppStrings = when (locale) {
+    AppLocale.EN -> EnStrings
+    AppLocale.KO -> KoStrings
 }

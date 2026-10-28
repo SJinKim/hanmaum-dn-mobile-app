@@ -1,11 +1,7 @@
 package com.hanmaum.dn.mobile.features.login.presentation.components
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,19 +23,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.platform.localizedCountryName
 import com.hanmaum.dn.mobile.core.presentation.components.DnTextField
+import com.hanmaum.dn.mobile.core.presentation.components.dnPressable
 import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
-import com.hanmaum.dn.mobile.core.presentation.theme.AppMotion
 import com.hanmaum.dn.mobile.core.presentation.theme.DnCardShape
 import com.hanmaum.dn.mobile.core.presentation.theme.DnInnerShape
 import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
@@ -56,7 +48,7 @@ import com.hanmaum.dn.mobile.features.login.domain.model.Country
 internal fun PhoneCountryPrefix(country: Country, onClick: () -> Unit) {
     val c = DnTheme.colors
     Row(
-        Modifier.clip(DnInnerShape).pressClick(onClick).padding(vertical = 2.dp),
+        Modifier.dnPressable(shape = DnInnerShape, onClick = onClick).padding(vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
@@ -151,9 +143,8 @@ private fun CountryRow(country: Country, name: String, selected: Boolean, onClic
     Row(
         Modifier
             .fillMaxWidth()
-            .clip(DnInnerShape)
+            .dnPressable(shape = DnInnerShape, onClick = onClick)
             .background(if (selected) c.surface2 else c.surface)
-            .pressClick(onClick)
             .padding(horizontal = 12.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -173,11 +164,4 @@ private fun CountryRow(country: Country, name: String, selected: Boolean, onClic
             color = if (selected) c.limeInk else c.textSecondary,
         )
     }
-}
-
-internal fun Modifier.pressClick(onClick: () -> Unit): Modifier = composed {
-    val interaction = remember { MutableInteractionSource() }
-    val pressed by interaction.collectIsPressedAsState()
-    val scale by animateFloatAsState(if (pressed) AppMotion.PRESS_SCALE else 1f, AppMotion.press)
-    scale(scale).clickable(interactionSource = interaction, indication = ripple(), role = Role.Button, onClick = onClick)
 }

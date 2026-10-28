@@ -1,10 +1,6 @@
 package com.hanmaum.dn.mobile.features.bulletin.presentation
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,10 +13,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.*
@@ -33,6 +27,7 @@ import com.hanmaum.dn.mobile.core.presentation.components.DnGlow
 import com.hanmaum.dn.mobile.core.presentation.components.AppScreen
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlassIconButton
 import com.hanmaum.dn.mobile.core.presentation.components.DnPrimaryButton
+import com.hanmaum.dn.mobile.core.presentation.components.dnPressable
 import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
 import com.hanmaum.dn.mobile.core.presentation.theme.*
 import com.hanmaum.dn.mobile.features.bulletin.domain.model.*
@@ -141,7 +136,7 @@ internal fun BulletinContent(
                                 }
                                 TimelineStep(b.sermonProclamation, amber = true, last = edition.responsePrayerBy.isNullOrBlank()) {
                                     Column(
-                                        Modifier.fillMaxWidth().background(c.amberDim, DnTileShape).bulletinClick { onSelectTab(BulletinTab.SHARING) }.padding(AppSpacing.md),
+                                        Modifier.fillMaxWidth().dnPressable(shape = DnTileShape, onClick = { onSelectTab(BulletinTab.SHARING) }).background(c.amberDim, DnTileShape).padding(AppSpacing.md),
                                         verticalArrangement = Arrangement.spacedBy(AppSpacing.sm),
                                     ) {
                                         Text(edition.sermonTitle, style = DnTheme.typography.title, color = c.textPrimary)
@@ -352,7 +347,7 @@ private fun BulletinHistorySheet(state: BulletinUiState, onDismiss: () -> Unit, 
             item("title") { Text(b.history, style = DnTheme.typography.title, modifier = Modifier.semantics { heading() }) }
             item("current") { TextButton(onClick = { onSelect(null) }) { Text(b.current) } }
             items(state.history, key = BulletinSummary::publicId) { edition ->
-                Column(Modifier.fillMaxWidth().heightIn(min = AppSize.touchTarget).clip(DnInnerShape).background(c.surface2).bulletinClick { onSelect(edition.serviceDate) }.padding(AppSpacing.md)) {
+                Column(Modifier.fillMaxWidth().heightIn(min = AppSize.touchTarget).dnPressable(shape = DnInnerShape, onClick = { onSelect(edition.serviceDate) }).background(c.surface2).padding(AppSpacing.md)) {
                     Text(b.historyCaption(edition.serviceDate, edition.volume), style = DnTheme.typography.caption, color = c.textSecondary)
                     edition.sermonTitle?.let { Text(it, style = DnTheme.typography.bodyStrong) }
                 }
@@ -377,7 +372,7 @@ fun BulletinHomeCard(read: BulletinRead, onClick: () -> Unit, modifier: Modifier
     val b = LocalStrings.current.bulletin
     val edition = read.bulletin
     val c = DnTheme.colors
-    Row(modifier.fillMaxWidth().clip(DnTileShape).background(c.surface).bulletinClick(onClick).padding(AppSpacing.md),
+    Row(modifier.fillMaxWidth().dnPressable(shape = DnTileShape, onClick = onClick).background(c.surface).padding(AppSpacing.md),
         horizontalArrangement = Arrangement.spacedBy(AppSpacing.md), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.size(BulletinLayout.dateTile).background(c.limeDim, DnInnerShape), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
             Text(b.sunday, style = DnTheme.typography.label, color = c.limeInk)
@@ -390,11 +385,4 @@ fun BulletinHomeCard(read: BulletinRead, onClick: () -> Unit, modifier: Modifier
         }
         Icon(DnIcons.ChevronRight, null, tint = c.textTertiary, modifier = Modifier.size(BulletinLayout.smallIcon))
     }
-}
-
-private fun Modifier.bulletinClick(onClick: () -> Unit): Modifier = composed {
-    val interaction = remember { MutableInteractionSource() }
-    val pressed by interaction.collectIsPressedAsState()
-    val scale by animateFloatAsState(if (pressed) AppMotion.PRESS_SCALE else 1f, AppMotion.press)
-    scale(scale).clickable(interactionSource = interaction, indication = ripple(), role = Role.Button, onClick = onClick)
 }

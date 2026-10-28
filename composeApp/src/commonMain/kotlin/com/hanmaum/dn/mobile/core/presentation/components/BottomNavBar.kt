@@ -1,7 +1,6 @@
 package com.hanmaum.dn.mobile.core.presentation.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -100,8 +99,7 @@ fun BottomNavBar(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .clip(RoundedCornerShape(20.dp))
-                    .clickable { onDestinationSelected(dest) }
+                    .dnPressable(shape = RoundedCornerShape(20.dp), onClick = { onDestinationSelected(dest) })
                     .padding(vertical = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(5.dp),

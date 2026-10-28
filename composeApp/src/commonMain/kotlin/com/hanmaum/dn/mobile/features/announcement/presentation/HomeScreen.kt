@@ -32,13 +32,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -60,6 +55,7 @@ import com.hanmaum.dn.mobile.core.presentation.components.DnGlassIconButton
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlows
 import com.hanmaum.dn.mobile.core.presentation.components.DnDock
 import com.hanmaum.dn.mobile.core.presentation.components.DnScrollEdge
+import com.hanmaum.dn.mobile.core.presentation.components.dnPressable
 import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
 import com.hanmaum.dn.mobile.core.presentation.theme.DnCardShape
 import com.hanmaum.dn.mobile.core.presentation.theme.DnPillShape
@@ -545,14 +541,6 @@ private fun DailyPassageCard(
     val strings = LocalStrings.current
     val readable = verse.sourceUrl != null
 
-    val readInteraction = remember { MutableInteractionSource() }
-    val readPressed by readInteraction.collectIsPressedAsState()
-    val readScale by animateFloatAsState(
-        targetValue = if (readPressed) 0.97f else 1f,
-        animationSpec = spring(),
-        label = "readPress",
-    )
-
     Column(
         Modifier
             .fillMaxWidth()
@@ -581,13 +569,7 @@ private fun DailyPassageCard(
 
             if (readable) {
                 Row(
-                    Modifier
-                        .scale(readScale)
-                        .clickable(
-                            interactionSource = readInteraction,
-                            indication = null,
-                            onClick = onReadClick,
-                        ),
+                    Modifier.dnPressable(shape = DnPillShape, onClick = onReadClick),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {

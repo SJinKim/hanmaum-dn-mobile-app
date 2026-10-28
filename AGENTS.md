@@ -161,5 +161,36 @@ Always use the OpenAI developer documentation MCP server if work involves OpenAI
 - `main` is the integration branch. Never work directly on `main`; branch `feature/<short-name>` from a fresh `main` and PR back into it. Direct commits to `main` are blocked by lefthook (`lefthook.yml`).
 - Never add `Co-Authored-By:` trailers to commits, or any other AI/tool identity in authorship, trailers, or committer fields.
 - Do not rebase, reset, discard, or overwrite user work without explicit permission.
+- After a successful PR merge, delete the PR's remote feature branch on GitHub and verify it is gone. Before deletion, retarget any open stacked PRs that use this branch as their base to `main`. Use `gh pr merge --delete-branch` when safe, or delete only the remote branch after confirming the PR is merged; local branches, worktrees, and user changes are not part of this cleanup.
 - Commit messages: `<type>(<scope>): <imperative summary max 72 chars>`.
 - Types: `feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `perf`, `revert`.
+
+<!-- ai-dev-team:start -->
+## KI-Entwicklungsteam
+
+Dieses Repo wird vom KI-Entwicklungsteam GraceOps bearbeitet (Builder, Bezalel, Cornerstone, Shepherd; Entscheidungen: Jin).
+
+- **Vor jeder Team-Aufgabe** den Skill `team-workflow` laden und `.team/config.yml` lesen.
+- Projekt-Key: `HDN` · Board: GitHub Project #6 (SJinKim) · Rolle dieses Repos: mobile
+- Verwandte Repos: `SJinKim/hanmaum-dn-server`, `SJinKim/hanmaum-dn-web-app`
+- Architektur: `docs/architecture/` (overview, ADRs, patterns) – **vor jeder Implementierung lesen; Abweichungen nur per Entscheidungsvorlage.**
+- Produktentscheidungen: `docs/product/decisions.md` – gelten verbindlich.
+- Designs: Figma https://www.figma.com/design/NOVmvVvB7CEXXVemOy5hJa/DN-App · technische Feature-Designs in `docs/design/` bzw. im Issue.
+- Erkenntnisse: `tasks/lessons.md` – vor der Arbeit überfliegen; `[lesson]`-Punkte aus Reviews hier eintragen.
+- Arbeit nur in eigenen Worktrees unter `../.worktrees/` – nie im Haupt-Checkout.
+- Merge-bereit = Label `ready-to-merge`; gemergt wird nur von Jin (außer `auto_merge: true`).
+- Produkt- und wichtige Technikentscheidungen trifft **nur Jin** (Skill `team-decision`).
+- Lücken in Story/Design nie erfinden – nachfragen.
+
+### Review guidelines
+Für das Codex-GitHub-Review dieses Repos (nur Server-Repos, `codex_cloud_review` ≠ `off`):
+- **P0/P1 (blockierend):** Sicherheitslücken (AuthN/AuthZ, IDOR, Injection, Secrets im Code/Log),
+  Datenverlust, Verstöße gegen `docs/architecture/` (Schichten, Muster, ADRs), nicht erfüllte
+  Akzeptanzkriterien des verlinkten Issues, fehlende Tests für neue Logik.
+- **P2/P3:** Lesbarkeit, Fehlerbehandlung, Randfälle, kleinere Abweichungen.
+- Keine Stil-Kommentare zu Dingen, die Linter prüfen.
+
+### Befehle
+- Build: `./gradlew :composeApp:assembleDevDebug` · Tests: `./gradlew :composeApp:testDevDebugUnitTest` · Lint: `./gradlew lint` · Architekturtests: – (noch keine) · iOS-Tests: `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer ./gradlew :composeApp:iosSimulatorArm64Test`
+- Lokal starten: Android-Emulator bzw. iOS-Simulator (siehe oben)
+<!-- ai-dev-team:end -->
