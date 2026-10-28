@@ -336,3 +336,30 @@ Screen-Sections enthalten nur Instanzen.
 
 **Regel:** Ein neuer Feature-Bereich bekommt einen eigenen NavItem in der Sidebar-Komponente
 (`DN-Web` 157:1651, alle Varianten). Den Active-State eines fremden Tabs nie als Platzhalter borgen.
+
+## Jeder neue Screen kommt zuerst nach Figma, auch der einfache
+
+**2026-10-14.** Für die Sprachauswahl beim ersten Start (#159) habe ich „kein Figma"
+empfohlen: der Screen habe kaum Zustände, die Regel oben greife erst ab mehr als zwei.
+Die Antwort: immer zuerst Figma — alle Screens sollen in Figma zu sehen sein, und das
+Design muss stimmen.
+
+Die Schwelle „mehr als zwei Zustände" war meine Lesart, nicht die Absicht. Figma ist
+nicht nur das Werkzeug, Zustände zu finden, sondern das vollständige Abbild der App.
+Ein Screen, der nur im Code existiert, fehlt dort, und das nächste Redesign übersieht ihn.
+
+**Regel:** Jeder neue oder geänderte Screen bekommt zuerst einen Frame in der Figma-Datei
+(Dark **und** Light), wird abgenommen, dann gebaut. Keine Ausnahme nach Größe oder
+Zustandszahl; die Zustandsregel oben bestimmt nur, ob es ein ganzes `· Zustände`-Board wird.
+
+## Vor Design oder Spec: erst `origin/main` und die letzten PRs prüfen
+
+**2026-10-24.** Für #159 (Sprachauswahl) habe ich in Figma ein eigenes Design mit
+Auswahlzustand und Weiter-Button gebaut. Auf `main` war der Screen da schon gemergt
+(#289), mit einem anderen, einfacheren Ablauf. Die Frage danach: „wieso gabs eine
+UI-Änderung? Wollte man nicht nur am Anfang die Sprachauswahl?" Ich hatte auf einem
+veralteten Branch gearbeitet (6 Commits hinter `origin/main`) und nicht nachgesehen.
+
+**Regel:** Bevor ein Issue entworfen oder gespeckt wird: `git fetch` und
+`gh pr list --state merged --search "<issue-nr>"` bzw. `git log origin/main --grep`.
+Ist es schon gebaut, wird Figma an den Code angeglichen, nicht umgekehrt.
