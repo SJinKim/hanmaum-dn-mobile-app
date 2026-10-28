@@ -18,6 +18,7 @@ interface AppStrings {
     val splashTagline: String
     val loginWelcome: String
     val loginSubtitle: String
+    fun appVersion(version: String): String
     val loginCheckingProfile: String
     val loginAgain: String
     val loginFailedTitle: String
@@ -584,6 +585,7 @@ object EnStrings : AppStrings {
     override val splashTagline = "A community growing in faith together"
     override val loginWelcome = "Welcome back"
     override val loginSubtitle = "Sign in with your Hanmaum D+N account"
+    override fun appVersion(version: String) = "Version $version"
     override val loginCheckingProfile = "Checking your account…"
     override val loginAgain = "Please sign in again."
     override val loginFailedTitle = "Couldn't sign you in"
@@ -1052,6 +1054,7 @@ object KoStrings : AppStrings {
     override val splashTagline = "함께 걷는 신앙 공동체"
     override val loginWelcome = "다시 만나서 반가워요"
     override val loginSubtitle = "한마음 D+N 계정으로 로그인하세요"
+    override fun appVersion(version: String) = "버전 $version"
     override val loginCheckingProfile = "사용자 정보를 확인하고 있어요."
     override val loginAgain = "다시 로그인해 주세요."
     override val loginFailedTitle = "로그인을 완료하지 못했어요."

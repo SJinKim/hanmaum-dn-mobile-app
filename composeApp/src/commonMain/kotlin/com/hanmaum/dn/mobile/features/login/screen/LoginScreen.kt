@@ -21,6 +21,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import com.hanmaum.dn.mobile.core.navigation.LoginRoute
+import com.hanmaum.dn.mobile.core.platform.rememberAppVersion
 import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
 import com.hanmaum.dn.mobile.core.presentation.components.DnGlow
 import com.hanmaum.dn.mobile.core.presentation.components.DnPrimaryButton
@@ -50,6 +51,7 @@ fun LoginScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val c = DnTheme.colors
     val strings = LocalStrings.current
+    val appVersion = rememberAppVersion()
     val browser = rememberBrowserAuthentication()
     val vault = rememberBiometricVault()
     val scope = rememberCoroutineScope()
@@ -90,79 +92,92 @@ fun LoginScreen(
         DnGlow(c.lime, 0.82f, -0.02f, 1.05f, 0.14f),
         DnGlow(c.blue, 0.03f, 0.74f, 0.82f, 0.08f),
     )) {
-        Column(
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = AppSpacing.lg),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            // Shared background owns auth insets: App.kt's NavHost is edge-to-edge.
-            Spacer(Modifier.height(AuthLayout.topGap))
-            Image(
-                painterResource(Res.drawable.logo), strings.appBrand,
-                contentScale = ContentScale.Fit,
-                colorFilter = ColorFilter.tint(c.textPrimary),
-                modifier = Modifier.size(AuthLayout.logoWidth, AuthLayout.logoHeight),
-            )
-            Spacer(Modifier.height(AuthLayout.brandGap))
-            Text(strings.loginWelcome, style = DnTheme.typography.titleLg, color = c.textPrimary,
-                textAlign = TextAlign.Center)
-            Spacer(Modifier.height(AppSpacing.sm))
-            Text(strings.loginSubtitle, style = DnTheme.typography.body,
-                color = c.textSecondary, textAlign = TextAlign.Center)
-            Spacer(Modifier.height(AuthLayout.actionGap))
-
-            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AuthLayout.contentGap)) {
-                if (state.isLoading && !state.browserOpen) {
-                    Text(strings.loginCheckingProfile, style = DnTheme.typography.caption,
-                        color = c.textSecondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-                } else {
-                    val noticeBody = when (notice) {
-                        LoginRoute.NOTICE_VERIFY_EMAIL -> strings.noticeVerifyEmailBody
-                        LoginRoute.NOTICE_REGISTERED -> strings.noticeRegisteredBody
-                        else -> null
-                    }
-                    noticeBody?.let { LoginNotice(strings.noticeRegisteredTitle, it, false) }
-                    state.error?.let {
-                        LoginNotice(if (state.biometricExpired) strings.loginAgain else strings.loginFailedTitle, strings.message(it), true)
-                    }
-                }
-                DnPrimaryButton(
-                    label = when {
-                        state.isLoading -> strings.loginBusy
-                        state.error != null -> strings.retry
-                        else -> strings.loginWithAccount
-                    },
-                    onClick = { viewModel.onLoginClicked(browser, uiLocale = strings.languageTag) },
-                    enabled = !state.isLoading && !promptRunning,
-                    shape = DnInnerShape,
-                    disabledContainer = c.surface2,
-                    disabledContent = c.textSecondary,
-                    modifier = Modifier.fillMaxWidth().heightIn(min = AuthLayout.actionHeight),
+        Column(Modifier.fillMaxSize()) {
+            Column(
+                Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = AppSpacing.lg),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                // Shared background owns auth insets: App.kt's NavHost is edge-to-edge.
+                Spacer(Modifier.height(AuthLayout.topGap))
+                Image(
+                    painterResource(Res.drawable.logo), strings.appBrand,
+                    contentScale = ContentScale.Fit,
+                    colorFilter = ColorFilter.tint(c.textPrimary),
+                    modifier = Modifier.size(AuthLayout.logoWidth, AuthLayout.logoHeight),
                 )
-                if (!state.isLoading || state.browserOpen) {
-                    Text(strings.loginBrowserHelp,
-                        style = DnTheme.typography.caption, color = c.textSecondary,
-                        textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-                    if (faceIdArmed) {
-                        DnTintedButton(
-                            strings.loginSignInWithFaceId, { scope.launch { runFaceIdSignIn() } },
-                            modifier = Modifier.fillMaxWidth().heightIn(min = AuthLayout.actionHeight),
-                            icon = DnIcons.FaceId, tint = c.limeInk, container = c.limeDim,
-                            enabled = !state.isLoading && !promptRunning, shape = DnInnerShape, showBorder = false,
-                            iconSize = AuthLayout.iconSize,
-                        )
+                Spacer(Modifier.height(AuthLayout.brandGap))
+                Text(strings.loginWelcome, style = DnTheme.typography.titleLg, color = c.textPrimary,
+                    textAlign = TextAlign.Center)
+                Spacer(Modifier.height(AppSpacing.sm))
+                Text(strings.loginSubtitle, style = DnTheme.typography.body,
+                    color = c.textSecondary, textAlign = TextAlign.Center)
+                Spacer(Modifier.height(AuthLayout.actionGap))
+
+                Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AuthLayout.contentGap)) {
+                    if (state.isLoading && !state.browserOpen) {
+                        Text(strings.loginCheckingProfile, style = DnTheme.typography.caption,
+                            color = c.textSecondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                    } else {
+                        val noticeBody = when (notice) {
+                            LoginRoute.NOTICE_VERIFY_EMAIL -> strings.noticeVerifyEmailBody
+                            LoginRoute.NOTICE_REGISTERED -> strings.noticeRegisteredBody
+                            else -> null
+                        }
+                        noticeBody?.let { LoginNotice(strings.noticeRegisteredTitle, it, false) }
+                        state.error?.let {
+                            LoginNotice(if (state.biometricExpired) strings.loginAgain else strings.loginFailedTitle, strings.message(it), true)
+                        }
                     }
-                    Row(
-                        Modifier.fillMaxWidth().heightIn(min = AuthLayout.linkTarget)
-                            .clickable(enabled = !state.isLoading && !promptRunning, onClick = onRegisterClick),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm, Alignment.CenterHorizontally),
-                    ) {
-                        Text(strings.loginNoAccount, style = DnTheme.typography.caption, color = c.textSecondary)
-                        Text(strings.registerTitle, style = DnTheme.typography.captionStrong, color = c.limeInk)
+                    DnPrimaryButton(
+                        label = when {
+                            state.isLoading -> strings.loginBusy
+                            state.error != null -> strings.retry
+                            else -> strings.loginWithAccount
+                        },
+                        onClick = { viewModel.onLoginClicked(browser, uiLocale = strings.languageTag) },
+                        enabled = !state.isLoading && !promptRunning,
+                        shape = DnInnerShape,
+                        disabledContainer = c.surface2,
+                        disabledContent = c.textSecondary,
+                        modifier = Modifier.fillMaxWidth().heightIn(min = AuthLayout.actionHeight),
+                    )
+                    if (!state.isLoading || state.browserOpen) {
+                        Text(strings.loginBrowserHelp,
+                            style = DnTheme.typography.caption, color = c.textSecondary,
+                            textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                        if (faceIdArmed) {
+                            DnTintedButton(
+                                strings.loginSignInWithFaceId, { scope.launch { runFaceIdSignIn() } },
+                                modifier = Modifier.fillMaxWidth().heightIn(min = AuthLayout.actionHeight),
+                                icon = DnIcons.FaceId, tint = c.limeInk, container = c.limeDim,
+                                enabled = !state.isLoading && !promptRunning, shape = DnInnerShape, showBorder = false,
+                                iconSize = AuthLayout.iconSize,
+                            )
+                        }
+                        Row(
+                            Modifier.fillMaxWidth().heightIn(min = AuthLayout.linkTarget)
+                                .clickable(enabled = !state.isLoading && !promptRunning, onClick = onRegisterClick),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm, Alignment.CenterHorizontally),
+                        ) {
+                            Text(strings.loginNoAccount, style = DnTheme.typography.caption, color = c.textSecondary)
+                            Text(strings.registerTitle, style = DnTheme.typography.captionStrong, color = c.limeInk)
+                        }
                     }
                 }
+                Spacer(Modifier.height(AppSpacing.xl))
             }
-            Spacer(Modifier.height(AppSpacing.xl))
+            appVersion?.let { version ->
+                Text(
+                    text = strings.appVersion(version),
+                    style = DnTheme.typography.caption,
+                    color = c.textSecondary,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(horizontal = AppSpacing.lg)
+                        .padding(top = AppSpacing.sm, bottom = AppSpacing.md),
+                )
+            }
         }
     }
 }
