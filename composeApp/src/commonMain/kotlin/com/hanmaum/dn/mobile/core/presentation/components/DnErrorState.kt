@@ -1,7 +1,6 @@
 package com.hanmaum.dn.mobile.core.presentation.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -88,8 +87,7 @@ fun DnErrorState(
             Spacer(Modifier.height(10.dp))
             Row(
                 Modifier
-                    .clip(DnPillShape)
-                    .clickable(onClick = onGoHome)
+                    .dnPressable(shape = DnPillShape, onClick = onGoHome)
                     .padding(horizontal = 18.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),

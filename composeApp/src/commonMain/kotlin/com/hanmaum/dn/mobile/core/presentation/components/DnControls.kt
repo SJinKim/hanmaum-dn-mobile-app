@@ -3,7 +3,6 @@ package com.hanmaum.dn.mobile.core.presentation.components
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -47,9 +46,8 @@ fun DnGlassIconButton(
     Box(
         modifier
             .size(size)
-            .clip(RoundedCornerShape(percent = 50))
-            .dnGlass(shape = RoundedCornerShape(percent = 50))
-            .clickable(onClick = onClick),
+            .dnPressable(shape = RoundedCornerShape(percent = 50), onClick = onClick)
+            .dnGlass(shape = RoundedCornerShape(percent = 50)),
         contentAlignment = Alignment.Center,
     ) {
         Icon(
@@ -116,10 +114,9 @@ fun DnChip(
     val c = DnTheme.colors
     Row(
         modifier
-            .clip(DnPillShape)
+            .dnPressable(shape = DnPillShape, onClick = onClick)
             .background(if (selected) c.inverse else c.surface2, DnPillShape)
             .border(1.dp, if (selected) c.inverse else c.strokeSubtle, DnPillShape)
-            .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(7.dp),
@@ -156,9 +153,8 @@ fun DnSegmented(
             Row(
                 Modifier
                     .weight(1f)
-                    .clip(RoundedCornerShape(20.dp))
+                    .dnPressable(shape = RoundedCornerShape(20.dp), onClick = { onSelect(i) })
                     .background(if (on) c.inverse else Color.Transparent, RoundedCornerShape(20.dp))
-                    .clickable { onSelect(i) }
                     .padding(vertical = 11.dp),
                 horizontalArrangement = Arrangement.spacedBy(7.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically,
@@ -245,9 +241,8 @@ fun DnPrimaryButton(
     val c = DnTheme.colors
     Row(
         modifier
-            .clip(shape)
+            .dnPressable(enabled = enabled, shape = shape, onClick = onClick)
             .background(if (enabled) c.lime else disabledContainer, shape)
-            .clickable(enabled = enabled, onClick = onClick)
             .padding(vertical = 16.dp, horizontal = 24.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
@@ -280,10 +275,9 @@ fun DnTintedButton(
 ) {
     Row(
         modifier
-            .clip(shape)
+            .dnPressable(enabled = enabled, shape = shape, onClick = onClick)
             .background(container, shape)
             .then(if (showBorder) Modifier.border(1.dp, tint, shape) else Modifier)
-            .clickable(enabled = enabled, onClick = onClick)
             .padding(vertical = 16.dp, horizontal = 24.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
@@ -427,12 +421,14 @@ fun DnTextField(
                     Box(
                         Modifier
                             .requiredSize(44.dp)
-                            .clip(androidx.compose.foundation.shape.CircleShape)
                             .then(
                                 if (onTrailing != null) {
-                                    Modifier.clickable(onClick = onTrailing)
+                                    Modifier.dnPressable(
+                                        shape = androidx.compose.foundation.shape.CircleShape,
+                                        onClick = onTrailing,
+                                    )
                                 } else {
-                                    Modifier
+                                    Modifier.clip(androidx.compose.foundation.shape.CircleShape)
                                 }
                             ),
                         contentAlignment = Alignment.Center,

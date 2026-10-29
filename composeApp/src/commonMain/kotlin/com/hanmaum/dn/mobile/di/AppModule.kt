@@ -181,7 +181,7 @@ val appModule = module {
 
     // Geofence
     single<ChurchLocationRepository> { ChurchLocationRepositoryImpl(get()) }
-    single { GeofenceCoordinator(get(), get(), get(), get(), get()) }
+    single { GeofenceCoordinator(get(), get(), get(), get(), get(), get()) }
 
     // FloorPlan
     single<FloorPlanRepository> { FloorPlanRepositoryImpl(get()) }

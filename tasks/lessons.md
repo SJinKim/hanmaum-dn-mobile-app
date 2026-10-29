@@ -13,6 +13,10 @@
 - **Mistake**: Veröffentlichte zukünftige Ausgaben waren in der Historie auswählbar; die aktuelle Ausgabe konnte bereits vor Freitag erscheinen.
 - **Rule**: Sonntagsausgaben sind für Mitglieder erst ab Freitag 00:00 Europe/Berlin sichtbar (`serviceDate <= Berliner Heute + 2 Kalendertage`). Die Regel gilt für aktuelle Ausgabe, Direktabruf, Historie und bereits gespeicherte Offline-Kopien. Veröffentlichung durch Admins allein reicht nicht; Grenzen und alle Zugriffspfade testen.
 
+### Remote-Branch nach dem PR-Merge löschen
+- **Mistake**: PR #273 wurde erfolgreich gemergt, aber der Remote-Feature-Branch blieb bestehen.
+- **Rule**: Zum Merge gehört die anschließende Löschung des PR-Branches auf GitHub und die Prüfung, dass er entfernt wurde. Zuerst offene gestapelte PRs auf `main` umhängen. Die verbindliche Git-Regel steht in `AGENTS.md`; lokale Branches, Worktrees und User-Änderungen bleiben erhalten.
+
 ### Bearer token leaking to external APIs
 - **Mistake**: Ktor's `sendWithoutRequest` only skipped auth for paths containing "register" or "openid-connect". Every other request — including pCloud and Google Calendar — received the Keycloak `Authorization: Bearer` header. pCloud returned error 2094 (invalid token); Google Calendar would also reject it.
 - **Rule**: `sendWithoutRequest` must check the **host**, not just the path. Only send the bearer token when the request targets our own backend host (`BuildKonfig.BACKEND_URL`). External APIs (pCloud, Google Calendar, any third-party) must never receive our auth header. Pattern:
@@ -306,3 +310,56 @@ folgte ihr statt der Regel aus §6.15. Dazu kam `feat(members)` als PR-Titel: de
 **Regel:** Die Harness-Attribution wird immer überstimmt — in jedem der vier Repos, auch im
 Squash-Body. Beide Repos blocken den Trailer jetzt im `commit-msg`-Hook; der Server lintet
 zusätzlich den PR-Titel (server #231).
+
+## Web-Screens gehören in DN-Web, nicht in die App-Datei
+
+**2026-10-27.** Die Album-Verwaltung (Web-Admin) wurde neben die App-Screens in die
+Mobile-Datei `DN-App` gebaut. Jin wollte sie in `DN-Web` (`KSEMYc00jcgvyQ6qWt1cm4`),
+Seite 26:11 — die 8 Frames mussten dort neu gebaut und in der App-Datei gelöscht werden.
+
+**Regel:** Web-Admin-Screens immer in `DN-Web` Seite 26:11, eigene nummerierte Section.
+In `DN-App` landen nur App-Screens.
+
+## Komponenten gehören auf die Components-Seite
+
+**2026-10-27.** Neue Komponenten (Album-Board, PhotoTile, Dropzone) entstanden zuerst
+neben den Screens. Beide Dateien haben eigene Komponenten-Seiten (`DN-App`: 03 · Components,
+3:2; `DN-Web`: 26:4–26:6).
+
+**Regel:** Neue Komponenten direkt auf der Components-Seite der jeweiligen Datei anlegen;
+Screen-Sections enthalten nur Instanzen.
+
+## Neuer Bereich = eigener Sidebar-Eintrag
+
+**2026-10-27.** Die Album-Web-Screens zeigten `이벤트` als aktiven Sidebar-Eintrag, weil
+`앨범` in der Sidebar fehlte. `이벤트` führt aber zum RSVP-Screen, nicht zu den Alben.
+
+**Regel:** Ein neuer Feature-Bereich bekommt einen eigenen NavItem in der Sidebar-Komponente
+(`DN-Web` 157:1651, alle Varianten). Den Active-State eines fremden Tabs nie als Platzhalter borgen.
+
+## Jeder neue Screen kommt zuerst nach Figma, auch der einfache
+
+**2026-10-14.** Für die Sprachauswahl beim ersten Start (#159) habe ich „kein Figma"
+empfohlen: der Screen habe kaum Zustände, die Regel oben greife erst ab mehr als zwei.
+Die Antwort: immer zuerst Figma — alle Screens sollen in Figma zu sehen sein, und das
+Design muss stimmen.
+
+Die Schwelle „mehr als zwei Zustände" war meine Lesart, nicht die Absicht. Figma ist
+nicht nur das Werkzeug, Zustände zu finden, sondern das vollständige Abbild der App.
+Ein Screen, der nur im Code existiert, fehlt dort, und das nächste Redesign übersieht ihn.
+
+**Regel:** Jeder neue oder geänderte Screen bekommt zuerst einen Frame in der Figma-Datei
+(Dark **und** Light), wird abgenommen, dann gebaut. Keine Ausnahme nach Größe oder
+Zustandszahl; die Zustandsregel oben bestimmt nur, ob es ein ganzes `· Zustände`-Board wird.
+
+## Vor Design oder Spec: erst `origin/main` und die letzten PRs prüfen
+
+**2026-10-24.** Für #159 (Sprachauswahl) habe ich in Figma ein eigenes Design mit
+Auswahlzustand und Weiter-Button gebaut. Auf `main` war der Screen da schon gemergt
+(#289), mit einem anderen, einfacheren Ablauf. Die Frage danach: „wieso gabs eine
+UI-Änderung? Wollte man nicht nur am Anfang die Sprachauswahl?" Ich hatte auf einem
+veralteten Branch gearbeitet (6 Commits hinter `origin/main`) und nicht nachgesehen.
+
+**Regel:** Bevor ein Issue entworfen oder gespeckt wird: `git fetch` und
+`gh pr list --state merged --search "<issue-nr>"` bzw. `git log origin/main --grep`.
+Ist es schon gebaut, wird Figma an den Code angeglichen, nicht umgekehrt.

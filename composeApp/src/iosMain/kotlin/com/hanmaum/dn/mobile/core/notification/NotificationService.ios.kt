@@ -17,19 +17,19 @@ class IosNotificationService : NotificationService {
     // by silencing the notification. GeofenceCoordinator does not gate on this value.
     override fun isNotificationPermissionGranted(): Boolean = true
 
-    override fun showAttendanceNotification() {
+    override fun showAttendanceNotification(title: String, body: String) {
         center.requestAuthorizationWithOptions(
             UNAuthorizationOptionAlert or UNAuthorizationOptionSound or UNAuthorizationOptionBadge
         ) { authorized, _ ->
             if (!authorized) return@requestAuthorizationWithOptions
-            postNotification()
+            postNotification(title, body)
         }
     }
 
-    private fun postNotification() {
+    private fun postNotification(title: String, body: String) {
         val content = UNMutableNotificationContent().apply {
-            setTitle("교회에 도착하셨습니다 ⛪")
-            setBody("출석 체크를 해주세요!")
+            setTitle(title)
+            setBody(body)
         }
 
         // trigger = null means deliver immediately (on geofence arrival)
