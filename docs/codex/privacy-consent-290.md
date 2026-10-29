@@ -121,8 +121,9 @@ Integration/release prerequisites:
   operator confirmed the legal representative; a formal DPO appointment remains
   unconfirmed.
 - A published privacy-policy URL serving the same version announced by the server.
-  In-app withdrawal is implemented: record the withdrawal and sign out, without
-  deleting the account.
+  In-app withdrawal is implemented: record the withdrawal, stop location
+  monitoring and lock the app until the member agrees again; the member stays
+  signed in and the account is not deleted.
 - Merged server #359 and ops #73; a course-submit contract for COURSE_APPLICATION.
 
 ## Implemented behavior
@@ -143,9 +144,12 @@ the code alone does not verify the external page's content.
   authorizes access. Account changes invalidate the previous check.
 - Settings displays server-provided grant date/version and a separate policy link.
   A failed refresh is shown as unknown/error, never as absent consent.
-- Withdrawal requires confirmation and a successful DELETE before logout. Device
-  push cleanup is bounded; session tokens, Ktor bearer cache and biometric arming
-  are cleared, and geofencing is stopped. This is not account/data deletion.
+- Withdrawal requires confirmation and a successful DELETE. Geofencing is stopped and
+  the member stays signed in, locked on the consent screen until they agree again
+  (Jin, 2026-10-29). This is not account/data deletion.
+- If the consent status cannot be loaded (server outage), the member is not locked
+  out: the app stays usable, location stays off, and the status is re-checked on the
+  next destination. Only a server answer that requires consent blocks the app.
 - Geofence startup is deferred until verified consent and an active destination.
   The existing location opt-in remains independent of the consent checkbox.
 
@@ -235,8 +239,8 @@ TestFlight UI/runtime acceptance remain outstanding.
 - COURSE_APPLICATION has a purpose but its application endpoint is not wired yet,
   per the issue comment; do not send an independent grant that falsely suggests
   the course submission and consent recording are atomic.
-- The approved withdrawal UX records the server withdrawal and ends the local
-  session. It does not claim account deletion or backend-wide processing cessation.
+- The approved withdrawal UX records the server withdrawal and locks the app
+  until the member agrees again, without signing out. It does not claim account deletion or backend-wide processing cessation.
 - Server #359 now requires registration consent without a rollout toggle. The
   earlier APP_CONSENTS_ENFORCED rollout note was superseded. Coordinate backend
   deployment with the compatible mobile release; do not alter server settings here.

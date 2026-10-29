@@ -23,6 +23,8 @@ data class ConsentUiState(
     val settingsProblem: ConsentProblem? = null,
     val showWithdrawConfirmation: Boolean = false,
     val signedOut: Boolean = false,
+    /** The server could not be asked; the member keeps using the app, location stays off. */
+    val unverified: Boolean = false,
 )
 
 /** One instance for the app session, shared by every protected destination. */
@@ -64,7 +66,8 @@ class ConsentViewModel(
             reset()
             checkedScope = scope
             refresh()
-        } else if (_uiState.value.phase == ConsentPhase.READY) startLocationIfAllowed()
+        } else if (_uiState.value.unverified) refresh()
+        else if (_uiState.value.phase == ConsentPhase.READY) startLocationIfAllowed()
     }
 
     private fun isCurrent(ticket: Int): Boolean = ticket == generation && checkedScope != null &&
@@ -96,10 +99,17 @@ class ConsentViewModel(
                 },
                 onFailure = {
                     if (!isCurrent(ticket)) return@fold
+                    // An outage must not lock members out. Only a server answer that says consent is
+                    // missing blocks the app; without an answer the member stays in and we re-check later.
                     _uiState.update { current ->
-                        if (current.phase == ConsentPhase.READY) current.copy(
-                            isRefreshing = false, settingsProblem = ConsentProblem.LOAD,
-                        ) else current.copy(phase = ConsentPhase.ERROR, isRefreshing = false)
+                        when (current.phase) {
+                            ConsentPhase.READY -> current.copy(isRefreshing = false, settingsProblem = ConsentProblem.LOAD)
+                            ConsentPhase.LOADING -> current.copy(
+                                phase = ConsentPhase.READY, isRefreshing = false, unverified = true,
+                                settingsProblem = ConsentProblem.LOAD,
+                            )
+                            else -> current.copy(phase = ConsentPhase.ERROR, isRefreshing = false)
+                        }
                     }
                 },
             )
@@ -107,11 +117,14 @@ class ConsentViewModel(
     }
 
     private fun startLocationIfAllowed() {
-        if (!activeDestination || monitoringStarted || _uiState.value.phase != ConsentPhase.READY) return
+        if (!activeDestination || monitoringStarted || _uiState.value.phase != ConsentPhase.READY ||
+            _uiState.value.unverified) return
         monitoringStarted = true
         val ticket = generation
         locationJob = viewModelScope.launch {
-            if (isCurrent(ticket) && _uiState.value.phase == ConsentPhase.READY) session.startLocation()
+            if (isCurrent(ticket) && _uiState.value.phase == ConsentPhase.READY && !_uiState.value.unverified) {
+                session.startLocation()
+            }
         }
     }
 
@@ -204,11 +217,14 @@ class ConsentViewModel(
             repository.withdraw(ConsentPurpose.APP_PRIVACY).fold(
                 onSuccess = {
                     if (!isCurrent(ticket)) return@fold
-                    // This records withdrawal, then ends this device's session. It does not delete the account.
-                    _uiState.update { it.copy(phase = ConsentPhase.LOADING, showWithdrawConfirmation = false) }
+                    // The member stays signed in but is locked until they agree again; location stops now.
+                    // This does not delete the account.
+                    monitoringStarted = false
                     locationJob?.cancelAndJoin()
-                    session.logout(forgetBiometric = true)
-                    if (ticket == generation) _uiState.value = ConsentUiState(signedOut = true)
+                    session.stopLocation()
+                    if (!isCurrent(ticket)) return@fold
+                    _uiState.value = ConsentUiState(phase = ConsentPhase.LOADING)
+                    refresh()
                 },
                 onFailure = {
                     if (!isCurrent(ticket)) return@fold

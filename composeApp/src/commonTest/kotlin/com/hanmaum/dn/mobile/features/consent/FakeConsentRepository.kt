@@ -19,6 +19,7 @@ class FakeConsentRepository : ConsentRepository {
     var withdrawCalls = 0
     var policyCalls = 0
     var summaryCalls = 0
+    var afterWithdraw: (() -> Unit)? = null
     var afterGrant: (() -> Unit)? = null
     var awaitSummary: (suspend () -> Unit)? = null
     override suspend fun policies(): Result<List<ConsentPolicy>> { policyCalls++; return policyResult }
@@ -26,7 +27,7 @@ class FakeConsentRepository : ConsentRepository {
     override suspend fun grant(purpose: ConsentPurpose, version: String): Result<MemberConsent> {
         grantCalls++; grantedVersion = version; afterGrant?.invoke(); return grantResult
     }
-    override suspend fun withdraw(purpose: ConsentPurpose): Result<Unit> { withdrawCalls++; return withdrawResult }
+    override suspend fun withdraw(purpose: ConsentPurpose): Result<Unit> { withdrawCalls++; afterWithdraw?.invoke(); return withdrawResult }
 }
 
 class FakeConsentSession : ConsentSessionRepository {

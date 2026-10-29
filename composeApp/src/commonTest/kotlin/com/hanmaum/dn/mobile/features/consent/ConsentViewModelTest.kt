@@ -57,11 +57,30 @@ class ConsentViewModelTest {
         assertEquals(ConsentPhase.REQUIRED, vm.uiState.value.phase)
     }
 
-    @Test fun failedStatusLoadCannotGrantAccess() = runTest {
+    @Test fun aServerOutageDoesNotLockMembersOutAndKeepsLocationOff() = runTest {
         repository.summaryResult = Result.failure(Exception("offline"))
         vm.checkSession(true); advanceUntilIdle()
-        assertEquals(ConsentPhase.ERROR, vm.uiState.value.phase)
+        assertEquals(ConsentPhase.READY, vm.uiState.value.phase)
+        assertTrue(vm.uiState.value.unverified)
         assertEquals(0, session.starts)
+    }
+
+    @Test fun anUnverifiedSessionIsCheckedAgainOnTheNextDestination() = runTest {
+        repository.summaryResult = Result.failure(Exception("offline"))
+        vm.checkSession(true); advanceUntilIdle()
+        repository.summaryResult = Result.success(MemberConsents(true, listOf(testConsent(ConsentStatus.MISSING))))
+        vm.checkSession(true); advanceUntilIdle()
+        assertEquals(ConsentPhase.REQUIRED, vm.uiState.value.phase)
+        assertFalse(vm.uiState.value.unverified)
+    }
+
+    @Test fun recoveryAfterAnOutageStartsLocation() = runTest {
+        repository.summaryResult = Result.failure(Exception("offline"))
+        vm.checkSession(true); advanceUntilIdle()
+        repository.summaryResult = Result.success(MemberConsents(false, listOf(testConsent())))
+        vm.checkSession(true); advanceUntilIdle()
+        assertFalse(vm.uiState.value.unverified)
+        assertEquals(1, session.starts)
     }
 
     @Test fun grantFailureKeepsSelectionButDoesNotClaimASavedGrant() = runTest {
@@ -73,18 +92,22 @@ class ConsentViewModelTest {
         assertEquals(ConsentPhase.REQUIRED, vm.uiState.value.phase)
     }
 
-    @Test fun withdrawalNeedsConfirmationAndLogsOutOnlyAfterServerSuccess() = runTest {
+    @Test fun withdrawalNeedsConfirmationAndLocksTheSignedInMemberAfterServerSuccess() = runTest {
         vm.checkSession(true); advanceUntilIdle()
         vm.confirmWithdrawal(); advanceUntilIdle()
         assertEquals(0, repository.withdrawCalls)
         vm.requestWithdrawal()
         assertTrue(vm.uiState.value.showWithdrawConfirmation)
+        val stopsBefore = session.stops
+        repository.afterWithdraw = {
+            repository.summaryResult = Result.success(MemberConsents(true, listOf(testConsent(ConsentStatus.MISSING))))
+        }
         vm.confirmWithdrawal(); advanceUntilIdle()
         assertEquals(1, repository.withdrawCalls)
-        assertEquals(1, session.logoutCalls)
-        assertTrue(session.forgotBiometric)
-        assertTrue(vm.uiState.value.signedOut)
-        assertNull(vm.uiState.value.summary)
+        assertEquals(0, session.logoutCalls)
+        assertFalse(vm.uiState.value.signedOut)
+        assertEquals(ConsentPhase.REQUIRED, vm.uiState.value.phase)
+        assertTrue(session.stops > stopsBefore)
     }
 
     @Test fun failedWithdrawalKeepsTheSessionAndShowsAnError() = runTest {

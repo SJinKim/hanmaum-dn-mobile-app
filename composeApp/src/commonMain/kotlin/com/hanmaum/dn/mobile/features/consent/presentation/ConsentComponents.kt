@@ -137,7 +137,7 @@ fun ConsentGate(
     val c = DnTheme.colors
     DnBackground(insetContent = true) {
         Column(Modifier.fillMaxSize()) {
-            DnTopBar(s.title, onBack = viewModel::logout, actionIcon = null)
+            DnTopBar(s.title, onBack = null, actionIcon = null)
             Column(
                 Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(AppSpacing.lg),
                 verticalArrangement = Arrangement.spacedBy(AppSpacing.md),
