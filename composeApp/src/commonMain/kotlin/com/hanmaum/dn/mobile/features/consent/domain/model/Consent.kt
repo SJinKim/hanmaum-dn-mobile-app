@@ -27,7 +27,7 @@ data class MemberConsents(val actionRequired: Boolean, val consents: List<Member
 @Serializable
 data class ConsentGrant(val accepted: Boolean, val version: String)
 
-enum class ConsentProblem { LOAD, SAVE, VERSION_OUTDATED, REQUIRED, POLICY_UNAVAILABLE, WITHDRAW, LINK }
+enum class ConsentProblem { LOAD, SAVE, VERSION_OUTDATED, REQUIRED, POLICY_UNAVAILABLE, WITHDRAW }
 class ConsentException(val problem: ConsentProblem) : Exception(problem.name)
 
 /** An unset or non-HTTPS policy must never become a fictitious link. */

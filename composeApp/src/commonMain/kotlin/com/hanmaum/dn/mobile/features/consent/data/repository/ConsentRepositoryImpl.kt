@@ -13,8 +13,10 @@ import kotlinx.coroutines.CancellationException
 
 class ConsentRepositoryImpl(private val client: HttpClient) : ConsentRepository {
     override suspend fun policies(): Result<List<ConsentPolicy>> = request {
-        read<List<ConsentPolicyDto>>(client.get("consents/policies")).map {
-            ConsentPolicy(ConsentPurpose.valueOf(it.purpose), validVersion(it.version), it.requiredForAccount)
+        // Purposes this app version does not know are skipped: a newer server must not break loading.
+        read<List<ConsentPolicyDto>>(client.get("consents/policies")).mapNotNull {
+            val purpose = knownPurpose(it.purpose) ?: return@mapNotNull null
+            ConsentPolicy(purpose, validVersion(it.version), it.requiredForAccount)
         }.also { policies ->
             require(policies.map { it.purpose }.distinct().size == policies.size)
             require(policies.any { it.purpose == ConsentPurpose.APP_PRIVACY })
@@ -23,7 +25,7 @@ class ConsentRepositoryImpl(private val client: HttpClient) : ConsentRepository 
 
     override suspend fun myConsents(): Result<MemberConsents> = request {
         val dto = read<MemberConsentsDto>(client.get("members/me/consents"))
-        MemberConsents(dto.actionRequired, dto.consents.map { it.toDomain() }).also {
+        MemberConsents(dto.actionRequired, dto.consents.mapNotNull { it.toDomain() }).also {
             require(it.privacy != null)
             require(it.consents.map { status -> status.purpose }.distinct().size == it.consents.size)
         }
@@ -34,8 +36,8 @@ class ConsentRepositoryImpl(private val client: HttpClient) : ConsentRepository 
             contentType(ContentType.Application.Json)
             setBody(GrantConsentRequest(purpose.name, ConsentGrant(true, validVersion(version))))
         }).toDomain().also {
-            require(it.purpose == purpose && it.isCurrent && it.grantedVersion == version)
-        }
+            require(it != null && it.purpose == purpose && it.isCurrent && it.grantedVersion == version)
+        }!!
     }
 
     override suspend fun withdraw(purpose: ConsentPurpose): Result<Unit> = request {
@@ -76,10 +78,13 @@ class ConsentRepositoryImpl(private val client: HttpClient) : ConsentRepository 
 
 private fun validVersion(value: String): String = value.also { require(it.isNotBlank() && it.length <= 50) }
 
-private fun MemberConsentDto.toDomain() = MemberConsent(
-    ConsentPurpose.valueOf(purpose), ConsentStatus.valueOf(state), requiredForAccount,
-    validVersion(currentVersion), grantedVersion, grantedAt,
-)
+private fun knownPurpose(value: String): ConsentPurpose? = ConsentPurpose.entries.firstOrNull { it.name == value }
+
+private fun MemberConsentDto.toDomain(): MemberConsent? {
+    val purpose = knownPurpose(purpose) ?: return null
+    val status = ConsentStatus.entries.firstOrNull { it.name == state } ?: return null
+    return MemberConsent(purpose, status, requiredForAccount, validVersion(currentVersion), grantedVersion, grantedAt)
+}
 
 fun privacyPolicyLink(value: String): PrivacyPolicyLink = PrivacyPolicyLink(
     runCatching { Url(value) }.getOrNull()?.takeIf {

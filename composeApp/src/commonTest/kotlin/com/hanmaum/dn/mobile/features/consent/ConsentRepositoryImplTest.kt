@@ -48,6 +48,20 @@ class ConsentRepositoryImplTest {
         c.close()
     }
 
+    @Test fun unknownPurposesAndStatesFromANewerServerAreSkipped() = runTest {
+        val policies = client(HttpStatusCode.OK,
+            """{"success":true,"data":[{"purpose":"APP_PRIVACY","version":"v1","requiredForAccount":true},{"purpose":"NEWSLETTER","version":"v9","requiredForAccount":false}]}""")
+        assertEquals(listOf(ConsentPurpose.APP_PRIVACY),
+            ConsentRepositoryImpl(policies).policies().getOrThrow().map { it.purpose })
+        policies.close()
+        val mine = client(HttpStatusCode.OK,
+            """{"success":true,"data":{"actionRequired":false,"consents":[{"purpose":"APP_PRIVACY","state":"GRANTED","requiredForAccount":true,"currentVersion":"v1","grantedVersion":"v1"},{"purpose":"NEWSLETTER","state":"GRANTED","requiredForAccount":false,"currentVersion":"v9","grantedVersion":"v9"},{"purpose":"COURSE_APPLICATION","state":"PAUSED","requiredForAccount":false,"currentVersion":"v2"}]}}""")
+        val result = ConsentRepositoryImpl(mine).myConsents().getOrThrow()
+        assertEquals(listOf(ConsentPurpose.APP_PRIVACY), result.consents.map { it.purpose })
+        assertTrue(result.allowsAccess)
+        mine.close()
+    }
+
     @Test fun conflictIsAConsentVersionError() = runTest {
         val c = client(HttpStatusCode.Conflict, """{"code":"CONSENT_VERSION_OUTDATED","message":"changed"}""")
         val error = ConsentRepositoryImpl(c).grant(ConsentPurpose.APP_PRIVACY, "v1").exceptionOrNull()

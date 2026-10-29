@@ -39,7 +39,6 @@ data class ConsentStrings(
         ConsentProblem.REQUIRED -> missingBody
         ConsentProblem.POLICY_UNAVAILABLE -> unavailable
         ConsentProblem.WITHDRAW -> withdrawFailed
-        ConsentProblem.LINK -> linkFailed
     }
 
     fun record(date: String, version: String): String = record.replace("{date}", date).replace("{version}", version)

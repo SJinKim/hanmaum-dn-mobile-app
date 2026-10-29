@@ -78,6 +78,7 @@ class ConsentViewModel(
         }
         val ticket = generation
         _uiState.update { it.copy(isRefreshing = true, settingsProblem = null) }
+        job?.cancel()
         job = viewModelScope.launch {
             repository.myConsents().fold(
                 onSuccess = { result ->
@@ -118,6 +119,7 @@ class ConsentViewModel(
         if (_uiState.value.isBusy || _uiState.value.selection.isLoading) return
         val ticket = generation
         _uiState.update { it.copy(selection = PolicyConsentState()) }
+        job?.cancel()
         job = viewModelScope.launch { loadPolicy(ticket) }
     }
 
@@ -158,6 +160,7 @@ class ConsentViewModel(
         val version = selection.policy?.version ?: return
         val ticket = generation
         _uiState.update { it.copy(isBusy = true) }
+        job?.cancel()
         job = viewModelScope.launch {
             repository.grant(ConsentPurpose.APP_PRIVACY, version).fold(
                 onSuccess = {
@@ -196,6 +199,7 @@ class ConsentViewModel(
         if (!_uiState.value.showWithdrawConfirmation || _uiState.value.isBusy) return
         val ticket = generation
         _uiState.update { it.copy(isBusy = true, settingsProblem = null) }
+        job?.cancel()
         job = viewModelScope.launch {
             repository.withdraw(ConsentPurpose.APP_PRIVACY).fold(
                 onSuccess = {
@@ -221,6 +225,7 @@ class ConsentViewModel(
         job?.cancel()
         val ticket = generation
         _uiState.update { it.copy(isBusy = true) }
+        job?.cancel()
         job = viewModelScope.launch {
             locationJob?.cancelAndJoin()
             session.logout()
