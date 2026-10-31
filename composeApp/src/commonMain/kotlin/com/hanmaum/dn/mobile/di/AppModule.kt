@@ -24,6 +24,7 @@ import com.hanmaum.dn.mobile.core.notification.NotificationRouter
 import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
 import com.hanmaum.dn.mobile.core.domain.repository.ThemeRepository
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
+import com.hanmaum.dn.mobile.core.network.ConsentRequiredSignal
 import com.hanmaum.dn.mobile.core.network.createHttpClient
 import com.hanmaum.dn.mobile.core.push.PushPreferences
 import com.hanmaum.dn.mobile.core.push.PushPreferencesImpl
@@ -105,7 +106,7 @@ val appModule = module {
     single<ConsentSessionRepository> {
         ConsentSessionRepositoryImpl(get(), get(), get(), get(), get(), get(), get())
     }
-    viewModel { ConsentViewModel(get(), get(), get()) }
+    viewModel { ConsentViewModel(get(), get(), get(), get<ConsentRequiredSignal>().events) }
     single<AuthRepository> { AuthRepositoryImpl(get()) }
     single<CityLookupRepository> { CityLookupRepositoryImpl(get()) }
     single<MemberRepository> { MemberRepositoryImpl(get()) }
@@ -113,7 +114,8 @@ val appModule = module {
     single<VerseRecordRepository> { VerseRecordRepositoryImpl(get()) }
     single<BulletinRepository> { BulletinRepositoryImpl(get(), get(), get()) }
     viewModel { BulletinViewModel(get()) }
-    single { createHttpClient(get()) } // Client
+    single { ConsentRequiredSignal() }
+    single { createHttpClient(get(), consentRequired = get()) } // Client
     single<TokenStorage> { TokenStorageImpl(get(), get()) }
     single { InstallationGuard(Settings(), get(), get(), get()) }
     single<LocaleRepository> { LocaleRepositoryImpl(Settings()) }

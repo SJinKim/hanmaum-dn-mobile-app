@@ -17,6 +17,7 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -30,12 +31,13 @@ class ConsentViewModelTest {
     private lateinit var repository: FakeConsentRepository
     private lateinit var session: FakeConsentSession
     private lateinit var vm: ConsentViewModel
+    private val consentRequired = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
     @BeforeTest fun setup() {
         Dispatchers.setMain(dispatcher)
         repository = FakeConsentRepository()
         session = FakeConsentSession()
-        vm = ConsentViewModel(repository, session, PrivacyPolicyLink("https://church.example/privacy"))
+        vm = ConsentViewModel(repository, session, PrivacyPolicyLink("https://church.example/privacy"), consentRequired)
     }
     @AfterTest fun cleanup() = Dispatchers.resetMain()
 
@@ -50,6 +52,16 @@ class ConsentViewModelTest {
         assertFalse(vm.uiState.value.selection.accepted)
         assertEquals(0, repository.grantCalls)
         assertEquals(0, session.starts)
+    }
+
+    @Test fun aConsentRequiredResponseOutsideTheStatusCheckOpensTheLockScreen() = runTest {
+        vm.checkSession(active = true); advanceUntilIdle()
+        assertEquals(ConsentPhase.READY, vm.uiState.value.phase)
+        repository.summaryResult = Result.success(MemberConsents(false, listOf(testConsent(ConsentStatus.MISSING))))
+        val stopsBefore = session.stops
+        consentRequired.tryEmit(Unit); advanceUntilIdle()
+        assertEquals(ConsentPhase.REQUIRED, vm.uiState.value.phase)
+        assertEquals(stopsBefore + 1, session.stops)
     }
 
     @Test fun agreeingRechecksTheServerBeforeAllowingTheApp() = runTest {

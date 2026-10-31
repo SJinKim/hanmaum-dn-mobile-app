@@ -13,8 +13,10 @@ import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentRepositor
 import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentSessionRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -38,6 +40,7 @@ class ConsentViewModel(
     private val repository: ConsentRepository,
     private val session: ConsentSessionRepository,
     val policyLink: PrivacyPolicyLink,
+    consentRequired: Flow<Unit> = emptyFlow(),
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ConsentUiState())
     val uiState = _uiState.asStateFlow()
@@ -47,6 +50,12 @@ class ConsentViewModel(
     private var generation = 0
     private var activeDestination = false
     private var monitoringStarted = false
+
+    init {
+        // A 403 CONSENT_REQUIRED from any call means the server no longer allows this member in:
+        // re-ask it, which lands on the lock screen. The check is a no-op while signed out or mid-load.
+        viewModelScope.launch { consentRequired.collect { if (hasCurrentSession()) refresh() } }
+    }
 
     fun hasCurrentSession(): Boolean = checkedScope != null && checkedScope == session.scope()
 
