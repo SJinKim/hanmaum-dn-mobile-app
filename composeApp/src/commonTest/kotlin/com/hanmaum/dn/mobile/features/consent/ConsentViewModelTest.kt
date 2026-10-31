@@ -51,17 +51,17 @@ class ConsentViewModelTest {
         assertEquals(ConsentPhase.REQUIRED, vm.uiState.value.phase)
         assertFalse(vm.uiState.value.selection.accepted)
         assertEquals(0, repository.grantCalls)
-        assertEquals(0, session.starts)
+        assertFalse(vm.locationAllowed.value)
     }
 
     @Test fun aConsentRequiredResponseOutsideTheStatusCheckOpensTheLockScreen() = runTest {
         vm.checkSession(active = true); advanceUntilIdle()
         assertEquals(ConsentPhase.READY, vm.uiState.value.phase)
         repository.summaryResult = Result.success(MemberConsents(false, listOf(testConsent(ConsentStatus.MISSING))))
-        val stopsBefore = session.stops
+        assertTrue(vm.locationAllowed.value)
         consentRequired.tryEmit(Unit); advanceUntilIdle()
         assertEquals(ConsentPhase.REQUIRED, vm.uiState.value.phase)
-        assertEquals(stopsBefore + 1, session.stops)
+        assertFalse(vm.locationAllowed.value)
     }
 
     @Test fun agreeingRechecksTheServerBeforeAllowingTheApp() = runTest {
@@ -71,7 +71,7 @@ class ConsentViewModelTest {
         assertEquals("policy-1", repository.grantedVersion)
         assertEquals(2, repository.summaryCalls)
         assertEquals(ConsentPhase.READY, vm.uiState.value.phase)
-        assertEquals(1, session.starts)
+        assertTrue(vm.locationAllowed.value)
     }
 
     @Test fun aServerVersionConflictRefetchesAndClearsSelection() = runTest {
@@ -90,7 +90,7 @@ class ConsentViewModelTest {
         vm.checkSession(true); advanceUntilIdle()
         assertEquals(ConsentPhase.READY, vm.uiState.value.phase)
         assertTrue(vm.uiState.value.unverified)
-        assertEquals(0, session.starts)
+        assertFalse(vm.locationAllowed.value)
     }
 
     @Test fun anUnverifiedSessionIsCheckedAgainOnTheNextDestination() = runTest {
@@ -108,7 +108,7 @@ class ConsentViewModelTest {
         repository.summaryResult = Result.success(MemberConsents(false, listOf(testConsent())))
         vm.checkSession(true); advanceUntilIdle()
         assertFalse(vm.uiState.value.unverified)
-        assertEquals(1, session.starts)
+        assertTrue(vm.locationAllowed.value)
     }
 
     @Test fun grantFailureKeepsSelectionButDoesNotClaimASavedGrant() = runTest {
@@ -126,7 +126,7 @@ class ConsentViewModelTest {
         assertEquals(0, repository.withdrawCalls)
         vm.requestWithdrawal()
         assertTrue(vm.uiState.value.showWithdrawConfirmation)
-        val stopsBefore = session.stops
+        assertTrue(vm.locationAllowed.value)
         repository.afterWithdraw = {
             repository.summaryResult = Result.success(MemberConsents(true, listOf(testConsent(ConsentStatus.MISSING))))
         }
@@ -135,7 +135,7 @@ class ConsentViewModelTest {
         assertEquals(0, session.logoutCalls)
         assertFalse(vm.uiState.value.signedOut)
         assertEquals(ConsentPhase.REQUIRED, vm.uiState.value.phase)
-        assertTrue(session.stops > stopsBefore)
+        assertFalse(vm.locationAllowed.value)
     }
 
     @Test fun failedWithdrawalKeepsTheSessionAndShowsAnError() = runTest {
@@ -176,9 +176,16 @@ class ConsentViewModelTest {
     @Test fun pendingMembersDoNotStartLocationAfterConsent() = runTest {
         vm.checkSession(false); advanceUntilIdle()
         assertEquals(ConsentPhase.READY, vm.uiState.value.phase)
-        assertEquals(0, session.starts)
+        assertFalse(vm.locationAllowed.value)
         vm.checkSession(true); advanceUntilIdle()
-        assertEquals(1, session.starts)
+        assertTrue(vm.locationAllowed.value)
+    }
+
+    @Test fun locationStopsWhenTheMemberSignsOut() = runTest {
+        vm.checkSession(true); advanceUntilIdle()
+        assertTrue(vm.locationAllowed.value)
+        vm.logout(); advanceUntilIdle()
+        assertFalse(vm.locationAllowed.value)
     }
 
     @Test fun aRestoredRouteWithoutASessionReturnsToLoginWithoutFetchingPrivateData() = runTest {
@@ -186,6 +193,6 @@ class ConsentViewModelTest {
         vm.checkSession(true); advanceUntilIdle()
         assertTrue(vm.uiState.value.signedOut)
         assertEquals(0, repository.summaryCalls)
-        assertEquals(0, session.starts)
+        assertFalse(vm.locationAllowed.value)
     }
 }

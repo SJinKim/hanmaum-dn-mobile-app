@@ -104,7 +104,7 @@ val appModule = module {
     }
     single { privacyPolicyLink(BuildKonfig.PRIVACY_POLICY_URL) }
     single<ConsentSessionRepository> {
-        ConsentSessionRepositoryImpl(get(), get(), get(), get(), get(), get(), get())
+        ConsentSessionRepositoryImpl(get(), get(), get(), get(), get(), get())
     }
     viewModel { ConsentViewModel(get(), get(), get(), get<ConsentRequiredSignal>().events) }
     single<AuthRepository> { AuthRepositoryImpl(get()) }
@@ -157,7 +157,7 @@ val appModule = module {
     viewModel { LoginViewModel(get(), get(), get(), get(), get(), get()) }
 
     // Profile VM
-    viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { ProfileViewModel(get(), get(), get(), get()) }
     viewModel { FaceIdSetupViewModel(get(), get(), get()) }
 
     // Ministry

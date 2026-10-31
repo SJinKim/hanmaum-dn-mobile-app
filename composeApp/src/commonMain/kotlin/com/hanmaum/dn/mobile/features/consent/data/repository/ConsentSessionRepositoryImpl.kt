@@ -7,30 +7,22 @@ import com.hanmaum.dn.mobile.core.push.PushManager
 import com.hanmaum.dn.mobile.core.security.BiometricVault
 import com.hanmaum.dn.mobile.core.security.currentSessionScope
 import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentSessionRepository
-import com.hanmaum.dn.mobile.features.geofence.domain.GeofenceCoordinator
 import com.hanmaum.dn.mobile.features.notification.domain.repository.NotificationRepository
 import io.ktor.client.HttpClient
-import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.withTimeoutOrNull
 
 class ConsentSessionRepositoryImpl(
     private val tokens: TokenStorage,
     private val client: HttpClient,
     private val notifications: NotificationRepository,
     private val push: PushManager,
-    private val geofence: GeofenceCoordinator,
     private val vault: BiometricVault,
     private val preferences: AuthPreferences,
 ) : ConsentSessionRepository {
     override fun scope(): String? = tokens.currentSessionScope()
 
-    override suspend fun startLocation() {
-        if (scope() != null) geofence.initialize()
-    }
-    override suspend fun stopLocation() = geofence.stop()
-
     override suspend fun logout(forgetBiometric: Boolean) {
-        geofence.stop()
         // Cleanup is bounded and best-effort; a network outage cannot trap the member.
         try {
             withTimeoutOrNull(3_000) {

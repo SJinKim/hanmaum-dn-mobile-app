@@ -16,6 +16,4 @@ interface ConsentRepository {
 interface ConsentSessionRepository {
     fun scope(): String?
     suspend fun logout(forgetBiometric: Boolean = false)
-    suspend fun startLocation()
-    suspend fun stopLocation()
 }

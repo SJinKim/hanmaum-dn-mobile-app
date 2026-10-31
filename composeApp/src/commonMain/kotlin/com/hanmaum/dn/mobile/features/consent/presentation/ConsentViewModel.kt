@@ -12,11 +12,15 @@ import com.hanmaum.dn.mobile.features.consent.domain.model.PrivacyPolicyLink
 import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentRepository
 import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentSessionRepository
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -46,10 +50,16 @@ class ConsentViewModel(
     val uiState = _uiState.asStateFlow()
     private var checkedScope: String? = null
     private var job: Job? = null
-    private var locationJob: Job? = null
     private var generation = 0
-    private var activeDestination = false
-    private var monitoringStarted = false
+    private val activeDestination = MutableStateFlow(false)
+
+    /**
+     * Whether the location features may run: consent is verified, and the member is on a
+     * destination of an active account. The shell starts and stops the geofence from this.
+     */
+    val locationAllowed: StateFlow<Boolean> = combine(_uiState, activeDestination) { state, active ->
+        active && state.phase == ConsentPhase.READY && !state.unverified
+    }.distinctUntilChanged().stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     init {
         // A 403 CONSENT_REQUIRED from any call means the server no longer allows this member in:
@@ -62,15 +72,12 @@ class ConsentViewModel(
     fun reset() {
         generation++
         job?.cancel()
-        locationJob?.cancel()
-        viewModelScope.launch { session.stopLocation() }
         checkedScope = null
-        monitoringStarted = false
         _uiState.value = ConsentUiState()
     }
 
     fun checkSession(active: Boolean) {
-        activeDestination = active
+        activeDestination.value = active
         val scope = session.scope()
         if (scope == null) {
             reset()
@@ -82,7 +89,6 @@ class ConsentViewModel(
             checkedScope = scope
             refresh()
         } else if (_uiState.value.unverified) refresh()
-        else if (_uiState.value.phase == ConsentPhase.READY) startLocationIfAllowed()
     }
 
     private fun isCurrent(ticket: Int): Boolean = ticket == generation && checkedScope != null &&
@@ -91,7 +97,7 @@ class ConsentViewModel(
     fun refresh() {
         if (_uiState.value.isBusy || _uiState.value.isRefreshing) return
         if (!hasCurrentSession()) {
-            checkSession(activeDestination)
+            checkSession(activeDestination.value)
             return
         }
         val ticket = generation
@@ -103,11 +109,7 @@ class ConsentViewModel(
                     if (!isCurrent(ticket)) return@fold
                     if (result.allowsAccess) {
                         _uiState.value = ConsentUiState(phase = ConsentPhase.READY, summary = result)
-                        startLocationIfAllowed()
                     } else {
-                        monitoringStarted = false
-                        locationJob?.cancelAndJoin()
-                        session.stopLocation()
                         _uiState.value = ConsentUiState(phase = ConsentPhase.REQUIRED, summary = result)
                         loadPolicy(ticket)
                     }
@@ -128,18 +130,6 @@ class ConsentViewModel(
                     }
                 },
             )
-        }
-    }
-
-    private fun startLocationIfAllowed() {
-        if (!activeDestination || monitoringStarted || _uiState.value.phase != ConsentPhase.READY ||
-            _uiState.value.unverified) return
-        monitoringStarted = true
-        val ticket = generation
-        locationJob = viewModelScope.launch {
-            if (isCurrent(ticket) && _uiState.value.phase == ConsentPhase.READY && !_uiState.value.unverified) {
-                session.startLocation()
-            }
         }
     }
 
@@ -232,12 +222,8 @@ class ConsentViewModel(
             repository.withdraw(ConsentPurpose.APP_PRIVACY).fold(
                 onSuccess = {
                     if (!isCurrent(ticket)) return@fold
-                    // The member stays signed in but is locked until they agree again; location stops now.
-                    // This does not delete the account.
-                    monitoringStarted = false
-                    locationJob?.cancelAndJoin()
-                    session.stopLocation()
-                    if (!isCurrent(ticket)) return@fold
+                    // The member stays signed in but is locked until they agree again; location stops
+                    // with the lock. This does not delete the account.
                     _uiState.value = ConsentUiState(phase = ConsentPhase.LOADING)
                     refresh()
                 },
@@ -253,12 +239,10 @@ class ConsentViewModel(
     fun logout() {
         if (_uiState.value.isBusy) return
         generation++
-        job?.cancel()
         val ticket = generation
         _uiState.update { it.copy(isBusy = true) }
         job?.cancel()
         job = viewModelScope.launch {
-            locationJob?.cancelAndJoin()
             session.logout()
             if (ticket == generation) _uiState.value = ConsentUiState(signedOut = true)
         }

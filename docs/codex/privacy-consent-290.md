@@ -152,6 +152,21 @@ the code alone does not verify the external page's content.
   next destination. Only a server answer that requires consent blocks the app.
 - Geofence startup is deferred until verified consent and an active destination.
   The existing location opt-in remains independent of the consent checkbox.
+  `ConsentViewModel` no longer starts or stops the geofence itself; it exposes
+  `locationAllowed` (active destination, consent verified, no unverified state).
+  The app shell (`App.kt`) drives `GeofenceCoordinator` from that flow, so a
+  sign-out, a withdrawal or a server outage stops monitoring in one place.
+- Registration distinguishes `CONSENT_REQUIRED` and `CONSENT_VERSION_OUTDATED`
+  from the email-conflict message; each has its own notice.
+- A server 403 `CONSENT_REQUIRED` outside the status check (contract server #373)
+  is signalled from the network layer (`ConsentRequiredSignal`) to
+  `ConsentViewModel`, which opens the lock screen. No Ops spec change is needed.
+- The consent state is reset centrally when the shell enters a signed-out
+  destination (splash, login, rejected), instead of at each call site.
+- Sign-out, including the profile logout, goes through
+  `ConsentSessionRepository.logout()`: bounded device-token deletion, token
+  clearing, bearer-cache invalidation and optional Face ID forgetting live in
+  `ConsentSessionRepositoryImpl` only.
 
 ## Policy URL configuration
 

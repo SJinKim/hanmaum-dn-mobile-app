@@ -114,6 +114,23 @@ fun App() {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry?.destination
 
+            // Signed-out destinations are the one place the consent state is dropped, so every
+            // way out of a session (profile logout, lock-screen logout, refusal) is covered.
+            LaunchedEffect(currentDestination) {
+                val signedOutScreen = currentDestination?.let {
+                    it.hasRoute(SplashRoute::class) || it.hasRoute(LoginRoute::class) ||
+                        it.hasRoute(RejectedRoute::class)
+                } == true
+                if (signedOutScreen) consentViewModel.reset()
+            }
+
+            // The geofence follows the consent state; no screen starts or stops it on its own.
+            val geofence = koinInject<GeofenceCoordinator>()
+            val locationAllowed by consentViewModel.locationAllowed.collectAsState()
+            LaunchedEffect(locationAllowed) {
+                if (locationAllowed) geofence.initialize() else geofence.stop()
+            }
+
             val showBottomBar = consentState.phase == ConsentPhase.READY &&
                 consentViewModel.hasCurrentSession() && TopLevelDestination.all.any { dest ->
                 currentDestination?.hasRoute(dest.routeClass) == true
@@ -151,7 +168,6 @@ fun App() {
                     composable<SplashRoute> {
                         SplashScreen(
                             onNavigate = { route ->
-                                consentViewModel.reset()
                                 val targetRoute: Any = when (route) {
                                     NavRoute.Home            -> HomeRoute
                                     NavRoute.Login           -> LoginRoute()
@@ -176,23 +192,19 @@ fun App() {
                     }
 
                     composable<LoginRoute> { backStackEntry ->
-                        LaunchedEffect(Unit) { consentViewModel.reset() }
                         LoginScreen(
                             notice = backStackEntry.toRoute<LoginRoute>().notice,
                             onNavigateToHome = {
-                                consentViewModel.reset()
                                 navController.navigate(HomeRoute) {
                                     popUpTo<LoginRoute> { inclusive = true }
                                 }
                             },
                             onNavigateToPending = {
-                                consentViewModel.reset()
                                 navController.navigate(PendingRoute) {
                                     popUpTo<LoginRoute> { inclusive = true }
                                 }
                             },
                             onNavigateToRejected = {
-                                consentViewModel.reset()
                                 // popUpTo(0): the whole back stack goes, so there is
                                 // nothing behind this screen to return to.
                                 navController.navigate(RejectedRoute) {
@@ -230,7 +242,6 @@ fun App() {
                     consentProtectedComposable<PendingRoute>(consentViewModel, onConsentSignedOut, activeDestination = false) {
                         PendingScreen(
                             onNavigateToHome = {
-                                consentViewModel.reset()
                                 navController.navigate(HomeRoute) {
                                     popUpTo<PendingRoute> { inclusive = true }
                                 }
@@ -242,7 +253,6 @@ fun App() {
                                 }
                             },
                             onNavigateToRejected = {
-                                consentViewModel.reset()
                                 // popUpTo(0): the whole back stack goes, so there is
                                 // nothing behind this screen to return to.
                                 navController.navigate(RejectedRoute) {
@@ -280,7 +290,6 @@ fun App() {
                     consentProtectedComposable<SettingsRoute>(consentViewModel, onConsentSignedOut) {
                         val authPrefs = koinInject<AuthPreferences>()
                         val locationPrefs = koinInject<LocationPreferences>()
-                        val geofence = koinInject<GeofenceCoordinator>()
                         val vault = koinInject<BiometricVault>()
                         val scope = rememberCoroutineScope()
                         var keepSignedIn by remember { mutableStateOf(authPrefs.isKeepSignedInEnabled()) }

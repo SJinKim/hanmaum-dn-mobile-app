@@ -1,24 +1,16 @@
 package com.hanmaum.dn.mobile.features.profile
 
 import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
-import com.hanmaum.dn.mobile.core.data.repository.AuthPreferencesImpl
-import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
-import com.russhwolf.settings.MapSettings
-import com.hanmaum.dn.mobile.core.push.PushManager
-import com.hanmaum.dn.mobile.core.security.FakeBiometricVault
-import com.hanmaum.dn.mobile.core.security.SecureStore
+import com.hanmaum.dn.mobile.features.consent.FakeConsentSession
 import com.hanmaum.dn.mobile.features.login.domain.model.IdentityStatus
 import com.hanmaum.dn.mobile.features.login.domain.repository.CityLookupRepository
 import com.hanmaum.dn.mobile.features.login.presentation.RegisterFieldError
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import com.hanmaum.dn.mobile.features.verse.FakeVerseRecordRepository
-import com.hanmaum.dn.mobile.features.notification.domain.model.NotificationPage
-import com.hanmaum.dn.mobile.features.notification.domain.repository.NotificationRepository
 import com.hanmaum.dn.mobile.features.profile.presentation.ProfileUiState
 import com.hanmaum.dn.mobile.features.profile.presentation.ProfileViewModel
 import kotlinx.coroutines.Dispatchers
-import io.ktor.client.engine.mock.respondOk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -95,50 +87,6 @@ private class FakeCityLookupRepository(private val cities: Map<String, String> =
     override suspend fun cityForPostalCode(postalCode: String): String? = cities[postalCode]
 }
 
-private class FakeTokenStorage : TokenStorage {
-    private var access: String? = null
-    private var refresh: String? = null
-    override fun saveAccessToken(token: String) { access = token }
-    override fun getAccessToken(): String? = access
-    override fun saveRefreshToken(token: String?) { refresh = token }
-    override fun getRefreshToken(): String? = refresh
-    override fun clear() { access = null; refresh = null }
-}
-
-private class InMemorySecureStore : SecureStore {
-    private val map = mutableMapOf<String, String>()
-    override fun putString(key: String, value: String) { map[key] = value }
-    override fun getString(key: String): String? = map[key]
-    override fun remove(key: String) { map.remove(key) }
-}
-
-private class FakeNotificationRepository : NotificationRepository {
-    val deletedTokens = mutableListOf<String>()
-
-    override suspend fun getNotifications(page: Int) =
-        Result.success(NotificationPage(emptyList(), hasNext = false))
-    override suspend fun getUnseenCount() = Result.success(0)
-    override suspend fun markAllSeen(): Result<Unit> = Result.success(Unit)
-    override suspend fun markRead(publicId: String): Result<Unit> = Result.success(Unit)
-    override suspend fun markAllRead(): Result<Unit> = Result.success(Unit)
-    override suspend fun delete(publicId: String): Result<Unit> = Result.success(Unit)
-    override suspend fun deleteAll(): Result<Unit> = Result.success(Unit)
-    override suspend fun getPushEnabled() = Result.success(true)
-    override suspend fun setPushEnabled(enabled: Boolean) = Result.success(Unit)
-    override suspend fun registerDeviceToken(token: String, platform: String): Result<Unit> = Result.success(Unit)
-    override suspend fun deleteDeviceToken(token: String): Result<Unit> {
-        deletedTokens += token
-        return Result.success(Unit)
-    }
-}
-
-private class FakePushManager(private val token: String? = null) : PushManager {
-    override val platform: String = "ANDROID"
-    override suspend fun currentToken(): String? = token
-    override fun isPermissionGranted(): Boolean = true
-    override suspend fun requestPermission(): Boolean = true
-}
-
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProfileViewModelTest {
 
@@ -149,20 +97,12 @@ class ProfileViewModelTest {
 
     private fun vm(
         repo: MemberRepository,
-        notificationRepository: FakeNotificationRepository = FakeNotificationRepository(),
-        pushManager: FakePushManager = FakePushManager(),
-        vault: FakeBiometricVault = FakeBiometricVault(),
-        authPreferences: AuthPreferencesImpl = AuthPreferencesImpl(MapSettings()),
+        session: FakeConsentSession = FakeConsentSession(),
         cityLookup: CityLookupRepository = FakeCityLookupRepository(),
     ) = ProfileViewModel(
         repo,
-        FakeTokenStorage(),
-        vault,
-        notificationRepository,
-        pushManager,
-        authPreferences,
+        session,
         FakeVerseRecordRepository(),
-        io.ktor.client.HttpClient(io.ktor.client.engine.mock.MockEngine { respondOk() }),
         cityLookup,
     )
 
@@ -403,44 +343,13 @@ class ProfileViewModelTest {
     }
 
     @Test
-    fun `logout deletes the device token`() = runTest {
-        val notificationRepository = FakeNotificationRepository()
-        val viewModel = vm(
-            FakeMemberRepository(),
-            notificationRepository = notificationRepository,
-            pushManager = FakePushManager(token = "tok1"),
-        )
+    fun `logout hands the sign out to the session`() = runTest {
+        val session = FakeConsentSession()
+        val viewModel = vm(FakeMemberRepository(), session = session)
         viewModel.logout()
         dispatcher.scheduler.advanceUntilIdle()
-        assertEquals(listOf("tok1"), notificationRepository.deletedTokens)
-    }
-
-    @Test
-    fun `logout leaves the face id arming alone`() = runTest {
-        // Signing out is how a session ordinarily ends. Disarming here left the
-        // member on a login screen that never offered Face ID, so there was no
-        // way to reach it at all (#218). Only their face opens what stays behind.
-        val vault = FakeBiometricVault()
-        val authPreferences = AuthPreferencesImpl(MapSettings())
-        vault.seal("sealed-refresh", "t", "s", "c")
-        authPreferences.setBiometricEnabled(true)
-
-        val viewModel = vm(FakeMemberRepository(), vault = vault, authPreferences = authPreferences)
-        viewModel.logout()
-        dispatcher.scheduler.advanceUntilIdle()
-
-        assertEquals(true, authPreferences.isBiometricEnabled())
-        assertEquals("sealed-refresh", vault.sealed)
-        assertEquals(false, vault.cleared)
-    }
-
-    @Test
-    fun `logout without token still completes`() = runTest {
-        val notificationRepository = FakeNotificationRepository()
-        val viewModel = vm(FakeMemberRepository(), notificationRepository = notificationRepository)
-        viewModel.logout()
-        dispatcher.scheduler.advanceUntilIdle()
-        assertEquals(emptyList(), notificationRepository.deletedTokens)
+        assertEquals(1, session.logoutCalls)
+        assertEquals(false, session.forgotBiometric)
         assertEquals(true, viewModel.loggedOut.value)
     }
 }

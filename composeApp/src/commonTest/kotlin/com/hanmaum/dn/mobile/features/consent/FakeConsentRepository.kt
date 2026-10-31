@@ -40,12 +40,8 @@ class FakeConsentSession : ConsentSessionRepository {
     var identity: String? = "member-1"
     var logoutCalls = 0
     var forgotBiometric = false
-    var starts = 0
-    var stops = 0
     override fun scope(): String? = identity
     override suspend fun logout(forgetBiometric: Boolean) {
         logoutCalls++; forgotBiometric = forgetBiometric; identity = null
     }
-    override suspend fun startLocation() { starts++ }
-    override suspend fun stopLocation() { stops++ }
 }
