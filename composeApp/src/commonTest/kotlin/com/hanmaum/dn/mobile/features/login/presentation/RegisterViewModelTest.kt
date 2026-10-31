@@ -2,6 +2,7 @@ package com.hanmaum.dn.mobile.features.login.presentation
 
 import com.hanmaum.dn.mobile.features.consent.FakeConsentRepository
 import com.hanmaum.dn.mobile.features.consent.TestPrivacyPolicy
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentProblem
 import com.hanmaum.dn.mobile.features.consent.domain.model.PrivacyPolicyLink
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.navigation.LoginRoute
@@ -546,9 +547,20 @@ class RegisterViewModelTest {
         vm.register(); advanceUntilIdle()
         assertEquals("policy-2", vm.uiState.value.consent.policy?.version)
         assertFalse(vm.uiState.value.consent.accepted)
+        assertEquals(ConsentProblem.VERSION_OUTDATED, vm.uiState.value.consent.problem)
         assertNull(vm.uiState.value.bannerError)
         vm.register(); advanceUntilIdle()
         assertEquals(1, auth.registerCalls)
+    }
+
+    @Test
+    fun missingConsentShowsItsOwnNoticeNotAnEmailConflict() = runTest {
+        fillMinimumValidForm()
+        auth.registerResult = Result.failure(RegisterException(null, reason = RegisterFailureReason.CONSENT_REQUIRED))
+        vm.register(); advanceUntilIdle()
+        assertEquals(ConsentProblem.REQUIRED, vm.uiState.value.consent.problem)
+        assertFalse(vm.uiState.value.consent.accepted)
+        assertNull(vm.uiState.value.bannerError)
     }
 
     @Test

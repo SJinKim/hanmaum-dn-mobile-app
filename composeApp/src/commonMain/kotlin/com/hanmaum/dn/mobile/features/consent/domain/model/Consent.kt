@@ -1,6 +1,6 @@
 package com.hanmaum.dn.mobile.features.consent.domain.model
 
-import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 
 enum class ConsentPurpose { APP_PRIVACY, COURSE_APPLICATION }
 enum class ConsentStatus { GRANTED, OUTDATED, MISSING }
@@ -13,7 +13,7 @@ data class MemberConsent(
     val requiredForAccount: Boolean,
     val currentVersion: String,
     val grantedVersion: String?,
-    val grantedAt: String?,
+    val grantedAt: Instant?,
 ) {
     val isCurrent: Boolean get() = state == ConsentStatus.GRANTED && grantedVersion == currentVersion
 }
@@ -23,9 +23,6 @@ data class MemberConsents(val actionRequired: Boolean, val consents: List<Member
     val allowsAccess: Boolean get() = !actionRequired &&
         privacy?.isCurrent == true && consents.none { it.requiredForAccount && !it.isCurrent }
 }
-
-@Serializable
-data class ConsentGrant(val accepted: Boolean, val version: String)
 
 enum class ConsentProblem { LOAD, SAVE, VERSION_OUTDATED, REQUIRED, POLICY_UNAVAILABLE, WITHDRAW }
 class ConsentException(val problem: ConsentProblem) : Exception(problem.name)

@@ -1,18 +1,35 @@
 package com.hanmaum.dn.mobile.features.consent
 
-import com.hanmaum.dn.mobile.features.consent.data.repository.*
-import com.hanmaum.dn.mobile.features.consent.domain.model.*
+import com.hanmaum.dn.mobile.features.consent.data.repository.ConsentRepositoryImpl
+import com.hanmaum.dn.mobile.features.consent.data.repository.privacyPolicyLink
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentException
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentProblem
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentPurpose
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.mock.*
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
-import io.ktor.http.*
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.OutgoingContent
+import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertIs
+import kotlin.test.assertTrue
+import kotlin.time.Instant
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.json.*
-import kotlin.test.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.boolean
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 class ConsentRepositoryImplTest {
     private fun client(status: HttpStatusCode, response: String, capture: (io.ktor.client.request.HttpRequestData) -> Unit = {}) =
@@ -60,6 +77,16 @@ class ConsentRepositoryImplTest {
         assertEquals(listOf(ConsentPurpose.APP_PRIVACY), result.consents.map { it.purpose })
         assertTrue(result.allowsAccess)
         mine.close()
+    }
+
+    @Test fun grantedAtIsParsedToAnInstantAndMalformedStaysUnknown() = runTest {
+        fun body(grantedAt: String) = """{"success":true,"data":{"actionRequired":false,"consents":[{"purpose":"APP_PRIVACY","state":"GRANTED","requiredForAccount":true,"currentVersion":"v1","grantedVersion":"v1","grantedAt":"$grantedAt"}]}}"""
+        val good = client(HttpStatusCode.OK, body("2026-10-24T12:00:00Z"))
+        assertEquals(Instant.parse("2026-10-24T12:00:00Z"), ConsentRepositoryImpl(good).myConsents().getOrThrow().privacy?.grantedAt)
+        good.close()
+        val bad = client(HttpStatusCode.OK, body("yesterday"))
+        assertEquals(null, ConsentRepositoryImpl(bad).myConsents().getOrThrow().privacy?.grantedAt)
+        bad.close()
     }
 
     @Test fun conflictIsAConsentVersionError() = runTest {

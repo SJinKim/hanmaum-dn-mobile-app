@@ -2,14 +2,35 @@ package com.hanmaum.dn.mobile.features.consent.data.repository
 
 import com.hanmaum.dn.mobile.core.domain.model.ApiResponse
 import com.hanmaum.dn.mobile.core.domain.model.ApiErrorResponse
-import com.hanmaum.dn.mobile.features.consent.data.model.*
-import com.hanmaum.dn.mobile.features.consent.domain.model.*
+import com.hanmaum.dn.mobile.features.consent.data.model.ConsentGrantDto
+import com.hanmaum.dn.mobile.features.consent.data.model.ConsentPolicyDto
+import com.hanmaum.dn.mobile.features.consent.data.model.GrantConsentRequest
+import com.hanmaum.dn.mobile.features.consent.data.model.MemberConsentDto
+import com.hanmaum.dn.mobile.features.consent.data.model.MemberConsentsDto
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentException
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentPolicy
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentProblem
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentPurpose
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentStatus
+import com.hanmaum.dn.mobile.features.consent.domain.model.MemberConsent
+import com.hanmaum.dn.mobile.features.consent.domain.model.MemberConsents
+import com.hanmaum.dn.mobile.features.consent.domain.model.PrivacyPolicyLink
 import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.request.*
-import io.ktor.http.*
+import io.ktor.client.request.delete
+import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.URLProtocol
+import io.ktor.http.Url
+import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 import kotlinx.coroutines.CancellationException
+import kotlin.time.Instant
 
 class ConsentRepositoryImpl(private val client: HttpClient) : ConsentRepository {
     override suspend fun policies(): Result<List<ConsentPolicy>> = request {
@@ -34,7 +55,7 @@ class ConsentRepositoryImpl(private val client: HttpClient) : ConsentRepository 
     override suspend fun grant(purpose: ConsentPurpose, version: String): Result<MemberConsent> = request {
         read<MemberConsentDto>(client.post("members/me/consents") {
             contentType(ContentType.Application.Json)
-            setBody(GrantConsentRequest(purpose.name, ConsentGrant(true, validVersion(version))))
+            setBody(GrantConsentRequest(purpose.name, ConsentGrantDto(true, validVersion(version))))
         }).toDomain().also {
             require(it != null && it.purpose == purpose && it.isCurrent && it.grantedVersion == version)
         }!!
@@ -45,14 +66,14 @@ class ConsentRepositoryImpl(private val client: HttpClient) : ConsentRepository 
         if (response.status != HttpStatusCode.NoContent) throw failure(response)
     }
 
-    private suspend inline fun <reified T> read(response: io.ktor.client.statement.HttpResponse): T {
+    private suspend inline fun <reified T> read(response: HttpResponse): T {
         if (!response.status.isSuccess()) throw failure(response)
         val body = response.body<ApiResponse<T>>()
         if (!body.success) throw ConsentException(ConsentProblem.LOAD)
         return body.data ?: throw ConsentException(ConsentProblem.LOAD)
     }
 
-    private suspend fun failure(response: io.ktor.client.statement.HttpResponse): ConsentException {
+    private suspend fun failure(response: HttpResponse): ConsentException {
         val code = try {
             response.body<ApiErrorResponse>().code
         } catch (e: CancellationException) {
@@ -83,7 +104,8 @@ private fun knownPurpose(value: String): ConsentPurpose? = ConsentPurpose.entrie
 private fun MemberConsentDto.toDomain(): MemberConsent? {
     val purpose = knownPurpose(purpose) ?: return null
     val status = ConsentStatus.entries.firstOrNull { it.name == state } ?: return null
-    return MemberConsent(purpose, status, requiredForAccount, validVersion(currentVersion), grantedVersion, grantedAt)
+    return MemberConsent(purpose, status, requiredForAccount, validVersion(currentVersion), grantedVersion,
+        grantedAt?.let { runCatching { Instant.parse(it) }.getOrNull() })
 }
 
 fun privacyPolicyLink(value: String): PrivacyPolicyLink = PrivacyPolicyLink(

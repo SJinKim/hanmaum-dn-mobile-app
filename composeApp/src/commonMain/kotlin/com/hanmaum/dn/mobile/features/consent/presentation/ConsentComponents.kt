@@ -3,7 +3,15 @@ package com.hanmaum.dn.mobile.features.consent.presentation
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,7 +19,12 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,14 +35,25 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanmaum.dn.mobile.core.i18n.LocalStrings
-import com.hanmaum.dn.mobile.core.presentation.components.*
+import com.hanmaum.dn.mobile.core.presentation.components.DnBackground
+import com.hanmaum.dn.mobile.core.presentation.components.DnPrimaryButton
+import com.hanmaum.dn.mobile.core.presentation.components.DnTintedButton
+import com.hanmaum.dn.mobile.core.presentation.components.DnTopBar
 import com.hanmaum.dn.mobile.core.presentation.icons.DnIcons
-import com.hanmaum.dn.mobile.core.presentation.theme.*
-import com.hanmaum.dn.mobile.features.consent.domain.model.*
+import com.hanmaum.dn.mobile.core.presentation.theme.AppSize
+import com.hanmaum.dn.mobile.core.presentation.theme.AppSpacing
+import com.hanmaum.dn.mobile.core.presentation.theme.ConsentLayout
+import com.hanmaum.dn.mobile.core.presentation.theme.DnCardShape
+import com.hanmaum.dn.mobile.core.presentation.theme.DnInnerShape
+import com.hanmaum.dn.mobile.core.presentation.theme.DnTheme
+import com.hanmaum.dn.mobile.core.presentation.theme.typography
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentProblem
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentStatus
+import com.hanmaum.dn.mobile.features.consent.domain.model.PolicyConsentState
+import com.hanmaum.dn.mobile.features.consent.domain.model.PrivacyPolicyLink
 import com.hanmaum.dn.mobile.features.login.presentation.components.DEV_TEAM_EMAIL
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Instant
 
 @Composable
 internal fun ConsentNotice(message: String, error: Boolean = false, warning: Boolean = false) {
@@ -57,13 +81,13 @@ internal fun ConsentLink(label: String, enabled: Boolean = true, color: Color = 
 
 @Composable
 internal fun PrivacyPolicyButton(policyLink: PrivacyPolicyLink) {
-    val s = LocalStrings.current.consent
+    val s = LocalStrings.current
     val uri = LocalUriHandler.current
     var failed by remember { mutableStateOf(false) }
-    ConsentLink(s.policy, enabled = policyLink.isAvailable) {
+    ConsentLink(s.consentPolicy, enabled = policyLink.isAvailable) {
         failed = runCatching { uri.openUri(checkNotNull(policyLink.url)) }.isFailure
     }
-    if (failed) ConsentNotice(s.linkFailed, error = true)
+    if (failed) ConsentNotice(s.consentLinkFailed, error = true)
 }
 
 /** The link is a separate tap target; opening it never toggles acceptance. */
@@ -75,14 +99,14 @@ fun PolicyConsent(
     onAccepted: (Boolean) -> Unit,
     onRetry: () -> Unit,
 ) {
-    val s = LocalStrings.current.consent
+    val s = LocalStrings.current
     val c = DnTheme.colors
     Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
-        Text(s.title, style = DnTheme.typography.bodyStrong, color = c.textPrimary)
+        Text(s.consentTitle, style = DnTheme.typography.bodyStrong, color = c.textPrimary)
         if (state.isLoading) {
-            ConsentNotice(s.loading)
+            ConsentNotice(s.consentLoading)
         } else {
-            state.problem?.let { ConsentNotice(s.problem(it), error = it != ConsentProblem.VERSION_OUTDATED, warning = it == ConsentProblem.VERSION_OUTDATED) }
+            state.problem?.let { ConsentNotice(s.consentProblem(it), error = it != ConsentProblem.VERSION_OUTDATED, warning = it == ConsentProblem.VERSION_OUTDATED) }
             if (state.policy != null && policyLink.isAvailable) {
                 Row(
                     Modifier.fillMaxWidth().heightIn(min = AppSize.touchTarget)
@@ -103,18 +127,18 @@ fun PolicyConsent(
                                 modifier = Modifier.size(ConsentLayout.checkIcon))
                         }
                     }
-                    Text(s.label, style = DnTheme.typography.bodyStrong, color = c.textPrimary,
+                    Text(s.consentLabel, style = DnTheme.typography.bodyStrong, color = c.textPrimary,
                         modifier = Modifier.weight(1f))
                 }
-                Text(s.detail, style = DnTheme.typography.caption, color = c.textSecondary)
-                Text(s.version(state.policy.version), style = DnTheme.typography.caption, color = c.textTertiary)
+                Text(s.consentDetail, style = DnTheme.typography.caption, color = c.textSecondary)
+                Text(s.consentVersion(state.policy.version), style = DnTheme.typography.caption, color = c.textTertiary)
             }
             if (state.policy == null && state.problem != ConsentProblem.POLICY_UNAVAILABLE) {
-                ConsentLink(s.retry, enabled = !busy, onClick = onRetry)
+                ConsentLink(s.consentRetry, enabled = !busy, onClick = onRetry)
             }
         }
         PrivacyPolicyButton(policyLink)
-        Text(s.withdrawalHint, style = DnTheme.typography.caption, color = c.textSecondary)
+        Text(s.consentWithdrawalHint, style = DnTheme.typography.caption, color = c.textSecondary)
     }
 }
 
@@ -133,32 +157,32 @@ fun ConsentGate(
         return
     }
     val strings = LocalStrings.current
-    val s = strings.consent
+    val s = strings
     val c = DnTheme.colors
     DnBackground(insetContent = true) {
         Column(Modifier.fillMaxSize()) {
-            DnTopBar(s.title, onBack = null, actionIcon = null)
+            DnTopBar(s.consentTitle, onBack = null, actionIcon = null)
             Column(
                 Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(AppSpacing.lg),
                 verticalArrangement = Arrangement.spacedBy(AppSpacing.md),
             ) {
                 when (state.phase) {
-                    ConsentPhase.LOADING -> ConsentNotice(s.loading)
+                    ConsentPhase.LOADING -> ConsentNotice(s.consentLoading)
                     ConsentPhase.ERROR -> {
-                        ConsentNotice(s.loadFailed, error = true)
-                        DnPrimaryButton(s.retry, viewModel::refresh, Modifier.fillMaxWidth(),
+                        ConsentNotice(s.consentLoadFailed, error = true)
+                        DnPrimaryButton(s.consentRetry, viewModel::refresh, Modifier.fillMaxWidth(),
                             enabled = !state.isRefreshing, shape = DnInnerShape)
                     }
                     ConsentPhase.REQUIRED -> {
                         val outdated = state.summary?.privacy?.state == ConsentStatus.OUTDATED ||
                             state.selection.problem == ConsentProblem.VERSION_OUTDATED
-                        Text(if (outdated) s.outdatedTitle else s.missingTitle,
+                        Text(if (outdated) s.consentOutdatedTitle else s.consentMissingTitle,
                             style = DnTheme.typography.title, color = c.textPrimary)
-                        Text(if (outdated) s.outdatedBody else s.missingBody,
+                        Text(if (outdated) s.consentOutdatedBody else s.consentMissingBody,
                             style = DnTheme.typography.body, color = c.textSecondary)
                         if (outdated && state.selection.policy != null) {
-                            val current = s.newVersion.replace("{version}", checkNotNull(state.selection.policy).version)
-                            val previous = state.summary?.privacy?.grantedVersion?.let { s.previousVersion.replace("{version}", it) }
+                            val current = s.consentNewVersion(checkNotNull(state.selection.policy).version)
+                            val previous = state.summary?.privacy?.grantedVersion?.let { s.consentPreviousVersion(it) }
                             ConsentNotice(listOfNotNull(current, previous).joinToString("\n"), warning = true)
                         }
                         val selection = if (outdated && state.selection.problem == ConsentProblem.VERSION_OUTDATED) {
@@ -166,7 +190,7 @@ fun ConsentGate(
                         } else state.selection
                         PolicyConsent(selection, viewModel.policyLink, state.isBusy || state.isRefreshing, viewModel::setAccepted, viewModel::retryPolicy)
                         DnPrimaryButton(
-                            if (state.isBusy || state.isRefreshing) s.saving else s.continueLabel, viewModel::grant,
+                            if (state.isBusy || state.isRefreshing) s.consentSaving else s.consentContinueLabel, viewModel::grant,
                             Modifier.fillMaxWidth(), enabled = state.selection.canSubmit && !state.isBusy && !state.isRefreshing,
                             shape = DnInnerShape,
                         )
@@ -185,41 +209,39 @@ fun ConsentGate(
 fun ConsentSettings(viewModel: ConsentViewModel) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val strings = LocalStrings.current
-    val s = strings.consent
+    val s = strings
     val c = DnTheme.colors
     val uri = LocalUriHandler.current
     var contactFailed by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { viewModel.refresh() }
     Column(Modifier.padding(AppSpacing.md), verticalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
         when {
-            state.isRefreshing -> ConsentNotice(s.loading)
+            state.isRefreshing -> ConsentNotice(s.consentLoading)
             state.settingsProblem != null -> {
-                ConsentNotice(s.problem(checkNotNull(state.settingsProblem)), error = true)
-                ConsentLink(s.retry, enabled = !state.isBusy, onClick = viewModel::refresh)
+                ConsentNotice(s.consentProblem(checkNotNull(state.settingsProblem)), error = true)
+                ConsentLink(s.consentRetry, enabled = !state.isBusy, onClick = viewModel::refresh)
             }
             else -> {
-                Text(s.granted, style = DnTheme.typography.captionStrong, color = c.textPrimary)
+                Text(s.consentGranted, style = DnTheme.typography.captionStrong, color = c.textPrimary)
                 state.summary?.privacy?.let { consent ->
                     val date = remember(consent.grantedAt, strings.languageTag) {
-                        consent.grantedAt?.let {
-                            runCatching { Instant.parse(it).toLocalDateTime(TimeZone.of("Europe/Berlin")).date.toString() }
-                                .getOrNull()?.let { value -> if (strings.languageTag == "ko") value.replace('-', '.') else value }
-                        }
+                        consent.grantedAt?.toLocalDateTime(TimeZone.of("Europe/Berlin"))?.date?.toString()
+                            ?.let { value -> if (strings.languageTag == "ko") value.replace('-', '.') else value }
                     }
                     // Missing proof stays unknown; no invented date or device timestamp.
-                    Text(s.record(date ?: "—", consent.grantedVersion ?: "—"),
+                    Text(s.consentRecord(date ?: "—", consent.grantedVersion ?: "—"),
                         style = DnTheme.typography.caption, color = c.textSecondary)
                 }
             }
         }
         PrivacyPolicyButton(viewModel.policyLink)
-        ConsentLink(s.withdraw, enabled = !state.isBusy && !state.isRefreshing,
+        ConsentLink(s.consentWithdraw, enabled = !state.isBusy && !state.isRefreshing,
             color = c.red, onClick = viewModel::requestWithdrawal)
-        ConsentLink(s.contact) {
+        ConsentLink(s.consentContact) {
             contactFailed = runCatching { uri.openUri("mailto:$DEV_TEAM_EMAIL") }.isFailure
         }
-        if (contactFailed) ConsentNotice(s.linkFailed, error = true)
-        Text(s.controller, style = DnTheme.typography.caption, color = c.textSecondary)
+        if (contactFailed) ConsentNotice(s.consentLinkFailed, error = true)
+        Text(s.consentController, style = DnTheme.typography.caption, color = c.textSecondary)
         SelectionContainer { Text(DEV_TEAM_EMAIL, style = DnTheme.typography.caption, color = c.textSecondary) }
     }
     if (state.showWithdrawConfirmation) {
@@ -233,12 +255,12 @@ fun ConsentSettings(viewModel: ConsentViewModel) {
                     contentAlignment = Alignment.Center) {
                     Icon(DnIcons.AlertTriangle, null, tint = c.red, modifier = Modifier.size(ConsentLayout.checkbox))
                 }
-                Text(s.withdrawTitle, style = DnTheme.typography.headline, color = c.textPrimary, textAlign = TextAlign.Center)
-                Text(s.withdrawBody, style = DnTheme.typography.caption, color = c.textSecondary, textAlign = TextAlign.Center)
+                Text(s.consentWithdrawTitle, style = DnTheme.typography.headline, color = c.textPrimary, textAlign = TextAlign.Center)
+                Text(s.consentWithdrawBody, style = DnTheme.typography.caption, color = c.textSecondary, textAlign = TextAlign.Center)
                 Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
                     DnTintedButton(strings.cancel, viewModel::dismissWithdrawal, Modifier.weight(1f),
                         tint = c.textPrimary, container = c.surface2, enabled = !state.isBusy, showBorder = false)
-                    DnTintedButton(if (state.isBusy) s.saving else s.withdraw, viewModel::confirmWithdrawal,
+                    DnTintedButton(if (state.isBusy) s.consentSaving else s.consentWithdraw, viewModel::confirmWithdrawal,
                         Modifier.weight(1f), enabled = !state.isBusy, showBorder = false)
                 }
             }

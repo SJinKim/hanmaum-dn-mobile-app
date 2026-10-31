@@ -1,12 +1,28 @@
 package com.hanmaum.dn.mobile.features.consent
 
-import com.hanmaum.dn.mobile.features.consent.domain.model.*
-import com.hanmaum.dn.mobile.features.consent.presentation.*
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentException
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentProblem
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentStatus
+import com.hanmaum.dn.mobile.features.consent.domain.model.MemberConsents
+import com.hanmaum.dn.mobile.features.consent.domain.model.PrivacyPolicyLink
+import com.hanmaum.dn.mobile.features.consent.presentation.ConsentPhase
+import com.hanmaum.dn.mobile.features.consent.presentation.ConsentViewModel
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.test.*
-import kotlin.test.*
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ConsentViewModelTest {

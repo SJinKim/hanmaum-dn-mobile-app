@@ -1,20 +1,24 @@
 package com.hanmaum.dn.mobile.features.login.presentation
 
-import com.hanmaum.dn.mobile.features.consent.domain.model.*
-import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentRepository
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.navigation.LoginRoute
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentProblem
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentPurpose
+import com.hanmaum.dn.mobile.features.consent.domain.model.PolicyConsentState
+import com.hanmaum.dn.mobile.features.consent.domain.model.PrivacyPolicyLink
+import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentRepository
 import com.hanmaum.dn.mobile.features.login.domain.model.BirthDateInput
-import com.hanmaum.dn.mobile.features.login.domain.model.IdentityStatus
 import com.hanmaum.dn.mobile.features.login.domain.model.Countries
+import com.hanmaum.dn.mobile.features.login.domain.model.IdentityStatus
 import com.hanmaum.dn.mobile.features.login.domain.model.PasswordPolicy
 import com.hanmaum.dn.mobile.features.login.domain.model.PhoneNumber
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterException
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterFailureReason
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterRequest
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterValidation
+import com.hanmaum.dn.mobile.features.login.domain.model.RegistrationConsent
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
 import com.hanmaum.dn.mobile.features.login.domain.repository.CityLookupRepository
 import kotlinx.coroutines.Job
@@ -38,7 +42,7 @@ class RegisterViewModel(
 
     init { loadConsentPolicy() }
 
-    fun loadConsentPolicy(outdated: Boolean = false) {
+    fun loadConsentPolicy(notice: ConsentProblem? = null) {
         if (_uiState.value.isLoading) return
         policyJob?.cancel()
         _uiState.update { it.copy(consent = PolicyConsentState()) }
@@ -50,8 +54,7 @@ class RegisterViewModel(
                     PolicyConsentState(isLoading = false, policy = policy, problem = when {
                         policy == null -> ConsentProblem.LOAD
                         !policyLink.isAvailable -> ConsentProblem.POLICY_UNAVAILABLE
-                        outdated -> ConsentProblem.VERSION_OUTDATED
-                        else -> null
+                        else -> notice
                     })
                 },
                 onFailure = { PolicyConsentState(isLoading = false, problem = ConsentProblem.LOAD) },
@@ -263,7 +266,7 @@ class RegisterViewModel(
 
             // 2. MAPPING (String -> Nullable für Backend)
             val request = RegisterRequest(
-                consent = ConsentGrant(accepted = true, version = consentVersion),
+                consent = RegistrationConsent(accepted = true, version = consentVersion),
                 firstName = s.firstName,
                 lastName = s.lastName,
                 email = s.email,
@@ -298,7 +301,13 @@ class RegisterViewModel(
                 val reason = (exception as? RegisterException)?.reason
                 if (reason == RegisterFailureReason.CONSENT_VERSION_OUTDATED || reason == RegisterFailureReason.CONSENT_REQUIRED) {
                     _uiState.update { it.copy(isLoading = false) }
-                    loadConsentPolicy(outdated = reason == RegisterFailureReason.CONSENT_VERSION_OUTDATED)
+                    loadConsentPolicy(
+                        notice = if (reason == RegisterFailureReason.CONSENT_VERSION_OUTDATED) {
+                            ConsentProblem.VERSION_OUTDATED
+                        } else {
+                            ConsentProblem.REQUIRED
+                        },
+                    )
                     return@onFailure
                 }
                 if ((exception as? RegisterException)?.isServerError == true) {

@@ -2,7 +2,13 @@ package com.hanmaum.dn.mobile.features.consent.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hanmaum.dn.mobile.features.consent.domain.model.*
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentException
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentProblem
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentPurpose
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentStatus
+import com.hanmaum.dn.mobile.features.consent.domain.model.MemberConsents
+import com.hanmaum.dn.mobile.features.consent.domain.model.PolicyConsentState
+import com.hanmaum.dn.mobile.features.consent.domain.model.PrivacyPolicyLink
 import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentRepository
 import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentSessionRepository
 import kotlinx.coroutines.Job

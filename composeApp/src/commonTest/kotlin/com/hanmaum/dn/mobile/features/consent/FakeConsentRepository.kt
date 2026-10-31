@@ -1,12 +1,18 @@
 package com.hanmaum.dn.mobile.features.consent
 
-import com.hanmaum.dn.mobile.features.consent.domain.model.*
-import com.hanmaum.dn.mobile.features.consent.domain.repository.*
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentPolicy
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentPurpose
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentStatus
+import com.hanmaum.dn.mobile.features.consent.domain.model.MemberConsent
+import com.hanmaum.dn.mobile.features.consent.domain.model.MemberConsents
+import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentRepository
+import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentSessionRepository
+import kotlin.time.Instant
 
 val TestPrivacyPolicy = ConsentPolicy(ConsentPurpose.APP_PRIVACY, "policy-1", true)
 fun testConsent(state: ConsentStatus = ConsentStatus.GRANTED, version: String = "policy-1") = MemberConsent(
     ConsentPurpose.APP_PRIVACY, state, true, version,
-    version.takeIf { state == ConsentStatus.GRANTED }, "2026-10-24T12:00:00Z".takeIf { state == ConsentStatus.GRANTED },
+    version.takeIf { state == ConsentStatus.GRANTED }, Instant.parse("2026-10-24T12:00:00Z").takeIf { state == ConsentStatus.GRANTED },
 )
 
 class FakeConsentRepository : ConsentRepository {

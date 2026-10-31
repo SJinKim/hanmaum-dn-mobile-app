@@ -1,9 +1,38 @@
 package com.hanmaum.dn.mobile.core.i18n
 
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentProblem
 import kotlinx.datetime.LocalDate
 
 interface AppStrings {
-    val consent: ConsentStrings
+    val consentTitle: String
+    val consentLabel: String
+    val consentDetail: String
+    val consentPolicy: String
+    val consentWithdrawalHint: String
+    val consentMissingTitle: String
+    val consentMissingBody: String
+    val consentOutdatedTitle: String
+    val consentOutdatedBody: String
+    val consentLoading: String
+    val consentLoadFailed: String
+    val consentSaveFailed: String
+    val consentUnavailable: String
+    val consentLinkFailed: String
+    val consentRetry: String
+    val consentContinueLabel: String
+    val consentSaving: String
+    val consentGranted: String
+    fun consentRecord(date: String, version: String): String
+    val consentContact: String
+    val consentController: String
+    val consentWithdraw: String
+    val consentWithdrawTitle: String
+    val consentWithdrawBody: String
+    val consentWithdrawFailed: String
+    fun consentVersion(version: String): String
+    fun consentNewVersion(version: String): String
+    fun consentPreviousVersion(version: String): String
+    fun consentProblem(problem: ConsentProblem): String
     val bulletin: BulletinStrings
     val languageTag: String
     val homeWelcome: String
@@ -577,7 +606,42 @@ interface AppStrings {
 }
 
 object EnStrings : AppStrings {
-    override val consent = EnConsentStrings
+    override val consentTitle = "Privacy information"
+    override val consentLabel = "I consent to processing my personal data for church activities"
+    override val consentDetail = "This includes religious information, such as church affiliation and baptism. See the privacy policy for the purposes and scope."
+    override val consentPolicy = "Read privacy policy"
+    override val consentWithdrawalHint = "You can withdraw your consent. See the privacy policy for details and contact information."
+    override val consentMissingTitle = "Please review the privacy information"
+    override val consentMissingBody = "There is no consent record for this account. Review the purposes and scope before deciding."
+    override val consentOutdatedTitle = "The privacy information has changed"
+    override val consentOutdatedBody = "Please read the current version and make a new choice. Your previous selection has been cleared."
+    override val consentLoading = "Loading privacy information…"
+    override val consentLoadFailed = "The privacy information could not be loaded. Check your connection and try again."
+    override val consentSaveFailed = "Your consent has not been saved. Please try again."
+    override val consentUnavailable = "The privacy policy is not available yet. Please contact the church team."
+    override val consentLinkFailed = "The link could not be opened. Please try again or contact the church team."
+    override val consentRetry = "Try again"
+    override val consentContinueLabel = "Agree and continue"
+    override val consentSaving = "Saving…"
+    override val consentGranted = "Privacy consent"
+    override fun consentRecord(date: String, version: String): String = "Agreed on $date · Version $version"
+    override val consentContact = "Privacy contact"
+    override val consentController = "Hanmaum Church"
+    override val consentWithdraw = "Withdraw consent"
+    override val consentWithdrawTitle = "Withdraw your privacy consent?"
+    override val consentWithdrawBody = "You stay signed in, but you cannot use the app until you agree again. This does not affect processing before withdrawal or delete your account."
+    override val consentWithdrawFailed = "Consent could not be withdrawn. Please try again."
+    override fun consentVersion(version: String): String = "Version $version"
+    override fun consentNewVersion(version: String): String = "New version $version"
+    override fun consentPreviousVersion(version: String): String = "Previous consent: version $version"
+    override fun consentProblem(problem: ConsentProblem): String = when (problem) {
+        ConsentProblem.LOAD -> consentLoadFailed
+        ConsentProblem.SAVE -> consentSaveFailed
+        ConsentProblem.VERSION_OUTDATED -> consentOutdatedBody
+        ConsentProblem.REQUIRED -> consentMissingBody
+        ConsentProblem.POLICY_UNAVAILABLE -> consentUnavailable
+        ConsentProblem.WITHDRAW -> consentWithdrawFailed
+    }
     override val homeWelcome = "Welcome"
     override val attendanceSlideToCheckIn = "Slide to check in"
     override val fullWeekdays = listOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
@@ -1047,7 +1111,42 @@ object EnStrings : AppStrings {
 }
 
 object KoStrings : AppStrings {
-    override val consent = KoConsentStrings
+    override val consentTitle = "개인정보 처리 안내"
+    override val consentLabel = "교회 활동을 위한 개인정보 처리에 동의합니다"
+    override val consentDetail = "교회 소속·세례 등 종교 관련 정보가 포함됩니다. 목적과 범위는 개인정보 처리방침에서 확인해 주세요."
+    override val consentPolicy = "개인정보 처리방침 보기"
+    override val consentWithdrawalHint = "동의는 철회할 수 있습니다. 자세한 내용과 연락처는 처리방침을 확인해 주세요."
+    override val consentMissingTitle = "개인정보 처리 내용을 확인해 주세요"
+    override val consentMissingBody = "이 계정에 동의 기록이 없습니다. 처리 목적과 범위를 먼저 확인해 주세요."
+    override val consentOutdatedTitle = "개인정보 처리 안내가 변경되었습니다"
+    override val consentOutdatedBody = "최신 안내를 읽고 다시 선택해 주세요. 이전 선택은 해제되었습니다."
+    override val consentLoading = "안내를 불러오는 중…"
+    override val consentLoadFailed = "안내를 불러오지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요."
+    override val consentSaveFailed = "동의를 저장하지 못했습니다. 아직 저장되지 않았습니다. 다시 시도해 주세요."
+    override val consentUnavailable = "개인정보 처리방침이 아직 준비되지 않았습니다. 교회 담당자에게 문의해 주세요."
+    override val consentLinkFailed = "링크를 열지 못했습니다. 다시 시도하거나 교회 담당자에게 문의해 주세요."
+    override val consentRetry = "다시 시도하기"
+    override val consentContinueLabel = "동의하고 계속하기"
+    override val consentSaving = "저장 중…"
+    override val consentGranted = "개인정보 처리 동의"
+    override fun consentRecord(date: String, version: String): String = "동의일 $date · 버전 $version"
+    override val consentContact = "개인정보 문의"
+    override val consentController = "한마음교회"
+    override val consentWithdraw = "동의 철회"
+    override val consentWithdrawTitle = "개인정보 처리 동의를 철회할까요?"
+    override val consentWithdrawBody = "로그인은 유지되지만 다시 동의할 때까지 앱을 사용할 수 없습니다. 철회 전 처리에는 영향이 없으며 계정이 삭제되지는 않습니다."
+    override val consentWithdrawFailed = "동의를 철회하지 못했습니다. 다시 시도해 주세요."
+    override fun consentVersion(version: String): String = "버전 $version"
+    override fun consentNewVersion(version: String): String = "새 버전 $version"
+    override fun consentPreviousVersion(version: String): String = "이전 동의: 버전 $version"
+    override fun consentProblem(problem: ConsentProblem): String = when (problem) {
+        ConsentProblem.LOAD -> consentLoadFailed
+        ConsentProblem.SAVE -> consentSaveFailed
+        ConsentProblem.VERSION_OUTDATED -> consentOutdatedBody
+        ConsentProblem.REQUIRED -> consentMissingBody
+        ConsentProblem.POLICY_UNAVAILABLE -> consentUnavailable
+        ConsentProblem.WITHDRAW -> consentWithdrawFailed
+    }
     override val homeWelcome = "환영합니다"
     override val attendanceSlideToCheckIn = "밀어서 출석하기"
     override val fullWeekdays = listOf("일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일")

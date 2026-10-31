@@ -1,6 +1,5 @@
 package com.hanmaum.dn.mobile.features.login.domain.model
 
-import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentGrant
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -22,7 +21,7 @@ class RegisterRequestTest {
                 password = "Secret123!",
                 birthDate = "2000-08-16",
                 identityStatus = "UNIVERSITY_STUDENT",
-                consent = ConsentGrant(true, "policy-1"),
+                consent = RegistrationConsent(true, "policy-1"),
                 street = "Hauptstraße",
                 houseNumber = "12a",
                 zipCode = "10115",

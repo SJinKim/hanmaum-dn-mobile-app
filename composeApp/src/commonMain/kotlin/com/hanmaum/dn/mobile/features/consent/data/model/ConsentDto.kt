@@ -1,6 +1,5 @@
 package com.hanmaum.dn.mobile.features.consent.data.model
 
-import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentGrant
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -17,4 +16,6 @@ internal data class MemberConsentDto(
 @Serializable
 internal data class MemberConsentsDto(val actionRequired: Boolean, val consents: List<MemberConsentDto>)
 @Serializable
-internal data class GrantConsentRequest(val purpose: String, val consent: ConsentGrant)
+internal data class GrantConsentRequest(val purpose: String, val consent: ConsentGrantDto)
+@Serializable
+internal data class ConsentGrantDto(val accepted: Boolean, val version: String)

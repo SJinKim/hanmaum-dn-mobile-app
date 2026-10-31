@@ -1,6 +1,9 @@
 package com.hanmaum.dn.mobile.features.consent.domain.repository
 
-import com.hanmaum.dn.mobile.features.consent.domain.model.*
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentPolicy
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentPurpose
+import com.hanmaum.dn.mobile.features.consent.domain.model.MemberConsent
+import com.hanmaum.dn.mobile.features.consent.domain.model.MemberConsents
 
 interface ConsentRepository {
     suspend fun policies(): Result<List<ConsentPolicy>>

@@ -1,7 +1,6 @@
 package com.hanmaum.dn.mobile.features.login.domain.model
 
 import kotlinx.serialization.Serializable
-import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentGrant
 
 @Serializable
 data class RegisterRequest(
@@ -14,7 +13,7 @@ data class RegisterRequest(
     val birthDate: String, // Format: YYYY-MM-DD — required since #282
     val identityStatus: String, // IdentityStatus name — required since #282
 
-    val consent: ConsentGrant,
+    val consent: RegistrationConsent,
 
     // OPTIONALE FELDER (Können null sein)
     // Wenn null, regelt das Backend das (z.B. Enum parse error vermeiden)
@@ -26,3 +25,7 @@ data class RegisterRequest(
     val zipCode: String? = null,
     val workOrSchool: String? = null, // 소속 — school or employer, free text
 )
+
+/** The privacy acceptance that travels with the sign-up request. */
+@Serializable
+data class RegistrationConsent(val accepted: Boolean, val version: String)
