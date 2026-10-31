@@ -1,5 +1,9 @@
 package com.hanmaum.dn.mobile.features.login.presentation
 
+import com.hanmaum.dn.mobile.features.consent.FakeConsentRepository
+import com.hanmaum.dn.mobile.features.consent.TestPrivacyPolicy
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentProblem
+import com.hanmaum.dn.mobile.features.consent.domain.model.PrivacyPolicyLink
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.navigation.LoginRoute
 import com.hanmaum.dn.mobile.features.login.domain.model.IdentityStatus
@@ -64,13 +68,15 @@ class RegisterViewModelTest {
 
     private val dispatcher = StandardTestDispatcher()
     private lateinit var auth: FakeAuthRepository
+    private lateinit var consent: FakeConsentRepository
     private lateinit var vm: RegisterViewModel
 
     @BeforeTest
     fun setUp() {
         Dispatchers.setMain(dispatcher)
         auth = FakeAuthRepository()
-        vm = RegisterViewModel(auth, FakeCityLookupRepository())
+        consent = FakeConsentRepository()
+        vm = RegisterViewModel(auth, FakeCityLookupRepository(), consent, PrivacyPolicyLink("https://church.example/privacy"))
     }
 
     @AfterTest
@@ -86,6 +92,8 @@ class RegisterViewModelTest {
         vm.onCityChange("Düsseldorf")
         vm.onBirthDateChange("2000.08.16")
         vm.onIdentityStatusChange(IdentityStatus.UNIVERSITY_STUDENT)
+        dispatcher.scheduler.runCurrent()
+        vm.onConsentChange(true)
     }
 
     @Test
@@ -513,5 +521,62 @@ class RegisterViewModelTest {
         vm.onUnavailableDialogDismissed()
 
         assertFalse(vm.uiState.value.showUnavailableDialog)
+    }
+
+    @Test
+    fun validFieldsWithoutAcceptanceNeverReachRegistration() = runTest {
+        fillMinimumValidForm()
+        vm.onConsentChange(false)
+        vm.register(); advanceUntilIdle()
+        assertEquals(0, auth.registerCalls)
+    }
+
+    @Test
+    fun registrationCarriesTheVersionThatWasAccepted() = runTest {
+        fillMinimumValidForm()
+        vm.register(); advanceUntilIdle()
+        assertEquals("policy-1", auth.lastRequest?.consent?.version)
+        assertEquals(true, auth.lastRequest?.consent?.accepted)
+    }
+
+    @Test
+    fun outdatedVersionDoesNotBecomeAnEmailConflictAndNeedsANewChoice() = runTest {
+        fillMinimumValidForm()
+        consent.policyResult = Result.success(listOf(TestPrivacyPolicy.copy(version = "policy-2")))
+        auth.registerResult = Result.failure(RegisterException(null, reason = RegisterFailureReason.CONSENT_VERSION_OUTDATED))
+        vm.register(); advanceUntilIdle()
+        assertEquals("policy-2", vm.uiState.value.consent.policy?.version)
+        assertFalse(vm.uiState.value.consent.accepted)
+        assertEquals(ConsentProblem.VERSION_OUTDATED, vm.uiState.value.consent.problem)
+        assertNull(vm.uiState.value.bannerError)
+        vm.register(); advanceUntilIdle()
+        assertEquals(1, auth.registerCalls)
+    }
+
+    @Test
+    fun missingConsentShowsItsOwnNoticeNotAnEmailConflict() = runTest {
+        fillMinimumValidForm()
+        auth.registerResult = Result.failure(RegisterException(null, reason = RegisterFailureReason.CONSENT_REQUIRED))
+        vm.register(); advanceUntilIdle()
+        assertEquals(ConsentProblem.REQUIRED, vm.uiState.value.consent.problem)
+        assertFalse(vm.uiState.value.consent.accepted)
+        assertNull(vm.uiState.value.bannerError)
+    }
+
+    @Test
+    fun failedPolicyLoadNeverUsesAStaleSelection() = runTest {
+        fillMinimumValidForm()
+        consent.policyResult = Result.failure(Exception("offline"))
+        vm.loadConsentPolicy(); advanceUntilIdle()
+        vm.register(); advanceUntilIdle()
+        assertEquals(0, auth.registerCalls)
+        assertFalse(vm.uiState.value.consent.accepted)
+    }
+
+    @Test
+    fun rapidSubmitCannotCreateTwoAccounts() = runTest {
+        fillMinimumValidForm()
+        vm.register(); vm.register(); advanceUntilIdle()
+        assertEquals(1, auth.registerCalls)
     }
 }

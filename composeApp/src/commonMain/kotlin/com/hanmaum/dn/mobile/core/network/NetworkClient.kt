@@ -1,13 +1,16 @@
 package com.hanmaum.dn.mobile.core.network
 
 import com.hanmaum.dn.mobile.BuildKonfig
+import com.hanmaum.dn.mobile.core.domain.model.ApiErrorResponse
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.core.security.MobileAuthConfig
 import io.ktor.client.*
 import io.ktor.client.call.body
+import io.ktor.client.call.save
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.plugin
+import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.request
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
@@ -21,6 +24,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 
 @Serializable
@@ -62,7 +69,27 @@ internal fun shouldSendBearer(
     return isBackend && !isAuthEndpoint
 }
 
-fun createHttpClient(tokenStorage: TokenStorage, engine: HttpClientEngine? = null): HttpClient {
+/**
+ * Fires when the backend answers a call outside the consents endpoints with 403 `CONSENT_REQUIRED`
+ * (server#373), so the session can drop into the consent lock screen instead of a generic error.
+ */
+class ConsentRequiredSignal {
+    private val _events = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val events: SharedFlow<Unit> = _events.asSharedFlow()
+    internal fun emit() { _events.tryEmit(Unit) }
+}
+
+private val consentErrorJson = Json { ignoreUnknownKeys = true; isLenient = true }
+
+internal fun isConsentRequiredCandidate(status: HttpStatusCode, requestHost: String, requestPath: String, backendHost: String): Boolean =
+    status == HttpStatusCode.Forbidden && (requestHost.isBlank() || requestHost == backendHost) &&
+        !requestPath.contains("/consents") && !requestPath.contains("openid-connect")
+
+fun createHttpClient(
+    tokenStorage: TokenStorage,
+    engine: HttpClientEngine? = null,
+    consentRequired: ConsentRequiredSignal = ConsentRequiredSignal(),
+): HttpClient {
     val clientConfig: HttpClientConfig<*>.() -> Unit = {
         install(ContentNegotiation) {
             json(Json {
@@ -150,7 +177,18 @@ fun createHttpClient(tokenStorage: TokenStorage, engine: HttpClientEngine? = nul
             if (!shouldSendBearer(request.url.host, request.url.encodedPath, Url(BuildKonfig.BACKEND_URL).host)) {
                 request.headers.remove(HttpHeaders.Authorization)
             }
-            execute(request)
+            val call = execute(request)
+            val backendHost = Url(BuildKonfig.BACKEND_URL).host
+            if (!isConsentRequiredCandidate(call.response.status, call.request.url.host, call.request.url.encodedPath, backendHost)) {
+                return@intercept call
+            }
+            // The body is a one-shot stream; save() lets the caller read it again after we peek at the code.
+            val saved = call.save()
+            val code = runCatching {
+                consentErrorJson.decodeFromString<ApiErrorResponse>(saved.response.bodyAsText()).code
+            }.getOrNull()
+            if (code == "CONSENT_REQUIRED") consentRequired.emit()
+            saved
         }
     }
 }

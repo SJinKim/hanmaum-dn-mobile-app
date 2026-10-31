@@ -44,11 +44,13 @@ jobs:
           GOOGLE_CALENDAR_API_KEY: ${{ secrets.GOOGLE_CALENDAR_API_KEY }}
           PCLOUD_FOLDER_ENDPOINT: ${{ secrets.PCLOUD_FOLDER_ENDPOINT }}
           PCLOUD_DOWNLOAD_ENDPOINT: ${{ secrets.PCLOUD_DOWNLOAD_ENDPOINT }}
+          PRIVACY_POLICY_URL: ${{ vars.ST_PRIVACY_POLICY_URL }}
         run: |
           echo "GOOGLE_CALENDAR_ID=${GOOGLE_CALENDAR_ID}" > .env
           echo "GOOGLE_CALENDAR_API_KEY=${GOOGLE_CALENDAR_API_KEY}" >> .env
           echo "PCLOUD_FOLDER_ENDPOINT=${PCLOUD_FOLDER_ENDPOINT}" >> .env
           echo "PCLOUD_DOWNLOAD_ENDPOINT=${PCLOUD_DOWNLOAD_ENDPOINT}" >> .env
+          echo "PRIVACY_POLICY_URL=${PRIVACY_POLICY_URL}" >> .env
 
       - name: Write Firebase service account
         env:
@@ -95,11 +97,13 @@ jobs:
           GOOGLE_CALENDAR_API_KEY: ${{ secrets.GOOGLE_CALENDAR_API_KEY }}
           PCLOUD_FOLDER_ENDPOINT: ${{ secrets.PCLOUD_FOLDER_ENDPOINT }}
           PCLOUD_DOWNLOAD_ENDPOINT: ${{ secrets.PCLOUD_DOWNLOAD_ENDPOINT }}
+          PRIVACY_POLICY_URL: ${{ vars.PROD_PRIVACY_POLICY_URL }}
         run: |
           echo "GOOGLE_CALENDAR_ID=${GOOGLE_CALENDAR_ID}" > .env
           echo "GOOGLE_CALENDAR_API_KEY=${GOOGLE_CALENDAR_API_KEY}" >> .env
           echo "PCLOUD_FOLDER_ENDPOINT=${PCLOUD_FOLDER_ENDPOINT}" >> .env
           echo "PCLOUD_DOWNLOAD_ENDPOINT=${PCLOUD_DOWNLOAD_ENDPOINT}" >> .env
+          echo "PRIVACY_POLICY_URL=${PRIVACY_POLICY_URL}" >> .env
 
       - name: Decode keystore
         env:
@@ -185,11 +189,13 @@ jobs:
           GOOGLE_CALENDAR_API_KEY: ${{ secrets.GOOGLE_CALENDAR_API_KEY }}
           PCLOUD_FOLDER_ENDPOINT: ${{ secrets.PCLOUD_FOLDER_ENDPOINT }}
           PCLOUD_DOWNLOAD_ENDPOINT: ${{ secrets.PCLOUD_DOWNLOAD_ENDPOINT }}
+          PRIVACY_POLICY_URL: ${{ vars.ST_PRIVACY_POLICY_URL }}
         run: |
           echo "GOOGLE_CALENDAR_ID=${GOOGLE_CALENDAR_ID}" > .env
           echo "GOOGLE_CALENDAR_API_KEY=${GOOGLE_CALENDAR_API_KEY}" >> .env
           echo "PCLOUD_FOLDER_ENDPOINT=${PCLOUD_FOLDER_ENDPOINT}" >> .env
           echo "PCLOUD_DOWNLOAD_ENDPOINT=${PCLOUD_DOWNLOAD_ENDPOINT}" >> .env
+          echo "PRIVACY_POLICY_URL=${PRIVACY_POLICY_URL}" >> .env
           echo "IOS_BACKEND_URL=https://api.staging.graceops.de" >> .env
           echo "IOS_KEYCLOAK_URL=https://auth.graceops.de" >> .env
           echo "IOS_KEYCLOAK_REALM=hanmaum-dn-st" >> .env
@@ -281,11 +287,13 @@ jobs:
           GOOGLE_CALENDAR_API_KEY: ${{ secrets.GOOGLE_CALENDAR_API_KEY }}
           PCLOUD_FOLDER_ENDPOINT: ${{ secrets.PCLOUD_FOLDER_ENDPOINT }}
           PCLOUD_DOWNLOAD_ENDPOINT: ${{ secrets.PCLOUD_DOWNLOAD_ENDPOINT }}
+          PRIVACY_POLICY_URL: ${{ vars.PROD_PRIVACY_POLICY_URL }}
         run: |
           echo "GOOGLE_CALENDAR_ID=${GOOGLE_CALENDAR_ID}" > .env
           echo "GOOGLE_CALENDAR_API_KEY=${GOOGLE_CALENDAR_API_KEY}" >> .env
           echo "PCLOUD_FOLDER_ENDPOINT=${PCLOUD_FOLDER_ENDPOINT}" >> .env
           echo "PCLOUD_DOWNLOAD_ENDPOINT=${PCLOUD_DOWNLOAD_ENDPOINT}" >> .env
+          echo "PRIVACY_POLICY_URL=${PRIVACY_POLICY_URL}" >> .env
           echo "IOS_BACKEND_URL=https://api.graceops.de" >> .env
           echo "IOS_KEYCLOAK_URL=https://auth.graceops.de" >> .env
           echo "IOS_KEYCLOAK_REALM=hanmaum-dn-prod" >> .env

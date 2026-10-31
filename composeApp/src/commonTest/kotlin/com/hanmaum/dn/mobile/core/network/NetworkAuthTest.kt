@@ -6,6 +6,10 @@ import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.request.get
 import io.ktor.http.*
+import io.ktor.client.statement.bodyAsText
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -67,6 +71,32 @@ class NetworkAuthTest {
         assertEquals(HttpStatusCode.Forbidden, client.get("${BuildKonfig.BACKEND_URL}/api/v1/me").status)
         assertEquals(1, requests)
         client.close()
+    }
+
+    private suspend fun consentSignals(url: String, body: String): Pair<Int, String> {
+        val signal = ConsentRequiredSignal()
+        var fired = 0
+        val collector = CoroutineScope(Dispatchers.Unconfined).launch { signal.events.collect { fired++ } }
+        val client = createHttpClient(SessionTokens(), MockEngine {
+            respond(body, HttpStatusCode.Forbidden, headersOf(HttpHeaders.ContentType, "application/json"))
+        }, consentRequired = signal)
+        val text = client.get(url).bodyAsText()
+        client.close(); collector.cancel()
+        return fired to text
+    }
+
+    @Test fun backend403ConsentRequiredSignalsAndKeepsTheBodyReadable() = runTest {
+        val json = """{"code":"CONSENT_REQUIRED","message":"x"}"""
+        val (fired, text) = consentSignals("${BuildKonfig.BACKEND_URL}/api/v1/events", json)
+        assertEquals(1, fired)
+        assertEquals(json, text)
+    }
+
+    @Test fun otherForbiddenCodesConsentEndpointsAndForeignHostsStaySilent() = runTest {
+        val json = """{"code":"CONSENT_REQUIRED","message":"x"}"""
+        assertEquals(0, consentSignals("${BuildKonfig.BACKEND_URL}/api/v1/events", """{"code":"FORBIDDEN"}""").first)
+        assertEquals(0, consentSignals("${BuildKonfig.BACKEND_URL}/api/v1/members/me/consents", json).first)
+        assertEquals(0, consentSignals("https://foreign.example.org/x", json).first)
     }
 
     @Test fun localLogoutDropsCachedBearerBeforeNextRequest() = runTest {

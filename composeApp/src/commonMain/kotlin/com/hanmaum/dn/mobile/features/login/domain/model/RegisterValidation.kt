@@ -37,6 +37,8 @@ object RegisterValidation {
 enum class RegisterFailureReason {
     UNKNOWN,
     EMAIL_ALREADY_REGISTERED,
+    CONSENT_REQUIRED,
+    CONSENT_VERSION_OUTDATED,
 }
 
 /**
