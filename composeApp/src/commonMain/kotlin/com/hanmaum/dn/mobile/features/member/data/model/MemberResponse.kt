@@ -29,7 +29,13 @@ data class MemberResponse(
     val zipCode: String? = null,
     val city: String? = null,
     val phoneNumber: String? = null,
+    /** Presigned GET with an expiry; null when there is no image or presigning failed. */
     val profileImageUrl: String? = null,
+    /**
+     * Rises on every upload and delete. Together with [publicId] it is the
+     * avatar's cache identity — the URL is not, it is re-signed on every read.
+     */
+    val profileImageVersion: Long = 0,
     val birthDate: String? = null,
     /** IdentityStatus enum name (HDN-332); null for a member who registered before it existed. */
     val identityStatus: String? = null,

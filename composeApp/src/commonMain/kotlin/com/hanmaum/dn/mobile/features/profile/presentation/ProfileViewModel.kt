@@ -114,8 +114,6 @@ class ProfileViewModel(
 
     fun updatePhoneCountry(iso: String) = edit { it.copy(editPhoneCountryIso = iso) }
 
-    fun updateImageUrl(value: String) = edit { it.copy(editImageUrl = value) }
-
     fun updateIdentityStatus(value: IdentityStatus) =
         edit { it.copy(editIdentityStatus = value, identityStatusError = null) }
 
@@ -207,7 +205,6 @@ class ProfileViewModel(
         viewModelScope.launch {
             memberRepository.updateMyProfile(
                 phoneNumber = clearable(current.editPhoneE164, current.profile.phoneNumber),
-                profileImageUrl = current.editImageUrl.ifBlank { null },
                 birthDate = current.editBirthDate.replace('.', '-'),
                 identityStatus = checkNotNull(current.editIdentityStatus).name,
                 // The server trims 소속 and stores a blank one as null, so blank clears it.

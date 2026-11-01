@@ -14,7 +14,6 @@ sealed class ProfileUiState {
         /** National digits only; the dial code lives in [editPhoneCountryIso], as at registration. */
         val editPhone: String = profile.storedPhone()?.second ?: "",
         val editPhoneCountryIso: String = profile.storedPhone()?.first ?: Countries.DEFAULT_ISO,
-        val editImageUrl: String = profile.profileImageUrl ?: "",
         val editBirthDate: String = profile.storedBirthDate(),
         val editIdentityStatus: IdentityStatus? = profile.storedIdentityStatus(),
         val editWorkOrSchool: String = profile.workOrSchool ?: "",
@@ -48,7 +47,6 @@ sealed class ProfileUiState {
         /** True when any edit field differs from the loaded profile — gates the Save button. */
         val isDirty: Boolean
             get() = isPhoneDirty ||
-                editImageUrl != (profile.profileImageUrl ?: "") ||
                 editBirthDate != profile.storedBirthDate() ||
                 editIdentityStatus != profile.storedIdentityStatus() ||
                 editWorkOrSchool != (profile.workOrSchool ?: "") ||

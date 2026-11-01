@@ -17,8 +17,47 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
+import com.hanmaum.dn.mobile.features.member.domain.model.PreparedProfileImage
+import com.hanmaum.dn.mobile.features.member.domain.model.ProfileImageException
+import com.hanmaum.dn.mobile.features.member.domain.model.ProfileImageFailure
+import io.ktor.utils.io.errors.IOException
+import kotlinx.coroutines.CancellationException
+import kotlinx.io.Buffer
+import kotlinx.io.Source
 
 private val testJson = Json { ignoreUnknownKeys = true }
+
+private class FakePreparedImage(private val bytes: ByteArray) : PreparedProfileImage {
+    var opened = 0
+    var released = false
+    override val byteLength: Long = bytes.size.toLong()
+    override fun open(): Source { opened++; return Buffer().apply { write(bytes) } }
+    override fun release() { released = true }
+}
+
+private fun statusClient(
+    status: HttpStatusCode,
+    body: String,
+    onRequest: (suspend (HttpRequestData) -> Unit)? = null,
+): HttpClient = HttpClient(MockEngine { request ->
+    onRequest?.invoke(request)
+    respond(
+        content = body,
+        status = status,
+        headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+    )
+}) {
+    install(ContentNegotiation) { json(testJson) }
+    defaultRequest {
+        if (url.host.isBlank()) {
+            val path = url.encodedPath.removePrefix("/")
+            url.takeFrom("http://localhost")
+            url.encodedPath = "/$path"
+        }
+    }
+}
 
 private fun mockClient(
     responseJson: String,
@@ -76,7 +115,7 @@ class MemberRepositoryImplTest {
             path = req.url.encodedPath
         }
         MemberRepositoryImpl(client).updateMyProfile(
-            phoneNumber = null, profileImageUrl = null, birthDate = null,
+            phoneNumber = null, birthDate = null,
             street = "Musterstraße", houseNumber = "12", zipCode = "50667", city = "Köln",
             identityStatus = null, workOrSchool = null,
         )
@@ -94,7 +133,7 @@ class MemberRepositoryImplTest {
         val json = testJson.encodeToString(ApiResponse(success = true, data = member))
         val client = mockClient(json) { req -> body = (req.body as TextContent).text }
         MemberRepositoryImpl(client).updateMyProfile(
-            phoneNumber = null, profileImageUrl = null, birthDate = null,
+            phoneNumber = null, birthDate = null,
             street = "Musterstraße", houseNumber = "12", zipCode = "50667", city = "Köln",
             identityStatus = null, workOrSchool = null,
         )
@@ -111,7 +150,7 @@ class MemberRepositoryImplTest {
         val json = testJson.encodeToString(ApiResponse(success = true, data = member))
         val client = mockClient(json) { req -> body = (req.body as TextContent).text }
         MemberRepositoryImpl(client).updateMyProfile(
-            phoneNumber = null, profileImageUrl = null, birthDate = null,
+            phoneNumber = null, birthDate = null,
             street = null, houseNumber = null, zipCode = null, city = "Köln",
             identityStatus = null, workOrSchool = null,
         )
@@ -172,7 +211,7 @@ class MemberRepositoryImplTest {
         val json = testJson.encodeToString(ApiResponse(success = true, data = member))
         val client = mockClient(json) { req -> body = (req.body as TextContent).text }
         MemberRepositoryImpl(client).updateMyProfile(
-            phoneNumber = null, profileImageUrl = null, birthDate = "1992-12-07",
+            phoneNumber = null, birthDate = "1992-12-07",
             street = null, houseNumber = null, zipCode = null, city = null,
             identityStatus = null, workOrSchool = null,
         )
@@ -185,7 +224,7 @@ class MemberRepositoryImplTest {
         val json = testJson.encodeToString(ApiResponse(success = true, data = member))
         val client = mockClient(json) { req -> body = (req.body as TextContent).text }
         MemberRepositoryImpl(client).updateMyProfile(
-            phoneNumber = null, profileImageUrl = null, birthDate = null,
+            phoneNumber = null, birthDate = null,
             street = null, houseNumber = null, zipCode = null, city = "Köln",
             identityStatus = null, workOrSchool = null,
         )
@@ -199,7 +238,7 @@ class MemberRepositoryImplTest {
         val json = testJson.encodeToString(ApiResponse(success = true, data = member))
         val client = mockClient(json) { req -> body = (req.body as TextContent).text }
         MemberRepositoryImpl(client).updateMyProfile(
-            phoneNumber = null, profileImageUrl = null, birthDate = null,
+            phoneNumber = null, birthDate = null,
             street = null, houseNumber = null, zipCode = null, city = null,
             identityStatus = "UNIVERSITY_STUDENT", workOrSchool = "TU Berlin",
         )
@@ -216,5 +255,149 @@ class MemberRepositoryImplTest {
         val p = MemberRepositoryImpl(mockClient(json)).getMyProfile().getOrThrow()
         assertEquals("EMPLOYEE", p.identityStatus)
         assertEquals("Siemens", p.workOrSchool)
+    }
+    @Test
+    fun getMyProfile_mapsProfileImageVersionAndDefaultsToZero() = runTest {
+        val withVersion = """
+            {"success":true,"data":{"publicId":"u1","firstName":"S","lastName":"K","status":"ACTIVE",
+             "profileImageUrl":"https://storage.example/a.jpg?sig=1","profileImageVersion":4}}
+        """.trimIndent()
+        val p = MemberRepositoryImpl(mockClient(withVersion)).getMyProfile().getOrThrow()
+        assertEquals(4L, p.profileImageVersion)
+        assertEquals("https://storage.example/a.jpg?sig=1", p.profileImageUrl)
+
+        val without = """{"success":true,"data":{"publicId":"u1","firstName":"S","lastName":"K","status":"ACTIVE"}}"""
+        assertEquals(0L, MemberRepositoryImpl(mockClient(without)).getMyProfile().getOrThrow().profileImageVersion)
+    }
+
+    @Test
+    fun updateMyProfile_neverSendsAnImageField() = runTest {
+        // The image moved to its own endpoint; the server ignores it in PATCH (#139).
+        var body = ""
+        val json = testJson.encodeToString(ApiResponse(success = true, data = member))
+        val client = mockClient(json) { req -> body = (req.body as TextContent).text }
+        MemberRepositoryImpl(client).updateMyProfile(
+            phoneNumber = "+491511234567", birthDate = null,
+            street = null, houseNumber = null, zipCode = null, city = "Köln",
+            identityStatus = null, workOrSchool = null,
+        )
+        assertFalse(body.contains("profileImage"), "body was $body")
+    }
+
+    @Test
+    fun uploadProfileImage_putsOneJpegFilePartAndReturnsTheServerProfile() = runTest {
+        val image = FakePreparedImage(byteArrayOf(1, 2, 3, 4, 5))
+        var method: HttpMethod? = null
+        var path = ""
+        var contentType: ContentType? = null
+        var body = ""
+        val updated = member.copy(profileImageUrl = "https://storage.example/p.jpg?sig=2", profileImageVersion = 3)
+        val client = statusClient(HttpStatusCode.OK, testJson.encodeToString(ApiResponse(success = true, data = updated))) { req ->
+            method = req.method
+            path = req.url.encodedPath
+            contentType = req.body.contentType
+            body = req.body.toByteArray().decodeToString()
+        }
+        val progress = mutableListOf<Long>()
+        val result = MemberRepositoryImpl(client).uploadProfileImage(image) { sent, _ -> progress += sent }
+
+        assertEquals(HttpMethod.Put, method)
+        assertEquals("/members/me/profile-image", path)
+        assertTrue(contentType!!.match(ContentType.MultiPart.FormData), "was $contentType")
+        assertTrue(contentType!!.parameter("boundary") != null, "multipart needs Ktor's boundary")
+        assertTrue(body.contains("name=file"), "body was $body")
+        assertTrue(body.contains("filename=\"profile.jpg\""), "body was $body")
+        assertTrue(body.contains("Content-Type: image/jpeg"), "body was $body")
+        assertTrue(body.contains("Content-Length: 5"), "body was $body")
+        assertEquals(1, image.opened)
+        assertEquals(3L, result.getOrThrow().profileImageVersion)
+        assertTrue(progress.isNotEmpty())
+    }
+
+    @Test
+    fun uploadProfileImage_mapsStableErrorCodes() = runTest {
+        val cases = listOf(
+            Triple(HttpStatusCode.PayloadTooLarge, "PROFILE_IMAGE_TOO_LARGE", ProfileImageFailure.TOO_LARGE),
+            Triple(HttpStatusCode.UnsupportedMediaType, "PROFILE_IMAGE_UNSUPPORTED_TYPE", ProfileImageFailure.UNSUPPORTED_TYPE),
+            Triple(HttpStatusCode.UnprocessableEntity, "PROFILE_IMAGE_INVALID", ProfileImageFailure.INVALID_IMAGE),
+            Triple(HttpStatusCode.ServiceUnavailable, "PROFILE_IMAGE_STORAGE_UNAVAILABLE", ProfileImageFailure.STORAGE_UNAVAILABLE),
+            Triple(HttpStatusCode.Forbidden, "CONSENT_REQUIRED", ProfileImageFailure.ACCESS_DENIED),
+        )
+        for ((status, code, expected) in cases) {
+            val client = statusClient(status, """{"status":${status.value},"message":"x","code":"$code"}""")
+            val error = MemberRepositoryImpl(client).uploadProfileImage(FakePreparedImage(byteArrayOf(1))) { _, _ -> }
+                .exceptionOrNull()
+            assertEquals(expected, assertIs<ProfileImageException>(error).failure, "for $code")
+        }
+    }
+
+    @Test
+    fun uploadProfileImage_fallsBackToStatusWithoutACode() = runTest {
+        val cases = mapOf(
+            HttpStatusCode.Unauthorized to ProfileImageFailure.AUTHENTICATION_REQUIRED,
+            HttpStatusCode.NotFound to ProfileImageFailure.PROFILE_UNAVAILABLE,
+            HttpStatusCode.PayloadTooLarge to ProfileImageFailure.TOO_LARGE,
+            HttpStatusCode.InternalServerError to ProfileImageFailure.UNKNOWN,
+        )
+        for ((status, expected) in cases) {
+            val client = statusClient(status, "not json")
+            val error = MemberRepositoryImpl(client).uploadProfileImage(FakePreparedImage(byteArrayOf(1))) { _, _ -> }
+                .exceptionOrNull()
+            assertEquals(expected, assertIs<ProfileImageException>(error).failure, "for $status")
+        }
+    }
+
+    @Test
+    fun uploadProfileImage_treatsAnUnsuccessfulEnvelopeAsFailure() = runTest {
+        val client = statusClient(HttpStatusCode.OK, """{"success":false,"data":null}""")
+        val error = MemberRepositoryImpl(client).uploadProfileImage(FakePreparedImage(byteArrayOf(1))) { _, _ -> }
+            .exceptionOrNull()
+        assertEquals(ProfileImageFailure.UNKNOWN, assertIs<ProfileImageException>(error).failure)
+    }
+
+    @Test
+    fun uploadProfileImage_mapsTransportErrorsToNetwork() = runTest {
+        val client = HttpClient(MockEngine { throw IOException("offline") }) {
+            install(ContentNegotiation) { json(testJson) }
+        }
+        val error = MemberRepositoryImpl(client).uploadProfileImage(FakePreparedImage(byteArrayOf(1))) { _, _ -> }
+            .exceptionOrNull()
+        assertEquals(ProfileImageFailure.NETWORK, assertIs<ProfileImageException>(error).failure)
+    }
+
+    @Test
+    fun uploadProfileImage_rethrowsCancellation() = runTest {
+        val client = HttpClient(MockEngine { throw CancellationException("left the screen") }) {
+            install(ContentNegotiation) { json(testJson) }
+        }
+        assertFailsWith<CancellationException> {
+            MemberRepositoryImpl(client).uploadProfileImage(FakePreparedImage(byteArrayOf(1))) { _, _ -> }
+        }
+    }
+
+    @Test
+    fun deleteProfileImage_deletesAndReturnsTheProfileWithoutImage() = runTest {
+        var method: HttpMethod? = null
+        var path = ""
+        val cleared = member.copy(profileImageUrl = null, profileImageVersion = 5)
+        val client = statusClient(HttpStatusCode.OK, testJson.encodeToString(ApiResponse(success = true, data = cleared))) { req ->
+            method = req.method
+            path = req.url.encodedPath
+        }
+        val p = MemberRepositoryImpl(client).deleteProfileImage().getOrThrow()
+        assertEquals(HttpMethod.Delete, method)
+        assertEquals("/members/me/profile-image", path)
+        assertEquals(null, p.profileImageUrl)
+        assertEquals(5L, p.profileImageVersion)
+    }
+
+    @Test
+    fun deleteProfileImage_mapsStorageUnavailable() = runTest {
+        val client = statusClient(
+            HttpStatusCode.ServiceUnavailable,
+            """{"status":503,"code":"PROFILE_IMAGE_STORAGE_UNAVAILABLE"}""",
+        )
+        val error = MemberRepositoryImpl(client).deleteProfileImage().exceptionOrNull()
+        assertEquals(ProfileImageFailure.STORAGE_UNAVAILABLE, assertIs<ProfileImageException>(error).failure)
     }
 }

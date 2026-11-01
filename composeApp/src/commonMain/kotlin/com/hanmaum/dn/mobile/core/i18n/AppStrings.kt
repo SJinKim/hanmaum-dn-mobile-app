@@ -268,7 +268,6 @@ interface AppStrings {
     val labelHouseNumber: String
     val labelZipCode: String
     val labelCity: String
-    val profileImageUrl: String
     // Ministry
     val ministryListTitle: String
     val ministryListSubtitle: String
@@ -820,7 +819,6 @@ object EnStrings : AppStrings {
     override val labelHouseNumber = "HOUSE NO."
     override val labelZipCode = "ZIP CODE"
     override val labelCity = "CITY"
-    override val profileImageUrl = "PROFILE IMAGE URL"
     override val ministryListTitle = "Ministries"
     override val ministryListSubtitle = "Discover the ministries serving our church"
     override val ministryListEmpty = "No ministries yet"
@@ -1289,7 +1287,6 @@ object KoStrings : AppStrings {
     override val labelHouseNumber = "번지"
     override val labelZipCode = "우편번호"
     override val labelCity = "도시"
-    override val profileImageUrl = "프로필 사진 URL"
     override val ministryListTitle = "사역"
     override val ministryListSubtitle = "교회의 다양한 사역을 만나보세요"
     override val ministryListEmpty = "등록된 사역이 없습니다"

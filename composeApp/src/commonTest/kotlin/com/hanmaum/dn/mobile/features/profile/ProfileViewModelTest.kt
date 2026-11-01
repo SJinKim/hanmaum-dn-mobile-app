@@ -11,6 +11,7 @@ import com.hanmaum.dn.mobile.features.login.domain.model.IdentityStatus
 import com.hanmaum.dn.mobile.features.login.domain.repository.CityLookupRepository
 import com.hanmaum.dn.mobile.features.login.presentation.RegisterFieldError
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
+import com.hanmaum.dn.mobile.features.member.domain.model.PreparedProfileImage
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import com.hanmaum.dn.mobile.features.verse.FakeVerseRecordRepository
 import com.hanmaum.dn.mobile.features.notification.domain.model.NotificationPage
@@ -47,7 +48,6 @@ private class FakeMemberRepository : MemberRepository {
 
     data class UpdateArgs(
         val phoneNumber: String?,
-        val profileImageUrl: String?,
         val birthDate: String?,
         val street: String?,
         val houseNumber: String?,
@@ -63,7 +63,6 @@ private class FakeMemberRepository : MemberRepository {
 
     override suspend fun updateMyProfile(
         phoneNumber: String?,
-        profileImageUrl: String?,
         birthDate: String?,
         street: String?,
         houseNumber: String?,
@@ -73,12 +72,11 @@ private class FakeMemberRepository : MemberRepository {
         workOrSchool: String?,
     ): Result<MemberResponse> {
         lastUpdate = UpdateArgs(
-            phoneNumber, profileImageUrl, birthDate, street, houseNumber, zipCode, city, identityStatus, workOrSchool,
+            phoneNumber, birthDate, street, houseNumber, zipCode, city, identityStatus, workOrSchool,
         )
         // Mirror backend PATCH semantics: null keeps the old value.
         profile = profile.copy(
             phoneNumber = phoneNumber ?: profile.phoneNumber,
-            profileImageUrl = profileImageUrl ?: profile.profileImageUrl,
             birthDate = birthDate ?: profile.birthDate,
             street = street ?: profile.street,
             houseNumber = houseNumber ?: profile.houseNumber,
@@ -89,6 +87,11 @@ private class FakeMemberRepository : MemberRepository {
         )
         return Result.success(profile)
     }
+    override suspend fun uploadProfileImage(
+        image: PreparedProfileImage,
+        onProgress: (sent: Long, total: Long?) -> Unit,
+    ): Result<MemberResponse> = Result.success(profile)
+    override suspend fun deleteProfileImage(): Result<MemberResponse> = Result.success(profile)
 }
 
 private class FakeCityLookupRepository(private val cities: Map<String, String> = emptyMap()) : CityLookupRepository {
