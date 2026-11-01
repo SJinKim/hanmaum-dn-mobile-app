@@ -718,6 +718,67 @@ class ProfileViewModelTest {
     }
 
     @Test
+    fun savingWhileARetryableErrorIsShownKeepsTheRetryAlive() = runTest(dispatcher) {
+        val repo = FakeMemberRepository().also { withPhoto(it) }
+        val prepared = FakePreparedImage()
+        val viewModel = avatarVm(repo, FakePreparer { ProfileImagePreparation.Ready(prepared) })
+        viewModel.loadProfile(); advanceUntilIdle()
+        repo.uploadResults += Result.failure(ProfileImageException(ProfileImageFailure.STORAGE_UNAVAILABLE))
+        viewModel.pickAvatar(FakePicker { ProfileImagePick.Selected(FakePickedImage()) }); advanceUntilIdle()
+        viewModel.startEditing()
+        viewModel.updateCity("Bonn")
+
+        viewModel.saveProfile(); advanceUntilIdle()
+
+        val saved = success(viewModel)
+        assertTrue(saved.saveSuccess)
+        assertSame(prepared, saved.avatarPreview)
+        viewModel.retryAvatarUpload(); advanceUntilIdle()
+        assertEquals(2, repo.uploadedImages.size)
+        assertEquals(3L, success(viewModel).avatar?.version)
+    }
+
+    @Test
+    fun aDeleteLostToTheNetworkFailsWithARetryThatDeletesAgain() = runTest(dispatcher) {
+        val repo = FakeMemberRepository().also { withPhoto(it) }
+        repo.deleteResult = Result.failure(ProfileImageException(ProfileImageFailure.NETWORK))
+        val viewModel = avatarVm(repo)
+        viewModel.loadProfile(); advanceUntilIdle()
+
+        viewModel.requestAvatarDelete()
+        viewModel.confirmAvatarDelete(); advanceUntilIdle()
+
+        val failed = success(viewModel)
+        assertEquals(AvatarActivity.Failed(ProfileImageFailure.NETWORK, canRetry = true), failed.avatarActivity)
+        assertEquals(2L, failed.avatar?.version, "the photo is still there")
+
+        repo.deleteResult = null
+        viewModel.retryAvatarUpload(); advanceUntilIdle()
+
+        assertEquals(2, repo.deleteCalls)
+        assertEquals(AvatarActivity.Idle, success(viewModel).avatarActivity)
+        assertNull(success(viewModel).avatar)
+        assertTrue(repo.uploadedImages.isEmpty())
+    }
+
+    @Test
+    fun anUnansweredDeleteRecheckedAsUnchangedOffersTheDeleteAgain() = runTest(dispatcher) {
+        val repo = FakeMemberRepository().also { withPhoto(it) }
+        repo.deleteResult = Result.failure(ProfileImageException(ProfileImageFailure.NETWORK))
+        val viewModel = avatarVm(repo)
+        viewModel.loadProfile(); advanceUntilIdle()
+        repo.profileResults += Result.failure(OfflineException())
+
+        viewModel.requestAvatarDelete()
+        viewModel.confirmAvatarDelete(); advanceUntilIdle()
+        assertEquals(AvatarActivity.Uncertain, success(viewModel).avatarActivity)
+
+        viewModel.recheckAvatar(); advanceUntilIdle()
+
+        assertEquals(AvatarActivity.Failed(ProfileImageFailure.NETWORK, canRetry = true), success(viewModel).avatarActivity)
+    }
+
+    @Test
     fun aPhotoUploadKeepsTheUnsavedContactDraft() = runTest(dispatcher) {
         val repo = FakeMemberRepository()
         val viewModel = avatarVm(repo)
@@ -821,6 +882,22 @@ class ProfileViewModelTest {
         assertEquals(callsBefore + 1, repo.profileCalls)
         assertEquals("https://storage.example/u1.jpg?sig=fresh", renewed.url)
         assertEquals(expired.cacheKey, renewed.cacheKey)
+    }
+
+    @Test
+    fun aRenewedUrlThatFailsAgainIsNotRenewedAgain() = runTest(dispatcher) {
+        val repo = FakeMemberRepository().also { withPhoto(it) }
+        val viewModel = avatarVm(repo)
+        viewModel.loadProfile(); advanceUntilIdle()
+        repo.profile = repo.profile.copy(profileImageUrl = "https://storage.example/u1.jpg?sig=a")
+        viewModel.onAvatarLoadFailed(success(viewModel).avatar!!, 403); advanceUntilIdle()
+        val callsAfterFirst = repo.profileCalls
+        repo.profile = repo.profile.copy(profileImageUrl = "https://storage.example/u1.jpg?sig=b")
+
+        // The renewed URL is a different string but the same version.
+        viewModel.onAvatarLoadFailed(success(viewModel).avatar!!, 403); advanceUntilIdle()
+
+        assertEquals(callsAfterFirst, repo.profileCalls)
     }
 
     @Test

@@ -258,7 +258,14 @@ class ProfileViewModel(
                 onSuccess = { updated ->
                     val now = _uiState.value as? ProfileUiState.Success
                     _uiState.value = ProfileUiState.Success(keepNewerAvatar(now?.profile ?: current.profile, updated))
-                        .copy(saveSuccess = true, avatarActivity = now?.avatarActivity ?: AvatarActivity.Idle)
+                        .copy(
+                            saveSuccess = true,
+                            // Read from `now`: the photo state moved on while the PATCH ran,
+                            // and a lost preview would leave the retry button dead.
+                            avatarActivity = now?.avatarActivity ?: AvatarActivity.Idle,
+                            avatarPreview = now?.avatarPreview,
+                            isOffline = now?.isOffline ?: false,
+                        )
                 },
                 onFailure = { err ->
                     _uiState.value = current.copy(isSaving = false, saveError = UiMessage.SAVE_PROFILE_FAILED)
@@ -271,6 +278,9 @@ class ProfileViewModel(
 
     private var avatarJob: Job? = null
 
+    /** What the open outcome belongs to, so a recheck judges "unchanged" the right way. */
+    private var lastActionWasDelete = false
+
     /**
      * Bumped by every new photo action, cancel and logout. A callback or a
      * response carrying an older number belongs to an abandoned action and
@@ -279,13 +289,18 @@ class ProfileViewModel(
     @Volatile
     private var avatarOperation = 0L
 
-    /** Signed URLs already renewed once, so an image that keeps failing cannot loop. */
+    /**
+     * Cache keys (`profile:{publicId}:{version}`) already renewed once. A renewed
+     * URL is always new, so the URL cannot be the key: a storage that keeps
+     * refusing would loop.
+     */
     private val renewedAvatarUrls = mutableSetOf<String>()
 
     /** Opens the system picker, prepares the pick and uploads it. Nothing is saved until the server answers. */
     fun pickAvatar(picker: ProfileImagePicker) {
         val current = _uiState.value as? ProfileUiState.Success ?: return
         if (!current.canChangeAvatar) return
+        lastActionWasDelete = false
         releasePreview()
         val op = ++avatarOperation
         setAvatar(op, AvatarActivity.Picking)
@@ -323,12 +338,20 @@ class ProfileViewModel(
         }
     }
 
-    /** Sends the same prepared file again after a retryable failure. */
+    /**
+     * Repeats the failed photo action: the same prepared file for an upload,
+     * the removal when there is no file (a delete never keeps one).
+     */
     fun retryAvatarUpload() {
         val current = _uiState.value as? ProfileUiState.Success ?: return
         val failed = current.avatarActivity as? AvatarActivity.Failed ?: return
-        val image = current.avatarPreview ?: return
         if (!failed.canRetry || current.isSaving || current.isOffline) return
+        val image = current.avatarPreview
+        if (image == null) {
+            if (current.avatar != null) startAvatarDelete(current)
+            return
+        }
+        lastActionWasDelete = false
         val op = ++avatarOperation
         avatarJob = viewModelScope.launch { upload(op, image) }
     }
@@ -358,7 +381,7 @@ class ProfileViewModel(
     fun recheckAvatar() {
         val current = _uiState.value as? ProfileUiState.Success ?: return
         if (current.avatarActivity !is AvatarActivity.Uncertain) return
-        reconcile(++avatarOperation, versionBefore = current.profile.profileImageVersion)
+        reconcile(++avatarOperation, versionBefore = current.profile.profileImageVersion, deleting = lastActionWasDelete)
     }
 
     /**
@@ -393,6 +416,11 @@ class ProfileViewModel(
         val current = _uiState.value as? ProfileUiState.Success ?: return
         edit { it.copy(showAvatarDeleteConfirm = false) }
         if (!current.canChangeAvatar || current.avatar == null) return
+        startAvatarDelete(current)
+    }
+
+    private fun startAvatarDelete(current: ProfileUiState.Success) {
+        lastActionWasDelete = true
         releasePreview()
         val op = ++avatarOperation
         val versionBefore = current.profile.profileImageVersion
@@ -407,7 +435,7 @@ class ProfileViewModel(
                 onFailure = { error ->
                     val failure = (error as? ProfileImageException)?.failure ?: ProfileImageFailure.UNKNOWN
                     if (failure == ProfileImageFailure.NETWORK) {
-                        reconcile(op, versionBefore)
+                        reconcile(op, versionBefore, deleting = true)
                     } else {
                         setAvatar(op, AvatarActivity.Failed(failure, canRetry = false))
                     }
@@ -418,13 +446,13 @@ class ProfileViewModel(
 
     /**
      * The signed GET of the avatar was refused (401/403): it most likely
-     * expired. Renew it through members/me once per URL; the cache key stays
+     * expired. Renew it through members/me once per version; the cache key stays
      * the same because the version did not change.
      */
     fun onAvatarLoadFailed(avatar: ProfileAvatar, httpStatus: Int?) {
         if (httpStatus != 401 && httpStatus != 403) return
-        val url = avatar.url ?: return
-        if (!renewedAvatarUrls.add(url)) return
+        if (avatar.url == null) return
+        if (!renewedAvatarUrls.add(avatar.cacheKey)) return
         viewModelScope.launch {
             memberRepository.getMyProfile().onSuccess { fresh ->
                 val current = _uiState.value as? ProfileUiState.Success ?: return@onSuccess
@@ -469,17 +497,24 @@ class ProfileViewModel(
      * Reads the profile to learn what the server kept. A higher version means
      * the photo was stored after all. A GET can still miss a commit that
      * lands later, which is why the next profile entry loads again.
+     *
+     * "Unchanged" means different things: after an upload the member can try
+     * again with the kept file; after a delete the photo is still there, so
+     * the removal failed and is offered again.
      */
-    private fun reconcile(op: Long, versionBefore: Long) {
+    private fun reconcile(op: Long, versionBefore: Long, deleting: Boolean = false) {
         setAvatar(op, AvatarActivity.Reconciling)
         viewModelScope.launch {
             memberRepository.getMyProfile().fold(
                 onSuccess = { fresh ->
                     if (op != avatarOperation) return@fold
                     applyConfirmed(fresh)
-                    val preview = (_uiState.value as? ProfileUiState.Success)?.avatarPreview
+                    val state = _uiState.value as? ProfileUiState.Success
+                    val preview = state?.avatarPreview
                     when {
-                        fresh.profileImageVersion > versionBefore -> {
+                        deleting && state?.avatar != null && fresh.profileImageVersion <= versionBefore ->
+                            setAvatar(op, AvatarActivity.Failed(ProfileImageFailure.NETWORK, canRetry = true))
+                        fresh.profileImageVersion > versionBefore || deleting -> {
                             releasePreview()
                             setAvatar(op, AvatarActivity.Idle)
                         }

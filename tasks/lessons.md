@@ -363,3 +363,16 @@ veralteten Branch gearbeitet (6 Commits hinter `origin/main`) und nicht nachgese
 **Regel:** Bevor ein Issue entworfen oder gespeckt wird: `git fetch` und
 `gh pr list --state merged --search "<issue-nr>"` bzw. `git log origin/main --grep`.
 Ist es schon gebaut, wird Figma an den Code angeglichen, nicht umgekehrt.
+
+## Zustand beim Neuaufbau vollständig mitnehmen; „einmal pro X" mit stabilem Schlüssel
+
+**2026-11-01.** Review #315: `saveProfile` baute `Success(...)` neu und kopierte nur
+`avatarActivity` zurück. `avatarPreview` und `isOffline` gingen verloren, der
+Retry-Button des Fotos war danach tot. Die URL-Erneuerung war „einmal pro URL"
+geschützt, aber jede Erneuerung liefert eine neue URL, also nie begrenzt. Nach
+`reconcile` war „unverändert" beim Löschen ein stiller Erfolg statt ein Fehlschlag.
+
+**Regel:** Zustand aus dem *aktuellen* State per `copy` ableiten (nicht aus dem Stand
+vor dem Request). Einmal-Schutz mit Schlüssel, der pro Versuch gleich bleibt
+(Cache-Key/Version), nie mit presigned URL. Nach Server-Abgleich braucht jede
+Operation (Upload/Delete) ihr eigenes „unverändert"-Ergebnis.
