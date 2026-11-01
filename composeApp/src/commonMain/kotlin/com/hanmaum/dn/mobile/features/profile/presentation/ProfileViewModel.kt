@@ -374,6 +374,20 @@ class ProfileViewModel(
         reconcile(++avatarOperation, versionBefore = current.profile.profileImageVersion)
     }
 
+    /**
+     * Offline notice → 다시 시도. Unlike [loadProfile] it also runs over an
+     * unsaved draft, because it only takes the photo fields and the
+     * connection state from the answer.
+     */
+    fun retryConnection() {
+        viewModelScope.launch {
+            memberRepository.getMyProfile().fold(
+                onSuccess = { fresh -> applyConfirmed(fresh) },
+                onFailure = { error -> edit { it.copy(isOffline = error !is ProfileLoadException) } },
+            )
+        }
+    }
+
     fun dismissAvatarError() {
         val current = _uiState.value as? ProfileUiState.Success ?: return
         if (current.avatarActivity !is AvatarActivity.Failed) return

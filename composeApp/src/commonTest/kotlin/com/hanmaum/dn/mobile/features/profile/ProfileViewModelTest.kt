@@ -957,4 +957,23 @@ class ProfileViewModelTest {
 
         assertFalse(success(viewModel).isOffline)
     }
+
+    @Test
+    fun retryingTheConnectionWorksOverAnUnsavedDraft() = runTest(dispatcher) {
+        val repo = FakeMemberRepository().also { withPhoto(it) }
+        val viewModel = avatarVm(repo)
+        viewModel.loadProfile(); advanceUntilIdle()
+        viewModel.startEditing()
+        viewModel.updateCity("Bonn")
+        repo.profileResults += Result.failure(OfflineException())
+        viewModel.retryConnection(); advanceUntilIdle()
+        assertTrue(success(viewModel).isOffline)
+
+        viewModel.retryConnection(); advanceUntilIdle()
+
+        val state = success(viewModel)
+        assertFalse(state.isOffline)
+        assertTrue(state.canChangeAvatar)
+        assertEquals("Bonn", state.editCity)
+    }
 }

@@ -54,6 +54,35 @@ interface AppStrings {
     val attendanceThisYear: String
     val profileMinistries: String
     val profileChangePhoto: String
+    val profilePhoto: String
+    val profilePhotoNone: String
+    val profilePhotoChoose: String
+    val profilePhotoChooseOther: String
+    val profilePhotoRemove: String
+    val profilePhotoSavesItself: String
+    val profilePhotoUnsaved: String
+    val profilePhotoPreparing: String
+    val profilePhotoUploadingIndeterminate: String
+    val profilePhotoProcessing: String
+    val profilePhotoDeleting: String
+    val profilePhotoChecking: String
+    val profilePhotoUncertain: String
+    val profilePhotoRecheck: String
+    val profilePhotoOffline: String
+    val profilePhotoDeleteTitle: String
+    val profilePhotoDeleteBody: String
+    val profilePhotoDeleteConfirm: String
+    val profilePhotoErrorTooLarge: String
+    val profilePhotoErrorUnsupported: String
+    val profilePhotoErrorInvalid: String
+    val profilePhotoErrorStorage: String
+    val profilePhotoErrorNetwork: String
+    val profilePhotoErrorAuth: String
+    val profilePhotoErrorDenied: String
+    val profilePhotoErrorUnavailable: String
+    val profilePhotoErrorUnreadable: String
+    val profilePhotoErrorUnknown: String
+    fun profilePhotoUploading(percent: Int): String
     val profileEditable: String
     val profileChurchManaged: String
     val profileContactPrefix: String
@@ -620,6 +649,35 @@ object EnStrings : AppStrings {
     override val attendanceThisYear = "Attendance this year"
     override val profileMinistries = "My ministries"
     override val profileChangePhoto = "Change photo"
+    override val profilePhoto = "Profile photo"
+    override val profilePhotoNone = "No profile photo"
+    override val profilePhotoChoose = "Choose photo"
+    override val profilePhotoChooseOther = "Choose another photo"
+    override val profilePhotoRemove = "Remove photo"
+    override val profilePhotoSavesItself = "The photo is saved right away, separately from the details below."
+    override val profilePhotoUnsaved = "Not saved yet"
+    override val profilePhotoPreparing = "Preparing photo…"
+    override val profilePhotoUploadingIndeterminate = "Uploading…"
+    override val profilePhotoProcessing = "Saving on the server…"
+    override val profilePhotoDeleting = "Removing photo…"
+    override val profilePhotoChecking = "Checking whether the photo was saved…"
+    override val profilePhotoUncertain = "We could not confirm whether the new photo was saved. Check again once you are online."
+    override val profilePhotoRecheck = "Check again"
+    override val profilePhotoOffline = "You are offline. The photo can be changed once you are connected."
+    override val profilePhotoDeleteTitle = "Remove profile photo?"
+    override val profilePhotoDeleteBody = "Your initials will be shown instead, on all your devices."
+    override val profilePhotoDeleteConfirm = "Remove"
+    override val profilePhotoErrorTooLarge = "This photo is too large (max. 5 MB). Please choose another one."
+    override val profilePhotoErrorUnsupported = "This file type is not supported. Please choose a JPEG, PNG or HEIC photo."
+    override val profilePhotoErrorInvalid = "This photo could not be read. Please choose another one."
+    override val profilePhotoErrorStorage = "The photo storage is not reachable right now. Your current photo stays."
+    override val profilePhotoErrorNetwork = "No connection. Your current photo stays."
+    override val profilePhotoErrorAuth = "Your session has expired. Please sign in again."
+    override val profilePhotoErrorDenied = "You cannot change the photo right now."
+    override val profilePhotoErrorUnavailable = "Your profile is not available right now."
+    override val profilePhotoErrorUnreadable = "The selected photo could not be loaded. Please choose another one."
+    override val profilePhotoErrorUnknown = "The photo could not be saved. Your current photo stays."
+    override fun profilePhotoUploading(percent: Int) = "Uploading… $percent%"
     override val profileEditable = "Information you can edit"
     override val profileChurchManaged = "Information managed by the church"
     override val profileContactPrefix = "To request a change, contact\n"
@@ -1088,6 +1146,35 @@ object KoStrings : AppStrings {
     override val attendanceThisYear = "올해 출석"
     override val profileMinistries = "소속 사역"
     override val profileChangePhoto = "사진 변경"
+    override val profilePhoto = "프로필 사진"
+    override val profilePhotoNone = "프로필 사진 없음"
+    override val profilePhotoChoose = "사진 선택"
+    override val profilePhotoChooseOther = "다른 사진 선택"
+    override val profilePhotoRemove = "사진 삭제"
+    override val profilePhotoSavesItself = "사진은 아래 정보와 별도로 바로 저장돼요."
+    override val profilePhotoUnsaved = "아직 저장되지 않음"
+    override val profilePhotoPreparing = "사진 준비 중…"
+    override val profilePhotoUploadingIndeterminate = "업로드 중…"
+    override val profilePhotoProcessing = "서버에서 저장 중…"
+    override val profilePhotoDeleting = "사진 삭제 중…"
+    override val profilePhotoChecking = "사진이 저장됐는지 확인 중…"
+    override val profilePhotoUncertain = "새 사진이 저장됐는지 확인하지 못했어요. 연결되면 다시 확인해 주세요."
+    override val profilePhotoRecheck = "다시 확인"
+    override val profilePhotoOffline = "오프라인 상태예요. 연결되면 사진을 바꿀 수 있어요."
+    override val profilePhotoDeleteTitle = "프로필 사진을 삭제할까요?"
+    override val profilePhotoDeleteBody = "모든 기기에서 사진 대신 이니셜이 표시돼요."
+    override val profilePhotoDeleteConfirm = "삭제"
+    override val profilePhotoErrorTooLarge = "사진이 너무 커요(최대 5MB). 다른 사진을 선택해 주세요."
+    override val profilePhotoErrorUnsupported = "지원하지 않는 형식이에요. JPEG, PNG, HEIC 사진을 선택해 주세요."
+    override val profilePhotoErrorInvalid = "사진을 읽을 수 없어요. 다른 사진을 선택해 주세요."
+    override val profilePhotoErrorStorage = "지금은 사진 저장소에 연결할 수 없어요. 현재 사진은 그대로예요."
+    override val profilePhotoErrorNetwork = "연결이 없어요. 현재 사진은 그대로예요."
+    override val profilePhotoErrorAuth = "로그인이 만료됐어요. 다시 로그인해 주세요."
+    override val profilePhotoErrorDenied = "지금은 사진을 바꿀 수 없어요."
+    override val profilePhotoErrorUnavailable = "지금은 프로필을 불러올 수 없어요."
+    override val profilePhotoErrorUnreadable = "선택한 사진을 불러오지 못했어요. 다른 사진을 선택해 주세요."
+    override val profilePhotoErrorUnknown = "사진을 저장하지 못했어요. 현재 사진은 그대로예요."
+    override fun profilePhotoUploading(percent: Int) = "업로드 중… $percent%"
     override val profileEditable = "직접 수정할 수 있는 정보"
     override val profileChurchManaged = "교회에서 관리하는 정보"
     override val profileContactPrefix = "변경이 필요하면\n"
