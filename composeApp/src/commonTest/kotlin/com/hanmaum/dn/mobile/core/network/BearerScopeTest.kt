@@ -47,3 +47,24 @@ class BearerScopeTest {
         assertFalse(shouldSendBearer(BACKEND, "/api/v1/members/register", BACKEND))
     }
 }
+
+class RequestLoggingScopeTest {
+    private val backend = "api.hanmaum-dn.de"
+
+    @Test
+    fun backendCallsAreLogged() {
+        assertTrue(shouldLogRequest(backend, "/api/v1/members/me", backend))
+        assertTrue(shouldLogRequest("", "/members/me", backend))
+    }
+
+    @Test
+    fun signedStorageUrlsAreNeverLogged() {
+        assertFalse(shouldLogRequest("fsn1.your-objectstorage.com", "/dn-profile/u1.jpg", backend))
+    }
+
+    @Test
+    fun profileImageUploadsAndKeycloakAreNotLogged() {
+        assertFalse(shouldLogRequest(backend, "/api/v1/members/me/profile-image", backend))
+        assertFalse(shouldLogRequest("auth.hanmaum-dn.de", "/realms/dn/protocol/openid-connect/token", backend))
+    }
+}

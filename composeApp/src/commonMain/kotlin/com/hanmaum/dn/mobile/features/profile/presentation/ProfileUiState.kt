@@ -6,6 +6,35 @@ import com.hanmaum.dn.mobile.features.login.domain.model.IdentityStatus
 import com.hanmaum.dn.mobile.features.login.domain.model.PhoneNumber
 import com.hanmaum.dn.mobile.features.login.presentation.RegisterFieldError
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
+import com.hanmaum.dn.mobile.features.member.domain.model.PreparedProfileImage
+import com.hanmaum.dn.mobile.features.member.domain.model.ProfileAvatar
+import com.hanmaum.dn.mobile.features.member.domain.model.ProfileImageFailure
+
+/**
+ * What the photo is doing, beside the confirmed [ProfileUiState.Success.profile].
+ * Orthogonal to the contact form: the photo saves on its own via PUT/DELETE.
+ */
+sealed interface AvatarActivity {
+    data object Idle : AvatarActivity
+    data object Picking : AvatarActivity
+    data object Preparing : AvatarActivity
+    data class Uploading(val sent: Long, val total: Long?) : AvatarActivity {
+        /** null when the length is unknown — the indicator is then indeterminate. */
+        val fraction: Float? get() = total?.takeIf { it > 0 }?.let { (sent.toFloat() / it).coerceIn(0f, 1f) }
+    }
+    /** Every byte is out; the server is cropping and storing. Not saved yet. */
+    data object AwaitingServer : AvatarActivity
+    data object Deleting : AvatarActivity
+    /** An upload was cut off after it started; asking the server what it kept. */
+    data object Reconciling : AvatarActivity
+    /** That question could not be answered either. Never claims the old photo is unchanged. */
+    data object Uncertain : AvatarActivity
+    data class Failed(val failure: ProfileImageFailure, val canRetry: Boolean) : AvatarActivity
+
+    val isBusy: Boolean
+        get() = this is Picking || this is Preparing || this is Uploading ||
+            this is AwaitingServer || this is Deleting || this is Reconciling
+}
 
 sealed class ProfileUiState {
     object Loading : ProfileUiState()
@@ -14,7 +43,6 @@ sealed class ProfileUiState {
         /** National digits only; the dial code lives in [editPhoneCountryIso], as at registration. */
         val editPhone: String = profile.storedPhone()?.second ?: "",
         val editPhoneCountryIso: String = profile.storedPhone()?.first ?: Countries.DEFAULT_ISO,
-        val editImageUrl: String = profile.profileImageUrl ?: "",
         val editBirthDate: String = profile.storedBirthDate(),
         val editIdentityStatus: IdentityStatus? = profile.storedIdentityStatus(),
         val editWorkOrSchool: String = profile.workOrSchool ?: "",
@@ -44,11 +72,24 @@ sealed class ProfileUiState {
         val isSaving: Boolean = false,
         val saveError: UiMessage? = null,
         val saveSuccess: Boolean = false,
+        val avatarActivity: AvatarActivity = AvatarActivity.Idle,
+        /** The picked, prepared photo while it is unsaved — shown marked as such, never as the avatar. */
+        val avatarPreview: PreparedProfileImage? = null,
+        val showAvatarDeleteConfirm: Boolean = false,
+        /** The last profile call never reached the server. Photo changes wait until it does. */
+        val isOffline: Boolean = false,
     ) : ProfileUiState() {
+        /** The confirmed avatar, or null when the server has none to show. */
+        val avatar: ProfileAvatar?
+            get() = profile.profileImageUrl?.let { ProfileAvatar(profile.publicId, profile.profileImageVersion, it) }
+
+        /** Photo actions are off while any mutation runs or the server is out of reach. */
+        val canChangeAvatar: Boolean
+            get() = !avatarActivity.isBusy && avatarActivity !is AvatarActivity.Uncertain && !isSaving && !isOffline
+
         /** True when any edit field differs from the loaded profile — gates the Save button. */
         val isDirty: Boolean
             get() = isPhoneDirty ||
-                editImageUrl != (profile.profileImageUrl ?: "") ||
                 editBirthDate != profile.storedBirthDate() ||
                 editIdentityStatus != profile.storedIdentityStatus() ||
                 editWorkOrSchool != (profile.workOrSchool ?: "") ||

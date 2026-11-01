@@ -4,6 +4,7 @@ import com.hanmaum.dn.mobile.core.domain.model.MemberStatus
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
+import com.hanmaum.dn.mobile.features.member.domain.model.PreparedProfileImage
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import com.hanmaum.dn.mobile.features.pending.presentation.PendingViewModel
 import kotlinx.coroutines.Dispatchers
@@ -25,10 +26,15 @@ private class FakeMemberRepository(var status: MemberStatus) : MemberRepository 
     )
 
     override suspend fun updateMyProfile(
-        phoneNumber: String?, profileImageUrl: String?, birthDate: String?,
+        phoneNumber: String?, birthDate: String?,
         street: String?, houseNumber: String?, zipCode: String?, city: String?,
         identityStatus: String?, workOrSchool: String?,
     ): Result<MemberResponse> = getMyProfile()
+    override suspend fun uploadProfileImage(
+        image: PreparedProfileImage,
+        onProgress: (sent: Long, total: Long?) -> Unit,
+    ): Result<MemberResponse> = getMyProfile()
+    override suspend fun deleteProfileImage(): Result<MemberResponse> = getMyProfile()
 }
 
 private class FakeTokenStorage : TokenStorage {

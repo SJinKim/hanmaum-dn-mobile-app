@@ -11,6 +11,7 @@ import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceHistory
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceSummary
 import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceViewModel
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
+import com.hanmaum.dn.mobile.features.member.domain.model.PreparedProfileImage
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -41,10 +42,15 @@ private class FakeMemberRepository : MemberRepository {
     }
 
     override suspend fun updateMyProfile(
-        phoneNumber: String?, profileImageUrl: String?, birthDate: String?,
+        phoneNumber: String?, birthDate: String?,
         street: String?, houseNumber: String?, zipCode: String?, city: String?,
         identityStatus: String?, workOrSchool: String?,
     ): Result<MemberResponse> = getMyProfile()
+    override suspend fun uploadProfileImage(
+        image: PreparedProfileImage,
+        onProgress: (sent: Long, total: Long?) -> Unit,
+    ): Result<MemberResponse> = getMyProfile()
+    override suspend fun deleteProfileImage(): Result<MemberResponse> = getMyProfile()
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)

@@ -79,6 +79,11 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import com.hanmaum.dn.mobile.features.attendance.domain.model.AttendanceSummary
 import com.hanmaum.dn.mobile.features.attendance.presentation.AttendanceViewModel
+import com.hanmaum.dn.mobile.features.member.domain.model.ProfileAvatar
+import com.hanmaum.dn.mobile.features.profile.data.image.ProfileImageLoader
+import com.hanmaum.dn.mobile.features.profile.data.image.rememberProfileImagePicker
+import com.hanmaum.dn.mobile.features.profile.domain.ProfileImagePicker
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -108,6 +113,8 @@ fun ProfileScreen(
     val loggedOut by viewModel.loggedOut.collectAsState()
     val verseRecords by viewModel.verseRecords.collectAsState()
     val c = DnTheme.colors
+    val picker = rememberProfileImagePicker()
+    val imageLoader: ProfileImageLoader = koinInject()
 
     // Without this the screen sits on ProfileUiState.Loading for ever: nothing
     // else asks the ViewModel to load, and it has no init that would. Keyed on
@@ -136,10 +143,13 @@ fun ProfileScreen(
 
                 is ProfileUiState.Success -> {
                     if (state.isEditing) {
-                        ProfileEditContent(state = state, viewModel = viewModel)
+                        ProfileEditContent(state = state, viewModel = viewModel, picker = picker, imageLoader = imageLoader)
                     } else {
                         ProfileViewContent(
                             profile = state.profile,
+                            avatar = state.avatar,
+                            imageLoader = imageLoader,
+                            onAvatarLoadFailed = viewModel::onAvatarLoadFailed,
                             summary = attendance.summary,
                             verseRecords = verseRecords,
                             onEdit = viewModel::startEditing,
@@ -160,6 +170,9 @@ fun ProfileScreen(
 @Composable
 private fun ProfileViewContent(
     profile: MemberResponse,
+    avatar: ProfileAvatar?,
+    imageLoader: ProfileImageLoader,
+    onAvatarLoadFailed: (ProfileAvatar, Int?) -> Unit,
     summary: AttendanceSummary?,
     verseRecords: VerseRecords?,
     onEdit: () -> Unit,
@@ -178,16 +191,14 @@ private fun ProfileViewContent(
     ) {
         Spacer(Modifier.height(20.dp))
 
-        Box(
-            Modifier
-                .size(92.dp)
-                .clip(RoundedCornerShape(percent = 50))
-                .background(c.surface2)
-                .border(1.5.dp, c.strokeStrong, RoundedCornerShape(percent = 50)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(DnIcons.User, null, tint = c.textPrimary, modifier = Modifier.size(44.dp))
-        }
+        // Same source and cache key as the edit form, so both show the same photo.
+        ProfileAvatarImage(
+            avatar = avatar,
+            preview = null,
+            loader = imageLoader,
+            size = 92.dp,
+            onLoadFailed = onAvatarLoadFailed,
+        )
 
         Spacer(Modifier.height(12.dp))
         Text(
@@ -364,6 +375,8 @@ private fun MenuRow(
 private fun ProfileEditContent(
     state: ProfileUiState.Success,
     viewModel: ProfileViewModel,
+    picker: ProfileImagePicker,
+    imageLoader: ProfileImageLoader,
 ) {
     val c = DnTheme.colors
     val strings = LocalStrings.current
@@ -379,6 +392,23 @@ private fun ProfileEditContent(
             },
             onDismiss = { showCountryPicker = false },
         )
+    }
+    var showPhotoSheet by rememberSaveable { mutableStateOf(false) }
+    if (showPhotoSheet) {
+        AvatarActionSheet(
+            onChoose = {
+                showPhotoSheet = false
+                viewModel.pickAvatar(picker)
+            },
+            onRemove = {
+                showPhotoSheet = false
+                viewModel.requestAvatarDelete()
+            },
+            onDismiss = { showPhotoSheet = false },
+        )
+    }
+    if (state.showAvatarDeleteConfirm) {
+        AvatarDeleteDialog(onConfirm = viewModel::confirmAvatarDelete, onDismiss = viewModel::dismissAvatarDelete)
     }
     var showIdentityPicker by rememberSaveable { mutableStateOf(false) }
     if (showIdentityPicker) {
@@ -403,35 +433,20 @@ private fun ProfileEditContent(
     ) {
         Spacer(Modifier.height(20.dp))
 
-        Column(
-            Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            Box(
-                Modifier
-                    .size(88.dp)
-                    .clip(RoundedCornerShape(percent = 50))
-                    .background(c.surface2)
-                    .border(1.5.dp, c.strokeStrong, RoundedCornerShape(percent = 50)),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(DnIcons.User, null, tint = c.textPrimary, modifier = Modifier.size(42.dp))
-            }
-            // picking from the gallery replaces the old URL field
-            Row(
-                Modifier
-                    .clip(RoundedCornerShape(percent = 50))
-                    .background(c.surface2, RoundedCornerShape(percent = 50))
-                    .border(1.dp, c.strokeSubtle, RoundedCornerShape(percent = 50))
-                    .padding(horizontal = 14.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                Icon(DnIcons.Image, null, tint = c.textSecondary, modifier = Modifier.size(15.dp))
-                Text(strings.profileChangePhoto, style = DnTheme.typography.captionStrong, color = c.textSecondary)
-            }
-        }
+        // The photo saves on its own (PUT/DELETE); 저장 below is for the contact details only.
+        AvatarEditor(
+            state = state,
+            loader = imageLoader,
+            onChangePhoto = {
+                if (state.avatar != null) showPhotoSheet = true else viewModel.pickAvatar(picker)
+            },
+            onCancel = viewModel::cancelAvatarChange,
+            onRetry = viewModel::retryAvatarUpload,
+            onChooseOther = { viewModel.dismissAvatarError(); viewModel.pickAvatar(picker) },
+            onRecheck = viewModel::recheckAvatar,
+            onRetryConnection = viewModel::retryConnection,
+            onLoadFailed = viewModel::onAvatarLoadFailed,
+        )
 
         Spacer(Modifier.height(40.dp))
 
@@ -551,7 +566,8 @@ private fun ProfileEditContent(
             DnPrimaryButton(
                 label = if (state.isSaving) strings.saving else strings.save,
                 onClick = viewModel::saveProfile,
-                enabled = !state.isSaving,
+                // One mutation at a time: the form waits for the photo to settle.
+                enabled = !state.isSaving && !state.avatarActivity.isBusy,
                 modifier = Modifier.weight(1f),
             )
         }

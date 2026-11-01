@@ -91,6 +91,8 @@ import com.hanmaum.dn.mobile.features.floorplan.presentation.FloorPlanViewModel
 import com.hanmaum.dn.mobile.features.pending.presentation.PendingViewModel
 import com.hanmaum.dn.mobile.features.pending.presentation.SplashViewModel
 import com.hanmaum.dn.mobile.features.profile.presentation.FaceIdSetupViewModel
+import com.hanmaum.dn.mobile.features.profile.data.image.CoilProfileAvatarCache
+import com.hanmaum.dn.mobile.features.profile.domain.ProfileAvatarCache
 import com.hanmaum.dn.mobile.features.profile.presentation.ProfileViewModel
 import org.koin.dsl.module
 import org.koin.core.module.dsl.viewModel
@@ -157,7 +159,8 @@ val appModule = module {
     viewModel { LoginViewModel(get(), get(), get(), get(), get(), get()) }
 
     // Profile VM
-    viewModel { ProfileViewModel(get(), get(), get(), get()) }
+    single<ProfileAvatarCache> { CoilProfileAvatarCache(get()) }
+    viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { FaceIdSetupViewModel(get(), get(), get()) }
 
     // Ministry

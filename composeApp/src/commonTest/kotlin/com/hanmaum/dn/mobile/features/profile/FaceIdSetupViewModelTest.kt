@@ -8,6 +8,7 @@ import com.hanmaum.dn.mobile.core.security.BiometricAvailability
 import com.hanmaum.dn.mobile.core.security.FakeBiometricVault
 import com.hanmaum.dn.mobile.core.security.VaultResult
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
+import com.hanmaum.dn.mobile.features.member.domain.model.PreparedProfileImage
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import com.hanmaum.dn.mobile.features.profile.presentation.FaceIdSetupViewModel
 import com.russhwolf.settings.MapSettings
@@ -32,10 +33,15 @@ private class SessionMemberRepository(var publicId: String? = "member-1") : Memb
     }
 
     override suspend fun updateMyProfile(
-        phoneNumber: String?, profileImageUrl: String?, birthDate: String?,
+        phoneNumber: String?, birthDate: String?,
         street: String?, houseNumber: String?, zipCode: String?, city: String?,
         identityStatus: String?, workOrSchool: String?,
     ): Result<MemberResponse> = getMyProfile()
+    override suspend fun uploadProfileImage(
+        image: PreparedProfileImage,
+        onProgress: (sent: Long, total: Long?) -> Unit,
+    ): Result<MemberResponse> = getMyProfile()
+    override suspend fun deleteProfileImage(): Result<MemberResponse> = getMyProfile()
 }
 
 /**

@@ -5,6 +5,7 @@ import com.hanmaum.dn.mobile.features.announcement.domain.model.Announcement
 import com.hanmaum.dn.mobile.features.announcement.domain.model.AnnouncementLookup
 import com.hanmaum.dn.mobile.features.announcement.domain.repository.AnnouncementRepository
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
+import com.hanmaum.dn.mobile.features.member.domain.model.PreparedProfileImage
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import com.hanmaum.dn.mobile.features.notification.domain.model.NotificationPage
 import com.hanmaum.dn.mobile.features.notification.domain.repository.NotificationRepository
@@ -71,7 +72,6 @@ private class FakeMemberRepository : MemberRepository {
 
     override suspend fun updateMyProfile(
         phoneNumber: String?,
-        profileImageUrl: String?,
         birthDate: String?,
         street: String?,
         houseNumber: String?,
@@ -80,6 +80,11 @@ private class FakeMemberRepository : MemberRepository {
         identityStatus: String?,
         workOrSchool: String?,
     ): Result<MemberResponse> = Result.failure(UnsupportedOperationException("not needed for these tests"))
+    override suspend fun uploadProfileImage(
+        image: PreparedProfileImage,
+        onProgress: (sent: Long, total: Long?) -> Unit,
+    ): Result<MemberResponse> = getMyProfile()
+    override suspend fun deleteProfileImage(): Result<MemberResponse> = getMyProfile()
 }
 
 private class FakeVerseRepository(

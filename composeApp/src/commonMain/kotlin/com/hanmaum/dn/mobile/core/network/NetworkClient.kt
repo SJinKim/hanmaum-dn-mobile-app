@@ -70,6 +70,20 @@ internal fun shouldSendBearer(
 }
 
 /**
+ * Whether a call may appear in the INFO log (method, URL, status).
+ *
+ * Only backend calls, never Keycloak, and never the profile-image endpoint.
+ * Avatar images are fetched through this client from the storage host with
+ * signed URLs, and header sanitising does not hide a URL query — so foreign
+ * hosts are not logged at all.
+ */
+internal fun shouldLogRequest(requestHost: String, requestPath: String, backendHost: String): Boolean {
+    val isBackend = requestHost.isBlank() || requestHost == backendHost
+    return isBackend && !requestPath.contains("openid-connect") && !requestPath.contains("profile-image")
+}
+
+
+/**
  * Fires when the backend answers a call outside the consents endpoints with 403 `CONSENT_REQUIRED`
  * (server#373), so the session can drop into the consent lock screen instead of a generic error.
  */
@@ -102,7 +116,7 @@ fun createHttpClient(
             level = LogLevel.INFO
             logger = Logger.DEFAULT
             sanitizeHeader { it == HttpHeaders.Authorization }
-            filter { !it.url.encodedPath.contains("openid-connect") }
+            filter { shouldLogRequest(it.url.host, it.url.encodedPath, Url(BuildKonfig.BACKEND_URL).host) }
         }
 
         defaultRequest {

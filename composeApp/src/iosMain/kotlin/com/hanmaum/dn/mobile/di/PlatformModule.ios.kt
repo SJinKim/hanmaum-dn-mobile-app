@@ -12,6 +12,16 @@ import com.hanmaum.dn.mobile.core.security.BiometricVault
 import com.hanmaum.dn.mobile.core.security.IosBiometricVault
 import com.hanmaum.dn.mobile.core.security.IosSecureStore
 import com.hanmaum.dn.mobile.core.security.SecureStore
+import coil3.PlatformContext
+import com.hanmaum.dn.mobile.features.profile.data.image.FileProfileImagePreparer
+import com.hanmaum.dn.mobile.features.profile.data.image.IosProfileImageCodec
+import com.hanmaum.dn.mobile.features.profile.data.image.buildProfileImageLoader
+import com.hanmaum.dn.mobile.features.profile.data.image.profileImageTempDirectory
+import com.hanmaum.dn.mobile.features.profile.domain.ProfileImagePreparer
+import platform.Foundation.NSCachesDirectory
+import platform.Foundation.NSSearchPathForDirectoriesInDomains
+import platform.Foundation.NSTemporaryDirectory
+import platform.Foundation.NSUserDomainMask
 import org.koin.dsl.module
 
 actual val platformModule = module {
@@ -21,4 +31,11 @@ actual val platformModule = module {
     single<SecureStore> { IosSecureStore() }
     single<BiometricVault> { IosBiometricVault() }
     single<PushManager> { IosPushManager() }
+    // The tmp folder is not backed up; picked originals and prepared files share it.
+    single<ProfileImagePreparer> { FileProfileImagePreparer(IosProfileImageCodec(), profileImageTempDirectory()) }
+    single {
+        val caches = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, true)
+            .firstOrNull() as? String ?: NSTemporaryDirectory()
+        buildProfileImageLoader(PlatformContext.INSTANCE, get(), caches)
+    }
 }

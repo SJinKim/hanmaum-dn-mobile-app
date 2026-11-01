@@ -14,6 +14,7 @@ import com.hanmaum.dn.mobile.features.login.domain.model.RegisterRequest
 import com.hanmaum.dn.mobile.features.login.domain.model.TokenResponse
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
+import com.hanmaum.dn.mobile.features.member.domain.model.PreparedProfileImage
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import com.russhwolf.settings.MapSettings
 import io.ktor.client.HttpClient
@@ -66,10 +67,15 @@ private class FaceIdMemberRepository(private val status: MemberStatus = MemberSt
         MemberResponse(publicId = "p1", firstName = "서진", lastName = "김", status = status),
     )
     override suspend fun updateMyProfile(
-        phoneNumber: String?, profileImageUrl: String?, birthDate: String?,
+        phoneNumber: String?, birthDate: String?,
         street: String?, houseNumber: String?, zipCode: String?, city: String?,
         identityStatus: String?, workOrSchool: String?,
     ): Result<MemberResponse> = getMyProfile()
+    override suspend fun uploadProfileImage(
+        image: PreparedProfileImage,
+        onProgress: (sent: Long, total: Long?) -> Unit,
+    ): Result<MemberResponse> = getMyProfile()
+    override suspend fun deleteProfileImage(): Result<MemberResponse> = getMyProfile()
 }
 
 /**
