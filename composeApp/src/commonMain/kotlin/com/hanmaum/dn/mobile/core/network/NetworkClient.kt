@@ -62,6 +62,19 @@ internal fun shouldSendBearer(
     return isBackend && !isAuthEndpoint
 }
 
+/**
+ * Whether a call may appear in the INFO log (method, URL, status).
+ *
+ * Only backend calls, never Keycloak, and never the profile-image endpoint.
+ * Avatar images are fetched through this client from the storage host with
+ * signed URLs, and header sanitising does not hide a URL query — so foreign
+ * hosts are not logged at all.
+ */
+internal fun shouldLogRequest(requestHost: String, requestPath: String, backendHost: String): Boolean {
+    val isBackend = requestHost.isBlank() || requestHost == backendHost
+    return isBackend && !requestPath.contains("openid-connect") && !requestPath.contains("profile-image")
+}
+
 fun createHttpClient(tokenStorage: TokenStorage, engine: HttpClientEngine? = null): HttpClient {
     val clientConfig: HttpClientConfig<*>.() -> Unit = {
         install(ContentNegotiation) {
@@ -75,7 +88,7 @@ fun createHttpClient(tokenStorage: TokenStorage, engine: HttpClientEngine? = nul
             level = LogLevel.INFO
             logger = Logger.DEFAULT
             sanitizeHeader { it == HttpHeaders.Authorization }
-            filter { !it.url.encodedPath.contains("openid-connect") }
+            filter { shouldLogRequest(it.url.host, it.url.encodedPath, Url(BuildKonfig.BACKEND_URL).host) }
         }
 
         defaultRequest {

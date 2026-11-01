@@ -5,6 +5,7 @@ import com.hanmaum.dn.mobile.core.domain.model.ApiResponse
 import com.hanmaum.dn.mobile.features.member.data.model.MemberResponse
 import com.hanmaum.dn.mobile.features.member.data.model.UpdateMyProfileRequest
 import com.hanmaum.dn.mobile.features.member.domain.model.PreparedProfileImage
+import com.hanmaum.dn.mobile.features.member.domain.model.ProfileLoadException
 import com.hanmaum.dn.mobile.features.member.domain.model.ProfileImageException
 import com.hanmaum.dn.mobile.features.member.domain.model.ProfileImageFailure
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
@@ -41,10 +42,10 @@ class MemberRepositoryImpl(
             if (response.status == HttpStatusCode.OK) {
                 val apiResponse = response.body<ApiResponse<MemberResponse>>()
                 val member = apiResponse.data
-                    ?: return Result.failure(Exception("Profile data is null"))
+                    ?: return Result.failure(ProfileLoadException("Profile data is null"))
                 Result.success(member)
             } else {
-                Result.failure(Exception("Profile load failed (${response.status})"))
+                Result.failure(ProfileLoadException("Profile load failed (${response.status})"))
             }
         } catch (e: Exception) {
             e.printStackTrace()

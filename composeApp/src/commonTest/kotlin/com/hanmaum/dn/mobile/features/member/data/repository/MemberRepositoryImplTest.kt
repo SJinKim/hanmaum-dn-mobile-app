@@ -22,7 +22,7 @@ import kotlin.test.assertIs
 import com.hanmaum.dn.mobile.features.member.domain.model.PreparedProfileImage
 import com.hanmaum.dn.mobile.features.member.domain.model.ProfileImageException
 import com.hanmaum.dn.mobile.features.member.domain.model.ProfileImageFailure
-import io.ktor.utils.io.errors.IOException
+import kotlinx.io.IOException
 import kotlinx.coroutines.CancellationException
 import kotlinx.io.Buffer
 import kotlinx.io.Source
@@ -33,6 +33,7 @@ private class FakePreparedImage(private val bytes: ByteArray) : PreparedProfileI
     var opened = 0
     var released = false
     override val byteLength: Long = bytes.size.toLong()
+    override val preview: Any = "fake"
     override fun open(): Source { opened++; return Buffer().apply { write(bytes) } }
     override fun release() { released = true }
 }

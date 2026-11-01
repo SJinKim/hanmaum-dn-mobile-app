@@ -30,6 +30,8 @@ data class ProfileAvatar(
  */
 interface PreparedProfileImage {
     val byteLength: Long
+    /** What the UI hands Coil to show the unsaved preview. Never persisted or logged. */
+    val preview: Any
     fun open(): Source
     fun release()
 }
@@ -44,7 +46,16 @@ enum class ProfileImageFailure {
     ACCESS_DENIED,
     PROFILE_UNAVAILABLE,
     NETWORK,
+    /** The picker handed back something unreadable; only a new pick helps. */
+    UNREADABLE,
     UNKNOWN,
 }
 
 class ProfileImageException(val failure: ProfileImageFailure) : Exception("Profile image failed: $failure")
+
+/**
+ * GET members/me reached the server and got an unusable answer. Any other
+ * failure of that call never reached it — which is how the profile tells
+ * "offline" apart from "the server said no".
+ */
+class ProfileLoadException(message: String) : Exception(message)

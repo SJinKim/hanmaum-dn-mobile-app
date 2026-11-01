@@ -12,6 +12,11 @@ import com.hanmaum.dn.mobile.core.security.AndroidBiometricVault
 import com.hanmaum.dn.mobile.core.security.AndroidSecureStore
 import com.hanmaum.dn.mobile.core.security.BiometricVault
 import com.hanmaum.dn.mobile.core.security.SecureStore
+import com.hanmaum.dn.mobile.features.profile.data.image.AndroidProfileImageCodec
+import com.hanmaum.dn.mobile.features.profile.data.image.FileProfileImagePreparer
+import com.hanmaum.dn.mobile.features.profile.data.image.buildProfileImageLoader
+import com.hanmaum.dn.mobile.features.profile.domain.ProfileImagePreparer
+import java.io.File
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
@@ -23,4 +28,12 @@ actual val platformModule = module {
     // No activity: this instance exists so logout can clear the vault.
     single<BiometricVault> { AndroidBiometricVault(androidContext()) }
     single<PushManager> { AndroidPushManager(androidContext(), get(), get()) }
+    // cacheDir is private and excluded from backup.
+    single<ProfileImagePreparer> {
+        FileProfileImagePreparer(
+            AndroidProfileImageCodec(androidContext()),
+            File(androidContext().cacheDir, "profile-image").path,
+        )
+    }
+    single { buildProfileImageLoader(androidContext(), get(), androidContext().cacheDir.path) }
 }
