@@ -4,15 +4,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.navigation.LoginRoute
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentProblem
+import com.hanmaum.dn.mobile.features.consent.domain.model.ConsentPurpose
+import com.hanmaum.dn.mobile.features.consent.domain.model.PolicyConsentState
+import com.hanmaum.dn.mobile.features.consent.domain.model.PrivacyPolicyLink
+import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentRepository
 import com.hanmaum.dn.mobile.features.login.domain.model.BirthDateInput
-import com.hanmaum.dn.mobile.features.login.domain.model.IdentityStatus
 import com.hanmaum.dn.mobile.features.login.domain.model.Countries
+import com.hanmaum.dn.mobile.features.login.domain.model.IdentityStatus
 import com.hanmaum.dn.mobile.features.login.domain.model.PasswordPolicy
 import com.hanmaum.dn.mobile.features.login.domain.model.PhoneNumber
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterException
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterFailureReason
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterRequest
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterValidation
+import com.hanmaum.dn.mobile.features.login.domain.model.RegistrationConsent
 import com.hanmaum.dn.mobile.features.login.domain.repository.AuthRepository
 import com.hanmaum.dn.mobile.features.login.domain.repository.CityLookupRepository
 import kotlinx.coroutines.Job
@@ -25,10 +31,43 @@ import kotlinx.datetime.LocalDate
 class RegisterViewModel(
     private val authRepository: AuthRepository,
     private val cityLookupRepository: CityLookupRepository,
+    private val consentRepository: ConsentRepository,
+    val policyLink: PrivacyPolicyLink,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterUiState())
     val uiState = _uiState.asStateFlow()
+
+    private var policyJob: Job? = null
+
+    init { loadConsentPolicy() }
+
+    fun loadConsentPolicy(notice: ConsentProblem? = null) {
+        if (_uiState.value.isLoading) return
+        policyJob?.cancel()
+        _uiState.update { it.copy(consent = PolicyConsentState()) }
+        policyJob = viewModelScope.launch {
+            val result = consentRepository.policies()
+            _uiState.update { it.copy(consent = result.fold(
+                onSuccess = { policies ->
+                    val policy = policies.singleOrNull { it.purpose == ConsentPurpose.APP_PRIVACY }
+                    PolicyConsentState(isLoading = false, policy = policy, problem = when {
+                        policy == null -> ConsentProblem.LOAD
+                        !policyLink.isAvailable -> ConsentProblem.POLICY_UNAVAILABLE
+                        else -> notice
+                    })
+                },
+                onFailure = { PolicyConsentState(isLoading = false, problem = ConsentProblem.LOAD) },
+            )) }
+        }
+    }
+
+    fun onConsentChange(accepted: Boolean) {
+        if (_uiState.value.isLoading || !policyLink.isAvailable) return
+        _uiState.update { it.copy(consent = it.consent.copy(
+            acceptedVersion = it.consent.policy?.version?.takeIf { accepted },
+        )) }
+    }
 
     // --- Events zum Ändern der Felder ---
     // Editing a field clears its own error and any top-of-form banner.
@@ -133,6 +172,7 @@ class RegisterViewModel(
     fun onHouseNumberChange(v: String) = _uiState.update { it.copy(houseNumber = v, houseNumberError = null, bannerError = null) }
 
     fun register() {
+        if (_uiState.value.isLoading || _uiState.value.isSuccess) return
         // Someone can type the date and hit the button without ever leaving the
         // field, so the normalisation that usually happens on focus loss has to
         // happen here too (#166).
@@ -214,11 +254,19 @@ class RegisterViewModel(
             return
         }
 
+        if (!s.consent.canSubmit || !policyLink.isAvailable) {
+            _uiState.update { it.copy(consent = it.consent.copy(problem =
+                if (!policyLink.isAvailable) ConsentProblem.POLICY_UNAVAILABLE else ConsentProblem.REQUIRED)) }
+            return
+        }
+        val consentVersion = checkNotNull(s.consent.policy).version
+
+        _uiState.update { it.copy(isLoading = true, bannerError = null) }
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, bannerError = null) }
 
             // 2. MAPPING (String -> Nullable für Backend)
             val request = RegisterRequest(
+                consent = RegistrationConsent(accepted = true, version = consentVersion),
                 firstName = s.firstName,
                 lastName = s.lastName,
                 email = s.email,
@@ -250,6 +298,18 @@ class RegisterViewModel(
                         loginNotice = LoginRoute.NOTICE_VERIFY_EMAIL, password = "", bannerError = null)
                 }
             }.onFailure { exception ->
+                val reason = (exception as? RegisterException)?.reason
+                if (reason == RegisterFailureReason.CONSENT_VERSION_OUTDATED || reason == RegisterFailureReason.CONSENT_REQUIRED) {
+                    _uiState.update { it.copy(isLoading = false) }
+                    loadConsentPolicy(
+                        notice = if (reason == RegisterFailureReason.CONSENT_VERSION_OUTDATED) {
+                            ConsentProblem.VERSION_OUTDATED
+                        } else {
+                            ConsentProblem.REQUIRED
+                        },
+                    )
+                    return@onFailure
+                }
                 if ((exception as? RegisterException)?.isServerError == true) {
                     // Not the member's input: no banner pointing at the form,
                     // and the server's message stays out of sight. The fields

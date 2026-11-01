@@ -1,5 +1,12 @@
 package com.hanmaum.dn.mobile.di
 
+import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentRepository
+import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentSessionRepository
+import com.hanmaum.dn.mobile.features.consent.data.repository.ConsentRepositoryImpl
+import com.hanmaum.dn.mobile.features.consent.data.repository.ConsentSessionRepositoryImpl
+import com.hanmaum.dn.mobile.features.consent.presentation.ConsentViewModel
+import com.hanmaum.dn.mobile.features.consent.data.repository.privacyPolicyLink
+import com.hanmaum.dn.mobile.BuildKonfig
 import com.hanmaum.dn.mobile.core.presentation.LanguageViewModel
 import com.hanmaum.dn.mobile.core.data.repository.LocaleRepositoryImpl
 import com.hanmaum.dn.mobile.core.data.repository.AttendancePreferencesImpl
@@ -17,6 +24,7 @@ import com.hanmaum.dn.mobile.core.notification.NotificationRouter
 import com.hanmaum.dn.mobile.core.domain.repository.LocationPreferences
 import com.hanmaum.dn.mobile.core.domain.repository.ThemeRepository
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
+import com.hanmaum.dn.mobile.core.network.ConsentRequiredSignal
 import com.hanmaum.dn.mobile.core.network.createHttpClient
 import com.hanmaum.dn.mobile.core.push.PushPreferences
 import com.hanmaum.dn.mobile.core.push.PushPreferencesImpl
@@ -91,6 +99,14 @@ val appModule = module {
     single<Settings> { Settings() }
     // Repositories
     single<AnnouncementRepository> { AnnouncementRepositoryImpl(get()) }
+    single<ConsentRepository> {
+        ConsentRepositoryImpl(get())
+    }
+    single { privacyPolicyLink(BuildKonfig.PRIVACY_POLICY_URL) }
+    single<ConsentSessionRepository> {
+        ConsentSessionRepositoryImpl(get(), get(), get(), get(), get(), get())
+    }
+    viewModel { ConsentViewModel(get(), get(), get(), get<ConsentRequiredSignal>().events) }
     single<AuthRepository> { AuthRepositoryImpl(get()) }
     single<CityLookupRepository> { CityLookupRepositoryImpl(get()) }
     single<MemberRepository> { MemberRepositoryImpl(get()) }
@@ -98,7 +114,8 @@ val appModule = module {
     single<VerseRecordRepository> { VerseRecordRepositoryImpl(get()) }
     single<BulletinRepository> { BulletinRepositoryImpl(get(), get(), get()) }
     viewModel { BulletinViewModel(get()) }
-    single { createHttpClient(get()) } // Client
+    single { ConsentRequiredSignal() }
+    single { createHttpClient(get(), consentRequired = get()) } // Client
     single<TokenStorage> { TokenStorageImpl(get(), get()) }
     single { InstallationGuard(Settings(), get(), get(), get()) }
     single<LocaleRepository> { LocaleRepositoryImpl(Settings()) }
@@ -113,7 +130,7 @@ val appModule = module {
     single<VersePreferences> { VersePreferencesImpl(Settings()) }
 
     //Splash VM
-    viewModel { SplashViewModel(get(), get(), get(), get(), get()) }
+    viewModel { SplashViewModel(get(), get(), get(), get()) }
 
 
     // Home VM
@@ -134,13 +151,13 @@ val appModule = module {
     viewModel { AnnouncementListViewModel(get()) }
 
     // Register VM
-    viewModel { RegisterViewModel(get(), get()) }
+    viewModel { RegisterViewModel(get(), get(), get(), get()) }
 
     // Login VM
     viewModel { LoginViewModel(get(), get(), get(), get(), get(), get()) }
 
     // Profile VM
-    viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { ProfileViewModel(get(), get(), get(), get()) }
     viewModel { FaceIdSetupViewModel(get(), get(), get()) }
 
     // Ministry

@@ -1,6 +1,7 @@
 package com.hanmaum.dn.mobile.features.login.data.repository
 
 import com.hanmaum.dn.mobile.core.security.MobileAuthConfig
+import com.hanmaum.dn.mobile.core.domain.model.ApiErrorResponse
 import com.hanmaum.dn.mobile.core.domain.model.ApiResponse
 import com.hanmaum.dn.mobile.features.login.domain.model.KeycloakError
 import com.hanmaum.dn.mobile.features.login.domain.model.LoginException
@@ -121,12 +122,13 @@ class AuthRepositoryImpl(
                 val message = runCatching {
                     lenientJson.decodeFromString<ApiResponse<Unit>>(errorText).message
                 }.getOrNull()
-                // Registration's 409 contract means the email is already in use.
-                // Classify by status even if the body is absent or not JSON.
-                val reason = if (response.status == HttpStatusCode.Conflict) {
-                    RegisterFailureReason.EMAIL_ALREADY_REGISTERED
-                } else {
-                    RegisterFailureReason.UNKNOWN
+                // Consent has its own 409 code; check it before the legacy email-conflict fallback.
+                val code = runCatching { lenientJson.decodeFromString<ApiErrorResponse>(errorText).code }.getOrNull()
+                val reason = when {
+                    code == "CONSENT_VERSION_OUTDATED" -> RegisterFailureReason.CONSENT_VERSION_OUTDATED
+                    code == "CONSENT_REQUIRED" -> RegisterFailureReason.CONSENT_REQUIRED
+                    response.status == HttpStatusCode.Conflict -> RegisterFailureReason.EMAIL_ALREADY_REGISTERED
+                    else -> RegisterFailureReason.UNKNOWN
                 }
                 Result.failure(
                     RegisterException(message, isServerError = response.status.value >= 500, reason = reason),

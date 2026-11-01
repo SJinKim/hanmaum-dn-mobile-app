@@ -7,7 +7,6 @@ import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.core.domain.repository.AuthPreferences
 import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
 import com.hanmaum.dn.mobile.core.security.BiometricVault
-import com.hanmaum.dn.mobile.features.geofence.domain.GeofenceCoordinator
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,7 +15,6 @@ import kotlinx.coroutines.launch
 class SplashViewModel(
     private val tokenStorage: TokenStorage,
     private val memberRepository: MemberRepository,
-    private val geofenceCoordinator: GeofenceCoordinator,
     private val biometricVault: BiometricVault,
     private val authPreferences: AuthPreferences,
 ) : ViewModel() {
@@ -46,9 +44,7 @@ class SplashViewModel(
                 .onSuccess { member ->
                     when (member.status) {
                         MemberStatus.ACTIVE -> {
-                            // Fire-and-forget: initialize geofence after confirmed login.
-                            // No-op if already registered or permission not yet granted.
-                            viewModelScope.launch { geofenceCoordinator.initialize() }
+                            // ConsentViewModel resumes geofencing after the server confirms consent.
                             _navigateTo.value = NavRoute.Home
                         }
                         MemberStatus.PENDING -> _navigateTo.value = NavRoute.PendingApproval

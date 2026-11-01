@@ -3,12 +3,7 @@ package com.hanmaum.dn.mobile.features.profile.presentation
 import com.hanmaum.dn.mobile.core.i18n.UiMessage
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hanmaum.dn.mobile.core.domain.repository.AuthPreferences
-import com.hanmaum.dn.mobile.core.domain.repository.TokenStorage
-import com.hanmaum.dn.mobile.core.push.PushManager
-import com.hanmaum.dn.mobile.core.security.BiometricVault
-import com.hanmaum.dn.mobile.core.network.invalidateBearerCache
-import io.ktor.client.HttpClient
+import com.hanmaum.dn.mobile.features.consent.domain.repository.ConsentSessionRepository
 import com.hanmaum.dn.mobile.features.login.domain.model.BirthDateInput
 import com.hanmaum.dn.mobile.features.login.domain.model.IdentityStatus
 import com.hanmaum.dn.mobile.features.login.domain.model.PhoneNumber
@@ -20,7 +15,6 @@ import com.hanmaum.dn.mobile.features.login.presentation.validateBirthDate
 import com.hanmaum.dn.mobile.features.member.domain.repository.MemberRepository
 import com.hanmaum.dn.mobile.features.verse.domain.model.VerseRecords
 import com.hanmaum.dn.mobile.features.verse.domain.repository.VerseRecordRepository
-import com.hanmaum.dn.mobile.features.notification.domain.repository.NotificationRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,13 +23,8 @@ import kotlinx.coroutines.launch
 
 class ProfileViewModel(
     private val memberRepository: MemberRepository,
-    private val tokenStorage: TokenStorage,
-    private val biometricVault: BiometricVault,
-    private val notificationRepository: NotificationRepository,
-    private val pushManager: PushManager,
-    private val authPreferences: AuthPreferences,
+    private val session: ConsentSessionRepository,
     private val verseRecordRepository: VerseRecordRepository,
-    private val httpClient: HttpClient,
     private val cityLookupRepository: CityLookupRepository,
 ) : ViewModel() {
 
@@ -183,11 +172,9 @@ class ProfileViewModel(
 
     fun logout() {
         viewModelScope.launch {
-            // Best-effort: stop push to this device for the signed-out account.
-            // Must run before the token clear or the call goes out unauthenticated.
-            pushManager.currentToken()?.let { notificationRepository.deleteDeviceToken(it) }
-            tokenStorage.clear()
-            httpClient.invalidateBearerCache()
+            // Device-token cleanup, token clear and cache invalidation live in the
+            // session repository, shared with the consent lock screen's logout.
+            session.logout()
             // The Face ID arming deliberately survives. Signing out and back in
             // is the ordinary way to end a session, and disarming here left the
             // member with a login screen that never offered Face ID — there was
