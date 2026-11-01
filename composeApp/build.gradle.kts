@@ -36,6 +36,7 @@ buildkonfig {
         buildConfigField(STRING, "KEYCLOAK_REALM", "hanmaum")
         buildConfigField(STRING, "KEYCLOAK_CLIENT_ID", "hanmaum-mobile")
         buildConfigField(STRING, "KEYCLOAK_REDIRECT_URI", "com.hanmaum.dn.mobile:/oauth2redirect")
+        buildConfigField(STRING, "PRIVACY_POLICY_URL", envProps["PRIVACY_POLICY_URL"] ?: "")
         buildConfigField(STRING, "GOOGLE_CALENDAR_ID",    envProps["GOOGLE_CALENDAR_ID"]    ?: "")
         buildConfigField(STRING, "GOOGLE_CALENDAR_API_KEY", envProps["GOOGLE_CALENDAR_API_KEY"] ?: "")
         buildConfigField(STRING, "PCLOUD_FOLDER_ENDPOINT",   envProps["PCLOUD_FOLDER_ENDPOINT"]   ?: "")
@@ -203,6 +204,7 @@ internal actual object BuildKonfig {
   public actual val KEYCLOAK_REALM: String get() = com.hanmaum.dn.mobile.BuildConfig.KEYCLOAK_REALM
   public actual val KEYCLOAK_CLIENT_ID: String get() = com.hanmaum.dn.mobile.BuildConfig.KEYCLOAK_CLIENT_ID
   public actual val KEYCLOAK_REDIRECT_URI: String get() = com.hanmaum.dn.mobile.BuildConfig.KEYCLOAK_REDIRECT_URI
+  public actual val PRIVACY_POLICY_URL: String get() = com.hanmaum.dn.mobile.BuildConfig.PRIVACY_POLICY_URL
   public actual val GOOGLE_CALENDAR_ID: String get() = com.hanmaum.dn.mobile.BuildConfig.GOOGLE_CALENDAR_ID
   public actual val GOOGLE_CALENDAR_API_KEY: String get() = com.hanmaum.dn.mobile.BuildConfig.GOOGLE_CALENDAR_API_KEY
   public actual val PCLOUD_FOLDER_ENDPOINT: String get() = com.hanmaum.dn.mobile.BuildConfig.PCLOUD_FOLDER_ENDPOINT
@@ -278,6 +280,7 @@ android {
         // Marketing version tracks the iOS release line (latest tag: v0.5.0). Betas
         // ship on 0.x; 1.0.0 is the first production release. Keep in sync on each tag.
         versionName = "0.10.0"
+        buildConfigField("String", "PRIVACY_POLICY_URL", "\"${envProps["PRIVACY_POLICY_URL"] ?: ""}\"")
         buildConfigField("String", "GOOGLE_CALENDAR_ID",      "\"${envProps["GOOGLE_CALENDAR_ID"] ?: ""}\"")
         buildConfigField("String", "GOOGLE_CALENDAR_API_KEY", "\"${envProps["GOOGLE_CALENDAR_API_KEY"] ?: ""}\"")
         buildConfigField("String", "PCLOUD_FOLDER_ENDPOINT",   "\"${envProps["PCLOUD_FOLDER_ENDPOINT"] ?: ""}\"")

@@ -1,0 +1,269 @@
+# Privacy consent — issue #290
+
+## Status
+
+Policy scope confirmed on 2026-10-27: the current DE/KO/EN working drafts cover
+only the ST test environment, including TestFlight and the services actually
+connected to that test version. Future production-provider details are tracked
+separately in server #269 and do not block this ST-specific policy. ST provider
+contracts, connected services, legal bases and remaining retention details still
+require completion. Do not configure a production app to use the ST-only notice.
+
+Design approved by the user on 2026-10-24. The APP_PRIVACY mobile flow is
+implemented against the proposed ops #73 contract. Local verification passed on
+2026-10-25; the change is prepared for independent review as a draft PR. The server/ops merges, published policy URL and legal content approval
+remain integration/release prerequisites. Issue #290 remains open for those
+items and the separate COURSE_APPLICATION contract.
+Branch: `feature/privacy-consent-290`, based on `origin/main` at `718ea7b`.
+
+Infrastructure clarification, 2026-10-24:
+
+- User confirmed ST hosting at Hetzner in Germany, with ST database and Keycloak
+  also operated in Germany. This is operator-provided information, not a live
+  infrastructure or contract audit.
+- Prod uses a different hosting provider. Its provider and locations remain
+  unspecified; do not copy the ST values into a future production privacy policy.
+  These details are outside the current ST-only notice.
+- Existing [server #269](https://github.com/SJinKim/hanmaum-dn-server/issues/269)
+  already tracks production setup and was extended with provider/region inventory,
+  environment separation and a review of the shared-Keycloak decision. No duplicate
+  issue was created. No infrastructure or deployments were changed.
+
+Review artifacts:
+
+- [Figma: consent states in Dark and Light](https://www.figma.com/design/NOVmvVvB7CEXXVemOy5hJa/DN-App?node-id=639-5002)
+- Full privacy-policy working drafts in [German](privacy-policy.de.draft.md),
+  [Korean](privacy-policy.ko.draft.md) and [English](privacy-policy.en.draft.md),
+  using the church name, address and contact supplied by the user; not legally
+  approved. Each language contains the same nine sections, thirteen subsections,
+  two tables and twenty open editorial review items. No language takes precedence.
+
+Localization update, 2026-10-26: all three drafts include the operator's intended
+audience (older than 16 / aged 17 and above) and the stated process without
+collecting parental consent. The qualification that 17-year-olds remain minors
+and the outstanding legal/implementation review are retained in each language.
+The operator confirmed that account approvals and course admissions are always
+decided by a responsible person. This is now stated in each language; review of
+other automated processing (matching, prerequisite/location checks and any
+profiling) remains separate.
+The local static preview offers a script-free language switch and complete
+localized navigation, status notices and review notes. Fifteen browser cases
+(three languages, desktop/mobile, light/dark, plus 320px mobile) passed; no page
+overflow, broken anchors, scripts or external resource requests were observed.
+Source references and technical identifiers match across the three documents.
+No public content or App/Store URL was changed by this localization work.
+
+Church-policy update, 2026-10-27: Jin supplied the existing Korean policy from
+application.hanmaum.de and confirmed that its church-wide rules apply to this
+app. [The source mapping](privacy-policy-church-source-2026-10-27.md) documents
+all source articles and their adoption boundaries. Each draft now identifies
+프랑크푸르트 한마음교회, internal privacy responsibility (이찬규), enquiry/access
+handling (이충만 목사) and the church office telephone. The retention
+criterion (subsequently updated to church affiliation), purpose limitation,
+request/representation process, deletion approval
+and methods, separate statutory retention, and organisational security rules are
+also incorporated. These rules are distinguished from verified app implementation.
+No formal GDPR data-protection-officer appointment was inferred; legal
+representation was subsequently confirmed separately by the operator.
+Korean legal references/authorities, the historical 2020 effective date,
+under-14 rule, blanket non-disclosure, website cookies and low-level formatting
+are not adopted as app facts. The course portal and possible family fields are
+supported by the supplied source and targeted server/public-page checks; hosting,
+necessity and legal basis remain to be confirmed.
+The operator also supplied the legal name Koreanische Kirchengemeinde Hanmaum,
+the legal form registered association (e. V.) and D-U-N-S® number 314469658. The
+German name is retained verbatim in all languages; no unconfirmed name suffix or
+association register number is inferred. The operator subsequently confirmed
+이찬규 목사 as the legal representative. No specific board office, sole-signature
+authority or formal data-protection-officer appointment is inferred.
+The operator also confirmed that the church belongs to no church association or
+umbrella organisation. This is included in all three drafts; applicable privacy
+law remains a separate legal review item.
+For ST, the operator confirmed full member-information access only for admins
+and pastors; ministry leaders see the name, phone number, email address and role
+in the respective team of their own team members. Newcomer leaders see all
+fields displayed in the web app's Newcomer area, including its assignment,
+graduation and account-reconciliation information. The recipient sections now
+reflect this rule, with data categories checked against the web source. The
+deployed ST field set and actual API/role/object-level enforcement remain to be
+verified. No technical permissions were changed.
+
+The operator's intended retention rule is to keep all data for as long as the
+person belongs to the church. All three drafts now record church affiliation
+as the intended criterion for personal church records, including newcomer care,
+rather than app-account closure or completion of newcomer care alone. This is
+an operator requirement, not a legal approval of blanket retention: necessity
+by data type, technical-data periods, earlier deletion grounds, permitted
+exceptions, the technical recording of departure and the actual deletion
+process remain to be established. The operator confirmed that the departing
+person tells the pastor in person and, on 2026-10-28, that either a pastor or an
+administrator may record the departure. All drafts record these organisational
+responsibilities without claiming verified or automated recording or deletion. No
+retention or deletion implementation was changed.
+
+The editable Figma board uses DN Theme modes/tokens and the documented font
+stand-ins Inter and Noto Sans KR. The latest design contexts include the
+registration footer, settings proof and withdrawal link, consent prompt, version
+notice, and withdrawal confirmation. Compose reuses DN controls, icons, spacing,
+shapes and typography. The board covers unchecked/checked, missing/outdated,
+saving, load/save failure, policy loading and withdrawal confirmation states.
+The app's device rendering still needs TestFlight visual acceptance; source
+comparison and native tests do not establish that visual acceptance.
+
+Integration/release prerequisites:
+
+- The Figma states are approved. The policy itself still needs content approval;
+  localized Korean/English UI copy is not a legal approval of that policy.
+- Applicable privacy law, purpose-specific legal
+  bases, actual ST hosting/providers/regions, connected services and remaining
+  retention periods. The
+  supplied church policy now identifies internal privacy contacts and the
+  operator confirmed the legal representative; a formal DPO appointment remains
+  unconfirmed.
+- A published privacy-policy URL serving the same version announced by the server.
+  In-app withdrawal is implemented: record the withdrawal, stop location
+  monitoring and lock the app until the member agrees again; the member stays
+  signed in and the account is not deleted.
+- Merged server #359 and ops #73; a course-submit contract for COURSE_APPLICATION.
+
+## Implemented behavior
+
+On 2026-10-28, the operator confirmed that version identification will be
+implemented. All three policy drafts now distinguish that planned rollout from
+the already prepared app handling of server versions. No release identifier is
+assigned to the unapproved draft. Before publication, the server version and
+all three published language texts must refer to the same approved document;
+the code alone does not verify the external page's content.
+
+- Registration loads the public policy version, starts unchecked, and sends
+  `consent: { accepted: true, version }` only after an explicit selection. Policy
+  reloads and version conflicts clear acceptance. Rapid submit is guarded.
+- A session-scoped guard checks server consent before composing member-content
+  destinations, including restored routes and notification targets. The static
+  rejected-account screen retains its previous behavior. No local persisted flag
+  authorizes access. Account changes invalidate the previous check.
+- Settings displays server-provided grant date/version and a separate policy link.
+  A failed refresh is shown as unknown/error, never as absent consent.
+- Withdrawal requires confirmation and a successful DELETE. Geofencing is stopped and
+  the member stays signed in, locked on the consent screen until they agree again
+  (Jin, 2026-10-29). This is not account/data deletion.
+- If the consent status cannot be loaded (server outage), the member is not locked
+  out: the app stays usable, location stays off, and the status is re-checked on the
+  next destination. Only a server answer that requires consent blocks the app.
+- Geofence startup is deferred until verified consent and an active destination.
+  The existing location opt-in remains independent of the consent checkbox.
+  `ConsentViewModel` no longer starts or stops the geofence itself; it exposes
+  `locationAllowed` (active destination, consent verified, no unverified state).
+  The app shell (`App.kt`) drives `GeofenceCoordinator` from that flow, so a
+  sign-out, a withdrawal or a server outage stops monitoring in one place.
+- Registration distinguishes `CONSENT_REQUIRED` and `CONSENT_VERSION_OUTDATED`
+  from the email-conflict message; each has its own notice.
+- A server 403 `CONSENT_REQUIRED` outside the status check (contract server #373)
+  is signalled from the network layer (`ConsentRequiredSignal`) to
+  `ConsentViewModel`, which opens the lock screen. No Ops spec change is needed.
+- The consent state is reset centrally when the shell enters a signed-out
+  destination (splash, login, rejected), instead of at each call site.
+- Sign-out, including the profile logout, goes through
+  `ConsentSessionRepository.logout()`: bounded device-token deletion, token
+  clearing, bearer-cache invalidation and optional Face ID forgetting live in
+  `ConsentSessionRepositoryImpl` only.
+
+## Policy URL configuration
+
+Local builds read `PRIVACY_POLICY_URL` from `.env`. Distribution maps GitHub
+repository variables `ST_PRIVACY_POLICY_URL` and `PROD_PRIVACY_POLICY_URL` to that
+field in the corresponding Android/iOS lanes. BuildKonfig's common declaration,
+Android generated actual and AGP BuildConfig all include it.
+
+The current policy text is ST-only. Set `ST_PRIVACY_POLICY_URL` only after that
+text is approved and publicly available; the future production policy and
+`PROD_PRIVACY_POLICY_URL` require separate approval.
+
+Only HTTPS URLs without embedded credentials are accepted. No URL or policy
+version is invented. An absent/invalid URL prevents new consent and registration;
+an already confirmed server grant can still allow the existing account session.
+Set these variables only after the policy is approved and published. Coordinate
+policy text/version changes with the server; the current contract returns no URL
+or policy text and cannot prove website content consistency by itself.
+
+## Verification
+
+Verified on 2026-10-25 against the final source changes:
+
+| Command | Result |
+| --- | --- |
+| Focused consent/auth/registration JVM tests | 147 passed before the final no-session regression was added |
+| `./gradlew :composeApp:testDevDebugUnitTest` | 727 tests, 0 failures/errors/skips; BUILD SUCCESSFUL in 39s |
+| `./gradlew lint` | 0 errors in `lint-results-devDebug.xml`; BUILD SUCCESSFUL in 49s |
+| `./gradlew :composeApp:assembleDevDebug` | BUILD SUCCESSFUL in 37s |
+| `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer ./gradlew :composeApp:iosSimulatorArm64Test` | 722 tests, 0 failures/errors/skips; BUILD SUCCESSFUL in 3m 26s |
+| `grep -rn "TODO" composeApp/src` filtered with `grep -v "TODO("` | No unreferenced TODOs |
+
+Distribution YAML syntax and policy-variable mappings were also checked.
+`git diff --check` is clean. This is developer verification, not an independent
+code review or QA acceptance. Claude A is the designated independent reviewer.
+The repository has no `.team/config.yml`; board synchronization and a board-stage
+transition cannot be performed reliably until team onboarding is configured.
+No team configuration or project identity is invented in this feature PR.
+
+ No simulator app launch or distribution workflow is part of this PR.
+No changed Kotlin declaration is called by the Swift target, so the conditional
+Swift interop build is not required. End-to-end server storage, rollout and
+TestFlight UI/runtime acceptance remain outstanding.
+
+## Execution plan
+
+1. Inspect the registration/settings flows and the proposed server contract; build
+   a reviewable Figma state board in Dark and Light using DN tokens/components.
+2. Design approved before application code, as required by issue #290 and
+   `tasks/lessons.md` ("Bei Zustandsvielfalt zuerst das Figma-Board, dann der Code").
+3. Prepare implementation against ops #73, then compare with the committed ops
+   spec after server #359 and ops #73 merge before integration/release:
+   consent repository, registration grant, authenticated consent check/re-prompt,
+   settings policy link and grant date/version. Wire COURSE_APPLICATION only after
+   its submit endpoint accepts the consent in the server contract.
+4. Add focused repository/ViewModel tests, run the repository Definition of Done,
+   compare UI states against the approved board, and prepare a PR to main.
+
+## Acceptance criteria
+
+- Registration consent starts unchecked and cannot be submitted without explicit
+  acceptance of the version that was displayed; the server remains authoritative.
+- Public policy versions come from `GET /api/v1/consents/policies`, never a guessed
+  or hardcoded version. Loading/failure/outdated-version states are visible.
+- Registration sends `consent: { accepted: true, version }`.
+- After login, `GET /api/v1/members/me/consents` determines `actionRequired`.
+  MISSING and OUTDATED have distinct explanations. No local flag claims a grant.
+- Re-prompt submits `POST /api/v1/members/me/consents` with purpose APP_PRIVACY.
+  Submission is explicit, errors are retryable, and a 409 refetches the policy and
+  clears the old acceptance instead of silently accepting a changed version.
+- Settings shows the policy link and server-confirmed grant timestamp/version;
+  loading and fetch failure never look like "not consented".
+- Korean/English copy, accessibility labels, scalable text and mobile tap targets.
+- No new production dependency, server/schema change, deployment or enforcement
+  configuration change is included in the mobile work.
+
+## Dependencies and decisions
+
+- Server PR: https://github.com/SJinKim/hanmaum-dn-server/pull/359 — open at inspection.
+- Ops PR: https://github.com/SJinKim/hanmaum-dn-ops/pull/73 — open at inspection.
+- Proposed policy response has purpose/version/requiredForAccount, no policy URL.
+  A published, approved privacy-policy URL is required; requested from the user.
+- Consent copy is a UX draft until the church approves it. Do not invent final
+  policy content or a policy URL.
+- COURSE_APPLICATION has a purpose but its application endpoint is not wired yet,
+  per the issue comment; do not send an independent grant that falsely suggests
+  the course submission and consent recording are atomic.
+- The approved withdrawal UX records the server withdrawal and locks the app
+  until the member agrees again, without signing out. It does not claim account deletion or backend-wide processing cessation.
+- Server #359 now requires registration consent without a rollout toggle. The
+  earlier APP_CONSENTS_ENFORCED rollout note was superseded. Coordinate backend
+  deployment with the compatible mobile release; do not alter server settings here.
+
+## Verification after implementation
+
+Use the exact commands from AGENTS.md: focused JVM tests, all DevDebug unit tests,
+the unreferenced-TODO gate, lint (read error count from the XML report),
+iosSimulatorArm64Test with DEVELOPER_DIR, and assembleDevDebug. Run the Swift
+interop build only if a Kotlin declaration used by Swift changes. Do not launch
+the app in a simulator or dispatch a TestFlight build.

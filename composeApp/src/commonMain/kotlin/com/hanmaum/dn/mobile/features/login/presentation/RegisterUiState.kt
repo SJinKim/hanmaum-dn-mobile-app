@@ -1,5 +1,6 @@
 package com.hanmaum.dn.mobile.features.login.presentation
 
+import com.hanmaum.dn.mobile.features.consent.domain.model.PolicyConsentState
 import com.hanmaum.dn.mobile.core.domain.model.NavRoute
 import com.hanmaum.dn.mobile.features.login.domain.model.IdentityStatus
 import com.hanmaum.dn.mobile.features.login.domain.model.PasswordCriteria
@@ -47,6 +48,7 @@ sealed interface RegisterBanner {
 }
 
 data class RegisterUiState(
+    val consent: PolicyConsentState = PolicyConsentState(),
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
     val navigateTo: NavRoute? = null,

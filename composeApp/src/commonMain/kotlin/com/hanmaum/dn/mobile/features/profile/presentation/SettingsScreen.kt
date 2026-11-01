@@ -1,5 +1,7 @@
 package com.hanmaum.dn.mobile.features.profile.presentation
 
+import com.hanmaum.dn.mobile.features.consent.presentation.ConsentViewModel
+import com.hanmaum.dn.mobile.features.consent.presentation.ConsentSettings
 import com.hanmaum.dn.mobile.core.i18n.message
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.Spring
@@ -72,6 +74,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    consentViewModel: ConsentViewModel,
     currentTheme: ThemeMode,
     onThemeChange: (ThemeMode) -> Unit,
     currentLocale: AppLocale,
@@ -160,6 +163,7 @@ fun SettingsScreen(
                             }
                         },
                     )
+                    ConsentSettings(consentViewModel)
                 }
 
                 Spacer(Modifier.height(40.dp))

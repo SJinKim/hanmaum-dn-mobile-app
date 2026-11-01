@@ -9,6 +9,7 @@ import io.ktor.http.content.OutgoingContent
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.test.runTest
+import com.hanmaum.dn.mobile.features.login.domain.model.RegistrationConsent
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import com.hanmaum.dn.mobile.features.login.domain.model.RegisterException
@@ -56,6 +57,7 @@ private val REGISTER_REQUEST = RegisterRequest(
     password = "Passwort1!",
     birthDate = "2000-08-16",
     identityStatus = "UNIVERSITY_STUDENT",
+                consent = RegistrationConsent(true, "policy-1"),
 )
 
 private fun registerClient(status: HttpStatusCode, body: String) = HttpClient(
@@ -177,6 +179,24 @@ class AuthRepositoryImplTest {
         assertIs<RegisterException>(error)
         assertEquals(RegisterFailureReason.UNKNOWN, error.reason)
         assertFalse(error.isServerError)
+        client.close()
+    }
+
+    @Test
+    fun consentVersionConflictIsNotAnEmailConflict() = runTest {
+        val client = registerClient(HttpStatusCode.Conflict,
+            """{"code":"CONSENT_VERSION_OUTDATED","message":"changed"}""")
+        val error = AuthRepositoryImpl(client).register(REGISTER_REQUEST).exceptionOrNull()
+        assertEquals(RegisterFailureReason.CONSENT_VERSION_OUTDATED, assertIs<RegisterException>(error).reason)
+        client.close()
+    }
+
+    @Test
+    fun missingConsentHasItsOwnBusinessError() = runTest {
+        val client = registerClient(HttpStatusCode.BadRequest,
+            """{"code":"CONSENT_REQUIRED","message":"required"}""")
+        val error = AuthRepositoryImpl(client).register(REGISTER_REQUEST).exceptionOrNull()
+        assertEquals(RegisterFailureReason.CONSENT_REQUIRED, assertIs<RegisterException>(error).reason)
         client.close()
     }
 }
