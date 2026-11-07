@@ -363,3 +363,9 @@ veralteten Branch gearbeitet (6 Commits hinter `origin/main`) und nicht nachgese
 **Regel:** Bevor ein Issue entworfen oder gespeckt wird: `git fetch` und
 `gh pr list --state merged --search "<issue-nr>"` bzw. `git log origin/main --grep`.
 Ist es schon gebaut, wird Figma an den Code angeglichen, nicht umgekehrt.
+
+
+## Migrate response envelopes through compatible consumers first
+
+- **Mistake:** A server response wrapped in ApiResponse cannot be decoded by clients expecting a raw list or location DTO; a list fallback can hide this as an empty screen.
+- **Rule:** Before a response-envelope rollout, release a client that accepts both wire formats at the affected repository boundaries. Test both formats and reject failed envelopes, missing data and HTTP errors. Record the actual client release as the prerequisite for server rollout; merge alone is insufficient.
